@@ -6,4 +6,6 @@ RUN nest new pong -p npm
 
 EXPOSE 3000
 
+WORKDIR /pong/
+
 ENTRYPOINT [ "npm", "run", "start:dev" ]

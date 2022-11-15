@@ -16,6 +16,11 @@
 # Please see /usr/share/doc/nginx-doc/examples/ for more detailed examples.
 ##
 
+#pong container upstream server
+upstream upsrv1 {
+	server pong:3000;
+}
+
 # Default server configuration
 #
 server {
@@ -48,7 +53,7 @@ server {
 	location / {
 		# First attempt to serve request as file, then
 		# as directory, then fall back to displaying a 404.
-		try_files $uri $uri/ =404;
+		proxy_pass http://upsrv1;
 	}
 
 	# pass PHP scripts to FastCGI server
