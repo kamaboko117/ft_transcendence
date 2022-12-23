@@ -18,6 +18,8 @@ services:
     depends_on:
       - backend
     build: ./requirements/frontend
+    volumes:
+      - ./requirements/frontend/srcs:/pong/
     deploy:
       restart_policy:
         condition: on-failure
