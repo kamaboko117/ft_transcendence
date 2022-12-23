@@ -1,5 +1,6 @@
 services:
   nginx:
+    # container_name: nginx
     depends_on:
       - frontend
     build: ./requirements/nginx
@@ -13,6 +14,7 @@ services:
         window: 120s
 
   frontend:
+    # container_name: front
     depends_on:
       - backend
     build: ./requirements/frontend
@@ -24,6 +26,7 @@ services:
         window: 120s
 
   backend:
+    # container_name: back
     depends_on:
       - postgres
     build: ./requirements/backend
@@ -33,6 +36,8 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
+    volumes:
+      - ./requirements/backend/srcs:/pong/
     deploy:
       restart_policy:
         condition: on-failure
@@ -41,6 +46,7 @@ services:
         window: 120s
         
   postgres:
+    # container_name: pg
     image: postgres
     environment:
       - POSTGRES_USER=${DB_USER}
@@ -57,3 +63,9 @@ services:
 
 volumes:
   postgres:
+  # backend:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: /requirements/backend/srcs/
