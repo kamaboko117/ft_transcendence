@@ -32,6 +32,8 @@ services:
     depends_on:
       - postgres
     build: ./requirements/backend
+    ports:
+      - "5000:3000"
     environment:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
