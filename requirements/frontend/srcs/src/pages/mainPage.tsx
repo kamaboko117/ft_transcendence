@@ -3,28 +3,27 @@ import UserList from "../components/Users/UserList";
 
 function MainPage() {
     const [isLoading, setIsLoading] = useState(true);
-    const [loadedUsers, setLoadedUsers] = useState([]);
+    const arr: any = [];
+    const [loadedUsers, setLoadedUsers] = useState(arr);
     console.log("d");
     useEffect(() => {
-        fetch(`http://0.0.0.0:5000`/*, {
-            method: "POST",
-            body: JSON.stringify({
-                username: "pouet",
-                password: "test",
-                email: "email@example.com",
-            }),
-            headers: {
-                "Content-Type": "application/json",
-            },d
-        }*/)
+        fetch(`http://0.0.0.0:5000/users`)
             .then((response) => {
                 console.log(response);
-                return response.text();
+                return response.json();
             })
             .then((data) => {
                 console.log(data);
-                // setIsLoading(false);
-                // setLoadedUsers(data);
+                const users = [];
+                for (const key in data) {
+                    const user = {
+                        id: key,
+                        ...data[key],
+                    };
+                    users.push(user);
+                }
+                setIsLoading(false);
+                setLoadedUsers(users);
             });
     }, []);
 
@@ -34,7 +33,7 @@ function MainPage() {
 
     return (
         <div>
-            <h1>{loadedUsers.toString()}</h1>
+            <UserList users={loadedUsers} />
         </div>
     );
 }
