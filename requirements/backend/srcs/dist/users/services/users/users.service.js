@@ -26,7 +26,7 @@ let UsersService = class UsersService {
         return this.userRepository.save(newUser);
     }
     getUsers() {
-        return (this.userRepository);
+        return this.userRepository.find();
     }
     findUsersById(id) {
         return this.userRepository.findOneBy({ id: id });
