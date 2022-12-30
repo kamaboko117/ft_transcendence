@@ -20,6 +20,10 @@ services:
     build: ./requirements/frontend
     volumes:
       - ./requirements/frontend/srcs:/pong/
+    environment:
+      - REACT_APP_APP_ID=${APP_ID}
+      - REACT_APP_APP_SECRET=${APP_SECRET}
+      - REACT_APP_APP_URI=${APP_URI}
     deploy:
       restart_policy:
         condition: on-failure
