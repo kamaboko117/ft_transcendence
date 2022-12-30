@@ -7,7 +7,17 @@ function MainPage() {
     const [loadedUsers, setLoadedUsers] = useState(arr);
     console.log("d");
     useEffect(() => {
-        fetch(`http://0.0.0.0:5000/users`)
+        fetch(`http://0.0.0.0:5000/users`, /*{
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                username: "test",
+                email: "test@example.com",
+                password: "testtest",
+            }),
+        }*/)
             .then((response) => {
                 console.log(response);
                 return response.json();

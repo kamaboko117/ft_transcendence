@@ -1,20 +1,16 @@
+import React from 'react';
+import LoginButton from "../components/buttons/buttons";
+
+const client_id = process.env.REACT_APP_APP_ID
+const app_uri = process.env.REACT_APP_APP_URI
+const state = "pouet"
+const loginUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=${app_uri}&response_type=code&scope=public&state=${state}'`;
+
 function LoginPage() {
   return (
     <div>
       <h1>Please Log In</h1>
-      <form>
-        <label>
-          <p>Username</p>
-          <input type="text" />
-        </label>
-        <label>
-          <p>Password</p>
-          <input type="password" />
-        </label>
-        <div>
-          <button type="submit">Submit</button>
-        </div>
-      </form>
+      <LoginButton url={loginUrl} />
     </div>
   );
 }
