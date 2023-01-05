@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import UserItem from "../components/Users/UserItem";
 //gets existing user from database if exists. If not, creates a new user
 const getUser = async (code: String | null) => {
-    const response = await fetch(`http://0.0.0.0:5000/users/validate/${code}`);
+    const response = await fetch(`http://localhost:5000/users/validate/${code}`);
     return await response.json();
 };
 
