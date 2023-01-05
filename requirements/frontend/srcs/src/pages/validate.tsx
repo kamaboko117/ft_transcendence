@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import UserItem from "../components/Users/UserItem";
 //gets existing user from database if exists. If not, creates a new user
-const getUser = async (code: number) => {
+const getUser = async (code: String | null) => {
     const response = await fetch(`http://0.0.0.0:5000/users/validate/${code}`);
     return await response.json();
 };
@@ -25,10 +25,12 @@ function ValidatePage() {
         password: "",
     });
 
-    getUser(Number(code)).then((data) => {
-        setUser(data);
-        setIsLoading(false);
-    });
+    useEffect(() => {
+        getUser(code).then((data) => {
+            setUser(data);
+            setIsLoading(false);
+        });
+    }, []);
 
     if (isLoading) {
         return <div>Loading...</div>;

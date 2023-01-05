@@ -4,6 +4,7 @@ import { User } from "src/typeorm";
 import { Repository } from "typeorm";
 import { CreateUserDto } from "src/users/dto/users.dtos";
 const validateURL = "https://api.intra.42.fr/oauth/token"
+const infoURL = "https://api.intra.42.fr/oauth/token/info"
 const appId = process.env.APP_ID;
 const appSecret = process.env.APP_SECRET;
 
@@ -19,22 +20,39 @@ export class UsersService {
         return this.userRepository.save(newUser);
     }
 
-    async validateUser(code: number) {
+    async validateUser(code: string) {
         const formData = new FormData();
         formData.append("grant_type", "authorization_code");
         formData.append("client_id", appId);
         formData.append("client_secret", appSecret);
-        formData.append("code", String(code));
-        formData.append("redirect_uri", "http://localhost:8080");
+        formData.append("code", code);
+        formData.append("redirect_uri", "http://localhost:8080/validate");
+        formData.append("state", "pouet2");
+        // console.log(formData);
 
-        const id = await fetch(validateURL, {
+        let res = await fetch(validateURL, {
             method: "POST",
-            headers: {
-                "Content-Type": "form-data"
-            },
             body: formData
         })
-        console.log(id);
+        // console.log(res);
+        let resJSON = await res.json();
+        const token = resJSON.access_token;
+        console.log(`token: ${token}`);
+        res = await fetch(infoURL, {
+            headers: {
+                authorization: `Bearer ${token}`
+            }
+        })
+        resJSON = await res.json();
+        const id: number = resJSON.resource_owner_id;
+        console.log(`id: ${id}`);
+        const user = await this.userRepository.findOneBy({id: id});
+        if (user) {
+            return [true, user];
+        }
+        const newUser = this.userRepository.create({id: id});
+        this.userRepository.save(newUser);
+        return [false, id];
     }
 
     getUsers() {
