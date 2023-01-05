@@ -5,7 +5,7 @@ type ItemProps = {
     password: string,
 }
 
-function MeetupItem(props: ItemProps) {
+function UserItem(props: ItemProps) {
     return <li>
         <div>
             <h3>{props.id}</h3>
@@ -16,4 +16,4 @@ function MeetupItem(props: ItemProps) {
     </li>
 }
 
-export default MeetupItem;
+export default UserItem;

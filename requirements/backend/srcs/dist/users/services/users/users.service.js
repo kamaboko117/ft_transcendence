@@ -17,6 +17,9 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("../../../typeorm");
 const typeorm_3 = require("typeorm");
+const validateURL = "https://api.intra.42.fr/oauth/token";
+const appId = process.env.APP_ID;
+const appSecret = process.env.APP_SECRET;
 let UsersService = class UsersService {
     constructor(userRepository) {
         this.userRepository = userRepository;
@@ -24,6 +27,22 @@ let UsersService = class UsersService {
     createUser(createUserDto) {
         const newUser = this.userRepository.create(createUserDto);
         return this.userRepository.save(newUser);
+    }
+    async validateUser(code) {
+        const formData = new FormData();
+        formData.append("grant_type", "authorization_code");
+        formData.append("client_id", appId);
+        formData.append("client_secret", appSecret);
+        formData.append("code", String(code));
+        formData.append("redirect_uri", "http://localhost:8080");
+        const id = await fetch(validateURL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "form-data"
+            },
+            body: formData
+        });
+        console.log(id);
     }
     getUsers() {
         return this.userRepository.find();

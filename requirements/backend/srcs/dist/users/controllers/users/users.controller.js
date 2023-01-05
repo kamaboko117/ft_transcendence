@@ -26,6 +26,9 @@ let UsersController = class UsersController {
     findUsersById(id) {
         return this.userService.findUsersById(id);
     }
+    validateUser(code) {
+        return this.userService.validateUser(code);
+    }
     createUsers(createUserDto) {
         return this.userService.createUser(createUserDto);
     }
@@ -43,6 +46,13 @@ __decorate([
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "findUsersById", null);
+__decorate([
+    (0, common_1.Get)("validate"),
+    __param(0, (0, common_1.Query)("code", common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "validateUser", null);
 __decorate([
     (0, common_1.Post)("create"),
     (0, common_1.UsePipes)(common_1.ValidationPipe),
