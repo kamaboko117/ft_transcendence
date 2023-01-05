@@ -8,8 +8,11 @@ EXPOSE 3000
 
 WORKDIR /pong/
 
+COPY entrypoint.sh /
+RUN chmod +x /entrypoint.sh
 # RUN npm i @nestjs/config
 # RUN npm i @nestjs/typeorm typeorm mysql2
 # RUN npm i pg
 
-ENTRYPOINT [ "npm", "run", "start:dev" ]
+ENTRYPOINT [ "/entrypoint.sh" ]
+CMD [ "npm", "run", "start:dev" ]
