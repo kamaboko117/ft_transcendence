@@ -46,12 +46,11 @@ export class UsersService {
         resJSON = await res.json();
         const id: number = resJSON.resource_owner_id;
         console.log(`id: ${id}`);
-        const user = await this.userRepository.findOneBy({id: id});
-        if (user) {
+        const user = await this.userRepository.findOneBy({userID: id});
+        if (user && user.username) {
             return [true, user];
         }
-        const newUser = this.userRepository.create({id: id});
-        this.userRepository.save(newUser);
+    
         return [false, id];
     }
 

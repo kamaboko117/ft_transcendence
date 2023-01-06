@@ -6,10 +6,10 @@ function UserList(props: any) {
             {props.users.map((item: any) => (
                 <UserItem
                     key={item.id}
-                    id={item.id}
+                    userID={item.userID}
                     username={item.username}
-                    email={item.email}
-                    password={item.password}
+                    // email={item.email}
+                    // password={item.password}
                 />
             ))}
         </ul>
