@@ -62,8 +62,6 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
-    volumes:
-      - postgres:/data/postgres
     deploy:
       restart_policy:
         condition: on-failure
@@ -71,8 +69,8 @@ services:
         max_attempts: 3
         window: 120s
 
-volumes:
-  postgres:
+# volumes:
+#   postgres:
   # backend:
   #   driver: local
   #   driver_opts:
