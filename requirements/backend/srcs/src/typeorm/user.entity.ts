@@ -30,9 +30,9 @@ export class User {
   // })
   // email: string;
 
-  // @Column({
-  //   nullable: false,
-  //   default: '',
-  // })
-  // password: string;
+  @Column({
+    nullable: false,
+    default: '',
+  })
+  token: string;
 }

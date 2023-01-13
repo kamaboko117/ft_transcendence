@@ -3,6 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/typeorm";
 import { Repository } from "typeorm";
 import { CreateUserDto } from "src/users/dto/users.dtos";
+import { randomBytes } from "crypto";
+
 const validateURL = "https://api.intra.42.fr/oauth/token"
 const infoURL = "https://api.intra.42.fr/oauth/token/info"
 const appId = process.env.APP_ID;
@@ -17,6 +19,7 @@ export class UsersService {
 
     createUser(createUserDto: CreateUserDto) {
         const newUser = this.userRepository.create(createUserDto);
+        newUser.token = randomBytes(64).toString('hex');
         return this.userRepository.save(newUser);
     }
 
