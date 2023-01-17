@@ -1,0 +1,31 @@
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+
+import LoginPage from "./pages/login";
+import MainPage from "./pages/mainPage";
+import ValidatePage from "./pages/validate";
+import CreateNewUser from "./pages/createNewUser";
+import Counter from "./components/Counter";
+import Homepage from "./components/Homepage";
+import PlayerApp from "./components/PlayerApp";
+import WebSocketTestGc from './TestWebSocketGc'
+
+function App() {
+  return (
+    <>
+      <div>
+       <Routes>
+         <Route path="/" element={<MainPage />} />
+         <Route path="/login" element={<LoginPage />} />
+         <Route path="/validate" element={<ValidatePage />} />
+         <Route path="/register" element={<CreateNewUser />} />
+         <Route path="/counter" element={<Counter />} />
+         <Route path="/ws" element={<WebSocketTestGc id={0} />} />
+       </Routes>
+      </div>
+      <PlayerApp />
+    </>
+  );
+}
+
+export default App;

@@ -1,0 +1,81 @@
+services:
+  nginx:
+    # container_name: nginx
+    depends_on:
+      - frontend
+    build: ./requirements/nginx
+    ports:
+      - 8080:80
+      - 5174:5174
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+  frontend:
+    # container_name: front
+    depends_on:
+      - backend
+    build: ./requirements/frontend
+    volumes:
+      - ./requirements/frontend/srcs:/pong/
+    environment:
+      - REACT_APP_APP_ID=${APP_ID}
+      - REACT_APP_APP_SECRET=${APP_SECRET}
+      - REACT_APP_APP_URI=${APP_URI}
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+        
+
+  backend:
+    # container_name: back
+    depends_on:
+      - postgres
+    build: ./requirements/backend
+    ports:
+      - "5000:3000"
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - APP_ID=${APP_ID}
+      - APP_SECRET=${APP_SECRET}
+    volumes:
+      - ./requirements/backend/srcs:/pong/
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+        
+  postgres:
+    # container_name: pg
+    image: postgres
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+# volumes:
+#   postgres:
+  # backend:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: /requirements/backend/srcs/
