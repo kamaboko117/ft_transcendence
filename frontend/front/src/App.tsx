@@ -13,7 +13,7 @@ import WebSocketTestGc from './TestWebSocketGc'
 function App() {
   return (
     <>
-      <div>ffff
+      <div>
        <Routes>
          <Route path="/" element={<MainPage />} />
          <Route path="/login" element={<LoginPage />} />
