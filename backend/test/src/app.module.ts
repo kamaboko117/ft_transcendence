@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import entities from './typeorm';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import entities from './typeorm';
       }),
       inject: [ConfigService],
     }),
-    UsersModule
+    UsersModule, ChatModule
   ],
   controllers: [AppController],
   providers: [AppService],

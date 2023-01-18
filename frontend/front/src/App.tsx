@@ -14,14 +14,14 @@ function App() {
   return (
     <>
       <div>
-       <Routes>
-         <Route path="/" element={<MainPage />} />
-         <Route path="/login" element={<LoginPage />} />
-         <Route path="/validate" element={<ValidatePage />} />
-         <Route path="/register" element={<CreateNewUser />} />
-         <Route path="/counter" element={<Counter />} />
-         <Route path="/ws" element={<WebSocketTestGc id={0} />} />
-       </Routes>
+        <Routes>
+          <Route path="/" element={<MainPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/validate" element={<ValidatePage />} />
+          <Route path="/register" element={<CreateNewUser />} />
+          <Route path="/counter" element={<Counter />} />
+          <Route path="/ws" element={<WebSocketTestGc id={0} />} />
+        </Routes>
       </div>
       <PlayerApp />
     </>
