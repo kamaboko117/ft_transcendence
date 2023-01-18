@@ -51,6 +51,7 @@ services:
         max_attempts: 3
         window: 120s
   postgres_tr:
+    container_name: postgres
     image: postgres
     environment:
       - POSTGRES_USER=${DB_USER}

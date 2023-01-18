@@ -8,23 +8,23 @@ import entities from './typeorm';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({isGlobal: true}),
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
-        useFactory: () => ({
-            type: 'postgres',
-            host: process.env.DB_HOST,
-            port: +process.env.DB_PORT!,
-            username: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME,
-            entities: entities,
-            synchronize: true
-        }),
-        inject: [ConfigService],
+      useFactory: () => ({
+        type: 'postgres',
+        host: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT),
+        username: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        entities: entities,
+        synchronize: true
+      }),
+      inject: [ConfigService],
     }),
     UsersModule
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
