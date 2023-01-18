@@ -9,6 +9,9 @@ import Counter from "./components/Counter";
 import Homepage from "./components/Homepage";
 import PlayerApp from "./components/PlayerApp";
 import WebSocketTestGc from './TestWebSocketGc'
+/*channel part */
+import ListChannel from "./components/ListChannel";
+import Chat from "./components/Chat";
 
 function App() {
   return (
@@ -20,6 +23,9 @@ function App() {
           <Route path="/validate" element={<ValidatePage />} />
           <Route path="/register" element={<CreateNewUser />} />
           <Route path="/counter" element={<Counter />} />
+          <Route path="/channels" element={<ListChannel />}>
+            <Route path=":id" element={<Chat />} />
+          </Route>
           <Route path="/ws" element={<WebSocketTestGc id={0} />} />
         </Routes>
       </div>
