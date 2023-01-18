@@ -14,6 +14,17 @@ function MainPage() {
   const userCtx: any = useContext(UserContext);
   if (userCtx.user.username) {
     console.log("logged in as " + userCtx.user.username);
+    return (
+      <div>
+        <div className={classes.chat}>
+          <div className={classes.panel}>
+            <div className={classes.panel_input}>
+              <input type="text" placeholder="Message" />
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
