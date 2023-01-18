@@ -7,8 +7,8 @@ import { randomBytes } from "crypto";
 
 const validateURL = "https://api.intra.42.fr/oauth/token"
 const infoURL = "https://api.intra.42.fr/oauth/token/info"
-const appId = process.env.APP_ID;
-const appSecret = process.env.APP_SECRET;
+const appId = process.env.APP_ID!;
+const appSecret = process.env.APP_SECRET!;
 
 @Injectable()
 export class UsersService {
