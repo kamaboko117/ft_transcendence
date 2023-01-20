@@ -13,6 +13,8 @@ import WebSocketTestGc from './TestWebSocketGc'
 import ListChannel from "./components/ListChannel";
 import Chat from "./components/Chat";
 
+import PlayPage from "./pages/play";
+
 function App() {
   return (
     <>
@@ -27,6 +29,7 @@ function App() {
             <Route path=":id" element={<Chat />} />
           </Route>
           <Route path="/ws" element={<WebSocketTestGc id={0} />} />
+          <Route path="/play" element={<PlayPage />} />
         </Routes>
       </div>
       <PlayerApp />
