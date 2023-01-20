@@ -23,7 +23,7 @@ class CreateCatDto {
 export class CatsController {
 	constructor(private catsService: CatsService) { }
 	//Add a cat to constructor CatsService
-	//curl -d "name=valName&age=10&breed=testBreed" -X POST localhost:8080/cats
+	//curl -d "name=valName&age=10&breed=testBreed" -X POST localhost:4000/cats
 	@Post('cats')
 	async create(@Body() createCatDto: CreateCatDto): Promise<string> {
 		this.catsService.create(createCatDto);
