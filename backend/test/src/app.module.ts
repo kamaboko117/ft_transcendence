@@ -6,13 +6,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import entities from './typeorm';
 import { ChatModule } from './chat/chat.module';
+import { SocketModule } from "./socket/socket.module";
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
-        type: 'postgres',
+        type: "postgres",
         host: process.env.DB_HOST,
         port: Number(process.env.DB_PORT),
         username: process.env.DB_USER,
@@ -23,7 +24,7 @@ import { ChatModule } from './chat/chat.module';
       }),
       inject: [ConfigService],
     }),
-    UsersModule, ChatModule
+    UsersModule, ChatModule, SocketModule
   ],
   controllers: [AppController],
   providers: [AppService],
