@@ -14,6 +14,8 @@ import ListChannel from "./components/ListChannel";
 import Chat from "./components/Chat";
 
 import PlayPage from "./pages/play";
+import MatchmakingPage from "./pages/matchmaking";
+
 import { usrSocket, SocketContext } from './contexts/Socket';
 
 function App() {
@@ -32,6 +34,7 @@ function App() {
             </Route>
             <Route path="/ws" element={<WebSocketTestGc id={0} />} />
             <Route path="/play" element={<PlayPage />} />
+            <Route path="/matchmaking" element={<MatchmakingPage />} />
           </Routes>
         </SocketContext.Provider>
       </div>
