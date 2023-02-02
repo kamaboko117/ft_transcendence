@@ -10,12 +10,11 @@ import { useLocation, useParams, useNavigate } from 'react-router-dom';
 
 const startmatchmaking = async (e: React.MouseEvent<HTMLButtonElement>, usrSocket: any, obj: {
   idUser: string,
-  username: string,
 }, navigate: any) => {
   e.preventDefault();
   console.log(obj);
-  usrSocket.emit('matchmaking', obj, (res: any) => {
-      console.log("matchmaking : " + res);
+  usrSocket.emit('startmatchmaking', obj, (res: any) => {
+      console.log("startmatchmaking : " + res);
   });
 }
 
@@ -35,7 +34,6 @@ export default function PlayPage() {
             <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => startmatchmaking(e,
                 usrSocket, {
                 idUser: window.navigator.userAgent,
-                username: window.navigator.userAgent,
             }, navigate)}
                 className='startqueue'>Start Queue</button>
   </div>
