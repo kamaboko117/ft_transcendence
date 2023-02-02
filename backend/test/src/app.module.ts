@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import entities from './typeorm';
 import { ChatModule } from './chat/chat.module';
 import { SocketModule } from "./socket/socket.module";
+import { MatchmakingModule } from './matchmaking/matchmaking.module';
 
 @Module({
   imports: [

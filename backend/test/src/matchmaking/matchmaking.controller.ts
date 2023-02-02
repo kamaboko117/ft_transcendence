@@ -3,7 +3,7 @@ import { MatchmakingGateway } from './matchmaking.gateway';
 
 const { FifoMatchmaker } = require('matchmaking');
 
-@Controller('matchmaking')
+@Controller('play')
 export class MatchmakingController {
 
     @Get('startmatchmaking')

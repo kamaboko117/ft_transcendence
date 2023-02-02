@@ -19,15 +19,11 @@ const startmatchmaking = async (e: React.MouseEvent<HTMLButtonElement>, usrSocke
 }
 
 export default function PlayPage() {
-  const connect = () => {
-    const socket = io("http://localhost:4000");
-  };
+
   const [count, setCount] = useState(0);
   const usrSocket = useContext(SocketContext);
   const navigate = useNavigate();
-  useEffect(() => {
-    connect();
-  }, []);
+
   
   return (
     <div>

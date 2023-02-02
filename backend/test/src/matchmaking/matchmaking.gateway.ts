@@ -1,9 +1,18 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody } from '@nestjs/websockets';
+import {
+  SubscribeMessage, WebSocketGateway, MessageBody
+  , ConnectedSocket, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+} from '@nestjs/websockets';
+import { Socket, Server } from 'socket.io';
 import { MatchmakingService } from './matchmaking.service';
 import { CreateMatchmakingDto } from './dto/create-matchmaking.dto';
 import { UpdateMatchmakingDto } from './dto/update-matchmaking.dto';
 
-@WebSocketGateway()
+@WebSocketGateway({
+  cors: {
+    origin: "http://127.0.0.1:4000", credential: true
+  }
+})
+
 export class MatchmakingGateway {
   constructor(private readonly matchmakingService: MatchmakingService) {}
 
