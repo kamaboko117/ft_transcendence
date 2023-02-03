@@ -5,8 +5,7 @@ services:
       - frontend
     build: ./requirements/nginx
     ports:
-      - 8080:80
-      - 5174:5174
+      - 8080:8080
     deploy:
       restart_policy:
         condition: on-failure
@@ -31,7 +30,6 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-        
 
   backend:
     # container_name: back

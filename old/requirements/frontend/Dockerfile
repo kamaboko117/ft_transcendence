@@ -1,8 +1,10 @@
-FROM node:19-alpine3.16
+FROM node
+
+RUN npx create-react-app pong --template typescript
 
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 WORKDIR /pong/
 
 ENTRYPOINT [ "/entrypoint.sh" ]
-CMD ["npm", "run", "dev"]
+CMD [ "npm", "start"]
