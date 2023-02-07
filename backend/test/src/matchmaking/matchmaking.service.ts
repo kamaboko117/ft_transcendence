@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateMatchmakingDto } from './dto/create-matchmaking.dto';
-import { UpdateMatchmakingDto } from './dto/update-matchmaking.dto';
+//import { UpdateMatchmakingDto } from './dto/update-matchmaking.dto';
 
 @Injectable()
 export class MatchmakingService {
@@ -16,9 +16,9 @@ export class MatchmakingService {
     return `This action returns a #${id} matchmaking`;
   }
 
-  update(id: number, updateMatchmakingDto: UpdateMatchmakingDto) {
+  /*update(id: number, updateMatchmakingDto: UpdateMatchmakingDto) {
     return `This action updates a #${id} matchmaking`;
-  }
+    }*/
 
   remove(id: number) {
     return `This action removes a #${id} matchmaking`;

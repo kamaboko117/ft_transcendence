@@ -27,6 +27,7 @@ export class UsersController {
 
     @Get("validate/:code")
     validateUser(@Param("code") code: string) {
+        console.log("CODE: " + code);
         return this.userService.validateUser(code);
     }
 

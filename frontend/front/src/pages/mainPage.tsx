@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import React, { useContext } from "react";
 import classes from "./mainPage.module.css";
 
 import LoginButton from "../components/buttons/buttons";
@@ -29,6 +29,8 @@ function MainPage() {
 
   return (
     <div className={classes.splash_middle}>
+      <span>{app_uri}</span>
+      <span>{redirect_uri}</span>
       <img
         src="https://cdn.discordapp.com/attachments/293910473663971328/1041748304377155704/kamaboko_a_favicon_for_a_website_where_you_can_play_pong_7e1346ef-31c0-47ec-b09a-4455365e1ef6.png"
         className={classes.splash_logo}

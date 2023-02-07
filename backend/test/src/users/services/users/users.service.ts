@@ -24,6 +24,7 @@ export class UsersService {
     }
 
     async validateUser(code: string) {
+        console.log("ALLO");
         const formData = new FormData();
         formData.append("grant_type", "authorization_code");
         formData.append("client_id", appId);
@@ -31,8 +32,8 @@ export class UsersService {
         formData.append("code", code);
         formData.append("redirect_uri", "http://localhost:4000/validate");
         formData.append("state", "pouet2");
-        // console.log(formData);
-
+        console.log(formData);
+        
         let res = await fetch(validateURL, {
             method: "POST",
             body: formData
@@ -41,12 +42,17 @@ export class UsersService {
         let resJSON = await res.json();
         const token = resJSON.access_token;
         console.log(`token: ${token}`);
+        if (typeof token == "undefined")
+            return ([false, -1]);
         res = await fetch(infoURL, {
             headers: {
                 authorization: `Bearer ${token}`
             }
         })
+        //undefined part
         resJSON = await res.json();
+        if (typeof token == "undefined")
+            return ([false, undefined]);
         const id: number = resJSON.resource_owner_id;
         console.log(`id: ${id}`);
         const user = await this.userRepository.findOneBy({userID: id});

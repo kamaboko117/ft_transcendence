@@ -5,6 +5,6 @@ import { MatchmakingGateway } from './matchmaking.gateway';
 @Module({
   providers: [MatchmakingGateway,],
   exports: [MatchmakingGateway],
-  controllers: [MatchmakingController]
+  //controllers: [MatchmakingController]
 })
 export class MatchmakingModule {}
