@@ -19,7 +19,7 @@ import { Type } from 'class-transformer';
  @Type(() => Pair)
  setBan: Pair;*/
 
-class Owner {
+export class Owner {
     @IsString()
     idUser: string;
     @IsString()
@@ -39,7 +39,7 @@ export class CreateChatDto {
     @Type(() => Owner)
     owner: Owner;
     @IsString()
-    accessType: string;
+    accesstype: string;
     @IsString()
     password: string;
     @IsArray()

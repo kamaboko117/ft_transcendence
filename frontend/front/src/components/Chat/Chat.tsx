@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, MutableRefObject, useState, useContext } from 'react';
 import ListUser from './ListUser';
-import "../css/chat.css";
+import "../../css/chat.css";
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import img from "../assets/react.svg";
+import img from "../../assets/react.svg";
 import scroll from 'react-scroll';
 //import { io, Socket } from 'socket.io-client';
-import { SocketContext } from '../contexts/Socket';
+import { SocketContext } from '../../contexts/Socket';
+import { ContextUserLeave } from '../../contexts/LeaveChannel';
 
 type lstMsg = {
     lstMsg: Array<{
@@ -46,7 +47,7 @@ const ListMsg = (props: any) => {
 }
 
 /* Leave chat */
-const handleLeave = async (e: React.MouseEvent<HTMLButtonElement>, usrSocket: any, obj: {
+const handleLeave = async (e: React.MouseEvent<HTMLButtonElement>, contextUserLeave: any, usrSocket: any, obj: {
     id: string,
     idUser: string,
     username: string,
@@ -56,6 +57,7 @@ const handleLeave = async (e: React.MouseEvent<HTMLButtonElement>, usrSocket: an
     usrSocket.emit('leaveRoomChat', obj, (res: any) => {
         console.log("leave chat : " + res);
         navigate("/channels");
+        contextUserLeave();
     });
 }
 /* Post msg */
@@ -66,6 +68,7 @@ const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
     setMsg("");
     ref.current.value = "";
 }
+
 const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
     usrSocket: any, obj: any, ref: any, setMsg: any) => {
     if (e.key === "Enter" && e.shiftKey === false) {
@@ -106,14 +109,21 @@ const MainChat = (props: any) => {
             });
         })
     }, [props.id]);
+    const contextUserLeave = useContext(ContextUserLeave);
     const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
     const [chatName, setChatName] = useState<string>("");
     useEffect(() => {
         const ft_lst = async () => {
-            const res = await fetch('http://' + location.host + '/api/chat/' + props.id).then(res => res.json());
+            const res = await fetch('http://' + location.host + '/api/chat?' + new URLSearchParams({
+                id: props.id,
+                iduser: window.navigator.userAgent,
+            })).then(res => res.json());
             if (typeof res.lstMsg != "undefined") {
+                console.log(res);
                 setLstMsg(res.lstMsg);
                 setChatName(res.name);
+                if (res.accesstype === "2" || res.accesstype === "3")
+                    contextUserLeave();
             }
             console.log("load...");
         }
@@ -133,16 +143,17 @@ const MainChat = (props: any) => {
 
     const [msg, setMsg] = useState<null | string>(null);
     const navigate = useNavigate();
-
     if (online === false)
         return (<article className='containerChat'>Unauthorized connection</article>)
     else if (typeof online == "undefined")
         return (<article className='containerChat'>Connecting to chat...</article>)
     return (<>
         <article className='containerChat'>
-            <div className="chatName"><span style={{ flex: 1 }}>{chatName}</span>
+            <div className="chatName">
+                <span style={{ flex: 1 }}>{chatName}</span>
+                <span style={{ flex: 0 }}>CHANNEL ID: {props.id}</span>
                 <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleLeave(e,
-                    usrSocket, {
+                    contextUserLeave, usrSocket, {
                     id: props.id,
                     idUser: window.navigator.userAgent,
                     username: window.navigator.userAgent,
@@ -182,22 +193,33 @@ const MainChat = (props: any) => {
 const onSubmit = async (e: React.FormEvent<HTMLFormElement>
     , value: string | null, id: string): Promise<boolean> => {
     e.preventDefault();
-    return (fetch("http://" + location.host + "/api/chat/valid-paswd/", {
+    console.log("psw: " + value);
+    if (value === "" || value === null)
+        return (false);
+    return (await fetch("http://" + location.host + "/api/chat/valid-paswd/", {
         method: 'post',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             id: id,
             psw: value
         })
-    }).then(res => res.json()));
+    }).then(res => {
+        if (res.ok)
+            return (res.json())
+        else
+            return (false);
+    }));
 }
 
 /* Detect and return if a password for the channel is used
     return a promise 
 */
 const hasPassword = (id: Readonly<string>): Promise<boolean> => {
-    return (fetch('http://' + location.host + '/api/chat/has-paswd/' + id)
-        .then(res => res.json()));
+    console.log("HAS PSWD");
+    return (fetch('http://' + location.host + '/api/chat/has-paswd?' + new URLSearchParams({
+        id: id,
+        iduser: window.navigator.userAgent,
+    })).then(res => res.json()));
 }
 
 const DisplayErrorPasswordBox = (props: { error: boolean }) => {
@@ -214,18 +236,17 @@ const PasswordBox = (props: Readonly<any>): JSX.Element => {
     const [error, setError] = useState<boolean>(false);
 
     useEffect(() => {
-        return (() => {
-            setValid(false);
-            setValue(null);
-            setError(false);
-        });
+        setValid(false);
+        setValue(null);
+        setError(false);
     }, [props.id]);
     if (props.hasPsw === true && valid == false) {
         return (<article className='containerChat'>
             <p>This channel require a password</p>
             <form onSubmit={async (e: React.FormEvent<HTMLFormElement>) => {
-                setValid(await onSubmit(e, value, props.id));
-                valid === false ? setError(true) : setError(false);
+                const result = await onSubmit(e, value, props.id);
+                setValid(result);
+                (valid === false) ? setError(true) : setError(false);
             }}>
                 <label>Password * :</label>
                 <input type="password" name="psw"

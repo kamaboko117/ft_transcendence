@@ -10,8 +10,8 @@ import Homepage from "./components/Homepage";
 import PlayerApp from "./components/PlayerApp";
 import WebSocketTestGc from './TestWebSocketGc'
 /*channel part */
-import ListChannel from "./components/ListChannel";
-import Chat from "./components/Chat";
+import ListChannel from "./components/Chat/ListChannel";
+import Chat from "./components/Chat/Chat";
 
 import PlayPage from "./pages/play";
 import MatchmakingPage from "./pages/matchmaking";
