@@ -1,15 +1,15 @@
 export interface InformationChat {
-    id: number | string,
+    id: string,
     name: string,
     owner: string,
-    accessType: string,
+    accesstype: string,
 }
 
 export interface Chat {
     id: string,
     name: string,
     owner: string,
-    accessType: string,
+    accesstype: string,
     password: string,
     lstMsg: Array<{
         idUser: string,

@@ -1,6 +1,6 @@
 import React, { MouseEvent } from 'react';
-import "../css/channel.css"
-import "../css/chat.css"
+import "../../css/channel.css"
+import "../../css/chat.css"
 
 type State = {
     userInfoDisplay: boolean,

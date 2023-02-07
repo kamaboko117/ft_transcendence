@@ -1,27 +1,29 @@
 import React, { ChangeEvent, FormEvent, MouseEvent, useState } from 'react';
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import "../css/channel.css"
+import "../../css/channel.css";
+import { ContextUserLeave } from '../../contexts/LeaveChannel';
 
 type State = {
     listChannel: Array<{
         id: number | string,
         name: string,
         owner: string,
-        accessType: number,
+        accesstype: number,
     }>,
     listChannelPrivate: Array<{
         id: number | string,
         name: string,
         owner: string,
-        accessType: number,
+        accesstype: number,
     }>,
     channelName: string,
     privateChannelName: string,
     rad: string,
     password: string,
     passwordPrivate: string,
-    hasErrorPsw: boolean,
-    hasErrorExist: boolean,
+    hasError: boolean,
+    listError: [],
+    //hasErrorExist: boolean,
     privateIdChannel: string
 }
 
@@ -30,19 +32,14 @@ type Props = {
 }
 
 const ErrorSubmit = (props: any) => {
-    if (props.hasErrorPsw === true
-        && props.hasErrorExist === false)
-        return (<p style={{ color: "red" }}>Channel name and password must not be the same, or a channel name must be inserted.</p>)
-    else if (props.hasErrorExist === true &&
-        props.hasErrorPsw === false)
-        return (<p style={{ color: "red" }}>Channel already exist</p>)
-    else if (props.hasErrorPsw === true
-        && props.hasErrorExist === true) {
-        return (<>
-            <p style={{ color: "red" }}>Channel name and password must not be the same.</p>
-            <p style={{ color: "red" }}>Channel already exist</p>
-        </>)
-    }
+    let i: number = 0;
+    return (<div>
+        {props.listError &&
+            props.listError.map((err) => (
+                <p style={{ color: "red" }} key={++i}>{err}</p>
+            ))
+        }
+    </div>)
     return (<></>);
 }
 
@@ -56,7 +53,7 @@ const OpenPrivateChat = (props: any) => {
     const [name, setName] = useState<string | null>(null);
 
     return (<form onSubmit={(e: FormEvent<HTMLFormElement>) => onSubmitJoin(e, name, navigate)}>
-        <label>Enter a private ID to join a channel
+        <label>Enter a channel ID to join a channel
             <input type="text"
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     setName(e.currentTarget.value)}
@@ -64,7 +61,7 @@ const OpenPrivateChat = (props: any) => {
                 name="privateChannelName"
             />
         </label>
-        <input type="submit" value="Join private channel" />
+        <input type="submit" value="Join channel" />
     </form>);
 }
 
@@ -79,8 +76,9 @@ class ListChannel extends React.Component<{}, State> {
             rad: '0',
             password: '',
             passwordPrivate: '',
-            hasErrorPsw: false,
-            hasErrorExist: false,
+            hasError: false,
+            listError: [],
+            //hasErrorExist: false,
             privateIdChannel: ''
         }
         this.onClick = this.onClick.bind(this);
@@ -89,38 +87,56 @@ class ListChannel extends React.Component<{}, State> {
     }
     componentDidMount = (): void => {
         fetch('http://' + location.host + '/api/chat/public/')
-            .then(res => res.json())
             .then(res => {
+                if (res.ok)
+                    return (res.json());
+                throw new Error('Server is not running.');
+            }).then(res => {
                 this.setState({
                     listChannel: res
                 })
             })
         fetch('http://' + location.host + '/api/chat/private?' + new URLSearchParams({
             id: window.navigator.userAgent
-        })).then(res => res.json())
-            .then(res => {
-                this.setState({
-                    listChannelPrivate: res
-                })
+        })).then(res => {
+            if (res.ok)
+                return (res.json());
+            throw new Error('Server is not running.');
+        }).then(res => {
+            this.setState({
+                listChannelPrivate: res
             })
+        })
     }
-    onClick = (e: MouseEvent<HTMLButtonElement>): void => {
+
+    componentWillUnmount(): void {
+        this.setState({
+            listChannel: [],
+            listChannelPrivate: []
+        })
+    }
+    onClick = (): void => {
         fetch('http://' + location.host + '/api/chat/public/')
-            .then(res => res.json())
             .then(res => {
+                if (res.ok)
+                    return (res.json());
+                throw new Error('Server is not running.');
+            }).then(res => {
                 this.setState({
-                    listChannel: res, hasErrorPsw: false,
-                    hasErrorExist: false
+                    listChannel: res
                 })
             })
         fetch('http://' + location.host + '/api/chat/private?' + new URLSearchParams({
             id: window.navigator.userAgent
-        })).then(res => res.json())
-            .then(res => {
-                this.setState({
-                    listChannelPrivate: res
-                })
+        })).then(res => {
+            if (res.ok)
+                return (res.json());
+            throw new Error('Server is not running.');
+        }).then(res => {
+            this.setState({
+                listChannelPrivate: res
             })
+        })
     }
     onChange = (e: ChangeEvent<HTMLInputElement>): void => {
         const name = e.currentTarget.name;
@@ -143,7 +159,7 @@ class ListChannel extends React.Component<{}, State> {
                     id: '0', //m'en souviens pas
                     name: this.state.channelName,
                     owner: { idUser: window.navigator.userAgent, username: window.navigator.userAgent },
-                    accessType: this.state.rad,
+                    accesstype: this.state.rad,
                     password: this.state.password,
                     lstMsg: [],
                     lstUsr: {},
@@ -153,8 +169,16 @@ class ListChannel extends React.Component<{}, State> {
                     lstBan: {}
                 })
             }).then(res => res.json()).then(res => {
-                console.log(res);
-                if (res.length === 1
+                if (Array.isArray(res) === true) {
+                    this.setState({ hasError: true, listError: res });
+                }
+                else {
+                    this.setState({
+                        hasError: false, listError: [],
+                        listChannel: [...this.state.listChannel, res],
+                    });
+                }
+                /*if (res.length === 1
                     && (res[0] === "hasErrorPsw" || res[0] === "hasErrorExist")) {
                     if (res[0] === "hasErrorPsw")
                         this.setState({ hasErrorPsw: true, hasErrorExist: false });
@@ -162,11 +186,12 @@ class ListChannel extends React.Component<{}, State> {
                         this.setState({ hasErrorPsw: false, hasErrorExist: true });
                 } else if (res.length === 2 && res[0] === "hasErrorPsw" && res[1] === "hasErrorExist")
                     this.setState({ hasErrorPsw: true, hasErrorExist: true });
-                else
+                else {
                     this.setState({
                         listChannel: [...this.state.listChannel, res],
                         hasErrorPsw: false, hasErrorExist: false
                     });
+                }*/
             });
         }
         else {
@@ -177,7 +202,7 @@ class ListChannel extends React.Component<{}, State> {
                     id: '0', //idUser
                     name: this.state.channelName,
                     owner: { idUser: window.navigator.userAgent, username: window.navigator.userAgent },
-                    accessType: this.state.rad,
+                    accesstype: this.state.rad,
                     password: this.state.password,
                     lstMsg: [],
                     lstUsr: {},
@@ -186,7 +211,17 @@ class ListChannel extends React.Component<{}, State> {
                 })
             }).then(res => res.json()).then(res => {
                 console.log(res);
-                if (res.length === 1
+                if (Array.isArray(res) === true) {
+                    this.setState({ hasError: true, listError: res });
+                }
+                else {
+                    this.setState({
+                        hasError: false, listError: [],
+                        listChannelPrivate: [...this.state.listChannelPrivate, res],
+                        privateIdChannel: res.id
+                    });
+                }
+                /*if (res.length === 1
                     && (res[0] === "hasErrorPsw" || res[0] === "hasErrorExist")) {
                     if (res[0] === "hasErrorPsw")
                         this.setState({ hasErrorPsw: true, hasErrorExist: false });
@@ -199,7 +234,7 @@ class ListChannel extends React.Component<{}, State> {
                         listChannelPrivate: [...this.state.listChannelPrivate, res],
                         hasErrorPsw: false, hasErrorExist: false,
                         privateIdChannel: res.id
-                    });
+                    });*/
             });
         }
     }
@@ -216,7 +251,7 @@ class ListChannel extends React.Component<{}, State> {
             {this.state.listChannel &&
                 this.state.listChannel.map((chan) => (
                     <tr key={++i}>
-                        <td><Link to={{ pathname: "/channels/" + chan.id }} state={{ name: chan.name, username: "" }}>{chan.name}</Link></td><td>{chan.owner}</td><td><TypeAccess access={chan.accessType} /></td>
+                        <td><Link to={{ pathname: "/channels/" + chan.id }} state={{ name: chan.name, username: "" }}>{chan.name}</Link></td><td>{chan.owner}</td><td><TypeAccess access={chan.accesstype} /></td>
                     </tr>
                 ))
             }
@@ -234,13 +269,12 @@ class ListChannel extends React.Component<{}, State> {
             {this.state.listChannelPrivate &&
                 this.state.listChannelPrivate.map((chan) => (
                     <tr key={++i}>
-                        <td><Link to={{ pathname: "/channels/" + chan.id }} state={{ name: chan.name, username: "" }}>{chan.name}</Link></td><td>{chan.owner}</td><td><TypeAccess access={chan.accessType} /></td>
+                        <td><Link to={{ pathname: "/channels/" + chan.id }} state={{ name: chan.name, username: "" }}>{chan.name}</Link></td><td>{chan.owner}</td><td><TypeAccess access={chan.accesstype} /></td>
                     </tr>
                 ))
             }
         </tbody>)
     }
-
     render(): JSX.Element {
         return (<section className='containerChannel'>
             <h1>List channels + (affichage liste privée à faire + persist dtb)</h1>
@@ -273,9 +307,11 @@ class ListChannel extends React.Component<{}, State> {
                 </form>
                 <OpenPrivateChat />
                 <div><label>New private channel ID</label><span style={{ color: "#FA6405" }}>{this.state.privateIdChannel}</span></div>
-                <ErrorSubmit hasErrorPsw={this.state.hasErrorPsw} hasErrorExist={this.state.hasErrorExist} />
+                <ErrorSubmit hasError={this.state.hasError} listError={this.state.listError} />
             </article>
-            <Outlet />
+            <ContextUserLeave.Provider value={this.onClick}>
+                <Outlet />
+            </ContextUserLeave.Provider>
         </section>);
     }
 }

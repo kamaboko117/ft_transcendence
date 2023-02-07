@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
-import entities from './typeorm';
+//import entities from './typeorm';
 import { ChatModule } from './chat/chat.module';
 import { SocketModule } from "./socket/socket.module";
 import { MatchmakingModule } from './matchmaking/matchmaking.module';
@@ -20,8 +20,9 @@ import { MatchmakingModule } from './matchmaking/matchmaking.module';
         username: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
-        entities: entities,
-        synchronize: true
+	//entities: entities,
+	synchronize: true,
+	autoLoadEntities: true
       }),
       inject: [ConfigService],
     }),
