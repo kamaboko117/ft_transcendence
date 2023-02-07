@@ -4,10 +4,11 @@ import { useContext } from "react";
 import UserItem from "../components/Users/UserItem";
 import UserContext from "../store/user-context";
 import CreateNewUser from "./createNewUser";
+import React from "react";
 
 //gets existing user from database if exists. If not, returns [false, <42id>]
 const getUser = async (code: String | null) => {
-  const response = await fetch(`http://localhost:4000/users/validate/${code}`);
+  const response = await fetch(`http://localhost:4000/api/users/validate/${code}`);
   return await response.json();
 };
 
@@ -40,7 +41,7 @@ function ValidatePage() {
       setResponse(data);
       setIsLoading(false);
     });
-  }, [code]);
+  }, []);
 
   if (isLoading) {
     return <div>Loading...</div>;
