@@ -5,12 +5,6 @@ import UserItem from "../components/Users/UserItem";
 import UserContext from "../store/user-context";
 import CreateNewUser from "./createNewUser";
 
-//gets existing user from database if exists. If not, returns [false, <42id>]
-const getUser = async (code: String | null) => {
-  const response = await fetch(`http://localhost:5000/users/validate/${code}`);
-  return await response.json();
-};
-
 // type User = {
 //     id: number;
 //     username: string;
@@ -33,6 +27,11 @@ function ValidatePage() {
       password: "",
     },
   ]);
+  //gets existing user from database if exists. If not, returns [false, <42id>]
+  const getUser = async (code: String | null) => {
+    const response = await fetch(`http://localhost:5000/users/validate/${code}`);
+    return await response.json();
+  };
 
   useEffect(() => {
     getUser(code).then((data) => {
