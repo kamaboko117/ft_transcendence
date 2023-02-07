@@ -1,13 +1,16 @@
 import React, { useEffect } from "react";
-import { io } from "socket.io-client";
+import socketService from "../services/socketService";
 
 export default function PlayPage() {
-  const connect = () => {
-    const socket = io("http://localhost:5000");
+  const connectSocket = async () => {
+    const socket = await socketService.connect("http://localhost:5000").catch((err) => {
+      console.log(err);
+    });
   };
 
   useEffect(() => {
-    connect();
+    connectSocket();
   }, []);
+
   return <div>Play</div>;
 }

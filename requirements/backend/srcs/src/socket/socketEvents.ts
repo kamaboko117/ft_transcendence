@@ -19,9 +19,19 @@ export class SocketEvents {
         console.log('Client disconnected: ', client.id);
     }
 
-    @SubscribeMessage('message')
-    handleEvent(@MessageBody() data: string, @ConnectedSocket() client: Socket): string {
-        console.log('Message: ', data);
-        return data;
+    @SubscribeMessage('join_game')
+    async handleEvent(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
+        console.log('New user joining room: ', data);
+        
+        const connectedSockets = this.server.sockets.adapter.rooms.get(data.roomId);
+        const socketRooms = Array.from(client.rooms.values()).filter((r) => r !== client.id);
+
+        if (socketRooms.length > 0 || connectedSockets?.size > 1) {
+            client.emit('join_game_error', { error: 'Room is full' });
+            return;
+        } else {
+            await client.join(data.roomId);
+            client.emit('join_game_success', { roomId: data.roomId });
+        }
     }
 }

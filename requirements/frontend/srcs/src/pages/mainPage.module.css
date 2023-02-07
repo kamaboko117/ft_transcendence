@@ -39,7 +39,7 @@ input {
     bottom: 10px;
     display: flex;
     pointer-events: all;
-    background-color: rgb(97, 97, 97);
+    background-color: #616161;
 }
 
 .panel {
