@@ -29,7 +29,7 @@ export class UsersService {
         formData.append("client_id", appId);
         formData.append("client_secret", appSecret);
         formData.append("code", code);
-        formData.append("redirect_uri", "http://localhost:8080/validate");
+        formData.append("redirect_uri", "http://localhost:4000/validate");
         formData.append("state", "pouet2");
         // console.log(formData);
 
@@ -39,6 +39,7 @@ export class UsersService {
         })
         // console.log(res);
         let resJSON = await res.json();
+        // console.log(resJSON);
         const token = resJSON.access_token;
         console.log(`token: ${token}`);
         res = await fetch(infoURL, {
