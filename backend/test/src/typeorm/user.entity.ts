@@ -4,14 +4,14 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 export class User {
   @PrimaryGeneratedColumn({
     type: 'bigint',
-    name: 'user_id',
+    name: 'id',
   })
   id: number;
 
   //the ID provided by 42
   @Column({
     type: 'bigint',
-    name: '42user_id',
+    name: 'user_id',
     nullable: false,
     default: 0,
   })
