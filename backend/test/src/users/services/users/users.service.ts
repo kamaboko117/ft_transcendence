@@ -17,12 +17,55 @@ export class UsersService {
         private readonly userRepository: Repository<User>
     ) {}
 
-    createUser(createUserDto: CreateUserDto) {
+    async createUser(createUserDto: CreateUserDto) {
         const newUser = this.userRepository.create(createUserDto);
-        newUser.token = randomBytes(64).toString('hex');
-        return this.userRepository.save(newUser);
+        //newUser.token = randomBytes(64).toString('hex');
+        this.userRepository.save(newUser)
+        return (newUser);
     }
+    
+    async getToken(code: string): Promise<string | undefined> {
+        const formData = new FormData();
+        let token: string;
 
+        formData.append("grant_type", "authorization_code");
+        formData.append("client_id", appId);
+        formData.append("client_secret", appSecret);
+        formData.append("code", code);
+        formData.append("redirect_uri", "http://localhost:4000/validate");
+        formData.append("state", "pouet2");
+        console.log(formData);
+        console.log("CODE: " + code);
+
+        const res = await fetch(validateURL, {
+            method: "POST",
+            body: formData
+        }).then(res => {
+            if (res.ok)
+            {
+                return (res.json());
+            }
+            return (undefined)
+        });
+        if (typeof res === "undefined" || typeof res.access_token === "undefined")
+            return (undefined);
+        token = res.access_token;
+        console.log(`token: ${token}`);
+        if (typeof token == "undefined")
+            return (undefined);
+        return(token);
+        return (undefined);
+    }
+    async getInformationBearer(token: string): Promise<number> {
+        const res = await fetch(infoURL, {
+            headers: {
+                authorization: `Bearer ${token}`
+            }
+        }).then(res => res.json());
+        return(res.resource_owner_id);
+    }
+    
+    //ne pas toucher à cette fonction
     async validateUser(code: string) {
         console.log("ALLO");
         const formData = new FormData();
@@ -40,6 +83,7 @@ export class UsersService {
         })
         // console.log(res);
         let resJSON = await res.json();
+        console.log("resJson: " + resJSON);
         const token = resJSON.access_token;
         console.log(`token: ${token}`);
         if (typeof token == "undefined")
@@ -51,6 +95,8 @@ export class UsersService {
         })
         //undefined part
         resJSON = await res.json();
+        return(resJSON);
+        /*
         if (typeof token == "undefined")
             return ([false, undefined]);
         const id: number = resJSON.resource_owner_id;
@@ -60,14 +106,20 @@ export class UsersService {
             return [true, user];
         }
     
-        return [false, id];
+        return [false, id];*/
     }
 
     getUsers() {
         return this.userRepository.find();
     }
 
-    findUsersById(id: number) {
-        return this.userRepository.findOneBy({id: id});
+    async findUsersById(id: number) {
+        const user: any = await this.userRepository.createQueryBuilder("user")
+            .select(['user.username', 'user.token', 'user.userID', 'user.id'])
+            .where('user.user_id = :user')
+            .setParameters({user: id})
+            .getOne();
+        return (user);
+        //return this.userRepository.findOneBy({id: id});
     }
 }

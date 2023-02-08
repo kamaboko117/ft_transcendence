@@ -6,12 +6,6 @@ import UserContext from "../store/user-context";
 import CreateNewUser from "./createNewUser";
 import React from "react";
 
-//gets existing user from database if exists. If not, returns [false, <42id>]
-const getUser = async (code: String | null) => {
-  const response = await fetch(`http://localhost:4000/api/users/validate/${code}`);
-  return await response.json();
-};
-
 // type User = {
 //     id: number;
 //     username: string;
@@ -36,11 +30,23 @@ function ValidatePage() {
   ]);
 
   useEffect(() => {
-    getUser(code).then((data) => {
+    /*getUser(code).then((data) => {
       console.log(`data: ${data}`);
       setResponse(data);
       setIsLoading(false);
-    });
+    });*/
+    //gets existing user from database if exists. If not, returns [false, <42id>]
+  const getUser = async (code: string | null | false) => {
+    const res = await fetch('http://localhost:4000/api/users/login', {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: code
+      })
+    }).then(response => response.json());
+    console.log(res);
+  };
+  getUser(code);
   }, []);
 
   if (isLoading) {

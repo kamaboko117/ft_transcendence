@@ -8,6 +8,8 @@ import { UsersModule } from './users/users.module';
 import { ChatModule } from './chat/chat.module';
 import { SocketModule } from "./socket/socket.module";
 import { MatchmakingModule } from './matchmaking/matchmaking.module';
+import { AuthService } from './auth/auth.service';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -26,9 +28,9 @@ import { MatchmakingModule } from './matchmaking/matchmaking.module';
       }),
       inject: [ConfigService],
     }),
-    UsersModule, ChatModule, SocketModule
+    UsersModule, ChatModule, SocketModule, AuthModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, AuthService],
 })
 export class AppModule { }
