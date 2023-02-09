@@ -17,6 +17,7 @@ services:
       - DB_PORT=${DB_PORT}
       - APP_ID=${APP_ID}
       - APP_SECRET=${APP_SECRET}
+      - AUTH_SECRET=${AUTH_SECRET}
     volumes:
       - ./backend:/var/www/html
     deploy:

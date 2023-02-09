@@ -22,15 +22,15 @@ import { AuthModule } from './auth/auth.module';
         username: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
-	//entities: entities,
-	synchronize: true,
-	autoLoadEntities: true
+        //entities: entities,
+        synchronize: true,
+        autoLoadEntities: true
       }),
       inject: [ConfigService],
     }),
     UsersModule, ChatModule, SocketModule, AuthModule
   ],
   controllers: [AppController],
-  providers: [AppService, AuthService],
+  providers: [AppService],
 })
 export class AppModule { }
