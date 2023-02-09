@@ -3,7 +3,7 @@ import { UsersService } from 'src/users/services/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 
 type User = {
-    userID: string,
+    userID: any,
     token: string,
     username: string
 }
@@ -12,6 +12,7 @@ type User = {
 export class AuthService {
     constructor(private usersServices: UsersService,
         private jwtService: JwtService) { }
+    /* find or create user from 42 API */
     async validateUser(code: string) {
         const token: string | undefined = await this.usersServices.getToken(code);
         if (typeof token === "undefined")
@@ -19,19 +20,21 @@ export class AuthService {
         const iduser: number = await this.usersServices.getInformationBearer(token);
         console.log("iduser: " + iduser);
         let user: any = await this.usersServices.findUsersById(iduser);
-        console.log(user);
         if (!user)
             user = await this.usersServices.createUser({ userID: iduser, username: '', token: token });
+        console.log(user);
         return (user);
     }
-
+    /* then log user, returning a Json web token */
     async login(user: User) {
         const payload = {
             sub: user.userID,
             token: user.token,
             username: user.username
         }
-        const access_token: string = this.jwtService.sign(payload);
+        console.log("payload");
+        console.log(payload);
+        const access_token = { access_token: this.jwtService.sign(payload) };
         return (access_token);
     }
 }

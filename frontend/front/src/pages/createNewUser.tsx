@@ -1,7 +1,7 @@
 import React from 'react';
 import NewUserForm from '../components/Users/NewUserForm';
 import { useContext } from "react";
-import UserContext from "../store/user-context";
+import UserContext from "../contexts/UserContext";
 import MainPage from './mainPage';
 
 function CreateNewUser(props: any) {
@@ -36,7 +36,7 @@ function CreateNewUser(props: any) {
         return <MainPage />;
     }
     return (
-        <NewUserForm onAddUser={AddUserHandler}/>
+        <NewUserForm onAddUser={AddUserHandler} />
     )
 }
 

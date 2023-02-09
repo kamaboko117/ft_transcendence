@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import classes from "./mainPage.module.css";
 
 import LoginButton from "../components/buttons/buttons";
-import UserContext from "../store/user-context";
+import UserContext from "../contexts/UserContext";
 
 const client_id = import.meta.env.VITE_APP_ID;
 const app_uri = import.meta.env.VITE_APP_URI;

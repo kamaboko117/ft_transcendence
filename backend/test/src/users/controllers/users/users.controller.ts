@@ -13,6 +13,7 @@ import {
 import { CreateUserDto } from "src/users/dto/users.dtos";
 import { UsersService } from "src/users/services/users/users.service";
 import { CustomAuthGuard } from 'src/auth/auth.guard';
+import { JwtGuard } from 'src/auth/jwt.guard';
 import { AuthService } from 'src/auth/auth.service';
 //import {AuthGuard} from '@nestjs/passport';
 
@@ -30,11 +31,20 @@ export class UsersController {
     findUsersById(@Param("id", ParseIntPipe) id: number) {
         return this.userService.findUsersById(id);
     }
+
     /* authguard(strategy name) */
     @UseGuards(CustomAuthGuard)
     @Post('login')
     async login(@Request() req: any) {
         console.log("LOGIN POST");
+        const value = await this.authService.login(req.user);
+        console.log(value);
+        return (value);
+    }
+    @UseGuards(JwtGuard)
+    @Get('profile')
+    getProfile(@Request() req: any) {
+        console.log(req.user);
         return (req.user);
     }
 
