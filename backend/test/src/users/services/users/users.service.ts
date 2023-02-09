@@ -15,7 +15,7 @@ export class UsersService {
     constructor(
         @InjectRepository(User)
         private readonly userRepository: Repository<User>
-    ) {}
+    ) { }
 
     async createUser(createUserDto: CreateUserDto) {
         const newUser = this.userRepository.create(createUserDto);
@@ -23,7 +23,7 @@ export class UsersService {
         this.userRepository.save(newUser)
         return (newUser);
     }
-    
+
     async getToken(code: string): Promise<string | undefined> {
         const formData = new FormData();
         let token: string;
@@ -41,8 +41,7 @@ export class UsersService {
             method: "POST",
             body: formData
         }).then(res => {
-            if (res.ok)
-            {
+            if (res.ok) {
                 return (res.json());
             }
             return (undefined)
@@ -53,7 +52,7 @@ export class UsersService {
         console.log(`token: ${token}`);
         if (typeof token == "undefined")
             return (undefined);
-        return(token);
+        return (token);
         return (undefined);
     }
     async getInformationBearer(token: string): Promise<number> {
@@ -62,9 +61,9 @@ export class UsersService {
                 authorization: `Bearer ${token}`
             }
         }).then(res => res.json());
-        return(res.resource_owner_id);
+        return (res.resource_owner_id);
     }
-    
+
     //ne pas toucher à cette fonction
     async validateUser(code: string) {
         console.log("ALLO");
@@ -76,7 +75,7 @@ export class UsersService {
         formData.append("redirect_uri", "http://localhost:4000/validate");
         formData.append("state", "pouet2");
         console.log(formData);
-        
+
         let res = await fetch(validateURL, {
             method: "POST",
             body: formData
@@ -95,7 +94,7 @@ export class UsersService {
         })
         //undefined part
         resJSON = await res.json();
-        return(resJSON);
+        return (resJSON);
         /*
         if (typeof token == "undefined")
             return ([false, undefined]);
@@ -115,9 +114,9 @@ export class UsersService {
 
     async findUsersById(id: number) {
         const user: any = await this.userRepository.createQueryBuilder("user")
-            .select(['user.username', 'user.token', 'user.userID', 'user.id'])
+            .select(['user.username', 'user.token', 'user.userID'])
             .where('user.user_id = :user')
-            .setParameters({user: id})
+            .setParameters({ user: id })
             .getOne();
         return (user);
         //return this.userRepository.findOneBy({id: id});

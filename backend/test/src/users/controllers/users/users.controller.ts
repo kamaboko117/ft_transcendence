@@ -12,11 +12,14 @@ import {
 } from "@nestjs/common";
 import { CreateUserDto } from "src/users/dto/users.dtos";
 import { UsersService } from "src/users/services/users/users.service";
-import {AuthGuard} from '@nestjs/passport';
+import { CustomAuthGuard } from 'src/auth/auth.guard';
+import { AuthService } from 'src/auth/auth.service';
+//import {AuthGuard} from '@nestjs/passport';
 
 @Controller("users")
 export class UsersController {
-    constructor(private readonly userService: UsersService) {}
+    constructor(private readonly userService: UsersService,
+        private authService: AuthService) { }
 
     @Get()
     getUsers() {
@@ -28,11 +31,10 @@ export class UsersController {
         return this.userService.findUsersById(id);
     }
     /* authguard(strategy name) */
-    @UseGuards(AuthGuard('custom'))
+    @UseGuards(CustomAuthGuard)
     @Post('login')
     async login(@Request() req: any) {
-        console.log("ALLOOOOO");
-        console.log(req);
+        console.log("LOGIN POST");
         return (req.user);
     }
 
