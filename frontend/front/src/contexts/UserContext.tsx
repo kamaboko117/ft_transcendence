@@ -1,9 +1,10 @@
-import { createContext } from "react";
+import React, { createContext } from "react";
 import { useState } from "react";
 
 const UserContext = createContext({});
 
 export function UserProvider(props: any) {
+  let [user, setUser] = useState({});
   function loginUser(props: any) {
     setUser(props);
   }
@@ -11,7 +12,7 @@ export function UserProvider(props: any) {
   function logoutUser() {
     setUser({});
   }
-  let [user, setUser] = useState({});
+
   if (localStorage.getItem("user")) {
     user = JSON.parse(localStorage.getItem("user") as string);
   }

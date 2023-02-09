@@ -2,6 +2,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class User {
+  /* Possibilite de se servir de userID (42) comme cle primaire */
   @PrimaryGeneratedColumn({
     type: 'bigint',
     name: 'id',
@@ -23,13 +24,7 @@ export class User {
   })
   username: string;
 
-  // @Column({
-  //   name: 'email_address',
-  //   nullable: false,
-  //   default: '',
-  // })
-  // email: string;
-
+  /* Refresh token */
   @Column({
     nullable: false,
     default: '',

@@ -9,7 +9,7 @@ type Code = {
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy, "custom") {
-    constructor (private authService: AuthService) {
+    constructor(private authService: AuthService) {
         super();
     }
     async validate(req: any): Promise<any> {
@@ -19,9 +19,8 @@ export class LocalStrategy extends PassportStrategy(Strategy, "custom") {
         const user = await this.authService.validateUser(code);
         if (!user || typeof user == "undefined")
             throw new UnauthorizedException();
-        //must return User
-        console.log("allo");
         console.log(user);
+        //must return User
         return (user);
     }
 }
