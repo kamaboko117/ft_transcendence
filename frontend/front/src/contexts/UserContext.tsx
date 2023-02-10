@@ -3,11 +3,12 @@ import { useState } from "react";
 
 const UserContext = createContext({});
 
-type User = {
+export type User = {
   jwt: string | null,
   username: string | null
 }
-
+/* Verifier validite token */
+/* redirect navigation pour renommer user si username === '' */
 export function UserProvider(props: any) {
   let [user, setUser] = useState<User>();
   useEffect(() => {
@@ -17,7 +18,7 @@ export function UserProvider(props: any) {
       jwt: jwt,
       username: username
     });
-  }, [])
+  }, []);
   function loginUser(props: User) {
     setUser(props);
     console.log(props);
@@ -30,7 +31,7 @@ export function UserProvider(props: any) {
       }
     }
   }
-
+  /* Faire une vrai deconnexion */
   function logoutUser() {
     setUser({
       jwt: "",

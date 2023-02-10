@@ -12,6 +12,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, "custom") {
     constructor(private authService: AuthService) {
         super();
     }
+
     async validate(req: any): Promise<any> {
         const code: string = req.body.code;
         if (typeof code === "undefined" || !code || code === '')
