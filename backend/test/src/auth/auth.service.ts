@@ -14,14 +14,14 @@ export class AuthService {
         private jwtService: JwtService) { }
     /* find or create user from 42 API */
     async validateUser(code: string) {
-        const token: string | undefined = await this.usersServices.getToken(code);
+        const token: { access_token: string, refresh_token: string } | undefined = await this.usersServices.getToken(code);
         if (typeof token === "undefined")
             return (undefined);
         const iduser: number = await this.usersServices.getInformationBearer(token);
         console.log("iduser: " + iduser);
         let user: any = await this.usersServices.findUsersById(iduser);
         if (!user)
-            user = await this.usersServices.createUser({ userID: iduser, username: '', token: token });
+            user = await this.usersServices.createUser({ userID: iduser, username: '', token: '' });
         console.log(user);
         return (user);
     }

@@ -21,6 +21,7 @@ const loginUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}
 */
 
 function MainPage() {
+  /* Verifier validite token */
   const userCtx: any = useContext(UserContext);
   const user: User = userCtx.user;
   if (typeof userCtx.user != "undefined" && userCtx.user.jwt) {

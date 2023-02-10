@@ -24,9 +24,12 @@ export class UsersService {
         return (newUser);
     }
 
-    async getToken(code: string): Promise<string | undefined> {
+    async getToken(code: string): Promise<{ access_token: string, refresh_token: string } | undefined> {
         const formData = new FormData();
-        let token: string;
+        let token: {
+            access_token: string,
+            refresh_token: string
+        };
 
         formData.append("grant_type", "authorization_code");
         formData.append("client_id", appId);
@@ -48,17 +51,20 @@ export class UsersService {
         });
         if (typeof res === "undefined" || typeof res.access_token === "undefined")
             return (undefined);
-        token = res.access_token;
+        token = {
+            access_token: res.access_token,
+            refresh_token: res.refresh_token
+        };
         console.log(`token: ${token}`);
         if (typeof token == "undefined")
             return (undefined);
         return (token);
-        return (undefined);
+        //return (undefined);
     }
-    async getInformationBearer(token: string): Promise<number> {
+    async getInformationBearer(token: { access_token: string, refresh_token: string }): Promise<number> {
         const res = await fetch(infoURL, {
             headers: {
-                authorization: `Bearer ${token}`
+                authorization: `Bearer ${token.access_token}`
             }
         }).then(res => res.json());
         return (res.resource_owner_id);
