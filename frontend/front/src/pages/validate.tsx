@@ -3,39 +3,15 @@ import { useSearchParams } from "react-router-dom";
 import { useContext } from "react";
 import UserItem from "../components/Users/UserItem";
 import UserContext from "../contexts/UserContext";
-import CreateNewUser from "./createNewUser";
 import React from "react";
-
-// type User = {
-//     id: number;
-//     username: string;
-//     email: string;
-//     password: string;
-// };
 
 function ValidatePage() {
   const userCtx: any = useContext(UserContext);
-  //query string
   const [searchParams] = useSearchParams();
   const code = searchParams.get("code");
   const [jwt, setJwt] = useState<null | string>(null);
-  //const [isLoading, setIsLoading] = useState(true);
-  /*const [response, setResponse]: [[boolean, any], any] = useState([
-    false,
-    {
-      id: 0,
-      username: "",
-      email: "",
-      password: "",
-    }, 
-  ]);*/
 
   useEffect(() => {
-    /*getUser(code).then((data) => {
-      console.log(`data: ${data}`);
-      setResponse(data);
-      setIsLoading(false);
-    });*/
     //gets existing user from database if exists. If not, returns [false, <42id>]
     const getUser = (code: string | null | false) => {
       return (fetch('http://localhost:4000/api/users/login', {
@@ -57,12 +33,12 @@ function ValidatePage() {
     })
   }, []);
 
-  if (jwt != null && typeof jwt != "undefined") {
-    console.log(jwt);
-    userCtx.loginUser(jwt);
-    console.log(userCtx);
-    //return (<CreateNewUser props={jwt} />);
-  }
+  useEffect(() => {
+    userCtx.loginUser({
+      jwt: jwt,
+      username: ""
+    });
+  }, [jwt])
   /*if (isLoading) {
     return <div>Loading...</div>;
   }*/
@@ -72,13 +48,16 @@ function ValidatePage() {
   }*/
 
   //console.log(userCtx.user);
-  return (
-    <div>
-      <h1>Logged as</h1>
-      <span>{jwt}</span>
-      <UserItem userID={userCtx.user.userID} username={userCtx.user.username} />
-    </div>
-  );
+  if (typeof jwt != "undefined" && jwt != null) {
+    console.log(userCtx);
+    return (
+      <div>
+        <h1>Logged as</h1>
+        <UserItem jwt={jwt} /*userID={userCtx.user.userID} username={userCtx.user.username}*/ />
+      </div>
+    );
+  }
+  return (<p>Logging user...</p>);
 }
 
 export default ValidatePage;

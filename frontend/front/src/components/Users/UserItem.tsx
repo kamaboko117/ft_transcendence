@@ -1,19 +1,30 @@
+import React, { useEffect, useState } from "react";
+
 type ItemProps = {
-    userID: number,
-    username: string,
+    jwt: string | null
+    //userID: number,
+    //username: string,
     // email: string,
     // password: string,
 }
 
 function UserItem(props: ItemProps) {
-    return <li>
-        <div>
-            <h3>{props.userID}</h3>
-            <h3>{props.username}</h3>
-            {/* <h3>{props.email}</h3>
-            <h3>{props.password}</h3> */}
-        </div>
-    </li>
+    console.log("jwt: " + props.jwt);
+    const [username, setUsername] = useState<string>("");
+    let header = new Headers({
+        Authorization: 'Bearer ' + props.jwt
+    })
+    useEffect(() => {
+        fetch('http://' + location.host + '/api/users/profile/', {
+            headers: header
+        })
+            .then(res => res.json())
+            .then(res => setUsername(res.userID));
+    }, [props.jwt])
+    return (<div>
+        <span>Hello USER ID: {username}</span>
+    </div>
+    )
 }
 
 export default UserItem;

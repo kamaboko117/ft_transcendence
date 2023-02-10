@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import classes from "./mainPage.module.css";
 
 import LoginButton from "../components/buttons/buttons";
-import UserContext from "../contexts/UserContext";
+import UserContext, { User } from "../contexts/UserContext";
 
 const client_id = import.meta.env.VITE_APP_ID;
 const app_uri = import.meta.env.VITE_APP_URI;
@@ -10,19 +10,24 @@ const redirect_uri = app_uri + "/validate";
 const state = "pouet2";
 const loginUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=${redirect_uri}&response_type=code&scope=public&state=${state}'`;
 
+/* 
+  <div className={classes.chat}>
+    <div className={classes.panel}>
+      <div className={classes.panel_input}>
+        <input type="text" placeholder="Message" />
+      </div>
+    </div>
+  </div>
+*/
+
 function MainPage() {
   const userCtx: any = useContext(UserContext);
-  if (userCtx.user.username) {
+  const user: User = userCtx.user;
+  if (typeof userCtx.user != "undefined" && userCtx.user.jwt) {
     console.log("logged in as " + userCtx.user.username);
     return (
       <div>
-        <div className={classes.chat}>
-          <div className={classes.panel}>
-            <div className={classes.panel_input}>
-              <input type="text" placeholder="Message" />
-            </div>
-          </div>
-        </div>
+        <div>Hello {user.username}</div>
       </div>
     )
   }
