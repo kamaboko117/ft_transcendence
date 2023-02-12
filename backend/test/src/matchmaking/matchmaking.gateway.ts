@@ -5,6 +5,7 @@ import {
   } from '@nestjs/websockets';
   import { Socket, Server } from 'socket.io';
 import { HttpException, HttpStatus } from '@nestjs/common';
+const { FifoMatchmaker } = require('matchmaking');
 
 @WebSocketGateway({
   namespace: 'matchmaking'
