@@ -23,13 +23,19 @@ type State = {
     passwordPrivate: string,
     hasError: boolean,
     listError: [],
-    //hasErrorExist: boolean,
     privateIdChannel: string
 }
 
 type Props = {
     access: number,
 }
+
+const header = (props: Readonly<{jwt: string | null }>) => {
+    const header = new Headers({
+        Authorization: 'Bearer ' + props.jwt
+    })
+    return (header);
+};
 
 const ErrorSubmit = (props: any) => {
     let i: number = 0;
@@ -40,8 +46,9 @@ const ErrorSubmit = (props: any) => {
             ))
         }
     </div>)
-    return (<></>);
 }
+
+
 
 const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, name: string | null, navigate: any) => {
     e.preventDefault();
@@ -65,7 +72,7 @@ const OpenPrivateChat = (props: any) => {
     </form>);
 }
 
-class ListChannel extends React.Component<{}, State> {
+class ListChannel extends React.Component<{jwt: string | null}, State> {
     constructor(props: any) {
         super(props);
         this.state = {
@@ -78,7 +85,6 @@ class ListChannel extends React.Component<{}, State> {
             passwordPrivate: '',
             hasError: false,
             listError: [],
-            //hasErrorExist: false,
             privateIdChannel: ''
         }
         this.onClick = this.onClick.bind(this);
@@ -86,7 +92,7 @@ class ListChannel extends React.Component<{}, State> {
         this.onSubmit = this.onSubmit.bind(this);
     }
     componentDidMount = (): void => {
-        fetch('http://' + location.host + '/api/chat/public/')
+        fetch('http://' + location.host + '/api/chat/public/', {headers: header(this.props)})
             .then(res => {
                 if (res.ok)
                     return (res.json());
@@ -98,7 +104,7 @@ class ListChannel extends React.Component<{}, State> {
             })
         fetch('http://' + location.host + '/api/chat/private?' + new URLSearchParams({
             id: window.navigator.userAgent
-        })).then(res => {
+        }), {headers: header(this.props)}).then(res => {
             if (res.ok)
                 return (res.json());
             throw new Error('Server is not running.');
@@ -116,7 +122,7 @@ class ListChannel extends React.Component<{}, State> {
         })
     }
     onClick = (): void => {
-        fetch('http://' + location.host + '/api/chat/public/')
+        fetch('http://' + location.host + '/api/chat/public/', {headers: header(this.props)})
             .then(res => {
                 if (res.ok)
                     return (res.json());
@@ -128,7 +134,7 @@ class ListChannel extends React.Component<{}, State> {
             })
         fetch('http://' + location.host + '/api/chat/private?' + new URLSearchParams({
             id: window.navigator.userAgent
-        })).then(res => {
+        }), {headers: header(this.props)}).then(res => {
             if (res.ok)
                 return (res.json());
             throw new Error('Server is not running.');

@@ -1,22 +1,26 @@
-import { Controller, Request, Req, Query, Param, Get, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Request, Req, Query, Param, Get, Post, Body, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
 import { ChatGateway } from './chat.gateway';
 import { Chat, InformationChat } from './chat.interface';
 import { CreateChatDto } from './create-chat.dto';
 import { PswChat } from './psw-chat.dto';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { JwtGuard } from 'src/auth/jwt.guard';
 
 @Controller('chat')
 export class ChatController {
     constructor(private chatGateway: ChatGateway) { }
     /* Get part */
     //@Guard() IL FAUT UN AUTHGUARD
+    @UseGuards(JwtGuard)
     @Get('public')
-    getAllPublic(): Promise<InformationChat[]> {
+    getAllPublic(@Request() req: any): Promise<InformationChat[]> {
         return (this.chatGateway.getAllPublic());
     }
+    @UseGuards(JwtGuard)
     @Get('private')
-    async getAllPrivate(@Query('id') id: Readonly<string>): Promise<InformationChat[]> {
+    async getAllPrivate(@Request() req: any, 
+        @Query('id') id: Readonly<string>): Promise<InformationChat[]> {
         console.log(this.chatGateway.getAllPrivate(id));
         return (this.chatGateway.getAllPrivate(id));
     }

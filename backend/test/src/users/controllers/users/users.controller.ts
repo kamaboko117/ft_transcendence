@@ -8,12 +8,12 @@ import {
     UseGuards,
     UsePipes,
     ValidationPipe,
-    Request
+    Request, Res
 } from "@nestjs/common";
 import { CreateUserDto } from "src/users/dto/users.dtos";
 import { UsersService } from "src/users/services/users/users.service";
 import { CustomAuthGuard } from 'src/auth/auth.guard';
-import { JwtGuard } from 'src/auth/jwt.guard';
+import { JwtGuard, Public } from 'src/auth/jwt.guard';
 import { AuthService } from 'src/auth/auth.service';
 //import {AuthGuard} from '@nestjs/passport';
 
@@ -33,13 +33,21 @@ export class UsersController {
     }
 
     /* authguard(strategy name) */
+    @Public()
     @UseGuards(CustomAuthGuard)
     @Post('login')
-    async login(@Request() req: any) {
+    async login(@Request() req: any, @Res({passthrough: true}) response: any) {
         console.log("LOGIN POST");
-        const value = await this.authService.login(req.user);
-        console.log(value);
-        return (value);
+        const access_token = await this.authService.login(req.user);
+        const refresh = await this.authService.refresh(req.user);
+        console.log(access_token);
+        console.log(refresh);
+        response.cookie('refresh_token', refresh.refresh_token,
+            {
+                maxAge: 120000,
+                httpOnly: true
+            });
+        return (access_token);
     }
     @UseGuards(JwtGuard)
     @Get('profile')
@@ -52,7 +60,7 @@ export class UsersController {
     @Get("validate/:code")
     validateUser(@Param("code") code: string) {
         console.log("CODE: " + code);
-        return this.userService.validateUser(code);
+        //return this.userService.validateUser(code);
     }
 
     @Post("create")

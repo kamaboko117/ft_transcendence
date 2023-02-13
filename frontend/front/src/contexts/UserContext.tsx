@@ -39,10 +39,15 @@ export function UserProvider(props: any) {
     });
   }
 
+  const getJwt = () => {
+    return (user?.jwt);
+  }
+
   const context = {
     user: user,
     loginUser: loginUser,
     logoutUser: logoutUser,
+    getJwt: getJwt
   };
   return (
     <UserContext.Provider value={context}>
