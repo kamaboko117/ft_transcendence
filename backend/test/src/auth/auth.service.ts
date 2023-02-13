@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from 'src/users/services/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 
@@ -36,5 +36,38 @@ export class AuthService {
         console.log(payload);
         const access_token = { access_token: this.jwtService.sign(payload) };
         return (access_token);
+    }
+    async verifyToken(token: string, request: any)
+    {
+        console.log("TOK: " + token);
+        try {
+            this.jwtService.verify(token, { secret: process.env.AUTH_SECRET })
+        }catch (e) {
+            if (typeof e.expiredAt != "undefined")
+            {
+                //use refresh token to get new access
+                console.log("error cookie");
+                console.log(request.cookies);
+                console.log("---");
+            }
+            else{
+                console.log(e);
+                throw new UnauthorizedException("Access not authorized.");
+            }
+        }
+    }
+    async refresh(user: User)
+    {
+        const payload = {
+            sub: user.userID,
+            token: user.token,
+            username: user.username
+        }
+        console.log("refresh payload");
+        console.log(payload);
+        const refresh_token = { refresh_token: this.jwtService.sign(payload, {
+            expiresIn: 120
+        }) }
+        return (refresh_token);
     }
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useContext} from "react";
 import { Routes, Route } from "react-router-dom";
 
 import LoginPage from "./pages/login";
@@ -18,18 +18,22 @@ import MatchmakingPage from "./pages/matchmaking";
 
 import { usrSocket, SocketContext } from './contexts/Socket';
 
+
 function App() {
+  const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
+  console.log(jwt);
   return (
     <>
       <div>
         <SocketContext.Provider value={usrSocket}>
           <Routes>
             <Route path="/" element={<MainPage />} />
+            <Route path="/profile" />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/validate" element={<ValidatePage />} />
             <Route path="/register" element={<CreateNewUser />} />
             <Route path="/counter" element={<Counter />} />
-            <Route path="/channels" element={<ListChannel />}>
+            <Route path="/channels" element={<ListChannel jwt={jwt} />}>
               <Route path=":id" element={<Chat />} />
             </Route>
             <Route path="/ws" element={<WebSocketTestGc id={0} />} />
