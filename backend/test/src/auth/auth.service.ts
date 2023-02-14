@@ -40,9 +40,13 @@ export class AuthService {
     async verifyToken(token: string, request: any) {
         console.log("TOK: " + token);
         try {
-            this.jwtService.verify(token, { secret: process.env.AUTH_SECRET })
+            this.jwtService.verify(token, { secret: process.env.AUTH_SECRET });
         } catch (e) {
+            console.log(e);
             console.log(request.cookies.refresh_token)
+            //PARTIE IF typeof request.cookies.refresh_token === "undefined"
+
+            //PARTIE NOT UNDEFINED ACCESS TOKEN EXPIRED
             if (typeof e.expiredAt != "undefined"
                 && typeof request.cookies.refresh_token != "undefined") {
                 //use refresh token to get new access
@@ -51,16 +55,31 @@ export class AuthService {
                 console.log(request.cookies.refresh_token);//y a des cookies adminer
                 console.log("---");
                 console.log("check refresh token");
-                this.jwtService.verify(request.cookies.refresh_token, {
-                    secret: process.env.AUTH_SECRET,
-                })
+                try {
+                    this.jwtService.verify(request.cookies.refresh_token, {
+                        secret: process.env.AUTH_SECRET,
+                    });
+                }
+                catch (e) {
+                    const payload = {};
+                    if (typeof e.expiredAt != "undefined") {
+                        console.log("cookie token expired");
+                        const access_token = this.jwtService.sign(payload)
+                        //throw new UnauthorizedException("TEST THROW");
+                        return (access_token);
+                    }
+                    throw new UnauthorizedException("Access not authorized.");
+                }
+                console.log("ppppppppppppp");
+                return (true);
             }
-            else {
-                console.log(e);
-                throw new UnauthorizedException("Access not authorized.");
-            }
+            console.log("ERROR THROW: ");
+            console.log(e);
+            console.log("END THROW?");
+            console.log("faut t'il re throw pour que canActivate catch?????????? wtf js");
         }
     }
+
     async refresh(user: User) {
         const payload = {
             sub: user.userID,
@@ -71,7 +90,7 @@ export class AuthService {
         console.log(payload);
         const refresh_token = {
             refresh_token: this.jwtService.sign(payload, {
-                expiresIn: 120
+                expiresIn: "60s"
             })
         }
         return (refresh_token);

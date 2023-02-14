@@ -11,10 +11,10 @@ import { JwtGuard } from './jwt.guard';
 //fowardRef = circular dependence*
 @Global()
 @Module({
-    imports: [forwardRef(() => UsersModule), PassportModule, 
-        JwtModule.register({
+    imports: [forwardRef(() => UsersModule), PassportModule,
+    JwtModule.register({
         secret: process.env.AUTH_SECRET,
-        signOptions: { expiresIn: 60 }
+        signOptions: { expiresIn: 45 }
     })],
     providers: [{
         provide: APP_GUARD, scope: Scope.REQUEST, useClass: JwtGuard
