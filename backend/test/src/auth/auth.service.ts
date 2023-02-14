@@ -37,27 +37,31 @@ export class AuthService {
         const access_token = { access_token: this.jwtService.sign(payload) };
         return (access_token);
     }
-    async verifyToken(token: string, request: any)
-    {
+    async verifyToken(token: string, request: any) {
         console.log("TOK: " + token);
         try {
             this.jwtService.verify(token, { secret: process.env.AUTH_SECRET })
-        }catch (e) {
-            if (typeof e.expiredAt != "undefined")
-            {
+        } catch (e) {
+            console.log(request.cookies.refresh_token)
+            if (typeof e.expiredAt != "undefined"
+                && typeof request.cookies.refresh_token != "undefined") {
                 //use refresh token to get new access
                 console.log("error cookie");
-                console.log(request.cookies);
+                console.log("cookie defined");
+                console.log(request.cookies.refresh_token);//y a des cookies adminer
                 console.log("---");
+                console.log("check refresh token");
+                this.jwtService.verify(request.cookies.refresh_token, {
+                    secret: process.env.AUTH_SECRET,
+                })
             }
-            else{
+            else {
                 console.log(e);
                 throw new UnauthorizedException("Access not authorized.");
             }
         }
     }
-    async refresh(user: User)
-    {
+    async refresh(user: User) {
         const payload = {
             sub: user.userID,
             token: user.token,
@@ -65,9 +69,11 @@ export class AuthService {
         }
         console.log("refresh payload");
         console.log(payload);
-        const refresh_token = { refresh_token: this.jwtService.sign(payload, {
-            expiresIn: 120
-        }) }
+        const refresh_token = {
+            refresh_token: this.jwtService.sign(payload, {
+                expiresIn: 120
+            })
+        }
         return (refresh_token);
     }
 }
