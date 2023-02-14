@@ -36,7 +36,7 @@ export class UsersController {
     @Public()
     @UseGuards(CustomAuthGuard)
     @Post('login')
-    async login(@Request() req: any, @Res({passthrough: true}) response: any) {
+    async login(@Request() req: any, @Res({ passthrough: true }) response: any) {
         console.log("LOGIN POST");
         const access_token = await this.authService.login(req.user);
         const refresh = await this.authService.refresh(req.user);
@@ -44,7 +44,7 @@ export class UsersController {
         console.log(refresh);
         response.cookie('refresh_token', refresh.refresh_token,
             {
-                maxAge: 120000,
+                maxAge: 300000,
                 httpOnly: true
             });
         return (access_token);
