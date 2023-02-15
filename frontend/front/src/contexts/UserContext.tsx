@@ -33,10 +33,13 @@ export function UserProvider(props: any) {
   }
   /* Faire une vrai deconnexion */
   function logoutUser() {
+    console.log("logout");
     setUser({
       jwt: "",
       username: ""
     });
+    localStorage.removeItem("ft_transcendence_gdda_jwt");
+    localStorage.removeItem("ft_transcendence_gdda_username");
   }
 
   const getJwt = () => {

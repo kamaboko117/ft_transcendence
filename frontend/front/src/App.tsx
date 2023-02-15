@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import LoginPage from "./pages/login";
+import Logout from "./pages/Logout";
 import MainPage from "./pages/mainPage";
 import ValidatePage from "./pages/validate";
 import CreateNewUser from "./pages/createNewUser";
@@ -26,9 +27,17 @@ import BlackList from "./pages/User/BlackList";
 
 import PlayPage from "./pages/play";
 import MatchmakingPage from "./pages/matchmaking";
-import ErrorBoundary from "./components/Chat/ErrorBoundary";
+//import ErrorBoundary from "./components/Chat/ErrorBoundary";
 import { usrSocket, SocketContext } from './contexts/Socket';
+import { ErrorBoundary } from 'react-error-boundary'
 
+function ErrorFallback({ error, resetErrorBoundary }) {
+  return (
+    <div role="alert">
+      <pre>{error.message}</pre>
+    </div>
+  )
+}
 
 function App() {
   const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
@@ -36,16 +45,24 @@ function App() {
   return (
     <>
       <div>
-        <ErrorBoundary>
+        <ErrorBoundary
+          FallbackComponent={ErrorFallback}
+          onReset={(res) => {
+            console.log("ERROR BOUNDARY");
+            console.log(res);
+            // reset the state of your app so the error doesn't happen again
+          }}
+        >
           <SocketContext.Provider value={usrSocket}>
-          <NavBar />
+            <NavBar />
             <Routes>
               <Route path="/" element={<MainPage />} />
               <Route path="/profile" element={<UserProfile jwt={jwt} />} />
-              <Route path="/friendList" element={<FriendList/>} />
-					<Route path="/blackList" element={<BlackList/>} />
-					<Route path="/setting" element={<Setting/>} />
+              <Route path="/friendList" element={<FriendList />} />
+              <Route path="/blackList" element={<BlackList />} />
+              <Route path="/setting" element={<Setting />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/logout" element={<Logout />} />
               <Route path="/validate" element={<ValidatePage />} />
               <Route path="/register" element={<CreateNewUser />} />
               <Route path="/counter" element={<Counter />} />
