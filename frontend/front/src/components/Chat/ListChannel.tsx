@@ -30,7 +30,7 @@ type Props = {
     access: number,
 }
 
-const header = (props: Readonly<{jwt: string | null }>) => {
+const header = (props: Readonly<{ jwt: string | null }>) => {
     const header = new Headers({
         Authorization: 'Bearer ' + props.jwt
     })
@@ -72,7 +72,7 @@ const OpenPrivateChat = (props: any) => {
     </form>);
 }
 
-class ListChannel extends React.Component<{jwt: string | null}, State> {
+class ListChannel extends React.Component<{ jwt: string | null }, State> {
     constructor(props: any) {
         super(props);
         this.state = {
@@ -92,7 +92,7 @@ class ListChannel extends React.Component<{jwt: string | null}, State> {
         this.onSubmit = this.onSubmit.bind(this);
     }
     componentDidMount = (): void => {
-        fetch('http://' + location.host + '/api/chat/public/', {headers: header(this.props)})
+        fetch('http://' + location.host + '/api/chat/public/', { headers: header(this.props) })
             .then(res => {
                 if (res.ok)
                     return (res.json());
@@ -104,7 +104,7 @@ class ListChannel extends React.Component<{jwt: string | null}, State> {
             })
         fetch('http://' + location.host + '/api/chat/private?' + new URLSearchParams({
             id: window.navigator.userAgent
-        }), {headers: header(this.props)}).then(res => {
+        }), { headers: header(this.props) }).then(res => {
             if (res.ok)
                 return (res.json());
             throw new Error('Server is not running.');
@@ -122,7 +122,7 @@ class ListChannel extends React.Component<{jwt: string | null}, State> {
         })
     }
     onClick = (): void => {
-        fetch('http://' + location.host + '/api/chat/public/', {headers: header(this.props)})
+        fetch('http://' + location.host + '/api/chat/public/', { headers: header(this.props) })
             .then(res => {
                 if (res.ok)
                     return (res.json());
@@ -134,7 +134,7 @@ class ListChannel extends React.Component<{jwt: string | null}, State> {
             })
         fetch('http://' + location.host + '/api/chat/private?' + new URLSearchParams({
             id: window.navigator.userAgent
-        }), {headers: header(this.props)}).then(res => {
+        }), { headers: header(this.props) }).then(res => {
             if (res.ok)
                 return (res.json());
             throw new Error('Server is not running.');

@@ -15,8 +15,8 @@ export default class ErrorBoundary extends React.Component<Props, Error> {
             hasError: false
         }
     }
-    static getDerivedStateFromError(error: any)
-    {
+    static getDerivedStateFromError(error: any) {
+        console.log("getDerivedStateFromError");
         return {
             hasError: true, error
         };
@@ -24,7 +24,8 @@ export default class ErrorBoundary extends React.Component<Props, Error> {
     componentDidCatch = (error: any, errorInfo: any) => {
         console.log(error);
         console.log(errorInfo);
-        this.setState({hasError: false})
+        console.log("ERROR CATCHED");
+        this.setState({ hasError: false })
     }
     render(): JSX.Element {
         if (this.state.hasError)

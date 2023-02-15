@@ -1,4 +1,4 @@
-import React, {useContext} from "react";
+import React, { useContext } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import LoginPage from "./pages/login";
@@ -15,7 +15,7 @@ import Chat from "./components/Chat/Chat";
 
 import PlayPage from "./pages/play";
 import MatchmakingPage from "./pages/matchmaking";
-
+import ErrorBoundary from "./components/Chat/ErrorBoundary";
 import { usrSocket, SocketContext } from './contexts/Socket';
 
 
@@ -25,22 +25,24 @@ function App() {
   return (
     <>
       <div>
-        <SocketContext.Provider value={usrSocket}>
-          <Routes>
-            <Route path="/" element={<MainPage />} />
-            <Route path="/profile" />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/validate" element={<ValidatePage />} />
-            <Route path="/register" element={<CreateNewUser />} />
-            <Route path="/counter" element={<Counter />} />
-            <Route path="/channels" element={<ListChannel jwt={jwt} />}>
-              <Route path=":id" element={<Chat />} />
-            </Route>
-            <Route path="/ws" element={<WebSocketTestGc id={0} />} />
-            <Route path="/play" element={<PlayPage />} />
-            <Route path="/matchmaking" element={<MatchmakingPage />} />
-          </Routes>
-        </SocketContext.Provider>
+        <ErrorBoundary>
+          <SocketContext.Provider value={usrSocket}>
+            <Routes>
+              <Route path="/" element={<MainPage />} />
+              <Route path="/profile" />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/validate" element={<ValidatePage />} />
+              <Route path="/register" element={<CreateNewUser />} />
+              <Route path="/counter" element={<Counter />} />
+              <Route path="/channels" element={<ListChannel jwt={jwt} />}>
+                <Route path=":id" element={<Chat />} />
+              </Route>
+              <Route path="/ws" element={<WebSocketTestGc id={0} />} />
+              <Route path="/play" element={<PlayPage />} />
+              <Route path="/matchmaking" element={<MatchmakingPage />} />
+            </Routes>
+          </SocketContext.Provider>
+        </ErrorBoundary>
       </div>
       <PlayerApp />
     </>
