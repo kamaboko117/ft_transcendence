@@ -14,6 +14,7 @@ import { JwtGuard } from './jwt.guard';
     imports: [forwardRef(() => UsersModule), PassportModule,
     JwtModule.register({
         secret: process.env.AUTH_SECRET,
+        signOptions: { expiresIn: '60s' }
     })],
     providers: [{
         provide: APP_GUARD, scope: Scope.REQUEST, useClass: JwtGuard

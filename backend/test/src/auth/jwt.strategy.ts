@@ -9,12 +9,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             secretOrKey: process.env.AUTH_SECRET,
-            ignoreExpiration: true
         });
     }
 
     async validate(payload: any) {
-        console.log("VALIDATE JWT PART");
         console.log(payload);
         const ret = {
             userID: payload.sub,

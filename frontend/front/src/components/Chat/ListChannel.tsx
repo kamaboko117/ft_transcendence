@@ -2,6 +2,7 @@ import React, { ChangeEvent, FormEvent, MouseEvent, useState } from 'react';
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import "../../css/channel.css";
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
+import FetchError from '../FetchError';
 
 type State = {
     listChannel: Array<{
@@ -23,7 +24,8 @@ type State = {
     passwordPrivate: string,
     hasError: boolean,
     listError: [],
-    privateIdChannel: string
+    privateIdChannel: string,
+    errorCode: number
 }
 
 type Props = {
@@ -55,7 +57,7 @@ const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, name: string | null, 
     navigate({ pathname: "/channels/" + name }, { state: { name: name, username: "" } });
 }
 
-const OpenPrivateChat = (props: any) => {
+const OpenPrivateChat = () => {
     const navigate = useNavigate();
     const [name, setName] = useState<string | null>(null);
 
@@ -85,36 +87,53 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             passwordPrivate: '',
             hasError: false,
             listError: [],
-            privateIdChannel: ''
+            privateIdChannel: '',
+            errorCode: 200
         }
         this.onClick = this.onClick.bind(this);
         this.onChange = this.onChange.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
     }
     componentDidMount = (): void => {
-        fetch('http://' + location.host + '/api/chat/public/', { headers: header(this.props) })
+        fetch('http://' + location.host + '/api/chat/public/',
+            { headers: header(this.props) })
             .then(res => {
+                console.log(res.ok);
                 if (res.ok)
                     return (res.json());
-                throw new Error('Server is not running.');
+                this.setState({
+                    errorCode: res.status
+                });
+                //if (res.status === 403)
+                //    throw new Error('Token expired.');
+                //throw new Error('Something went wrong');
             }).then(res => {
                 this.setState({
                     listChannel: res
                 })
-            })
+            });//.catch(err => console.log(err));
         fetch('http://' + location.host + '/api/chat/private?' + new URLSearchParams({
             id: window.navigator.userAgent
         }), { headers: header(this.props) }).then(res => {
             if (res.ok)
                 return (res.json());
-            throw new Error('Server is not running.');
+            this.setState({
+                errorCode: res.status
+            });
+            //throw new Error('Token expired.');
         }).then(res => {
             this.setState({
                 listChannelPrivate: res
             })
         })
     }
-
+    /*componentDidUpdate(prevProps: Readonly<{ jwt: string | null; }>,
+        prevState: Readonly<State>, snapshot?: any): void {
+        if (prevState.errorCode !== this.state.errorCode) {
+            if (this.state.errorCode >= 400)
+                return (<FetchError code={this.state.errorCode} />)
+        }
+    }*/
     componentWillUnmount(): void {
         this.setState({
             listChannel: [],
@@ -126,7 +145,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             .then(res => {
                 if (res.ok)
                     return (res.json());
-                throw new Error('Server is not running.');
+                //throw new Error('Token expired.');
             }).then(res => {
                 this.setState({
                     listChannel: res
@@ -137,7 +156,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         }), { headers: header(this.props) }).then(res => {
             if (res.ok)
                 return (res.json());
-            throw new Error('Server is not running.');
+            //throw new Error('Token expired.');
         }).then(res => {
             this.setState({
                 listChannelPrivate: res
@@ -269,7 +288,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             const access: Readonly<number> = props.access;
             if (access == 2)
                 return (<>Private</>)
-            return (<>Password required</>)
+            return (<>Password required</>);
         };
         return (<tbody>
             {this.state.listChannelPrivate &&
@@ -282,6 +301,8 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         </tbody>)
     }
     render(): JSX.Element {
+        if (this.state.errorCode >= 400)
+            return (<FetchError code={this.state.errorCode} />)
         return (<section className='containerChannel'>
             <h1>List channels + (affichage liste privée à faire + persist dtb)</h1>
             <article className='left'>
