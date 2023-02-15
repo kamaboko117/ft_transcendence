@@ -1,16 +1,16 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity()
 export class User {
   /* Possibilite de se servir de userID (42) comme cle primaire */
-  @PrimaryGeneratedColumn({
+  /*@PrimaryGeneratedColumn({
     type: 'bigint',
     name: 'id',
   })
   id: number;
-
+*/
   //the ID provided by 42
-  @Column({
+  @PrimaryColumn({
     type: 'bigint',
     name: 'user_id',
     nullable: false,
@@ -23,7 +23,8 @@ export class User {
     default: '',
   })
   username: string;
-
+  @Column({ nullable: true })
+  avatarPath: string;
   /* Refresh token */
   @Column({
     nullable: false,

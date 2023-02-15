@@ -89,10 +89,8 @@ export class AuthService {
         console.log("refresh payload");
         console.log(payload);
         const refresh_token = {
-            refresh_token: this.jwtService.sign(payload, {
-                expiresIn: "60s"
-            })
-        }
+            refresh_token: this.jwtService.sign(payload)
+        };
         return (refresh_token);
     }
 }
