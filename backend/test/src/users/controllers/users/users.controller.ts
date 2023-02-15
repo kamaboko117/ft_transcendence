@@ -49,12 +49,32 @@ export class UsersController {
             });
         return (access_token);
     }
+
+    /*
+        useGuard est un middleware
+        le middleware peut traiter les requetes et les reponses
+        avant d'aller dans la fonction souhaite (getProfile ici)
+        UseGuard va utiliser le middleware
+        JwtGuard qui valide le token recu
+        si FAUX, s'arrete la et ne va pas dans getProfile
+        si bon, le guard JwtGuard va passer a la suite,
+        la strategy jwt lui va decoder le Json web token (jwt)
+        et renvoyer le token decoder
+        (ici utilise uniquement req.user.userID)
+        ce token decoder sera ajouter a la requete utilisateur
+        (ici @Request() req: any)
+    */
     @UseGuards(JwtGuard)
     @Get('profile')
     getProfile(@Request() req: any) {
         console.log("call profile");
         console.log(req.user);
-        return (req.user);
+        const user: {userID: number,
+            token: string,
+            username: string} = req.user;
+        const ret_user = this.userService.findUsersById(user.userID)
+        
+        return (ret_user);
     }
 
     @Get("validate/:code")

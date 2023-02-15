@@ -9,9 +9,20 @@ import Counter from "./components/Counter";
 import Homepage from "./components/Homepage";
 import PlayerApp from "./components/PlayerApp";
 import WebSocketTestGc from './TestWebSocketGc'
+
+/* NavBar */
+import NavBar from './components/navbar/NavBar';
+
 /*channel part */
 import ListChannel from "./components/Chat/ListChannel";
 import Chat from "./components/Chat/Chat";
+
+/* User profile part */
+import UserProfile from "./pages/User/UserProfile";
+import Setting from "./pages/User/Setting";
+import FriendList from "./pages/User/FriendList";
+import BlackList from "./pages/User/BlackList";
+
 
 import PlayPage from "./pages/play";
 import MatchmakingPage from "./pages/matchmaking";
@@ -27,9 +38,13 @@ function App() {
       <div>
         <ErrorBoundary>
           <SocketContext.Provider value={usrSocket}>
+          <NavBar />
             <Routes>
               <Route path="/" element={<MainPage />} />
-              <Route path="/profile" />
+              <Route path="/profile" element={<UserProfile jwt={jwt} />} />
+              <Route path="/friendList" element={<FriendList/>} />
+					<Route path="/blackList" element={<BlackList/>} />
+					<Route path="/setting" element={<Setting/>} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/validate" element={<ValidatePage />} />
               <Route path="/register" element={<CreateNewUser />} />

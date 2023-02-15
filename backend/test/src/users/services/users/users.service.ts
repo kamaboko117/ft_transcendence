@@ -113,14 +113,34 @@ export class UsersService {
     
         return [false, id];*/
     }
-
+//
     getUsers() {
         return this.userRepository.find();
     }
 
+    /*
+        exemple requete sql avec un innerjoin facon typeorm
+        createQueryBuilder("list_msg")
+        .select(['list_msg.idUser',
+          'list_msg.username', 'list_msg.content'])
+        .innerJoin("list_msg.chat", "lstMsg")
+        .where("list_msg.chatid = :id")
+        .setParameters({ id: element.id })
+        .getMany() OU getOne();
+    */
+    async getUserProfile(id: number) {
+        const user: any = await this.userRepository.createQueryBuilder("user")
+            .select(['user.username', 'user.token', 'user.userID', 'user.avatarPath'])
+            .where('user.user_id = :user')
+            .setParameters({ user: id })
+            .getOne();
+        return (user);
+        //return this.userRepository.findOneBy({id: id});
+    }
+
     async findUsersById(id: number) {
         const user: any = await this.userRepository.createQueryBuilder("user")
-            .select(['user.username', 'user.token', 'user.userID'])
+            .select(['user.username', 'user.token', 'user.userID', 'user.avatarPath'])
             .where('user.user_id = :user')
             .setParameters({ user: id })
             .getOne();
