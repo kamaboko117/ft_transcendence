@@ -15,18 +15,16 @@ export class JwtGuard extends AuthGuard('jwt') {
         super({ passReqToCallback: true });
     }
     canActivate(context: ExecutionContext) {
-        const request = context.switchToHttp().getRequest(); //see guard doc
+        //const request = context.switchToHttp().getRequest(); //see guard doc
         //const reponse = context.switchToHttp().getResponse(); cookie part
         //const access_token = ExtractJwt.fromAuthHeaderAsBearerToken();
-        console.log(request);
+        //console.log(request);
         const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
             context.getHandler(), context.getClass()
         ]);
-        if (isPublic) {
-            console.log("TRUEEE");
+        if (isPublic)
             return (true);
-        }
-        console.log(request.headers.authorization);
+        /*console.log(request.headers.authorization);
         const bearer = request.headers.authorization.split('Bearer ')[1];
         try {
             this.authService.verifyToken(bearer, request);
@@ -37,7 +35,7 @@ export class JwtGuard extends AuthGuard('jwt') {
             return (super.canActivate(context));
         }
         console.log("zzzzzzzzzzzzzzzzzzzzzzz");
-        //return (this.handleRequest(request, request.user));
+        //return (this.handleRequest(request, request.user));*/
         return (super.canActivate(context));
     }
 }
