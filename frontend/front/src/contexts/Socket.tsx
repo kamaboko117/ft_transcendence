@@ -1,7 +1,7 @@
 import io from 'socket.io-client';
 import { createContext } from 'react';
 
-const token = window.navigator.userAgent;
+const token = localStorage.getItem("ft_transcendence_gdda_jwt");;
 
 export const usrSocket = io("http://" + location.host, {
     withCredentials: true,

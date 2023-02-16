@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, MutableRefObject, useState, useContext } from 'react';
 import ListUser from './ListUser';
+import { FetchError, header, headerPost } from '../FetchError';
 import "../../css/chat.css";
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import img from "../../assets/react.svg";
@@ -49,7 +50,6 @@ const ListMsg = (props: any) => {
 /* Leave chat */
 const handleLeave = async (e: React.MouseEvent<HTMLButtonElement>, contextUserLeave: any, usrSocket: any, obj: {
     id: string,
-    idUser: string,
     username: string,
 }, navigate: any) => {
     e.preventDefault();
@@ -95,6 +95,7 @@ const MainChat = (props: any) => {
             //name: props.getLocation.state.name,
             psw: props.psw
         }, (res: boolean) => {
+            console.log(res);
             if (res === true)
                 setOnline(true);
             else
@@ -116,8 +117,13 @@ const MainChat = (props: any) => {
         const ft_lst = async () => {
             const res = await fetch('http://' + location.host + '/api/chat?' + new URLSearchParams({
                 id: props.id,
-                iduser: window.navigator.userAgent,
-            })).then(res => res.json());
+            }),
+		{ headers: header(props.jwt) })
+		.then(res => {
+			if (res.ok)
+				return (res.json());
+			props.setErrorCode(res.status);
+		});
             if (typeof res.lstMsg != "undefined") {
                 console.log(res);
                 setLstMsg(res.lstMsg);
@@ -155,7 +161,7 @@ const MainChat = (props: any) => {
                 <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleLeave(e,
                     contextUserLeave, usrSocket, {
                     id: props.id,
-                    idUser: window.navigator.userAgent,
+                    //idUser: window.navigator.userAgent,
                     username: window.navigator.userAgent,
                     /*name: props.getLocation.state.name*/
                 }, navigate)}
@@ -169,7 +175,7 @@ const MainChat = (props: any) => {
                         handleSubmitArea(e,
                             usrSocket, {
                             id: props.id,
-                            idUser: window.navigator.userAgent,
+                            //idUser: window.navigator.userAgent,
                             content: msg
                         },
                             refElem,
@@ -178,7 +184,7 @@ const MainChat = (props: any) => {
                 <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmitButton(e,
                     usrSocket, {
                     id: props.id,
-                    idUser: window.navigator.userAgent,
+                    //idUser: window.navigator.userAgent,
                     content: msg
                 }, refElem, setMsg)}
                     className="chatBox">Go</button>
@@ -191,14 +197,14 @@ const MainChat = (props: any) => {
 }
 
 const onSubmit = async (e: React.FormEvent<HTMLFormElement>
-    , value: string | null, id: string): Promise<boolean> => {
+    , value: string | null, jwt: string | null, id: string, setErrorCode: any): Promise<boolean> => {
     e.preventDefault();
     console.log("psw: " + value);
     if (value === "" || value === null)
         return (false);
     return (await fetch("http://" + location.host + "/api/chat/valid-paswd/", {
         method: 'post',
-        headers: { 'Content-Type': 'application/json' },
+        headers: headerPost(jwt),
         body: JSON.stringify({
             id: id,
             psw: value
@@ -206,20 +212,26 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
     }).then(res => {
         if (res.ok)
             return (res.json())
-        else
-            return (false);
+	setErrorCode(res.status);
+        return (false);
     }));
 }
 
 /* Detect and return if a password for the channel is used
     return a promise 
 */
-const hasPassword = (id: Readonly<string>): Promise<boolean> => {
+const hasPassword = (id: Readonly<string>, jwt: Readonly<string | null>, setErrorCode: any): Promise<boolean> => {
     console.log("HAS PSWD");
     return (fetch('http://' + location.host + '/api/chat/has-paswd?' + new URLSearchParams({
-        id: id,
-        iduser: window.navigator.userAgent,
-    })).then(res => res.json()));
+        	id: id,
+        	//iduser: window.navigator.userAgent,
+    	}),
+	{ headers: header(jwt) })
+	.then(res => {
+		if (res.ok)
+			return (res.json());
+		setErrorCode(res.status);
+	}));
 }
 
 const DisplayErrorPasswordBox = (props: { error: boolean }) => {
@@ -244,7 +256,7 @@ const PasswordBox = (props: Readonly<any>): JSX.Element => {
         return (<article className='containerChat'>
             <p>This channel require a password</p>
             <form onSubmit={async (e: React.FormEvent<HTMLFormElement>) => {
-                const result = await onSubmit(e, value, props.id);
+                const result = await onSubmit(e, value, props.jwt, props.id, props.setErrorCode);
                 setValid(result);
                 (valid === false) ? setError(true) : setError(false);
             }}>
@@ -263,26 +275,34 @@ const PasswordBox = (props: Readonly<any>): JSX.Element => {
 const BlockChat = (props: any) => {
     if (props.hasPsw !== undefined) {
         if (props.hasPsw == false)
-            return (<MainChat id={props.id} getLocation={props.getLocation} psw="" />);
+            return (<MainChat id={props.id}
+                    getLocation={props.getLocation} 
+                    setErrorCode={props.setErrorCode} jwt={props.jwt}
+                    psw="" />);
         else
             return (<PasswordBox id={props.id} hasPsw={props.hasPsw}
-                getLocation={props.getLocation} />);
+                getLocation={props.getLocation}
+		setErrorCode={props.setErrorCode} jwt={props.jwt}/>);
     }
     return (<></>);
 }
 
 const Chat = () => {
-    const getLocation = useLocation();
-    const [psw, setLoadPsw] = useState<boolean | undefined>(undefined);
+	const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
+	const getLocation = useLocation();
     const id = useParams().id as string;
-    const hasPass: Promise<boolean> = hasPassword(id);
+    const [errorCode, setErrorCode] = useState<number>(200);
+    const hasPass: Promise<boolean> = hasPassword(id, jwt, setErrorCode);
+    const [psw, setLoadPsw] = useState<boolean | undefined>(undefined);
 
+	if (errorCode >= 400)
+		return (<FetchError code={errorCode} />)
     hasPass.then(res => {
         setLoadPsw(res);
     })
     return (<BlockChat id={id} getLocation={getLocation}
+	setErrorCode={setErrorCode} jwt={jwt}
         hasPsw={psw} />);
 }
-
 
 export default Chat;

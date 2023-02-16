@@ -1,7 +1,8 @@
+import React from 'react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const FetchError = (props: { code: number }) => {
+export const FetchError = (props: { code: number }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -11,6 +12,20 @@ const FetchError = (props: { code: number }) => {
         else if (props.code >= 400)
             throw new Error('Something went wrong while fetching data');
     })
+    return (<></>);
 }
 
-export default FetchError;
+export const header = (jwt: Readonly<string | null>) => {
+    const header = new Headers({
+        Authorization: 'Bearer ' + jwt
+    })
+    return (header);
+};
+
+export const headerPost = (jwt: Readonly<string | null>) => {
+    const header = new Headers({
+	'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + jwt
+    })
+    return (header);
+};
