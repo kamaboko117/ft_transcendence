@@ -1,4 +1,9 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
+import { Channel } from '../chat/chat.entity';
+import { ListMsg } from '../chat/lstmsg.entity';
+import { ListUser } from '../chat/lstuser.entity';
+import { ListBan } from '../chat/lstban.entity';
+import { ListMute } from '../chat/lstmute.entity';
 
 @Entity()
 export class User {
@@ -31,4 +36,19 @@ export class User {
     default: '',
   })
   token: string;
+
+  @OneToMany(() => Channel, (listchannel) => listchannel.user)
+  lstChannel: Channel[];
+
+  @OneToMany(() => ListMsg, (listMsg) => listMsg.user)
+  lstMsg: User[];
+  
+  @OneToMany(() => ListUser, (listUsr) => listUsr.user)
+  lstUsr: User[];
+  
+  @OneToMany(() => ListBan, (listBan) => listBan.user)
+  lstBan: User[];
+  
+  @OneToMany(() => ListMute, (listMute) => listMute.user)
+  lstMute: User[];
 }

@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import classes from "./mainPage.module.css";
 
-import LoginButton from "../components/buttons/buttons";
+import { LoginButton, FakeLoginButton } from "../components/buttons/buttons";
 import UserContext, { User } from "../contexts/UserContext";
 
 const client_id = import.meta.env.VITE_APP_ID;
@@ -45,6 +45,9 @@ function MainPage() {
       <div className={classes.splash_content}>
         <LoginButton url={loginUrl} />
       </div>
+	<div className={classes.splash_content}>
+        	<FakeLoginButton />
+      	</div>
     </div>
   );
 }

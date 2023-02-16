@@ -35,7 +35,7 @@ export class UsersService {
         formData.append("client_id", appId);
         formData.append("client_secret", appSecret);
         formData.append("code", code);
-        formData.append("redirect_uri", "http://localhost:4000/validate");
+        formData.append("redirect_uri", process.env.VITE_APP_URI + "/validate");
         formData.append("state", "pouet2");
         console.log(formData);
         console.log("CODE: " + code);
@@ -68,8 +68,8 @@ export class UsersService {
             }
         }).then(res => res.json());
         return (res.resource_owner_id);
-    }
-
+	}
+/*
     //ne pas toucher à cette fonction
     async validateUser(code: string) {
         console.log("ALLO");
@@ -112,7 +112,7 @@ export class UsersService {
         }
     
         return [false, id];*/
-    }
+    //}*/
 //
     getUsers() {
         return this.userRepository.find();

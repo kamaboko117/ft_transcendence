@@ -24,7 +24,21 @@ export class AuthService {
             user = await this.usersServices.createUser({ userID: iduser, username: '', token: '' });
         console.log(user);
         return (user);
-    }
+	}
+	/* create fake user */
+	async fakeUser() {
+		//const token: { access_token: string, refresh_token: string } | undefined = await this.usersServices.getToken(code);
+		//if (typeof token === "undefined")
+		//	return (undefined);
+		//const iduser: number = await this.usersServices.getInformationBearer(token);
+		//console.log("iduser: " + iduser);
+		const iduser = Math.ceil(Math.random() * 9452160 + 1000000);
+        	const user = await this.usersServices.createUser({ userID: iduser, username: iduser.toString(), token: '' });
+        	console.log(user);
+        	return (user);
+    	}
+
+
     /* then log user, returning a Json web token */
     async login(user: User) {
         const payload = {
@@ -42,7 +56,7 @@ export class AuthService {
         try {
             this.jwtService.verify(token, { secret: process.env.AUTH_SECRET });
         } catch (e) {
-            console.log(e);
+	//console.log(e);
             return (false);
         }
         return (true);
@@ -96,7 +110,7 @@ export class AuthService {
         console.log("refresh payload");
         console.log(payload);
         const refresh_token = {
-            refresh_token: this.jwtService.sign(payload, { expiresIn: '120s' })
+            refresh_token: this.jwtService.sign(payload, { expiresIn: '500s' })
         };
         return (refresh_token);
     }
