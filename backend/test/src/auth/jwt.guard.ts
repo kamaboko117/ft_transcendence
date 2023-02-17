@@ -16,35 +16,25 @@ export class JwtGuard extends AuthGuard('jwt') {
     }
     canActivate(context: ExecutionContext) {
         const request = context.switchToHttp().getRequest(); //see guard doc
-        console.log("enter guard jwt");
-        if (typeof request.route == "undefined")
-        {
-            console.log(request)
-            console.log("token: " + request.handshake?.query?.token);
-        }
-        const tokenWs = request.handshake?.query?.token;
-        //const reponse = context.switchToHttp().getResponse(); cookie part
-        //const access_token = ExtractJwt.fromAuthHeaderAsBearerToken();
-        //console.log(request);
+        const websocket = context.switchToWs().getClient();
         const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
             context.getHandler(), context.getClass()
         ]);
+        let bearer: string = "";
+        console.log("enter guard jwt");
         if (isPublic)
             return (true);
-	    //console.log(request.headers.authorization);
-        if (typeof request.route != "undefined" && request.headers.authorization
-            && typeof request.headers.authorization != undefined)
+        if (typeof request.route != "undefined")
+            bearer = request.headers.authorization.split('Bearer ')[1];
+        else if (typeof request.route == "undefined")
+           bearer = websocket.handshake.headers.authorization;
+        const decoded = this.authService.verifyToken(bearer);
+        if (decoded === false)
+                return (false);
+        if (typeof request.route == "undefined")
         {
-            const bearer = request.headers.authorization.split('Bearer ')[1];
-                if (this.authService.verifyToken(bearer) === false)
-                        return (false);
-        }
-        else if (typeof request.route == "undefined"){
-                console.log("ALLLOOOO");
-                const bearer = request.handshake?.query?.token
-                if (this.authService.verifyToken(bearer) === false)
-                        return (false);
-                return (true);
+            console.log("bearer: " + bearer);
+            return (Boolean(decoded));
         }
         //console.log("zzzzzzzzzzzzzzzzzzzzzzz");
         //return (this.handleRequest(request, request.user));*/

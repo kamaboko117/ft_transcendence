@@ -1,10 +1,17 @@
 import io from 'socket.io-client';
 import { createContext } from 'react';
 
-const token = localStorage.getItem("ft_transcendence_gdda_jwt");;
+const token: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");;
 
 export const usrSocket = io("http://" + location.host, {
     withCredentials: true,
-    query: { token }
+    transports: ['websocket', 'polling', 'flashsocket'],
+    transportOptions: {
+        polling: {
+            extraHeaders: {
+                Authorization: String(token)
+            }
+        }
+    }
 });
 export const SocketContext = createContext(usrSocket);

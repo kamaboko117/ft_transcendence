@@ -90,8 +90,8 @@ const MainChat = (props: any) => {
         //subscribeChat
         usrSocket.emit("joinRoomChat", {
             id: props.id,
-            idUser: window.navigator.userAgent,
-            username: window.navigator.userAgent,
+            //idUser: window.navigator.userAgent,
+            //username: window.navigator.userAgent,
             //name: props.getLocation.state.name,
             psw: props.psw
         }, (res: boolean) => {
@@ -124,7 +124,7 @@ const MainChat = (props: any) => {
 				return (res.json());
 			props.setErrorCode(res.status);
 		});
-            if (typeof res.lstMsg != "undefined") {
+            if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
                 console.log(res);
                 setLstMsg(res.lstMsg);
                 setChatName(res.name);
