@@ -54,12 +54,15 @@ export class AuthService {
     verifyToken(token: string) {
         console.log("TOK: " + token);
         try {
-            this.jwtService.verify(token, { secret: process.env.AUTH_SECRET });
+            console.log("verify");
+            const decoded = this.jwtService.verify(token, { secret: process.env.AUTH_SECRET });
+            console.log("end verify");
+            return (decoded);
         } catch (e) {
 	//console.log(e);
             return (false);
         }
-        return (true);
+        return (false);
         //try {
 
         /*} catch (e) {

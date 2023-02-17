@@ -4,7 +4,7 @@ import {
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { CreateChatDto, Owner } from './create-chat.dto';
-import { Chat, InformationChat } from './chat.interface';
+import { Chat, InformationChat, User } from './chat.interface';
 import { IsString } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';

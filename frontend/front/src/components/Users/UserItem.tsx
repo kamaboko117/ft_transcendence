@@ -9,17 +9,21 @@ type ItemProps = {
 }
 
 function UserItem(props: ItemProps) {
-    console.log("jwt: " + props.jwt);
+    console.log(props);
     const [username, setUsername] = useState<string>("");
     let header = new Headers({
         Authorization: 'Bearer ' + props.jwt
-    })
+    });
+
     useEffect(() => {
         fetch('http://' + location.host + '/api/users/profile/', {
             headers: header
         })
-            .then(res => res.json())
-            .then(res => setUsername(res.userID));
+        .then(res => {
+            if (res.ok)
+                return (res.json());
+        })
+        .then(res => setUsername(res.userID));
     }, [props.jwt])
     return (<div>
         <span>Hello USER ID: {username}</span>
