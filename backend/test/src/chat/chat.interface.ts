@@ -5,6 +5,14 @@ export interface InformationChat {
     accesstype: string,
 }
 
+export interface DbChat {
+    id: string,
+    name: string,
+    user_id: number,
+    password: string,
+    accesstype: string,
+}
+
 export interface Chat {
     id: string,
     name: string,

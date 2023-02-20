@@ -5,13 +5,12 @@ const token: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");;
 
 export const usrSocket = io("http://" + location.host, {
     withCredentials: true,
-    transports: ['websocket', 'polling', 'flashsocket'],
-    transportOptions: {
-        polling: {
-            extraHeaders: {
-                Authorization: String(token)
-            }
-        }
+    extraHeaders: {
+        authorization: String(token)
     }
+    //transports: ['websocket', 'polling', 'flashsocket'],
+    //auth: {
+    //    token: token
+    //}
 });
 export const SocketContext = createContext(usrSocket);

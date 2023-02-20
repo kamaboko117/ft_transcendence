@@ -27,14 +27,20 @@ export class JwtGuard extends AuthGuard('jwt') {
         if (typeof request.route != "undefined")
             bearer = request.headers.authorization.split('Bearer ')[1];
         else if (typeof request.route == "undefined")
-           bearer = websocket.handshake.headers.authorization;
+        {
+            bearer = request.handshake.headers.authorization;
+        }
+        if (typeof bearer == "undefined")
+            return (false);
         const decoded = this.authService.verifyToken(bearer);
         if (decoded === false)
                 return (false);
         if (typeof request.route == "undefined")
         {
             console.log("bearer: " + bearer);
-            return (Boolean(decoded));
+            request.headers = {};
+            request.headers.authorization = "Bearer " + bearer;
+            //return (Boolean(decoded));
         }
         //console.log("zzzzzzzzzzzzzzzzzzzzzzz");
         //return (this.handleRequest(request, request.user));*/
