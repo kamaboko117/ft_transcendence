@@ -8,8 +8,6 @@ export class ListUser {
     id: number;
     //@Column({ nullable: false })
     //iduser: string;
-    @Column({ nullable: true })
-    username: string;
 
     @ManyToOne(() => User, (user) => user.lstUsr, { nullable: false, cascade: true })
     @JoinColumn({ name: 'user_id' })

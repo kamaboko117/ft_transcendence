@@ -50,7 +50,6 @@ const ListMsg = (props: any) => {
 /* Leave chat */
 const handleLeave = async (e: React.MouseEvent<HTMLButtonElement>, contextUserLeave: any, usrSocket: any, obj: {
     id: string,
-    username: string,
 }, navigate: any) => {
     e.preventDefault();
     console.log(obj);
@@ -162,7 +161,7 @@ const MainChat = (props: any) => {
                     contextUserLeave, usrSocket, {
                     id: props.id,
                     //idUser: window.navigator.userAgent,
-                    username: window.navigator.userAgent,
+                   // username: window.navigator.userAgent,
                     /*name: props.getLocation.state.name*/
                 }, navigate)}
                     className='chatLeave'>Leave</button>
@@ -220,9 +219,9 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
 /* Detect and return if a password for the channel is used
     return a promise 
 */
-const hasPassword = (id: Readonly<string>, jwt: Readonly<string | null>, setErrorCode: any): Promise<boolean> => {
+const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>, setErrorCode: any): Promise<boolean> => {
     console.log("HAS PSWD");
-    return (fetch('http://' + location.host + '/api/chat/has-paswd?' + new URLSearchParams({
+    return (await fetch('http://' + location.host + '/api/chat/has-paswd?' + new URLSearchParams({
         	id: id,
         	//iduser: window.navigator.userAgent,
     	}),
@@ -269,7 +268,9 @@ const PasswordBox = (props: Readonly<any>): JSX.Element => {
             <DisplayErrorPasswordBox error={error} />
         </article>);
     }
-    return (<MainChat id={props.id} getLocation={props.getLocation} psw={value} />);
+    return (<MainChat id={props.id} getLocation={props.getLocation}
+        setErrorCode={props.setErrorCode} jwt={props.jwt}
+        psw={value} />);
 }
 
 const BlockChat = (props: any) => {
