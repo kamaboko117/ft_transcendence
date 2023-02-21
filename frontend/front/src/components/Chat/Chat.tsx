@@ -12,7 +12,7 @@ import { ContextUserLeave } from '../../contexts/LeaveChannel';
 type lstMsg = {
     lstMsg: Array<{
         idUser: string,
-        username: string, //à enlever pour un find dans repository
+        //username: string, //à enlever pour un find dans repository
         content: string
     }>
 }
@@ -37,7 +37,7 @@ const ListMsg = (props: any) => {
                 props.lstMsg.slice(arrayLength, props.lstMsg.length).map((msg: any) => (
                     <React.Fragment key={++i}>
                         <div><img src={img} className="chatBox" />
-                            <label className="chatBox">{msg.username}</label>
+                            <label className="chatBox">{msg.user.username}</label>
                         </div>
                         <span className="chatBox">{msg.content}</span>
                     </React.Fragment>
@@ -138,6 +138,7 @@ const MainChat = (props: any) => {
         console.log("liste mount");
         usrSocket.on("sendBackMsg", (res: any) => {
             console.log("msg");
+            console.log(res);
             setLstMsg((lstMsg) => [...lstMsg, res]);
         });
         return (() => {

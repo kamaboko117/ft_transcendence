@@ -6,15 +6,15 @@ import { FetchError, header, headerPost } from '../FetchError';
 
 type State = {
     listChannel: Array<{
-        id: number | string,
-        name: string,
-        owner: string,
-        accesstype: number,
+        channel_id: number | string,
+        channel_name: string,
+        User_username: string,
+        channel_accesstype: number,
     }>,
     listChannelPrivate: Array<{
-        id: number | string,
-        name: string,
-        owner: string,
+        channel_id: number | string,
+        channel_name: string,
+        User_username: string,
         accesstype: number,
     }>,
     channelName: string,
@@ -101,6 +101,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                 //    throw new Error('Token expired.');
                 //throw new Error('Something went wrong');
             }).then(res => {
+                console.log(res);
                 this.setState({
                     listChannel: res
                 })
@@ -147,11 +148,11 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         fetch('http://' + location.host + '/api/chat/private?' + new URLSearchParams({
             id: window.navigator.userAgent
         }), { headers: header(this.props.jwt) }).then(res => {
-		if (res.ok)
-			return (res.json());
-		this.setState({
-                    errorCode: res.status
-                });
+            if (res.ok)
+                return (res.json());
+            this.setState({
+                errorCode: res.status
+            });
             //throw new Error('Token expired.');
         }).then(res => {
             this.setState({
@@ -177,7 +178,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             const res: any = fetch('http://' + location.host + '/api/chat/new-public/', {
                 method: 'post',
                 headers: headerPost(this.props.jwt),
-		        body: JSON.stringify({
+                body: JSON.stringify({
                     id: '0', //m'en souviens pas
                     name: this.state.channelName,
                     //owner: { idUser: window.navigator.userAgent, username: window.navigator.userAgent },
@@ -191,12 +192,12 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     lstBan: {}
                 })
             }).then(res => {
-		if (res.ok)
-			return(res.json())
-		this.setState({
+                if (res.ok)
+                    return (res.json())
+                this.setState({
                     errorCode: res.status
                 });
-		}).then(res => {
+            }).then(res => {
                 if (Array.isArray(res) === true) {
                     this.setState({ hasError: true, listError: res });
                 }
@@ -238,12 +239,12 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     lstBan: {}
                 })
             }).then(res => {
-		if (res.ok)
-			return (res.json());
-		this.setState({
+                if (res.ok)
+                    return (res.json());
+                this.setState({
                     errorCode: res.status
                 });
-		}).then(res => {
+            }).then(res => {
                 console.log(res);
                 if (Array.isArray(res) === true) {
                     this.setState({ hasError: true, listError: res });
@@ -272,6 +273,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             });
         }
     }
+
     PrintListPublic = (): JSX.Element => {
         let i: number = 0;
         const TypeAccess = (props: Props): JSX.Element => {
@@ -285,7 +287,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             {this.state.listChannel &&
                 this.state.listChannel.map((chan) => (
                     <tr key={++i}>
-                        <td><Link to={{ pathname: "/channels/" + chan.id }} state={{ name: chan.name, username: "" }}>{chan.name}</Link></td><td>{chan.owner}</td><td><TypeAccess access={chan.accesstype} /></td>
+                        <td><Link to={{ pathname: "/channels/" + chan.channel_id }} state={{ name: chan.channel_name, username: "" }}>{chan.channel_name}</Link></td><td>{chan.User_username}</td><td><TypeAccess access={chan.channel_accesstype} /></td>
                     </tr>
                 ))
             }
@@ -303,12 +305,17 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             {this.state.listChannelPrivate &&
                 this.state.listChannelPrivate.map((chan) => (
                     <tr key={++i}>
-                        <td><Link to={{ pathname: "/channels/" + chan.id }} state={{ name: chan.name, username: "" }}>{chan.name}</Link></td><td>{chan.owner}</td><td><TypeAccess access={chan.accesstype} /></td>
+                        <td><Link to={{ pathname: "/channels/" + chan.channel_id }}
+                            state={{ name: chan.channel_name, username: "" }}>{chan.channel_name}</Link>
+                        </td>
+                        <td>{chan.User_username}</td>
+                        <td><TypeAccess access={chan.accesstype} /></td>
                     </tr>
                 ))
             }
         </tbody>)
     }
+
     render(): JSX.Element {
         if (this.state.errorCode >= 400)
             return (<FetchError code={this.state.errorCode} />)

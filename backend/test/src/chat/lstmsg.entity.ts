@@ -8,11 +8,11 @@ export class ListMsg {
     id: number;
     //@Column({ nullable: false })
     //idUser: string;
-    @Column({ nullable: false })
-    username: string;
+    //@Column({ nullable: false })
+    //username: string;
     @Column({ nullable: true })
     content: string;
-    
+
     @ManyToOne(() => User, (user) => user.lstMsg, { nullable: false, cascade: true })
     @JoinColumn({ name: 'user_id' })
     user: User;

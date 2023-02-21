@@ -8,9 +8,5 @@ export const usrSocket = io("http://" + location.host, {
     extraHeaders: {
         authorization: String(token)
     }
-    //transports: ['websocket', 'polling', 'flashsocket'],
-    //auth: {
-    //    token: token
-    //}
 });
 export const SocketContext = createContext(usrSocket);
