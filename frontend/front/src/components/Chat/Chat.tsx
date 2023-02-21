@@ -133,7 +133,8 @@ const MainChat = (props: any) => {
             }
             console.log("load...");
         }
-        ft_lst();
+        if (online === true)
+            ft_lst();
         console.log("liste mount");
         usrSocket.on("sendBackMsg", (res: any) => {
             console.log("msg");
@@ -145,7 +146,7 @@ const MainChat = (props: any) => {
             setLstMsg([]);
             setChatName("");
         });
-    }, [lstMsg.keys, props.id])
+    }, [lstMsg.keys, props.id, online])
 
     const [msg, setMsg] = useState<null | string>(null);
     const navigate = useNavigate();
