@@ -117,13 +117,14 @@ const MainChat = (props: any) => {
             const res = await fetch('http://' + location.host + '/api/chat?' + new URLSearchParams({
                 id: props.id,
             }),
-		{ headers: header(props.jwt) })
-		.then(res => {
-			if (res.ok)
-				return (res.json());
-			props.setErrorCode(res.status);
-		});
+                { headers: header(props.jwt) })
+                .then(res => {
+                    if (res.ok)
+                        return (res.json());
+                    props.setErrorCode(res.status);
+                });
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
+                console.log("load msg");
                 console.log(res);
                 setLstMsg(res.lstMsg);
                 setChatName(res.name);
@@ -161,7 +162,7 @@ const MainChat = (props: any) => {
                     contextUserLeave, usrSocket, {
                     id: props.id,
                     //idUser: window.navigator.userAgent,
-                   // username: window.navigator.userAgent,
+                    // username: window.navigator.userAgent,
                     /*name: props.getLocation.state.name*/
                 }, navigate)}
                     className='chatLeave'>Leave</button>
@@ -211,7 +212,7 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
     }).then(res => {
         if (res.ok)
             return (res.json())
-	setErrorCode(res.status);
+        setErrorCode(res.status);
         return (false);
     }));
 }
@@ -222,15 +223,15 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
 const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>, setErrorCode: any): Promise<boolean> => {
     console.log("HAS PSWD");
     return (await fetch('http://' + location.host + '/api/chat/has-paswd?' + new URLSearchParams({
-        	id: id,
-        	//iduser: window.navigator.userAgent,
-    	}),
-	{ headers: header(jwt) })
-	.then(res => {
-		if (res.ok)
-			return (res.json());
-		setErrorCode(res.status);
-	}));
+        id: id,
+        //iduser: window.navigator.userAgent,
+    }),
+        { headers: header(jwt) })
+        .then(res => {
+            if (res.ok)
+                return (res.json());
+            setErrorCode(res.status);
+        }));
 }
 
 const DisplayErrorPasswordBox = (props: { error: boolean }) => {
@@ -277,32 +278,32 @@ const BlockChat = (props: any) => {
     if (props.hasPsw !== undefined) {
         if (props.hasPsw == false)
             return (<MainChat id={props.id}
-                    getLocation={props.getLocation} 
-                    setErrorCode={props.setErrorCode} jwt={props.jwt}
-                    psw="" />);
+                getLocation={props.getLocation}
+                setErrorCode={props.setErrorCode} jwt={props.jwt}
+                psw="" />);
         else
             return (<PasswordBox id={props.id} hasPsw={props.hasPsw}
                 getLocation={props.getLocation}
-		setErrorCode={props.setErrorCode} jwt={props.jwt}/>);
+                setErrorCode={props.setErrorCode} jwt={props.jwt} />);
     }
     return (<></>);
 }
 
 const Chat = () => {
-	const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
-	const getLocation = useLocation();
+    const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
+    const getLocation = useLocation();
     const id = useParams().id as string;
     const [errorCode, setErrorCode] = useState<number>(200);
     const hasPass: Promise<boolean> = hasPassword(id, jwt, setErrorCode);
     const [psw, setLoadPsw] = useState<boolean | undefined>(undefined);
 
-	if (errorCode >= 400)
-		return (<FetchError code={errorCode} />)
+    if (errorCode >= 400)
+        return (<FetchError code={errorCode} />)
     hasPass.then(res => {
         setLoadPsw(res);
     })
     return (<BlockChat id={id} getLocation={getLocation}
-	setErrorCode={setErrorCode} jwt={jwt}
+        setErrorCode={setErrorCode} jwt={jwt}
         hasPsw={psw} />);
 }
 
