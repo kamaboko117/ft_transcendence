@@ -59,6 +59,8 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - db:/var/lib/postgresql/data/
     deploy:
       restart_policy:
         condition: on-failure

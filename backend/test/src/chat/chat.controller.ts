@@ -162,7 +162,6 @@ export class ChatController {
             accesstype: chan?.accesstype,
             lstMsg: listMsg
         };
-
         console.log(channel);
         //console.log(await this.chatGateway.getListMsgByChannelId(id));
         //const channel = this.chatGateway.getChannelById(id);

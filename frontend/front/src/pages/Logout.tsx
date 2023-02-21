@@ -1,4 +1,4 @@
-import { useEffect, useContext } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserContext from "../contexts/UserContext";
 
@@ -10,6 +10,7 @@ const LogOut = () => {
         userCtx.logoutUser();
         navigate("/login");
     }, [])
+    return (<></>);
 }
 
 export default LogOut;

@@ -48,9 +48,9 @@ function App() {
       <div>
         <ErrorBoundary
           FallbackComponent={ErrorFallback}
-          //onReset={(res) => {
-            // reset the state of your app so the error doesn't happen again
-          //}}
+        //onReset={(res) => {
+        // reset the state of your app so the error doesn't happen again
+        //}}
         >
           <SocketContext.Provider value={usrSocket}>
             <NavBar />
