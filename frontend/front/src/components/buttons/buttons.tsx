@@ -1,7 +1,12 @@
 import React from "react";
 import classes from "./buttons.module.css";
+import { Link } from "react-router-dom";
 
-function LoginButton(props: LoginButtonProps) {
+interface LoginButtonProps {
+    url: string;
+}
+
+export function LoginButton(props: LoginButtonProps) {
     const { url } = props;
 
     return (
@@ -10,7 +15,9 @@ function LoginButton(props: LoginButtonProps) {
         </a>
     );
 }
-export default LoginButton;
-interface LoginButtonProps {
-    url: string;
+
+export const FakeLoginButton = () => {
+    return (<Link className={classes.button1} to={{ pathname: "/fake-login/" }}>Fake Login</Link>);
 }
+
+export default LoginButton;
