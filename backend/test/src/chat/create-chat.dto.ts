@@ -21,7 +21,7 @@ import { Type } from 'class-transformer';
 
 export class Owner {
     @IsString()
-    idUser: string;
+    idUser: number;
     @IsString()
     username: string
 }
@@ -33,18 +33,18 @@ export class CreateChatDto {
     name: string;
     //@IsInt()
     //owner: number;
-    @IsObject()
-    @IsDefined()
-    @ValidateNested()
-    @Type(() => Owner)
-    owner: Owner;
+    //@IsObject()
+    //@IsDefined()
+    //@ValidateNested()
+    //@Type(() => Owner)
+    //owner: Owner;
     @IsString()
     accesstype: string;
     @IsString()
     password: string;
     @IsArray()
     lstMsg: Array<{
-        idUser: string,
+        user_id: number,
         username: string, //à enlever pour un find dans repository
         content: string
     }>;
