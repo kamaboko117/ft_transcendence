@@ -18,10 +18,10 @@ export class ChatController {
     }
     @UseGuards(JwtGuard)
     @Get('private')
-    async getAllPrivate(@Request() req: any, 
+    async getAllPrivate(@Request() req: any,
         @Query('id') id: Readonly<string>): Promise<InformationChat[]> {
         const user: User = req.user;
-       // console.log(this.chatGateway.getAllPrivate(id));
+        // console.log(this.chatGateway.getAllPrivate(id));
         return (this.chatGateway.getAllPrivate(id, user.userID));
     }
     /*
@@ -32,22 +32,20 @@ export class ChatController {
     @Get('has-paswd')
     async getHasPaswd(@Request() req: any,
         @Query('id') id: Readonly<string>): Promise<boolean> {
-            console.log("HAS PASW");
         const user: User = req.user;
         const channel: undefined | DbChat = await this.chatGateway.getChannelByTest(id);
         console.log(channel);
         if (typeof channel != "undefined" && channel != null) {
-            console.log("channdqsqsd");
             console.log(channel);
             const getUser = await this.chatGateway.getUserOnChannel(id, user.userID);
             console.log(getUser);
             if (typeof getUser !== "undefined" || getUser === null)
                 return (false);
             //const getUser = channel.lstUsr.get(user.userID);
-           // console.log(getUser);
+            // console.log(getUser);
         }
-     //   console.log("has-password channel");
-     //   console.log(channel);
+        //   console.log("has-password channel");
+        //   console.log(channel);
         if (typeof channel === "undefined" || channel?.password == '' || channel === null)
             return (false);
         return (true);
@@ -64,7 +62,7 @@ export class ChatController {
         const user: User = req.user;
         const channel: undefined | DbChat = await this.chatGateway.getChannelByName(chat.name);
         console.log("channel");
-        
+
         let err: string[] = [];
 
         if (chat.name.length === 0)
@@ -72,7 +70,7 @@ export class ChatController {
         else if (chat.name == chat.password)
             err.push("Password and chat name can't be the same.");
         console.log(channel);
-        if (channel != null || typeof channel === "undefined")
+        if (channel != null)//   || typeof channel === "undefined")
             err.push("Channel already exist.");
         if (err.length > 0)
             return (err);
@@ -89,8 +87,8 @@ export class ChatController {
             chat.accesstype = '1';
             chat.password = bcrypt.hashSync(chat.password, salt);
         }
-     //   console.log(chat);
-        return (this.chatGateway.createPublic(chat, len, {idUser: user.userID, username: user.username}));
+        //   console.log(chat);
+        return (this.chatGateway.createChat(chat, len, { idUser: user.userID, username: user.username }));
         //console.log(this.chatGateway.getAllPublicByName());
         //return (this.chatGateway.getAllPublicByName());
     }
@@ -113,7 +111,7 @@ export class ChatController {
             err.push("Chat name must not be empty.");
         else if (chat.name == chat.password)
             err.push("Password and chat name can't be the same.");
-            if (channel != null || typeof channel === "undefined")
+        if (channel != null)// || typeof channel === "undefined")
             err.push("Channel already exist.");
         if (err.length > 0)
             return (err);
@@ -130,19 +128,19 @@ export class ChatController {
         /*
             appeler createPrivate + dedans vérifier si id existe déjà
         */
-        return (this.chatGateway.createPublic(chat, id, {idUser: user.userID, username: user.username}));
+        return (this.chatGateway.createChat(chat, id, { idUser: user.userID, username: user.username }));
     }
 
     @Post('valid-paswd')
     async passwordIsValid(@Body() psw: PswChat): Promise<boolean> {
-       // console.log("psw: " + psw);
+        // console.log("psw: " + psw);
         //const channel: undefined | Chat = this.chatGateway.getChannelById(psw.id)
         const channel: undefined | DbChat = await this.chatGateway.getChannelByTest(psw.id);
         // console.log("ch: " + channel);
         if (typeof channel == "undefined" || channel === null || channel.password == '')
             return (false);
         const comp = await bcrypt.compare(psw.psw, channel.password);
-       // console.log("valid-psw COMP: " + comp);
+        // console.log("valid-psw COMP: " + comp);
         return (comp);
     }
     //
@@ -151,11 +149,11 @@ export class ChatController {
     @Get('')
     async getChannel(@Request() req: any,
         @Query('id') id: Readonly<string>) {
-            console.log("GET CHAN ID");
+        console.log("GET CHAN ID");
         const user: User = req.user;
         const chan = await this.chatGateway.getChannelByTest(id);
         const listMsg = await this.chatGateway.getListMsgByChannelId(id);
-        
+
         let channel = {
             id: chan?.id,
             name: chan?.name,
