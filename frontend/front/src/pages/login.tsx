@@ -1,5 +1,5 @@
 import React from "react";
-import LoginButton from "../components/buttons/buttons";
+import { LoginButton, FakeLoginButton } from "../components/buttons/buttons";
 import { Navigate } from "react-router-dom";
 
 const client_id = import.meta.env.VITE_APP_ID;
@@ -11,10 +11,13 @@ const loginUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}
 function LoginPage(props: any) {
   if (props.user) return <Navigate to="/" />;
   return (
-    <div>
-      <h1>Please Log In</h1>
-      <LoginButton url={loginUrl} />
-    </div>
+    <>
+      <div>
+        <h1>Please Log In</h1>
+        <LoginButton url={loginUrl} />
+      </div>
+      <FakeLoginButton />
+    </>
   );
 }
 
