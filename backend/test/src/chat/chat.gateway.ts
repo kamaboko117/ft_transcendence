@@ -115,17 +115,33 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async getAllPublic(): Promise<any[]> {
     const arr: Channel[] = await this.chatsRepository
       .createQueryBuilder("channel")
+      .innerJoin("channel.user", "User")
       .select(['channel.id',
-        'channel.name', 'channel.user_id', 'channel.accesstype'])
+        'channel.name', 'channel.user_id', 'channel.accesstype', "User.username"])
       .where("accesstype = :a1 OR accesstype = :a2")
       .setParameters({ a1: 0, a2: 1 })
-      .getMany();
+      .getRawMany();
+    console.log("pub");
+    console.log(arr);
     return arr;
   }
 
-
   async getAllPrivate(id: Readonly<string>, userID: Readonly<number>): Promise<any[]> {
     const arr: Channel[] = await this.chatsRepository
+      .createQueryBuilder("channel")
+      .innerJoin("channel.lstUsr", "ListUser")
+      .innerJoin("ListUser.user", "User")
+      .select(['channel.id', 'channel.name',
+        'channel.user_id', 'channel.accesstype',
+        'User.username'])
+      .where("(accesstype = :a1 OR accesstype = :a2) AND ListUser.user_id = :userID")
+      .setParameters({ a1: 2, a2: 3, userID: userID })
+      .getRawMany();
+    console.log("user_id: " + userID);
+    console.log("allP");
+    console.log(arr);
+    return arr;
+    /*const arr: Channel[] = await this.chatsRepository
       .createQueryBuilder("channel")
       .innerJoin("channel.lstUsr", "ListUser")
       .innerJoinAndSelect("ListUser.user", "User")
@@ -136,7 +152,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       .getMany();
     console.log("allP");
     console.log(arr);
-    return arr;
+    return arr;*/
   }
   /*getAllPublicByName(): InformationChat[] {
     let arrName: InformationChat[] = [];
@@ -161,13 +177,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async getListMsgByChannelId(id: string) {
     const listMsg: Array<{
       user_id: number,
-      username: string, //à enlever pour un find dans repository
+      //username: string, //à enlever pour un find dans repository
       content: string
     }> = await this.listMsgRepository.createQueryBuilder("list_msg")
-      .select(["list_msg.user_id", "list_msg.username", "list_msg.content"])
-      .innerJoin("list_msg.chat", "Channel")
-      .where("Channel.id = :id")
+      .select(["list_msg.user_id", "User.username", "list_msg.content"])
+      //.innerJoin("list_msg.chat", "Channel")
+      .innerJoin("list_msg.user", "User")
+      .where("list_msg.chatid = :id")
       .setParameters({ id: id })
+      .orderBy("list_msg.id", 'ASC')
       .getMany();
     return (listMsg);
   }
@@ -228,10 +246,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     listUsr.chat = channel;
     this.listUserRepository.save(listUsr);
     const return_chat: InformationChat = {
-      id: newChat.id,
-      name: newChat.name,
-      owner: newChat.owner,
-      accesstype: newChat.accesstype,
+      channel_id: newChat.id,
+      channel_name: newChat.name,
+      //owner: newChat.owner,
+      User_username: owner.username,
+      channel_accesstype: newChat.accesstype,
     }
     return (return_chat);
   }
@@ -360,13 +379,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     //  username: getUsername, content: data.content
     //});
     const getUser = await this.getUserOnChannel(data.id, user.userID);
-
+    console.log("gU");
+    console.log(getUser);
     this.listMsgRepository
       .createQueryBuilder()
       .insert()
       .into(ListMsg)
       .values([{
-        user_id: user.userID, username: getUser.User_username,
+        user_id: user.userID, //username: getUser.User_username,
         content: data.content,
         chatid: data.id
       }])
@@ -378,7 +398,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     */
     this.server.to(getUser.channel_id + getUser.channel_name).emit("sendBackMsg", {
       user_id: user.userID,
-      username: getUser.User_username,
+      user: { username: getUser.User_username },
+      //username: getUser.User_username,
       content: data.content
     });// chat[index].lstMsg[length - 1]);
   }

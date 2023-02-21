@@ -1,8 +1,9 @@
 export interface InformationChat {
-    id: string,
-    name: string,
-    owner: number,
-    accesstype: string,
+    channel_id: string,
+    channel_name: string,
+    //owner: number,
+    User_username: string,
+    channel_accesstype: string,
 }
 
 export interface DbChat {

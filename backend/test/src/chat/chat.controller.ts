@@ -22,7 +22,7 @@ export class ChatController {
         @Query('id') id: Readonly<string>): Promise<InformationChat[]> {
         const user: User = req.user;
         // console.log(this.chatGateway.getAllPrivate(id));
-        return (this.chatGateway.getAllPrivate(id, user.userID));
+        return (await this.chatGateway.getAllPrivate(id, user.userID));
     }
     /*
         id = id channel
