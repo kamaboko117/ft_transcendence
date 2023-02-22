@@ -1,6 +1,9 @@
-import React, { MouseEvent } from 'react';
+import React, { MouseEvent, useContext, useEffect, useState } from 'react';
+import { FetchError, header } from '../FetchError';
 import "../../css/channel.css"
 import "../../css/chat.css"
+import scroll from 'react-scroll';
+import { SocketContext } from '../../contexts/Socket';
 
 type State = {
     userInfoDisplay: boolean,
@@ -11,12 +14,95 @@ type State = {
     }>
 }
 
-class ListUser extends React.Component<{}, State> {
-    constructor(props: any) {
-        super(props);
-        this.state = {
+type PropsUserInfo = {
+    listUser: Array<{
+        user_id: number,
+        user: { username: string },
+    }>
+}
 
-            userInfoDisplay: false,
+/*
+<table className='tableInfo'>
+    <thead>
+        <tr>
+            <th>User(s) connected</th>
+        </tr>
+    </thead>
+    <tbody onClick={this.handleClick}>
+        {this.state.listUser &&
+            this.state.listUser.map((usr) => (
+                <tr key={++i}>
+                    <td>{usr.content}</td>
+                </tr>
+            ))
+        }
+    </tbody>
+</table>
+*/
+
+/*
+<div className={chooseClassName}>
+            <label className="userInfo">{this.state.userName}</label>
+            <button onClick={this.BlockUnblock} className="userInfo">Block/Unblock</button>
+            <button onClick={this.InviteGame} className="userInfo">Invite to a game</button>
+            <button onClick={this.UserProfile} className="userInfo">User Profile</button>
+            <button onClick={this.DirectMessage} className="userInfo">Direct message</button>
+        </div>
+*/
+
+const blockUnblock = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.preventDefault();
+}
+const inviteGame = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.preventDefault();
+}
+const userProfile = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.preventDefault();
+}
+const directMessage = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.preventDefault();
+}
+
+const handleClick = (event: React.MouseEvent<HTMLDivElement>,
+    id: string, setId: any,
+    display: boolean, setDisplay: any): void => {
+    event.preventDefault();
+    const e: HTMLElement = event.target as HTMLElement;
+    const name: string = e.textContent as string;
+
+    if (display === false) {
+        setId(name);
+        setDisplay(true);
+    }
+    else if (id != name)
+        setId(name);
+    else {
+        setId("");
+        setDisplay(false);
+    }
+}
+
+const UserInfo = (props: PropsUserInfo): JSX.Element => {
+    const [display, setDisplay] = useState<boolean>(false);
+    const [id, setId] = useState<string>("");
+    const chooseClassName: string = (display == true ? "userInfo userInfoClick" : "userInfo");
+    let i: number = 0;
+    const Element = scroll.Element;
+
+    return (
+        <Element name="container" className="element fullBoxListUser"
+            onClick={(e: React.MouseEvent<HTMLDivElement>) => handleClick(e, id, setId, display, setDisplay)}>
+            {props.listUser &&
+                props.listUser.map((usr) => (
+                    <span tabIndex={usr.user_id} key={++i}>{usr.user.username}</span>
+                ))
+            }
+        </Element >
+    );
+}
+
+/*
+    userInfoDisplay: false,
             userName: '',
             listUser: [{
                 id: 0,
@@ -25,78 +111,65 @@ class ListUser extends React.Component<{}, State> {
                 id: 0,
                 content: 'def'
             }],
+*/
+
+/*
+listUser: Array<{
+        id: number,
+        username: string,
+    }>
+*/
+
+/* socket.on pour ecouter les user qui rejoignent le chat et les afficher */
+/*
+    admin et owner doit pouvoir mute/ban
+    owner doit pouvoir mettre des gens admin
+    quand admin quitte, quelqu'un devient owner, si possible un admin
+    user doit pouvoir blockUnblock inviteGame userProfile directMessage
+*/
+
+const ListUser = (props: { id: string, jwt: string }) => {
+    const usrSocket = useContext(SocketContext);
+    const [errorCode, setErrorCode] = useState<number>(200);
+    const [lstUser, setLstUser] = useState<PropsUserInfo["listUser"]>([]);
+
+    useEffect(() => {
+        const fetchListUser = async (id: string, jwt: string, setErrorCode: any) => {
+            return (await fetch('http://' + location.host + '/api/chat/users?' + new URLSearchParams({
+                id: id,
+            }), { headers: header(jwt) }).then(res => {
+                console.log("res1: " + res);
+                if (res.ok)
+                    return (res.json());
+                setErrorCode(res.status);
+            }));
         }
-        this.handleClick = this.handleClick.bind(this);
-        this.BlockUnblock = this.BlockUnblock.bind(this);
-        this.InviteGame = this.InviteGame.bind(this);
-        this.UserProfile = this.UserProfile.bind(this);
-        this.DirectMessage = this.DirectMessage.bind(this);
-    }
-    /* Bubble event, for propagating */
-    handleClick = (event: MouseEvent<HTMLDivElement>): void => {
-        event.preventDefault();
-        const e: HTMLElement = event.target as HTMLElement;
-        const name: string = e.textContent as string;
-        if (name != this.state.userName) {
-            this.setState((prevState => (
-                {
-                    userInfoDisplay: true,
-                    userName: name
-                }
-            )));
-        }
-        else {
-            this.setState({
-                userInfoDisplay: false,
-                userName: ''
-            })
-        }
-    }
-    BlockUnblock = (event: MouseEvent<HTMLButtonElement>): void => {
-        event.preventDefault();
-    }
-    InviteGame = (event: MouseEvent<HTMLButtonElement>): void => {
-        event.preventDefault();
-    }
-    UserProfile = (event: MouseEvent<HTMLButtonElement>): void => {
-        event.preventDefault();
-    }
-    DirectMessage = (event: MouseEvent<HTMLButtonElement>): void => {
-        event.preventDefault();
-    }
-    UserInfo = (): JSX.Element => {
-        const chooseClassName: string = (this.state.userInfoDisplay == true ? "userInfo userInfoClick" : "userInfo");
-        let i: number = 0;
-        return (<>
-            <table className='tableInfo'>
-                <thead>
-                    <tr>
-                        <th>User(s) connected</th>
-                    </tr>
-                </thead>
-                <tbody onClick={this.handleClick}>
-                    {this.state.listUser &&
-                        this.state.listUser.map((usr) => (
-                            <tr key={++i}>
-                                <td>{usr.content}</td>
-                            </tr>
-                        ))
-                    }
-                </tbody>
-            </table>
-            <div className={chooseClassName}>
-                <label className="userInfo">{this.state.userName}</label>
-                <button onClick={this.BlockUnblock} className="userInfo">Block/Unblock</button>
-                <button onClick={this.InviteGame} className="userInfo">Invite to a game</button>
-                <button onClick={this.UserProfile} className="userInfo">User Profile</button>
-                <button onClick={this.DirectMessage} className="userInfo">Direct message</button>
-            </div>
-        </>
-        )
-    }
-    render() {
-        return (<><this.UserInfo /></>);
-    }
+        fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
+            console.log(res);
+            setLstUser(res);
+        });
+        usrSocket.on("updateListChat", (res: boolean) => {
+            console.log(res);
+            fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
+                console.log(res);
+                setLstUser(res);
+            });
+        });
+        console.log("list user mount");
+        return (() => {
+            console.log("list user unmount");
+            setLstUser([]);
+            usrSocket.off("updateListChat");
+        });
+    }, [lstUser.keys]);
+    if (errorCode >= 400) // a placer devant fonctions asynchrones semblerait t'il, le composant react se recharge
+        return (<FetchError code={errorCode} />); //lorsqu'il se met a jour, semblerait t'il
+    return (
+        <React.Fragment>
+            <h2>List users</h2>
+            <UserInfo listUser={lstUser} />
+        </React.Fragment>
+    );
 }
 
 export default ListUser;

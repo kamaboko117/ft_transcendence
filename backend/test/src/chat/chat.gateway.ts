@@ -223,6 +223,21 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return (user);
   }
 
+  async getAllUsersOnChannel(id: string) {
+    const arr: any = await this.listUserRepository
+      .createQueryBuilder("list_user")
+      .select("list_user.user_id")
+      .addSelect("User.username")
+      .innerJoin("list_user.user", "User")
+      .where("list_user.chatid = :id")
+      .setParameters({ id: id })
+      .orderBy("User.username", 'ASC')
+      .getMany();
+    console.log("list user");
+    console.log(arr);
+    return (arr);
+  }
+
   createChat(chat: CreateChatDto, id: string, owner: Owner): InformationChat {
     chat.id = id;
     let newChat: Chat = {
@@ -255,8 +270,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return (return_chat);
   }
 
-  setNewUserChannel(channel: Readonly<any>, user_id: Readonly<number>,
-    data: Readonly<Room>): undefined | boolean {
+  async setNewUserChannel(channel: Readonly<any>, user_id: Readonly<number>,
+    data: Readonly<Room>): Promise<undefined | boolean> {
     if (channel.password != '') {
       if (data.psw === "" || data.psw === null)
         return (undefined)
@@ -265,7 +280,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         return (undefined)
     }
     //this.publicChats[idx].lstUsr.set(user_id, String(username));
-    this.listUserRepository
+    await this.listUserRepository
       .createQueryBuilder()
       .insert()
       .into(ListUser)
@@ -297,17 +312,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         id: data.id
       }
     });
+    const getName = channel?.name;
     if (typeof channel != "undefined" && channel != null) {
       const getUser: any = await this.getUserOnChannel(data.id, user.userID);
       //const getUser = channel.lstUsr.get(user.userID);
       if (typeof getUser === "undefined" || getUser === null) {
-        const newUser = this.setNewUserChannel(channel, user.userID, data);
+        const newUser = await this.setNewUserChannel(channel, user.userID, data);
         if (typeof newUser === "undefined") {
           return (false);
         }
+        this.server.to(data.id + getName).emit("updateListChat", true);
       }
     }
-    const getName = channel?.name;
     socket.join(data.id + getName);
     return (true);
   }
@@ -342,7 +358,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const [listUsr, count]: any = await this.listUserRepository.findAndCountBy({ chatid: data.id })
     const getName = channel.name;
     socket.leave(data.id + getName);
-    if (channel != undefined && count === 0)
+    this.server.to(data.id + getName).emit("updateListChat", true);
+    if (channel != undefined && channel != null && count === 0)
       this.chatsRepository.delete(data);
     return (getUser.User_username + " left the chat");
   }
@@ -352,10 +369,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async stopEmit(@ConnectedSocket() socket: Readonly<any>,
     @MessageBody() data: Readonly<any>) {
     const user = socket.user;
+    if (typeof data === "undefined")
+      return;
     //const getName = this.getChannelById(data.id)?.name;
     const getChannel: any = await this.getUserOnChannel(data.id, user.userID);
     console.log(getChannel);
-    socket.leave(data.id + getChannel.channel_name);
+    if (typeof getChannel !== "undefined" && getChannel !== null)
+      socket.leave(data.id + getChannel.channel_name);
   }//
 
   @UseGuards(JwtGuard)
@@ -379,8 +399,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     //  username: getUsername, content: data.content
     //});
     const getUser = await this.getUserOnChannel(data.id, user.userID);
-    console.log("gU");
-    console.log(getUser);
     this.listMsgRepository
       .createQueryBuilder()
       .insert()

@@ -143,9 +143,17 @@ export class ChatController {
         // console.log("valid-psw COMP: " + comp);
         return (comp);
     }
-    //
-    //@Guard() IL FAUT UN AUTHGUARD
-    /* Remplacer id et username par un actuel user */
+
+    @Get('users')
+    async getAllUsersOnChannel(@Request() req: any,
+        @Query('id') id: Readonly<string>) {
+        //creer type listUser
+        const listUsers: any = await this.chatGateway.getAllUsersOnChannel(id);
+        if (typeof listUsers === "undefined" || listUsers === null)
+            return (false);
+        return (listUsers);
+    }
+
     @Get('')
     async getChannel(@Request() req: any,
         @Query('id') id: Readonly<string>) {
