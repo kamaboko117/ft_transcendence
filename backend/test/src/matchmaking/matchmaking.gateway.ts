@@ -4,8 +4,13 @@ import {
     , ConnectedSocket, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, WsException
   } from '@nestjs/websockets';
   import { Socket, Server } from 'socket.io';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Request, Req, Query, Param, Get, Post, Body, HttpException, HttpStatus, UseGuards, Logger, NotImplementedException } from '@nestjs/common';
+import { JwtGuard } from 'src/auth/jwt.guard';
+import { User } from '../chat/chat.interface';
+
 const { FifoMatchmaker } = require('matchmaking');
+
+
 
 @WebSocketGateway({
   namespace: 'matchmaking'
@@ -23,24 +28,27 @@ export class MatchMakingGateway
   afterInit(server: Server) { }
 
   async handleConnection(client: Socket) {}
-
+  
+  @UseGuards(JwtGuard)
   @SubscribeMessage('queuein')
   async queuein(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() socket: Readonly<any>,
   ) {
     try {
-    // join queue here?
-    // wait till match found then emit a match found? use gamemaker here?
+      console.log("queue in");
+      const user = socket.user;
 
-      }
-    catch (error: any) { 
-        throw new HttpException({
-          status: HttpStatus.FORBIDDEN,
-          error: 'This is a custom message',
-        }, HttpStatus.FORBIDDEN, {
-          cause: error
-        });
-      }
+      if (typeof user.userID != "number")
+        return (false);
+      } 
+    catch (error) {
+      console.log("matchmaking failed");
+      this.server.to(error.response.recipient).emit('matchmakingfailed', {
+        message: error.response.message,
+        match: error.response.match,
+      });
+      throw new WsException(error);
+    }
   }
 
   @SubscribeMessage('queueout')
