@@ -1,4 +1,6 @@
-import { io, Socket } from "socket.io-client";
+import { SocketContext } from '../../contexts/Socket';
+import React, { useEffect, useRef, MutableRefObject, useState, useContext } from 'react';
+
 
 export class MMClass {
   private MMSocket?: Socket;
@@ -7,7 +9,7 @@ export class MMClass {
 
   constructor() {
     const url = `${import.meta.env.VITE_APP_URI}/${this.MMnamespace}`;
-    this.MMSocket = io(url);
+    this.MMSocket = useContext(SocketContext);
   }
 
   getMMSocket() {
