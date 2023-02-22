@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { JWT } from '@nestjs/jwt';
-import { MMGateway } from './match-making.gateway';
+import { MatchMakingGateway } from './matchmaking.gateway';
 
 @Module({
   controllers: [],
-  providers: [MMGateway, JWT],
+  providers: [MatchMakingGateway],
   exports: [],
 })
 export class MatchMakingModule {}
