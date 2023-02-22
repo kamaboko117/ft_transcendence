@@ -61,7 +61,7 @@ span.chatBox {
     margin: auto;
     margin-left: 10px;
     overflow-wrap: break-word;
-    */ margin-bottom: 20px;
+    margin-bottom: 20px;
     margin-right: 10px;
     width: 100%;
     min-width: 0;
@@ -94,8 +94,10 @@ button.chatBox {
     height: 80%;
 }
 
+/* User List Part */
 .right {
-    display: inline-flex;
+    display: flex;
+    flex-direction: column;
     order: 5;
     /*align-content: center;*/
     align-items: flex-start;
@@ -107,6 +109,28 @@ button.chatBox {
     width: 450px;
     min-width: 150px;
 }
+
+.right>h2 {
+    flex: 1;
+    align-self: center;
+}
+
+.fullBoxListUser {
+    display: flex !important;
+    flex-direction: column;
+    width: 100% !important;
+    height: 300px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: center !important;
+    overflow-y: scroll !important;
+}
+
+.fullBoxListUser>span:hover {
+    cursor: pointer;
+}
+
+/* End user list part */
 
 table.tableInfo {
     width: 100%;
