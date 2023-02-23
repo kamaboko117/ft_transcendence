@@ -44,7 +44,10 @@ export class MatchMakingGateway
 
   afterInit(server: Server) {}
 
-  async handleConnection(client: Socket) {}
+  async handleConnection(client: Socket) 
+  {
+    console.log("client id: " + client.id + 'made a new connection Matchmaking Gateway');
+  }
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('queuein')
@@ -54,6 +57,8 @@ export class MatchMakingGateway
       const user = socket.user;
 
       if (typeof user.userID != 'number') return false;
+
+
     } catch (error) {
       console.log('matchmaking failed');
       this.server.to(error.response.recipient).emit('matchmakingfailed', {
@@ -66,9 +71,13 @@ export class MatchMakingGateway
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('queueout')
-  queueout(@ConnectedSocket() client: Socket) {
+  queueout(@ConnectedSocket() socket: Readonly<any>) {
     try {
       // leave queue here?
+      console.log('queue out');
+      const user = socket.user;
+
+      if (typeof user.userID != 'number') return false;
     } catch (error) {
       console.log('leaving queue failed');
       this.server.to(error.response.recipient).emit('queueoutfailed', {
@@ -81,8 +90,11 @@ export class MatchMakingGateway
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('acceptMMmatch')
-  async accept(@ConnectedSocket() client: Socket) {
+  async accept(@ConnectedSocket() socket: Readonly<any>) {
     try {
+      // leave queue here?
+      console.log('accept match');
+      const user = socket.user;
       // accepting matchmaking match after queue found a match
     } catch (error) {
       console.log('accept match failed');
@@ -96,8 +108,11 @@ export class MatchMakingGateway
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('declineMMmatch')
-  decline(@ConnectedSocket() client: Socket) {
+  decline(@ConnectedSocket() socket: Readonly<any>) {
     try {
+      // leave queue here?
+      console.log('decline match');
+      const user = socket.user;
       // refusing matchmaking match after queue found a match
     } catch (error) {
       console.log('decline match failed');
