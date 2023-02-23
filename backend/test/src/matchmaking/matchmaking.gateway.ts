@@ -42,11 +42,15 @@ export class MatchMakingGateway
 
   constructor(private readonly jwtService: JwtService) {}
 
-  afterInit(server: Server) {}
+  afterInit(server: Server) 
+  {
+    console.log('Matchmaking Gateway initialized');
+  }
 
   async handleConnection(client: Socket) 
   {
     console.log("client id: " + client.id + 'made a new connection Matchmaking Gateway');
+    client.join(client.id);
   }
 
   @UseGuards(JwtGuard)
@@ -57,6 +61,7 @@ export class MatchMakingGateway
       const user = socket.user;
 
       if (typeof user.userID != 'number') return false;
+
 
 
     } catch (error) {
