@@ -137,6 +137,8 @@ table.tableInfo {
 }
 
 .userInfoClick {
+    position: absolute;
+    width: auto !important;
     display: inline-flex;
 }
 
@@ -145,10 +147,6 @@ table.tableInfo {
 }
 
 @media screen and (max-width: 1200px) {
-    .container-chat {
-        /*width: 100%;*/
-    }
-
     .userInfo {
         display: none;
         width: 100%;

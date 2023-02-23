@@ -1,10 +1,11 @@
-import React, { MouseEvent, SyntheticEvent, useContext, useEffect, useState } from 'react';
+import React, { MouseEvent, SyntheticEvent, useCallback, useContext, useEffect, useState } from 'react';
 import { FetchError, header } from '../FetchError';
 import { useEventListener } from '../../useHook/useEventListener'
 import "../../css/channel.css"
 import "../../css/chat.css"
 import scroll from 'react-scroll';
 import { SocketContext } from '../../contexts/Socket';
+import { debounce } from 'debounce';
 
 type State = {
     userInfoDisplay: boolean,
@@ -43,12 +44,12 @@ type PropsUserInfo = {
 
 /*
 <div className={chooseClassName}>
-            <label className="userInfo">{this.state.userName}</label>
-            <button onClick={this.BlockUnblock} className="userInfo">Block/Unblock</button>
-            <button onClick={this.InviteGame} className="userInfo">Invite to a game</button>
-            <button onClick={this.UserProfile} className="userInfo">User Profile</button>
-            <button onClick={this.DirectMessage} className="userInfo">Direct message</button>
-        </div>
+    <label className="userInfo">{this.state.userName}</label>
+    <button onClick={this.BlockUnblock} className="userInfo">Block/Unblock</button>
+    <button onClick={this.InviteGame} className="userInfo">Invite to a game</button>
+    <button onClick={this.UserProfile} className="userInfo">User Profile</button>
+    <button onClick={this.DirectMessage} className="userInfo">Direct message</button>
+</div>
 */
 
 const blockUnblock = (event: MouseEvent<HTMLButtonElement>): void => {
@@ -65,40 +66,79 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>): void => {
 }
 
 const handleClick = (event: React.MouseEvent<HTMLDivElement>,
-    id: string, setId: any): void => {
+    id: string, setId: any, setTop: any): void => {
     event.preventDefault();
     const e: HTMLElement = event.target as HTMLElement;
     const name: string = e.textContent as string;
-        console.log(e);
+
     if (id === "")
         setId(name);
     else if (id != name)
         setId(name);
     else
         setId("");
+    setTop(e.offsetTop + 27);
 }
 
 const UserInfo = (props: PropsUserInfo): JSX.Element => {
     const [id, setId] = useState<string>("");
+    const [offsetTop, setTop] = useState<number>(0);
     const chooseClassName: string = (id != "" ? "userInfo userInfoClick" : "userInfo");
     let i: number = 0;
     const Element = scroll.Element;
 
     const handleListenerClick = () => {
-            console.log("ev");
             setId("");
     }
+    //Read React's reference doc
     const ref: any = useEventListener(handleListenerClick);
-
+    //need callback otherwise useEffect will add X time function and will bug
+    const callback = useCallback(
+        debounce(function resizeFunction(){
+            if (id != "")
+            {
+                const length = ref.current?.childBindings?.domNode?.childNodes.length;
+                const arr = ref.current?.childBindings?.domNode?.childNodes;
+                let i = 0;
+                console.log(arr);
+                for (i = 0; i < length; i++)
+                {
+                    if (id === arr[i].textContent)
+                    {
+                        console.log(arr[i].textContent);
+                        setTop(arr[i].offsetTop + 27);
+                        break ;
+                    }
+                }
+            }
+        }, 100), [id]
+    );
+    //For resize the info user Box
+    useEffect(() => {
+        window.addEventListener("resize", callback);
+        return () => {
+            window.removeEventListener("resize", callback);
+        }
+    }, [id, window.innerWidth, window.innerHeight]);
+    
     return (
+        <>
         <Element name="container" className="element fullBoxListUser" ref={ref}
-            onClick={(e: React.MouseEvent<HTMLDivElement>) => handleClick(e, id, setId)}>
+            onClick={(e: React.MouseEvent<HTMLDivElement>) => handleClick(e, id, setId, setTop)}>
             {props.listUser &&
                 props.listUser.map((usr) => (
                     <span tabIndex={usr.user_id} key={++i}>{usr.user.username}</span>
                 ))
             }
         </Element >
+        <div className={chooseClassName} style={{top: offsetTop}}>
+            <label className="userInfo">{id}</label>
+            <button onClick={blockUnblock} className="userInfo">Block/Unblock</button>
+            <button onClick={inviteGame} className="userInfo">Invite to a game</button>
+            <button onClick={userProfile} className="userInfo">User Profile</button>
+            <button onClick={directMessage} className="userInfo">Direct message</button>
+        </div>
+        </>
     );
 }
 
@@ -132,7 +172,7 @@ listUser: Array<{
 const ListUser = (props: { id: string, jwt: string }) => {
     const usrSocket = useContext(SocketContext);
     const [errorCode, setErrorCode] = useState<number>(200);
-    const [lstUser, setLstUser] = useState<PropsUserInfo["listUser"]>([]);
+    const [lstUser, setLstUser] = useState<PropsUserInfo["listUser"]>(Array);
 
     useEffect(() => {
         const fetchListUser = async (id: string, jwt: string, setErrorCode: any) => {

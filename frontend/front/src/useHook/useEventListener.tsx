@@ -5,25 +5,25 @@ import React, { useRef, useEffect } from "react";
 */
 export const useEventListener = (callback: any) => {
     const ref: React.MutableRefObject<any> = useRef();
+    //run when useEventListener did load/update
     useEffect(() => {
       //create eventListener
       const eventFunction = (event: any) => {
-        console.log("event func event");
-        console.log(event.target.innerHTML);
-        console.log("ref func event");
-        console.log(ref.current.childBindings.domNode.childNodes);
-        const arr = ref.current.childBindings.domNode.childNodes;
+        const arr = ref.current?.childBindings?.domNode?.childNodes;
         const length = arr.length;
+        const target = event.target;
+        //get the div parent from user option, in ListUser>UserInfo component
+        const attributesTarget =  target?.parentNode?.attributes;
         let i = 0;
+        //loop whole list user array from event
         for (i = 0; i < length; ++i)
         {
-            console.log(arr[i].textContent);
-            if (event.target.innerHTML === arr[i].textContent)
+            if (target && target.innerHTML === arr[i].textContent)
                 break ;
         }
-        console.log("i: " + i + "length: " + length);
-        //if (ref.current && !ref.current.contains(event.target))
-        if (i >= length)
+        //will run handleClick in ListUser.tsx
+        if (i >= length
+            && attributesTarget?.class?.nodeValue !== "userInfo userInfoClick")
             callback();
       }
       //listening to JS event
