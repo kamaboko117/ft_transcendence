@@ -6,8 +6,9 @@ import { User } from '../typeorm/user.entity';
 export class ListUser {
     @PrimaryGeneratedColumn()
     id: number;
-    //@Column({ nullable: false })
-    //iduser: string;
+
+    @Column({nullable: true}) //owner and administrator
+    role: string;
 
     @ManyToOne(() => User, (user) => user.lstUsr, { nullable: false, cascade: true })
     @JoinColumn({ name: 'user_id' })

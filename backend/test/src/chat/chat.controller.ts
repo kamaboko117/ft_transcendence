@@ -111,7 +111,7 @@ export class ChatController {
             err.push("Chat name must not be empty.");
         else if (chat.name == chat.password)
             err.push("Password and chat name can't be the same.");
-        if (channel != null)// || typeof channel === "undefined")
+        if (channel != null || typeof channel === "undefined")
             err.push("Channel already exist.");
         if (err.length > 0)
             return (err);
@@ -121,13 +121,6 @@ export class ChatController {
             chat.accesstype = '3';
             chat.password = bcrypt.hashSync(chat.password, salt);
         }
-        //chat.lstUsr = new Map<string | number, string>;
-        //chat.lstMute = new Map<string, number>; //([[chat.setMute.key, chat.setMute.value]]);
-        //chat.lstBan = new Map<string, number>; //([[chat.setBan.key, chat.setBan.value]]);
-        //chat.lstUsr.set(user.userID, user.username);
-        /*
-            appeler createPrivate + dedans vérifier si id existe déjà
-        */
         return (this.chatGateway.createChat(chat, id, { idUser: user.userID, username: user.username }));
     }
 
@@ -174,16 +167,12 @@ export class ChatController {
         //console.log(await this.chatGateway.getListMsgByChannelId(id));
         //const channel = this.chatGateway.getChannelById(id);
 
-        if (typeof channel === "undefined")
+        if (typeof channel === "undefined" || channel === null)
             return ({});
         //const getUser = channel.lstUsr.get(user.userID);
-        console.log("owner: " + channel.owner);
-        console.log("userID: " + user.userID);
         const getUser = await this.chatGateway.getUserOnChannel(id, user.userID);
-        console.log(getUser);
         if (typeof getUser === "undefined" || getUser === null)
             return ({});
-        console.log("userid ok");
         let arrayStart: number = channel.lstMsg.length - 5;
         let arrayEnd: number = channel.lstMsg.length;
         if (arrayStart < 0)
@@ -195,10 +184,6 @@ export class ChatController {
             accesstype: channel.accesstype,
             lstMsg: channel.lstMsg.slice(arrayStart, arrayEnd),
             authorized: true
-            //lstUsr: Object.fromEntries(channel.lstUsr),
-            /*,
-            lstMute: Object.fromEntries(channel.lstMute),
-            lstBan: Object.fromEntries(channel.lstBan),*/
         };
         return (convertChannel);
     }

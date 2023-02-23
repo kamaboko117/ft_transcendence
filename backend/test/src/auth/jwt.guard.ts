@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable, SetMetadata, Inject, UnauthorizedException } from '@nestjs/common';
+import { ExecutionContext, Injectable, SetMetadata, Inject } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ExtractJwt } from 'passport-jwt';
 //import { Observable } from 'rxjs';

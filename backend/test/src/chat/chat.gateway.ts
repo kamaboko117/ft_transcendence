@@ -343,6 +343,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     //if (typeof getUser === "undefined")
     //  return ("User not found");
     const getUser: any = await this.getUserOnChannel(data.id, user.userID);
+    if (typeof getUser === "undefined" || getUser === null)
+      return("No user found");
     await this.chatsRepository
       .createQueryBuilder()
       .delete()
@@ -399,6 +401,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     //  username: getUsername, content: data.content
     //});
     const getUser = await this.getUserOnChannel(data.id, user.userID);
+    if (typeof getUser === "undefined" || getUser === null)
+      return (undefined);
     this.listMsgRepository
       .createQueryBuilder()
       .insert()
