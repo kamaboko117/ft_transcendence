@@ -1,5 +1,6 @@
-import React, { MouseEvent, useContext, useEffect, useState } from 'react';
+import React, { MouseEvent, SyntheticEvent, useContext, useEffect, useState } from 'react';
 import { FetchError, header } from '../FetchError';
+import { useEventListener } from '../../useHook/useEventListener'
 import "../../css/channel.css"
 import "../../css/chat.css"
 import scroll from 'react-scroll';
@@ -64,34 +65,34 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>): void => {
 }
 
 const handleClick = (event: React.MouseEvent<HTMLDivElement>,
-    id: string, setId: any,
-    display: boolean, setDisplay: any): void => {
+    id: string, setId: any): void => {
     event.preventDefault();
     const e: HTMLElement = event.target as HTMLElement;
     const name: string = e.textContent as string;
-
-    if (display === false) {
+        console.log(e);
+    if (id === "")
         setId(name);
-        setDisplay(true);
-    }
     else if (id != name)
         setId(name);
-    else {
+    else
         setId("");
-        setDisplay(false);
-    }
 }
 
 const UserInfo = (props: PropsUserInfo): JSX.Element => {
-    const [display, setDisplay] = useState<boolean>(false);
     const [id, setId] = useState<string>("");
-    const chooseClassName: string = (display == true ? "userInfo userInfoClick" : "userInfo");
+    const chooseClassName: string = (id != "" ? "userInfo userInfoClick" : "userInfo");
     let i: number = 0;
     const Element = scroll.Element;
 
+    const handleListenerClick = () => {
+            console.log("ev");
+            setId("");
+    }
+    const ref: any = useEventListener(handleListenerClick);
+
     return (
-        <Element name="container" className="element fullBoxListUser"
-            onClick={(e: React.MouseEvent<HTMLDivElement>) => handleClick(e, id, setId, display, setDisplay)}>
+        <Element name="container" className="element fullBoxListUser" ref={ref}
+            onClick={(e: React.MouseEvent<HTMLDivElement>) => handleClick(e, id, setId)}>
             {props.listUser &&
                 props.listUser.map((usr) => (
                     <span tabIndex={usr.user_id} key={++i}>{usr.user.username}</span>
