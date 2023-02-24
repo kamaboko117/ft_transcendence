@@ -15,7 +15,7 @@ type State = {
         channel_id: number | string,
         channel_name: string,
         User_username: string,
-        accesstype: number,
+        channel_accesstype: number,
     }>,
     channelName: string,
     privateChannelName: string,
@@ -161,7 +161,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         })
     }
     onChange = (e: ChangeEvent<HTMLInputElement>): void => {
-        e.preventDefault();
+        e.stopPropagation();
         const name = e.currentTarget.name;
         const value = e.currentTarget.value;
         this.setState((prevState => (
@@ -309,7 +309,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                             state={{ name: chan.channel_name, username: "" }}>{chan.channel_name}</Link>
                         </td>
                         <td>{chan.User_username}</td>
-                        <td><TypeAccess access={chan.accesstype} /></td>
+                        <td><TypeAccess access={chan.channel_accesstype} /></td>
                     </tr>
                 ))
             }

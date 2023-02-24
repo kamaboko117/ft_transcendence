@@ -8,16 +8,15 @@ import scroll from 'react-scroll';
 import { SocketContext } from '../../contexts/Socket';
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
 
-type lstMsg = {
+export type lstMsg = {
     lstMsg: Array<{
         idUser: string,
-        //username: string, //à enlever pour un find dans repository
         content: string
     }>
 }
 
 /* return user state list */
-const ListMsg = (props: any) => {
+export const ListMsg = (props: any) => {
     const scrollBottom = useRef<any>();
     const Element = scroll.Element;
     let EScroll = scroll.animateScroll;
@@ -59,7 +58,7 @@ const handleLeave = async (e: React.MouseEvent<HTMLButtonElement>, contextUserLe
     });
 }
 /* Post msg */
-const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
+export const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
     usrSocket: any, obj: any, ref: any, setMsg: any) => {
     e.preventDefault();
     usrSocket.emit('sendMsg', obj, (res) => {
@@ -70,7 +69,7 @@ const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
     ref.current.value = "";
 }
 
-const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
+export const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
     usrSocket: any, obj: any, ref: any, setMsg: any) => {
     if (e.key === "Enter" && e.shiftKey === false) {
         e.preventDefault();
@@ -82,8 +81,6 @@ const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
         ref.current.value = "";
     }
 }
-
-/* besoin context utilisateur */
 
 const MainChat = (props: any) => {
     const refElem = useRef(null);

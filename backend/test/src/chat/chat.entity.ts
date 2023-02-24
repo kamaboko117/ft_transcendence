@@ -22,7 +22,7 @@ export class Channel {
     @ManyToOne(() => User, (user) => user.lstChannel, { nullable: false, cascade: true })
     @JoinColumn({ name: 'user_id' })
     user: User;
-    @Column({ nullable: false })
+    @Column({ nullable: true })
     user_id: number;
     
     @OneToMany(() => ListMsg, (listmsg) => listmsg.chat)
