@@ -1,11 +1,12 @@
-import { Controller, Request, Req, Query, Param, Get, Post, Body, HttpException, HttpStatus, UseGuards, Logger } from '@nestjs/common';
+import { Controller, Request, Query, Get, Post, Body, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
 import { ChatGateway } from './chat.gateway';
-import { Chat, InformationChat, User, DbChat } from './chat.interface';
+import { InformationChat, User, DbChat } from './chat.interface';
 import { CreateChatDto } from './create-chat.dto';
 import { PswChat } from './psw-chat.dto';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { JwtGuard } from 'src/auth/jwt.guard';
+import { Channel } from './chat.entity';
 
 @Controller('chat')
 export class ChatController {
@@ -16,6 +17,7 @@ export class ChatController {
     getAllPublic(@Request() req: any): Promise<InformationChat[]> {
         return (this.chatGateway.getAllPublic());
     }
+
     @UseGuards(JwtGuard)
     @Get('private')
     async getAllPrivate(@Request() req: any,
@@ -24,6 +26,30 @@ export class ChatController {
         // console.log(this.chatGateway.getAllPrivate(id));
         return (await this.chatGateway.getAllPrivate(id, user.userID));
     }
+
+    @Get('users')
+    async getAllUsersOnChannel(@Request() req: any,
+        @Query('id') id: Readonly<string>) {
+        //creer type listUser
+        const listUsers: any = await this.chatGateway.getAllUsersOnChannel(id);
+        if (typeof listUsers === "undefined" || listUsers === null)
+            return (false);
+        return (listUsers);
+    }
+    /*
+        doit chercher le chat en fonction des 2 membres du chat
+        doit retourner le chat
+        doit check si le chat est bien retourner, si gateway retourne null ou undefined alors throw 
+        forbidden
+    */
+    @Get('direct-message')
+    async getDirectMessage(@Request() req: any, @Query('id') id: Readonly<number>) {
+        const user: User = req.user;
+        const channel: Channel | null 
+            =  await this.chatGateway.getDirectChannel(id, user.userID);
+        console.log(channel);
+    }
+
     /*
         id = id channel
         name = channel's name
@@ -54,17 +80,16 @@ export class ChatController {
     /* Post part */
     /* Create new public chat and return them by Name */
     /* admin pas fait */
-    //@Guard() IL FAUT UN AUTHGUARD
     @UseGuards(JwtGuard)
     @Post('new-public')
     async postNewPublicChat(@Request() req: any,
         @Body() chat: CreateChatDto): Promise<InformationChat | string[]> {
         const user: User = req.user;
         const channel: undefined | DbChat = await this.chatGateway.getChannelByName(chat.name);
-        console.log("channel");
-
         let err: string[] = [];
-
+        console.log()
+        if ((chat.accesstype != '0' && chat.accesstype != '1'))
+            err.push("Illegal access type");
         if (chat.name.length === 0)
             err.push("Chat name must not be empty.");
         else if (chat.name == chat.password)
@@ -79,23 +104,15 @@ export class ChatController {
         let salt = 10; //DOIT ETRE UTILISE DEPUIS .env
         if (chat.accesstype != '0' || typeof getAll == undefined)
             throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
-        //chat.lstUsr = new Map<string | number, string>;
-        //chat.lstMute = new Map<string, number>; //([[chat.setMute.key, chat.setMute.value]]);
-        //chat.lstBan = new Map<string, number>; //([[chat.setBan.key, chat.setBan.value]]);
-        //chat.lstUsr.set(user.userID, user.username);
         if (chat.password != '') {
             chat.accesstype = '1';
             chat.password = bcrypt.hashSync(chat.password, salt);
         }
-        //   console.log(chat);
         return (this.chatGateway.createChat(chat, len, { idUser: user.userID, username: user.username }));
-        //console.log(this.chatGateway.getAllPublicByName());
-        //return (this.chatGateway.getAllPublicByName());
     }
 
     /* Create new private chat and return them by Name */
     /* admin pas fait */
-    //@Guard() IL FAUT UN AUTHGUARD
     /*
         https://nodejs.org/api/crypto.html#cryptorandombytessize-callback
     */
@@ -106,7 +123,8 @@ export class ChatController {
         const user: User = req.user;
         const channel: undefined | DbChat = await this.chatGateway.getChannelByName(chat.name);
         let err: string[] = [];
-
+        if ((chat.accesstype != '2' && chat.accesstype != '3'))
+            err.push("Illegal access type");
         if (chat.name.length === 0)
             err.push("Chat name must not be empty.");
         else if (chat.name == chat.password)
@@ -125,7 +143,7 @@ export class ChatController {
     }
 
     @Post('valid-paswd')
-    async passwordIsValid(@Body() psw: PswChat): Promise<boolean> {
+    async passwordIsValid(@Body() psw: Readonly<PswChat>): Promise<boolean> {
         // console.log("psw: " + psw);
         //const channel: undefined | Chat = this.chatGateway.getChannelById(psw.id)
         const channel: undefined | DbChat = await this.chatGateway.getChannelByTest(psw.id);
@@ -135,16 +153,6 @@ export class ChatController {
         const comp = await bcrypt.compare(psw.psw, channel.password);
         // console.log("valid-psw COMP: " + comp);
         return (comp);
-    }
-
-    @Get('users')
-    async getAllUsersOnChannel(@Request() req: any,
-        @Query('id') id: Readonly<string>) {
-        //creer type listUser
-        const listUsers: any = await this.chatGateway.getAllUsersOnChannel(id);
-        if (typeof listUsers === "undefined" || listUsers === null)
-            return (false);
-        return (listUsers);
     }
 
     @Get('')

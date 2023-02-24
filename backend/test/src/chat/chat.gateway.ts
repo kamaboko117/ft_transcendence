@@ -66,52 +66,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   private listUserRepository: Repository<ListUser>;
   @InjectRepository(ListMsg)
   private listMsgRepository: Repository<ListMsg>;
-  /*
-    async onModuleInit() {
-      //remplacer any[] par Chat[] quand mute et ban
-      let arr: Channel[] = await this.chatsRepository.find();
-      //console.log(arr);
-      //
-      arr.forEach(async (element) => {*/
-  /* LOAD MSGS BY CHANNEL */
-  /*const lstMsg: ListMsg[] = await this.listMsgRepository
-    .createQueryBuilder("list_msg")
-    .select(['list_msg.user_id',
-      'list_msg.username', 'list_msg.content'])
-    .innerJoin("list_msg.chat", "lstMsg")
-    .where("list_msg.chatid = :id")
-    .setParameters({ id: element.id })
-    .getMany();
-    */
-  /* LOAD USERS BY CHANNEL */
-  /* const lstUser: ListUser[] = await this.listUserRepository
-     .createQueryBuilder("list_user")
-     .select(['list_user.user_id',])
-     .innerJoin("list_user.chat", "lstUsr")
-     .where("list_user.chatid = :id")
-     .setParameters({ id: element.id })
-     .getMany();
-   console.log("arr: " + lstUser);*/
-  /*let mapUser: Map<number | string, string> = new Map<string | number, string>;
-  lstUser.forEach((elem: any) => {
-    mapUser.set(elem.iduser, elem.username)
-  })
-  console.log("Map: " + mapUser);
-  */
-  /*this.publicChats.push({
-     id: element.id,
-     name: element.name,
-     owner: element.user_id,
-     accesstype: element.accesstype,
-     password: element.password,
-     lstMsg: lstMsg,
-     lstUsr: mapUser,
-     lstMute: new Map<string, number>,
-     lstBan: new Map<string, number>,
-   });*/
-  /*  });
-   // console.log(this.publicChats);
-  }*/
+ 
   async getAllPublic(): Promise<any[]> {
     const arr: Channel[] = await this.chatsRepository
       .createQueryBuilder("channel")
@@ -141,19 +96,21 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log("allP");
     console.log(arr);
     return arr;
-    /*const arr: Channel[] = await this.chatsRepository
-      .createQueryBuilder("channel")
-      .innerJoin("channel.lstUsr", "ListUser")
-      .innerJoinAndSelect("ListUser.user", "User")
-      .select(["channel.id", "channel.name",
-        'channel.user_id', "channel.accesstype", "User.username"])
-      .where("(accesstype = :a1 OR accesstype = :a2) AND User.userID = :userID")// AND ListUser.user_id = :iduser")
-      .setParameters({ a1: 2, a2: 3, userID: userID })
-      .getMany();
-    console.log("allP");
-    console.log(arr);
-    return arr;*/
   }
+
+  async getDirectChannel(idAskUser: Readonly<number>, userID: Readonly<number>) {
+    const channel: Channel | null = await this.chatsRepository
+      .createQueryBuilder("channel")
+      .select("channel.id")
+      .distinct(true)
+      .innerJoin("channel.lstUsr", "ListUser")
+      .where("channel.accesstype = :id")
+      .setParameters({id: 4, userOne: idAskUser, userTwo: userID})
+      .getOne();
+      console.log(channel);
+      return (channel)
+  }
+
   /*getAllPublicByName(): InformationChat[] {
     let arrName: InformationChat[] = [];
 

@@ -1,6 +1,5 @@
 import { ExecutionContext, Injectable, SetMetadata, Inject } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ExtractJwt } from 'passport-jwt';
 //import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { Reflector } from '@nestjs/core';
@@ -17,7 +16,7 @@ export class JwtGuard extends AuthGuard('jwt') {
     }
     canActivate(context: ExecutionContext) {
         const request = context.switchToHttp().getRequest(); //see guard doc
-        const websocket = context.switchToWs().getClient();
+        //const websocket = context.switchToWs().getClient();
         const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
             context.getHandler(), context.getClass()
         ]);

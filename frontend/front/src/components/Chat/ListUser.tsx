@@ -1,11 +1,14 @@
-import React, { MouseEvent, SyntheticEvent, useCallback, useContext, useEffect, useState } from 'react';
+import React, { MouseEvent, useCallback, useContext, useEffect, useState } from 'react';
 import { FetchError, header } from '../FetchError';
-import { useEventListener } from '../../useHook/useEventListener'
-import "../../css/channel.css"
-import "../../css/chat.css"
+import { useEventListenerUserInfo } from '../../useHook/useEventListener'
+import "../../css/channel.css";
+import "../../css/chat.css";
+import "../../css/user.css"
 import scroll from 'react-scroll';
 import { SocketContext } from '../../contexts/Socket';
 import { debounce } from 'debounce';
+import ContextDisplayChannel from '../../contexts/displayChat';
+//import useDisplayChat from '../../useHook/useDisplayChat';
 
 type State = {
     userInfoDisplay: boolean,
@@ -61,41 +64,52 @@ const inviteGame = (event: MouseEvent<HTMLButtonElement>): void => {
 const userProfile = (event: MouseEvent<HTMLButtonElement>): void => {
     event.preventDefault();
 }
-const directMessage = (event: MouseEvent<HTMLButtonElement>): void => {
+const directMessage = (event: MouseEvent<HTMLButtonElement>,
+    renderDirectMessage: boolean, setDisplay: any): void => {
     event.preventDefault();
+    console.log(renderDirectMessage);
+    if (renderDirectMessage === true)
+        setDisplay(false)
+    else
+        setDisplay(true);
 }
 
 const handleClick = (event: React.MouseEvent<HTMLDivElement>,
-    id: string, setId: any, setTop: any): void => {
+    username: string, setUsername: any, setUserId: any, setTop: any): void => {
     event.preventDefault();
     const e: HTMLElement = event.target as HTMLElement;
     const name: string = e.textContent as string;
-
-    if (id === "")
-        setId(name);
-    else if (id != name)
-        setId(name);
+    const attributes: NamedNodeMap = e.attributes as NamedNodeMap;
+    if (username === "" || username != name)
+    {
+        setUserId(Number(attributes[0].value));
+        setUsername(name);
+    }
     else
-        setId("");
+    {
+        setUserId(0);
+        setUsername("");
+    }
     setTop(e.offsetTop + 27);
 }
 
 const UserInfo = (props: PropsUserInfo): JSX.Element => {
-    const [id, setId] = useState<string>("");
+    const [username, setUsername] = useState<string>("");
     const [offsetTop, setTop] = useState<number>(0);
-    const chooseClassName: string = (id != "" ? "userInfo userInfoClick" : "userInfo");
+    const { renderDirectMessage, userId, setDisplay, setUserId } = useContext(ContextDisplayChannel);
+    const chooseClassName: string = (username != "" ? "userInfo userInfoClick" : "userInfo");
     let i: number = 0;
     const Element = scroll.Element;
 
     const handleListenerClick = () => {
-            setId("");
+            setUsername("");
     }
     //Read React's reference doc
-    const ref: any = useEventListener(handleListenerClick);
+    const ref: any = useEventListenerUserInfo(handleListenerClick);
     //need callback otherwise useEffect will add X time function and will bug
     const callback = useCallback(
         debounce(function resizeFunction(){
-            if (id != "")
+            if (username != "")
             {
                 const length = ref.current?.childBindings?.domNode?.childNodes.length;
                 const arr = ref.current?.childBindings?.domNode?.childNodes;
@@ -103,7 +117,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
                 console.log(arr);
                 for (i = 0; i < length; i++)
                 {
-                    if (id === arr[i].textContent)
+                    if (username === arr[i].textContent)
                     {
                         console.log(arr[i].textContent);
                         setTop(arr[i].offsetTop + 27);
@@ -111,7 +125,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
                     }
                 }
             }
-        }, 100), [id]
+        }, 100), [username]
     );
     //For resize the info user Box
     useEffect(() => {
@@ -119,12 +133,12 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
         return () => {
             window.removeEventListener("resize", callback);
         }
-    }, [id, window.innerWidth, window.innerHeight]);
-    
+    }, [username, window.innerWidth, window.innerHeight]);
+    //const [, refOne, ] = useDisplayChat();
     return (
         <>
         <Element name="container" className="element fullBoxListUser" ref={ref}
-            onClick={(e: React.MouseEvent<HTMLDivElement>) => handleClick(e, id, setId, setTop)}>
+            onClick={(e: React.MouseEvent<HTMLDivElement>) => handleClick(e, username, setUsername, setUserId, setTop)}>
             {props.listUser &&
                 props.listUser.map((usr) => (
                     <span tabIndex={usr.user_id} key={++i}>{usr.user.username}</span>
@@ -132,11 +146,15 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
             }
         </Element >
         <div className={chooseClassName} style={{top: offsetTop}}>
-            <label className="userInfo">{id}</label>
+            <label className="userInfo">{username}</label>
             <button onClick={blockUnblock} className="userInfo">Block/Unblock</button>
             <button onClick={inviteGame} className="userInfo">Invite to a game</button>
             <button onClick={userProfile} className="userInfo">User Profile</button>
-            <button onClick={directMessage} className="userInfo">Direct message</button>
+            <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+                directMessage(e,
+                renderDirectMessage,
+                setDisplay)
+            } className="userInfo">Direct message</button>
         </div>
         </>
     );
