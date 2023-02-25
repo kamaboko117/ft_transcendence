@@ -38,8 +38,10 @@ const Button = () => {
 
 const ListDiscussion = () => {
     const Element = scroll.Element;
-    return (<>
-    <Element name="container" className="element" style={{overflowY: 'scroll'}}>
+
+    return (<div className='listDiscussion'>
+    <span>Privates messages</span>
+    <Element name="container" className="element" style={{overflowY: 'scroll', height: '90%'}}>
     <ul className='listDiscussion'>
         <li>testqsdqsdsqjdiqsdhqshsjhqshkdhdhsjdhsj</li>
         <li>test</li>
@@ -48,7 +50,8 @@ const ListDiscussion = () => {
     </ul>
     </Element>
     <input type="text" /*onChange={}*/ placeholder='Direct message a user' name="user" />
-    </>
+    <button>Search</button>
+    </div>
     );
 }
 
@@ -56,17 +59,21 @@ const Box = (props: settingChat) => {
     const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
 
     return (
-        <article className='containerDirectMessage' style={{
+        <article className='containerDirectMessage unfold' style={{
             maxWidth: props.width,
-            height: props.height,
+            maxHeight: props.height,
             opacity: props.opacity,
-            background: 'red'
         }}>
             <ListDiscussion/>
-            <div className="chatName">
-                <Button/>
-            </div>
+            <div className='containerDiscussionBox'>
             <ListMsg lstMsg={lstMsg} />
+            <div className='containerPost'>
+                <textarea>
+                </textarea>
+                <button>Go</button>
+            </div>
+            </div>
+            <Button/>
         </article>
     );   
 }
@@ -75,7 +82,7 @@ const Box = (props: settingChat) => {
     Waiting for user displaying Direct Message part
 */
 const FoldDirectMessage = (props:settingChat) => {
-    return (<article className='containerDirectMessage' style={{
+    return (<article className='containerDirectMessage fold' style={{
         maxWidth:props.width,
         height: props.height,
         opacity: props.opacity,

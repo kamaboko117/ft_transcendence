@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
-import { useContext } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import UserItem from "../components/Users/UserItem";
 import UserContext from "../contexts/UserContext";
-import React from "react";
 
 function FakeLogin() {
   const userCtx: any = useContext(UserContext);
