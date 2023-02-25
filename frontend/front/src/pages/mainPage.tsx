@@ -21,9 +21,9 @@ const loginUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}
 */
 
 function MainPage() {
-  /* Verifier validite token */
   const userCtx: any = useContext(UserContext);
   const user: User = userCtx.user;
+
   if (typeof userCtx.user != "undefined" && userCtx.user.jwt) {
     console.log("logged in as " + userCtx.user.username);
     return (
@@ -32,7 +32,6 @@ function MainPage() {
       </div>
     )
   }
-
   return (
     <div className={classes.splash_middle}>
       <span>{app_uri}</span>

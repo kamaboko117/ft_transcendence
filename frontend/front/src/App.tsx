@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import LoginPage from "./pages/login";
@@ -33,6 +33,7 @@ import MatchmakingPage from "./pages/matchmaking";
 import { usrSocket, SocketContext } from './contexts/Socket';
 import { ErrorBoundary } from 'react-error-boundary'
 import ContextDisplayChannel from "./contexts/displayChat";
+import UserContext from "./contexts/UserContext";
 
 function ErrorFallback({ error, resetErrorBoundary }) {
   return (
@@ -43,8 +44,8 @@ function ErrorFallback({ error, resetErrorBoundary }) {
 }
 
 function App() {
-  const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
-  console.log(jwt);
+  //const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
+  const userCtx: any = useContext(UserContext);
   const [renderDirectMessage, setDisplay] = useState<boolean>(false);
   const [userId, setUserId] = useState<number>(0);
   const providers = {
@@ -53,6 +54,8 @@ function App() {
     setDisplay: setDisplay,
     setUserId: setUserId
   };
+  let jwt = userCtx.getJwt();
+  console.log(jwt);
   return (
     <>
       <div>
@@ -85,7 +88,7 @@ function App() {
                 <Route path="/matchmaking" element={<MatchmakingPage />} />
               </Routes>
               {jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={0}
-                width={600} height={200} opacity={1} />}
+                width={600} height={280} opacity={1} />}
             </ContextDisplayChannel.Provider>
           </SocketContext.Provider>
         </ErrorBoundary>
