@@ -3,7 +3,7 @@ import { FetchError, header, headerPost } from '../FetchError';
 import { lstMsg, ListMsg, handleSubmitButton, handleSubmitArea } from './Chat';
 import "../../css/directMessage.css";
 import ContextDisplayChannel from '../../contexts/displayChat';
-// useDisplayChat from '../../useHook/useDisplayChat';
+import scroll from 'react-scroll';
 
 type settingChat = {
     render: boolean,
@@ -23,24 +23,48 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>,
         setDisplay(true);
 }
 
-const Box = (props: settingChat) => {
-    //const [, , refTwo] = useDisplayChat();
+const Button = () => {
     const { renderDirectMessage, setDisplay } = useContext(ContextDisplayChannel);
+
+    return (
+        <button onClick={
+            (e: React.MouseEvent<HTMLButtonElement>) =>
+            directMessage(e,
+            renderDirectMessage,
+            setDisplay)
+        }>X</button>
+    );
+}
+
+const ListDiscussion = () => {
+    const Element = scroll.Element;
+    return (<>
+    <Element name="container" className="element" style={{overflowY: 'scroll'}}>
+    <ul className='listDiscussion'>
+        <li>testqsdqsdsqjdiqsdhqshsjhqshkdhdhsjdhsj</li>
+        <li>test</li>
+        <li>test</li><li>test</li><li>test</li><li>test</li><li>test</li><li>test</li><li>test</li><li>test</li>
+        <li>test</li><li>test</li><li>test</li><li>test</li><li>test</li><li>test</li><li>test</li><li>test</li>
+    </ul>
+    </Element>
+    <input type="text" /*onChange={}*/ placeholder='Direct message a user' name="user" />
+    </>
+    );
+}
+
+const Box = (props: settingChat) => {
     const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
 
     return (
         <article className='containerDirectMessage' style={{
-            width:props.width,
+            maxWidth: props.width,
             height: props.height,
-            opacity: props.opacity
+            opacity: props.opacity,
+            background: 'red'
         }}>
+            <ListDiscussion/>
             <div className="chatName">
-                <span style={{ flex: 1 }}>Messages</span>
-                <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-                directMessage(e,
-                renderDirectMessage,
-                setDisplay)
-            }>X</button>
+                <Button/>
             </div>
             <ListMsg lstMsg={lstMsg} />
         </article>
@@ -52,26 +76,25 @@ const Box = (props: settingChat) => {
 */
 const FoldDirectMessage = (props:settingChat) => {
     return (<article className='containerDirectMessage' style={{
-        width:props.width,
+        maxWidth:props.width,
         height: props.height,
-        opacity: props.opacity
-    }}><span>Click to unfold Personal Chat</span></article>);
+        opacity: props.opacity,
+        background: 'red'
+    }}><Button/><span>Open chat box</span></article>);
 }
 
-const DirectMessage = (props: settingChat) => {
+const UnfoldDirectMessage = (props: settingChat) => {
     const [errorCode, setErrorCode] = useState<number>(200);
-    //get channel id
 
     if (errorCode >= 400) // a placer devant fonctions asynchrones semblerait t'il, le composant react se recharge
         return (<FetchError code={errorCode} />); //lorsqu'il se met a jour, semblerait t'il
-    console.log("render: " + props.render);
     if (props.render === false)
         return <FoldDirectMessage render={props.render} id={props.id}
         width={props.width} height={50}
-        opacity={props.opacity}/>
+        opacity={0.6}/>
     return <Box render={props.render} id={props.id}
         width={props.width} height={props.height}
-        opacity={props.opacity}/>
+        opacity={0.9}/>
 }
 
-export default DirectMessage;
+export default UnfoldDirectMessage;
