@@ -18,7 +18,7 @@ import NavBar from './components/navbar/NavBar';
 /*channel part */
 import ListChannel from "./components/Chat/ListChannel";
 import Chat from "./components/Chat/Chat";
-import DirectMessage from "./components/Chat/DirectMessage";
+import UnfoldDirectMessage from "./components/Chat/DirectMessage";
 
 /* User profile part */
 import UserProfile from "./pages/User/UserProfile";
@@ -84,7 +84,7 @@ function App() {
                 <Route path="/play" element={<PlayPage />} />
                 <Route path="/matchmaking" element={<MatchmakingPage />} />
               </Routes>
-              {<DirectMessage render={renderDirectMessage} id={0}
+              {jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={0}
                 width={600} height={200} opacity={1} />}
             </ContextDisplayChannel.Provider>
           </SocketContext.Provider>

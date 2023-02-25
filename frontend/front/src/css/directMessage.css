@@ -1,6 +1,14 @@
 .containerDirectMessage {
     display: flex;
+    flex-direction: column row;
     position: fixed;
     bottom: 0;
     z-index: 1;
+}
+
+.listDiscussion {
+    overflow: hidden;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
 }
