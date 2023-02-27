@@ -5,7 +5,7 @@ import "../../css/chat.css";
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import img from "../../assets/react.svg";//a remplacer avec user image
 import scroll from 'react-scroll';
-import { SocketContext } from '../../contexts/Socket';
+import SocketContext from '../../contexts/Socket';
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
 
 export type lstMsg = {
@@ -85,7 +85,7 @@ export const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
 const MainChat = (props: any) => {
     const refElem = useRef(null);
     const [online, setOnline] = useState<undefined | boolean>(undefined)
-    const usrSocket = useContext(SocketContext);
+    const { usrSocket } = useContext(SocketContext);
     useEffect(() => {
         //subscribeChat
         usrSocket.emit("joinRoomChat", {
@@ -171,9 +171,6 @@ const MainChat = (props: any) => {
                 <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleLeave(e,
                     contextUserLeave, usrSocket, {
                     id: props.id,
-                    //idUser: window.navigator.userAgent,
-                    // username: window.navigator.userAgent,
-                    /*name: props.getLocation.state.name*/
                 }, navigate)}
                     className='chatLeave'>Leave</button>
             </div>
@@ -185,7 +182,6 @@ const MainChat = (props: any) => {
                         handleSubmitArea(e,
                             usrSocket, {
                             id: props.id,
-                            //idUser: window.navigator.userAgent,
                             content: msg
                         },
                             refElem,

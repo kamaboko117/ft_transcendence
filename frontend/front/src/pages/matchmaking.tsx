@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 import React, { useEffect, useRef, MutableRefObject, useState, useContext } from 'react';
-import { SocketContext } from '../contexts/Socket';
+import SocketContext from '../contexts/Socket';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 
 //location.host = "localhost:4000"

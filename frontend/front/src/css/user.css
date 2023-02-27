@@ -10,6 +10,7 @@ label.userInfo {
 }
 
 .userInfoClick {
+    z-index: 2;
     display: inline-flex;
 }
 

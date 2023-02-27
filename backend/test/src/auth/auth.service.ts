@@ -27,16 +27,11 @@ export class AuthService {
 	}
 	/* create fake user */
 	async fakeUser() {
-		//const token: { access_token: string, refresh_token: string } | undefined = await this.usersServices.getToken(code);
-		//if (typeof token === "undefined")
-		//	return (undefined);
-		//const iduser: number = await this.usersServices.getInformationBearer(token);
-		//console.log("iduser: " + iduser);
-		const iduser = Math.ceil(Math.random() * 9452160 + 1000000);
-        	const user = await this.usersServices.createUser({ userID: iduser, username: iduser.toString(), token: '' });
-        	console.log(user);
-        	return (user);
-    	}
+		const iduser: number = Math.ceil(Math.random() * 9452160 + 1000000);
+        const user = await this.usersServices.createUser({ userID: iduser, username: iduser.toString(), token: '' });
+        console.log(user);
+        return (user);
+    }
 
 
     /* then log user, returning a Json web token */
