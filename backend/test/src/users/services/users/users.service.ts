@@ -131,8 +131,8 @@ export class UsersService {
     async getUserProfile(id: number) {
         const user: any = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.token', 'user.userID', 'user.avatarPath'])
-            .where('user.user_id = :user')
-            .setParameters({ user: id })
+            .where('user.user_id = :user') //:user = setParameters()
+            .setParameters({ user: id })//anti hack
             .getOne();
         return (user);
         //return this.userRepository.findOneBy({id: id});

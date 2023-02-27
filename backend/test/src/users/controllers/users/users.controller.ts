@@ -72,7 +72,7 @@ export class UsersController {
         const user: {userID: number,
             token: string,
             username: string} = req.user;
-        const ret_user = this.userService.findUsersById(user.userID)
+        const ret_user = this.userService.getUserProfile(user.userID);
         
         return (ret_user);
     }
