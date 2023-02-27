@@ -20,7 +20,8 @@
 }
 
 .fullBox {
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
     width: 100% !important;
     height: 400px !important;
     margin: 0 !important;
@@ -63,6 +64,7 @@ span.chatBox {
     overflow-wrap: break-word;
     margin-bottom: 20px;
     margin-right: 10px;
+    max-width: 555px;
     width: 100%;
     min-width: 0;
 }
@@ -162,6 +164,7 @@ table.tableInfo {
     }
 
     span.chatBox {
+        margin: 0;
         width: 100%;
     }
 }

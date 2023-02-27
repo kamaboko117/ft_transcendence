@@ -5,7 +5,7 @@ import "../../css/channel.css";
 import "../../css/chat.css";
 import "../../css/user.css"
 import scroll from 'react-scroll';
-import { SocketContext } from '../../contexts/Socket';
+import SocketContext from '../../contexts/Socket';
 import { debounce } from 'debounce';
 import ContextDisplayChannel from '../../contexts/displayChat';
 //import useDisplayChat from '../../useHook/useDisplayChat';
@@ -90,7 +90,7 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
         setUserId(0);
         setUsername("");
     }
-    setTop(e.offsetTop + 27);
+    setTop(e.offsetTop);
 }
 
 const UserInfo = (props: PropsUserInfo): JSX.Element => {
@@ -120,7 +120,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
                     if (username === arr[i].textContent)
                     {
                         console.log(arr[i].textContent);
-                        setTop(arr[i].offsetTop + 27);
+                        setTop(arr[i].offsetTop);
                         break ;
                     }
                 }
@@ -188,7 +188,7 @@ listUser: Array<{
 */
 
 const ListUser = (props: { id: string, jwt: string }) => {
-    const usrSocket = useContext(SocketContext);
+    const { usrSocket } = useContext(SocketContext);
     const [errorCode, setErrorCode] = useState<number>(200);
     const [lstUser, setLstUser] = useState<PropsUserInfo["listUser"]>(Array);
 

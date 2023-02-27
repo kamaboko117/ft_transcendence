@@ -9,7 +9,7 @@ export const FetchError = (props: { code: number }) => {
     const { renderDirectMessage, userId, setDisplay, setUserId } = useContext(ContextDisplayChannel);
 
     useEffect(() => {
-        if (props.code === 403) {
+        if (props.code === 403 || props.code === 401) {
             setDisplay(false);
             userCtx.logoutUser();
             navigate("/logout");

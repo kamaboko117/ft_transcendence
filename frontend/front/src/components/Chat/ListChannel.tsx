@@ -97,37 +97,26 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                 this.setState({
                     errorCode: res.status
                 });
-                //if (res.status === 403)
-                //    throw new Error('Token expired.');
-                //throw new Error('Something went wrong');
             }).then(res => {
                 console.log(res);
                 this.setState({
                     listChannel: res
                 })
-            });//.catch(err => console.log(err));
-        fetch('http://' + location.host + '/api/chat/private?' + new URLSearchParams({
-            id: window.navigator.userAgent
-        }), { headers: header(this.props.jwt) }).then(res => {
+            });
+        fetch('http://' + location.host + '/api/chat/private',
+            { headers: header(this.props.jwt) }).then(res => {
             if (res.ok)
                 return (res.json());
             this.setState({
                 errorCode: res.status
             });
-            //throw new Error('Token expired.');
         }).then(res => {
             this.setState({
                 listChannelPrivate: res
             })
         })
     }
-    /*componentDidUpdate(prevProps: Readonly<{ jwt: string | null; }>,
-        prevState: Readonly<State>, snapshot?: any): void {
-        if (prevState.errorCode !== this.state.errorCode) {
-            if (this.state.errorCode >= 400)
-                return (<FetchError code={this.state.errorCode} />)
-        }
-    }*/
+    
     componentWillUnmount(): void {
         this.setState({
             listChannel: [],
@@ -135,25 +124,23 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         })
     }
     onClick = (): void => {
-        fetch('http://' + location.host + '/api/chat/public/', { headers: header(this.props.jwt) })
+        fetch('http://' + location.host + '/api/chat/public/', 
+            { headers: header(this.props.jwt) })
             .then(res => {
                 if (res.ok)
                     return (res.json());
-                //throw new Error('Token expired.');
             }).then(res => {
                 this.setState({
                     listChannel: res
                 })
             })
-        fetch('http://' + location.host + '/api/chat/private?' + new URLSearchParams({
-            id: window.navigator.userAgent
-        }), { headers: header(this.props.jwt) }).then(res => {
+        fetch('http://' + location.host + '/api/chat/private', 
+            { headers: header(this.props.jwt) }).then(res => {
             if (res.ok)
                 return (res.json());
             this.setState({
                 errorCode: res.status
             });
-            //throw new Error('Token expired.');
         }).then(res => {
             this.setState({
                 listChannelPrivate: res
@@ -171,23 +158,18 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
 
     onSubmit = (e: FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
-        //let elem = new Map<string, number>;
 
-        /* Can't send a map to HTTP REQUEST so need convert */
         if (this.state.rad == "0") {
             const res: any = fetch('http://' + location.host + '/api/chat/new-public/', {
                 method: 'post',
                 headers: headerPost(this.props.jwt),
                 body: JSON.stringify({
-                    id: '0', //m'en souviens pas
+                    id: '0', //à supprimer
                     name: this.state.channelName,
-                    //owner: { idUser: window.navigator.userAgent, username: window.navigator.userAgent },
                     accesstype: this.state.rad,
                     password: this.state.password,
                     lstMsg: [],
                     lstUsr: {},
-                    //setMute: {key: "test", value: 123},
-                    //setBan: {key: "test2", value: 1234},
                     lstMute: {},
                     lstBan: {}
                 })
@@ -207,20 +189,6 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                         listChannel: [...this.state.listChannel, res],
                     });
                 }
-                /*if (res.length === 1
-                    && (res[0] === "hasErrorPsw" || res[0] === "hasErrorExist")) {
-                    if (res[0] === "hasErrorPsw")
-                        this.setState({ hasErrorPsw: true, hasErrorExist: false });
-                    if (res[0] === "hasErrorExist")
-                        this.setState({ hasErrorPsw: false, hasErrorExist: true });
-                } else if (res.length === 2 && res[0] === "hasErrorPsw" && res[1] === "hasErrorExist")
-                    this.setState({ hasErrorPsw: true, hasErrorExist: true });
-                else {
-                    this.setState({
-                        listChannel: [...this.state.listChannel, res],
-                        hasErrorPsw: false, hasErrorExist: false
-                    });
-                }*/
             });
         }
         else {
@@ -228,9 +196,8 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                 method: 'post',
                 headers: headerPost(this.props.jwt),
                 body: JSON.stringify({
-                    id: '0', //idUser
+                    id: '0',
                     name: this.state.channelName,
-                    //owner: { idUser: window.navigator.userAgent, username: window.navigator.userAgent },
                     accesstype: this.state.rad,
                     password: this.state.password,
                     lstMsg: [],
@@ -256,20 +223,6 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                         privateIdChannel: res.id
                     });
                 }
-                /*if (res.length === 1
-                    && (res[0] === "hasErrorPsw" || res[0] === "hasErrorExist")) {
-                    if (res[0] === "hasErrorPsw")
-                        this.setState({ hasErrorPsw: true, hasErrorExist: false });
-                    if (res[0] === "hasErrorExist")
-                        this.setState({ hasErrorPsw: false, hasErrorExist: true });
-                } else if (res.length === 2 && res[0] === "hasErrorPsw" && res[1] === "hasErrorExist")
-                    this.setState({ hasErrorPsw: true, hasErrorExist: true });
-                else
-                    this.setState({
-                        listChannelPrivate: [...this.state.listChannelPrivate, res],
-                        hasErrorPsw: false, hasErrorExist: false,
-                        privateIdChannel: res.id
-                    });*/
             });
         }
     }

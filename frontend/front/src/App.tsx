@@ -30,7 +30,7 @@ import BlackList from "./pages/User/BlackList";
 import PlayPage from "./pages/play";
 import MatchmakingPage from "./pages/matchmaking";
 //import ErrorBoundary from "./components/Chat/ErrorBoundary";
-import { usrSocket, SocketContext } from './contexts/Socket';
+import { usrSocket, SocketProvider } from './contexts/Socket';
 import { ErrorBoundary } from 'react-error-boundary'
 import ContextDisplayChannel from "./contexts/displayChat";
 import UserContext from "./contexts/UserContext";
@@ -55,6 +55,7 @@ function App() {
     setUserId: setUserId
   };
   let jwt = userCtx.getJwt();
+  const [id, setId] = useState<string>("");
   console.log(jwt);
   return (
     <>
@@ -65,7 +66,7 @@ function App() {
         // reset the state of your app so the error doesn't happen again
         //}}
         >
-          <SocketContext.Provider value={usrSocket}>
+          <SocketProvider>
             <NavBar />
             <ContextDisplayChannel.Provider value={providers}>
               <Routes>
@@ -87,10 +88,10 @@ function App() {
                 <Route path="/play" element={<PlayPage />} />
                 <Route path="/matchmaking" element={<MatchmakingPage />} />
               </Routes>
-              {jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={0}
-                width={600} height={280} opacity={1} />}
+              {jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
+                width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
             </ContextDisplayChannel.Provider>
-          </SocketContext.Provider>
+          </SocketProvider>
         </ErrorBoundary>
       </div>
       <PlayerApp />

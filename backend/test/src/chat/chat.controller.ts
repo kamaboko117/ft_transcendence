@@ -23,7 +23,6 @@ export class ChatController {
     async getAllPrivate(@Request() req: any,
         @Query('id') id: Readonly<string>): Promise<InformationChat[]> {
         const user: User = req.user;
-        // console.log(this.chatGateway.getAllPrivate(id));
         return (await this.chatGateway.getAllPrivate(id, user.userID));
     }
 
@@ -42,14 +41,21 @@ export class ChatController {
         doit check si le chat est bien retourner, si gateway retourne null ou undefined alors throw 
         forbidden
     */
-    @Get('direct-message')
-    async getDirectMessage(@Request() req: any, @Query('id') id: Readonly<number>) {
+    @Get('list-pm')
+    async getDirectMessage(@Request() req: any) {
         const user: User = req.user;
-        const channel: Channel | null 
-            =  await this.chatGateway.getDirectChannel(id, user.userID);
-        console.log(channel);
+        const channel: Channel[] | null 
+            =  await this.chatGateway.getAllPmUser(user.userID);
+        return (channel);
     }
-
+    @Get('channel-registered')
+    async getAllChanUser(@Request() req: any) {
+        const user: User = req.user;
+        const channel: Channel[] | null
+            = await this.chatGateway.getAllUserOnChannels(user.userID);
+        console.log(channel);
+        return (channel);
+    }
     /*
         id = id channel
         name = channel's name
@@ -67,11 +73,7 @@ export class ChatController {
             console.log(getUser);
             if (typeof getUser !== "undefined" || getUser === null)
                 return (false);
-            //const getUser = channel.lstUsr.get(user.userID);
-            // console.log(getUser);
         }
-        //   console.log("has-password channel");
-        //   console.log(channel);
         if (typeof channel === "undefined" || channel?.password == '' || channel === null)
             return (false);
         return (true);
@@ -144,14 +146,10 @@ export class ChatController {
 
     @Post('valid-paswd')
     async passwordIsValid(@Body() psw: Readonly<PswChat>): Promise<boolean> {
-        // console.log("psw: " + psw);
-        //const channel: undefined | Chat = this.chatGateway.getChannelById(psw.id)
         const channel: undefined | DbChat = await this.chatGateway.getChannelByTest(psw.id);
-        // console.log("ch: " + channel);
         if (typeof channel == "undefined" || channel === null || channel.password == '')
             return (false);
         const comp = await bcrypt.compare(psw.psw, channel.password);
-        // console.log("valid-psw COMP: " + comp);
         return (comp);
     }
 
@@ -171,13 +169,8 @@ export class ChatController {
             accesstype: chan?.accesstype,
             lstMsg: listMsg
         };
-        console.log(channel);
-        //console.log(await this.chatGateway.getListMsgByChannelId(id));
-        //const channel = this.chatGateway.getChannelById(id);
-
         if (typeof channel === "undefined" || channel === null)
             return ({});
-        //const getUser = channel.lstUsr.get(user.userID);
         const getUser = await this.chatGateway.getUserOnChannel(id, user.userID);
         if (typeof getUser === "undefined" || getUser === null)
             return ({});
