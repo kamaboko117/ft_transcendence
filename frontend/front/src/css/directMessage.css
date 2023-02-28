@@ -11,11 +11,13 @@ div.listDiscussion {
     display: flex;
     flex-direction: column;
     background-color: red;
+    width: 40%;
+}
+
+div.listDiscussion>* {
     width: 100%;
 }
-div.listDiscussion > * {
-    width: 100%;
-}
+
 ul.listDiscussion {
     display: flex;
     flex-direction: column;
@@ -25,12 +27,12 @@ ul.listDiscussion {
     width: 100%;
 }
 
-.listDiscussion > li {
+.listDiscussion>li {
     overflow: hidden;
     cursor: pointer;
 }
 
-div.listDiscussion > input[type="text"] {
+div.listDiscussion>input[type="text"] {
     height: 20%;
     margin: 0;
     padding: 0;
@@ -38,18 +40,18 @@ div.listDiscussion > input[type="text"] {
 
 .containerDiscussionBox {
     max-width: 600px;
-    width: 100%;
+    width: 60%;
     display: flex;
     flex-direction: column;
     background-color: red;
 }
 
 
-.containerDirectMessage > span {
+.containerDirectMessage>span {
     margin-right: 5px;
 }
 
-.containerDirectMessage > button {
+.containerDirectMessage>button {
     height: 40px;
     align-self: flex-end;
     margin-left: 5px;
@@ -65,18 +67,19 @@ div.listDiscussion > input[type="text"] {
     align-items: center;
 }
 
-.containerPost > textarea {
+.containerPost>textarea {
     margin: 0;
     width: 100%;
 }
 
-.containerPost > button {
+.containerPost>button {
     margin: 0;
     border-radius: 1px;
     border-color: red;
 }
 
 @media screen and (max-width: 650px) {
+
     /*article.unfold {
         width: 80%;
     }
@@ -113,13 +116,12 @@ div.listDiscussion > input[type="text"] {
     .containerDirectMessage {
         left: 0;
     }
-    .containerDiscussionBox {
-        width: 100%;
-    }
-}
 
-@media screen and (max-height: 320px) {
-    .containerDirectMessage {
-        
+    div.listDiscussion {
+        width: 40%;
+    }
+
+    .containerDiscussionBox {
+        width: 60%;
     }
 }
