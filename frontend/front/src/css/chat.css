@@ -20,8 +20,8 @@
 }
 
 .fullBox {
-    display: flex !important;
-    flex-direction: column !important;
+    display: block !important;
+    /*flex-direction: column !important;*/
     width: 100% !important;
     height: 400px !important;
     margin: 0 !important;
@@ -152,6 +152,7 @@ table.tableInfo {
     label.userInfo {
         text-align: center;
     }
+
     .container-chat {
         margin: auto;
         margin-top: 20px;
