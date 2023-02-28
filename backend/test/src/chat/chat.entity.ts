@@ -18,13 +18,13 @@ export class Channel {
 
     @Column({ nullable: true })
     password: string;
-    
-    @ManyToOne(() => User, (user) => user.lstChannel, { nullable: false, cascade: true })
+
+    @ManyToOne(() => User, (user) => user.lstChannel, { nullable: true, cascade: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     user: User;
     @Column({ nullable: true })
     user_id: number;
-    
+
     @OneToMany(() => ListMsg, (listmsg) => listmsg.chat)
     lstMsg: ListMsg[];
 
