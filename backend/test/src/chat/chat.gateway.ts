@@ -49,14 +49,14 @@ class SendMsg {
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   afterInit(server: Server) { }
-  //private readonly publicChats: Chat[] = [];
+
   @InjectRepository(Channel)
   private chatsRepository: Repository<Channel>;
   @InjectRepository(ListUser)
   private listUserRepository: Repository<ListUser>;
   @InjectRepository(ListMsg)
   private listMsgRepository: Repository<ListMsg>;
- 
+
   async getAllPublic(): Promise<any[]> {
     const arr: Channel[] = await this.chatsRepository
       .createQueryBuilder("channel")
@@ -66,12 +66,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       .where("accesstype = :a1 OR accesstype = :a2")
       .setParameters({ a1: 0, a2: 1 })
       .getRawMany();
-    console.log("pub");
-    console.log(arr);
     return arr;
   }
 
-  async getAllPrivate(id: Readonly<string>, userID: Readonly<number>): Promise<any[]> {
+  async getAllPrivate(userID: Readonly<number>): Promise<any[]> {
     const arr: Channel[] = await this.chatsRepository
       .createQueryBuilder("channel")
       .innerJoin("channel.lstUsr", "ListUser")
@@ -85,6 +83,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return arr;
   }
 
+  /*
+    select channel.id, list_user.user_id, (select list_user.user_id from list_user inner join channel on channel.id = list_user.chatid where accesstype = '4' AND list_user.user_id != 69814 AND channel.id IN (channel.id)) AS second
+    from list_user
+    inner join channel on channel.id = list_user.chatid
+    where accesstype = '4' AND list_user.user_id = 69814
+  */
+
+  /* PRIVATE MESSAGE PART */
   async getAllPmUser(userID: Readonly<number>) {
     const channel: Channel[] | null = await this.chatsRepository
       .createQueryBuilder("channel")
@@ -97,18 +103,67 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           userID: userID
         })
       .getMany();
-      return (channel)
+    console.log(channel);
+    return (channel)
   }
+
+  /* GET PM BETWEEN 2 USERS */
+  async findPmUsers(userOne: Readonly<number>,
+    userTwo: Readonly<string>) {
+    const listUser: ListUser | null | undefined = await this.listUserRepository
+      .createQueryBuilder("list_user")
+      .select("list_user.chatid")
+      .innerJoin("list_user.chat", "Channel")
+      .where("list_user.user_id IN (:userOne, :userTwo) AND Channel.accesstype = :type")
+      .setParameters({
+        userOne: userOne,
+        userTwo: userTwo,
+        type: '4'
+      })
+      .groupBy("list_user.chatid")
+      .having("COUNT(list_user.chatid) = :nb", { nb: 2 })
+      .getRawOne();
+    return (listUser);
+  }
+  /* Create private message part */
+  createPrivateMessage(userOne: Readonly<number>,
+    userTwo: Readonly<string>): string {
+    let newChat: {
+      id: number, name: string, accesstype: string
+    } = {
+      id: userOne + Number(userTwo),
+      name: String(userOne + userTwo),
+      accesstype: '4'
+    };
+    /* Channel part */
+    const channel = new Channel();
+    const listUserOne = new ListUser();
+    const listUserTwo = new ListUser();
+    channel.id = String(userOne + userTwo);
+    channel.name = String(userOne + userTwo);
+    channel.accesstype = '4';
+    /* Add both users to channel */
+    listUserOne.user_id = userOne;
+    listUserOne.chat = channel;
+    listUserTwo.user_id = Number(userTwo);
+    listUserTwo.chat = channel;
+    /* Insert channel into DTB */
+    this.listUserRepository.save(listUserOne);
+    this.listUserRepository.save(listUserTwo);
+    return (channel.id);
+  }
+  /* END OF PRIVATE  */
+
   /* Get all channels where the user is registered, except privates messages */
   async getAllUserOnChannels(userID: Readonly<number>) {
     const channel: Channel[] | null = await this.chatsRepository
-    .createQueryBuilder("channel")
-    .select(["channel.id", "channel.name"])
-    .innerJoin("channel.lstUsr", "ListUser")
-    .where("(accesstype = :a1 OR accesstype = :a2 OR accesstype = :a3 OR accesstype = :a4) AND ListUser.user_id = :userID")
-    .setParameters({ a1: 0, a2: 1, a3: 2, a4: 3, userID: userID })
-    .getMany();
-    return(channel);
+      .createQueryBuilder("channel")
+      .select(["channel.id", "channel.name"])
+      .innerJoin("channel.lstUsr", "ListUser")
+      .where("(accesstype = :a1 OR accesstype = :a2 OR accesstype = :a3 OR accesstype = :a4) AND ListUser.user_id = :userID")
+      .setParameters({ a1: 0, a2: 1, a3: 2, a4: 3, userID: userID })
+      .getMany();
+    return (channel);
   }
 
   async getListMsgByChannelId(id: string) {
@@ -135,6 +190,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       .getOne();
     return (channel);
   }
+
   async getChannelByName(name: string): Promise<undefined | DbChat> {
     const channel: any = await this.chatsRepository.findOne({
       where: {
@@ -143,6 +199,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     });
     return (channel);
   }
+
   async getUserOnChannel(id: string, user_id: number) {
     const user: any = await this.chatsRepository
       .createQueryBuilder("channel")
@@ -165,8 +222,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       .setParameters({ id: id })
       .orderBy("User.username", 'ASC')
       .getMany();
-    console.log("list user");
-    console.log(arr);
     return (arr);
   }
 
@@ -220,15 +275,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       .execute();
     return (true);
   }
+
   /* Socket part */
   @UseGuards(JwtGuard)
   @SubscribeMessage('joinRoomChat')
   async joinRoomChat(@ConnectedSocket() socket: Readonly<any>,
     @MessageBody() data: Readonly<Room>): Promise<boolean> {
     const user = socket.user;
-      console.log(user);
 
-    console.log(typeof user.userID);
     if (typeof user.userID != "number")
       return (false);
     const channel: any = await this.chatsRepository.findOne({
@@ -250,6 +304,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     socket.join(data.id + getName);
     return (true);
   }
+
   @UseGuards(JwtGuard)
   @SubscribeMessage('leaveRoomChat')
   async leaveRoomChat(@ConnectedSocket() socket: Readonly<any>,
@@ -260,7 +315,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return ("Couldn't' leave chat, wrong type id?");
     const getUser: any = await this.getUserOnChannel(data.id, user.userID);
     if (typeof getUser === "undefined" || getUser === null)
-      return("No user found");
+      return ("No user found");
     await this.chatsRepository
       .createQueryBuilder()
       .delete()
@@ -290,7 +345,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (typeof data === "undefined")
       return;
     const getChannel: any = await this.getUserOnChannel(data.id, user.userID);
-    console.log(getChannel);
     if (typeof getChannel !== "undefined" && getChannel !== null)
       socket.leave(data.id + getChannel.channel_name);
   }

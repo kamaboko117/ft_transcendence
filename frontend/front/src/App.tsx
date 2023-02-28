@@ -48,15 +48,18 @@ function App() {
   const userCtx: any = useContext(UserContext);
   const [renderDirectMessage, setDisplay] = useState<boolean>(false);
   const [userId, setUserId] = useState<number>(0);
+  const [id, setId] = useState<string>("");
   const providers = {
     renderDirectMessage: renderDirectMessage,
     userId: userId,
+    id: id,
     setDisplay: setDisplay,
-    setUserId: setUserId
+    setUserId: setUserId,
+    setId: setId
   };
+
   let jwt = userCtx.getJwt();
-  const [id, setId] = useState<string>("");
-  console.log(jwt);
+
   return (
     <>
       <div>

@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { Channel } from './chat.entity';
+import { ListUser } from './lstuser.entity';
 
 @Controller('chat')
 export class ChatController {
@@ -23,7 +24,7 @@ export class ChatController {
     async getAllPrivate(@Request() req: any,
         @Query('id') id: Readonly<string>): Promise<InformationChat[]> {
         const user: User = req.user;
-        return (await this.chatGateway.getAllPrivate(id, user.userID));
+        return (await this.chatGateway.getAllPrivate(user.userID));
     }
 
     @Get('users')
@@ -35,17 +36,12 @@ export class ChatController {
             return (false);
         return (listUsers);
     }
-    /*
-        doit chercher le chat en fonction des 2 membres du chat
-        doit retourner le chat
-        doit check si le chat est bien retourner, si gateway retourne null ou undefined alors throw 
-        forbidden
-    */
+    /* Start of fixed chatbox part */
     @Get('list-pm')
     async getDirectMessage(@Request() req: any) {
         const user: User = req.user;
-        const channel: Channel[] | null 
-            =  await this.chatGateway.getAllPmUser(user.userID);
+        const channel: Channel[] | null
+            = await this.chatGateway.getAllPmUser(user.userID);
         return (channel);
     }
     @Get('channel-registered')
@@ -53,9 +49,32 @@ export class ChatController {
         const user: User = req.user;
         const channel: Channel[] | null
             = await this.chatGateway.getAllUserOnChannels(user.userID);
-        console.log(channel);
         return (channel);
     }
+
+    /*
+        find PM from both user
+        if it doesn't exist, create a pm
+    */
+    @Get('private-messages')
+    async openPrivateMessage(@Request() req: any,
+        @Query('id') id: Readonly<string>): Promise<number | null> {
+        const user: User = req.user;
+
+        if (user.userID === Number(id))
+            return (null);
+        //if no channel found, typeorm return NULL
+        const list_user: ListUser | null | undefined
+            = await this.chatGateway.findPmUsers(user.userID, id);
+        //create channel between both users
+        if (list_user === null || typeof list_user === "undefined") {
+            const channelId: string = this.chatGateway.createPrivateMessage(user.userID, id);
+            console.log(channelId);
+        }
+        return (null);
+    }
+    /* End of fixed chatbox part */
+
     /*
         id = id channel
         name = channel's name
@@ -66,11 +85,8 @@ export class ChatController {
         @Query('id') id: Readonly<string>): Promise<boolean> {
         const user: User = req.user;
         const channel: undefined | DbChat = await this.chatGateway.getChannelByTest(id);
-        console.log(channel);
         if (typeof channel != "undefined" && channel != null) {
-            console.log(channel);
             const getUser = await this.chatGateway.getUserOnChannel(id, user.userID);
-            console.log(getUser);
             if (typeof getUser !== "undefined" || getUser === null)
                 return (false);
         }
@@ -89,14 +105,12 @@ export class ChatController {
         const user: User = req.user;
         const channel: undefined | DbChat = await this.chatGateway.getChannelByName(chat.name);
         let err: string[] = [];
-        console.log()
         if ((chat.accesstype != '0' && chat.accesstype != '1'))
             err.push("Illegal access type");
         if (chat.name.length === 0)
             err.push("Chat name must not be empty.");
         else if (chat.name == chat.password)
             err.push("Password and chat name can't be the same.");
-        console.log(channel);
         if (channel != null)//   || typeof channel === "undefined")
             err.push("Channel already exist.");
         if (err.length > 0)
@@ -156,7 +170,6 @@ export class ChatController {
     @Get('')
     async getChannel(@Request() req: any,
         @Query('id') id: Readonly<string>) {
-        console.log("GET CHAN ID");
         const user: User = req.user;
         const chan = await this.chatGateway.getChannelByTest(id);
         const listMsg = await this.chatGateway.getListMsgByChannelId(id);
