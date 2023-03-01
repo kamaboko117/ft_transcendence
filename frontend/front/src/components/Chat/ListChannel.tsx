@@ -2,19 +2,20 @@ import React, { ChangeEvent, FormEvent, MouseEvent, useState } from 'react';
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import "../../css/channel.css";
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
+import { FetchError, header, headerPost } from '../FetchError';
 
 type State = {
     listChannel: Array<{
-        id: number | string,
-        name: string,
-        owner: string,
-        accesstype: number,
+        channel_id: number | string,
+        channel_name: string,
+        User_username: string,
+        channel_accesstype: number,
     }>,
     listChannelPrivate: Array<{
-        id: number | string,
-        name: string,
-        owner: string,
-        accesstype: number,
+        channel_id: number | string,
+        channel_name: string,
+        User_username: string,
+        channel_accesstype: number,
     }>,
     channelName: string,
     privateChannelName: string,
@@ -23,19 +24,13 @@ type State = {
     passwordPrivate: string,
     hasError: boolean,
     listError: [],
-    privateIdChannel: string
+    privateIdChannel: string,
+    errorCode: number
 }
 
 type Props = {
     access: number,
 }
-
-const header = (props: Readonly<{ jwt: string | null }>) => {
-    const header = new Headers({
-        Authorization: 'Bearer ' + props.jwt
-    })
-    return (header);
-};
 
 const ErrorSubmit = (props: any) => {
     let i: number = 0;
@@ -55,7 +50,7 @@ const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, name: string | null, 
     navigate({ pathname: "/channels/" + name }, { state: { name: name, username: "" } });
 }
 
-const OpenPrivateChat = (props: any) => {
+const OpenPrivateChat = () => {
     const navigate = useNavigate();
     const [name, setName] = useState<string | null>(null);
 
@@ -85,36 +80,43 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             passwordPrivate: '',
             hasError: false,
             listError: [],
-            privateIdChannel: ''
+            privateIdChannel: '',
+            errorCode: 200
         }
         this.onClick = this.onClick.bind(this);
         this.onChange = this.onChange.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
     }
     componentDidMount = (): void => {
-        fetch('http://' + location.host + '/api/chat/public/', { headers: header(this.props) })
+        fetch('http://' + location.host + '/api/chat/public/',
+            { headers: header(this.props.jwt) })
             .then(res => {
+                console.log(res.ok);
                 if (res.ok)
                     return (res.json());
-                throw new Error('Server is not running.');
+                this.setState({
+                    errorCode: res.status
+                });
             }).then(res => {
+                console.log(res);
                 this.setState({
                     listChannel: res
                 })
-            })
-        fetch('http://' + location.host + '/api/chat/private?' + new URLSearchParams({
-            id: window.navigator.userAgent
-        }), { headers: header(this.props) }).then(res => {
+            });
+        fetch('http://' + location.host + '/api/chat/private',
+            { headers: header(this.props.jwt) }).then(res => {
             if (res.ok)
                 return (res.json());
-            throw new Error('Server is not running.');
+            this.setState({
+                errorCode: res.status
+            });
         }).then(res => {
             this.setState({
                 listChannelPrivate: res
             })
         })
     }
-
+    
     componentWillUnmount(): void {
         this.setState({
             listChannel: [],
@@ -122,22 +124,23 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         })
     }
     onClick = (): void => {
-        fetch('http://' + location.host + '/api/chat/public/', { headers: header(this.props) })
+        fetch('http://' + location.host + '/api/chat/public/', 
+            { headers: header(this.props.jwt) })
             .then(res => {
                 if (res.ok)
                     return (res.json());
-                throw new Error('Server is not running.');
             }).then(res => {
                 this.setState({
                     listChannel: res
                 })
             })
-        fetch('http://' + location.host + '/api/chat/private?' + new URLSearchParams({
-            id: window.navigator.userAgent
-        }), { headers: header(this.props) }).then(res => {
+        fetch('http://' + location.host + '/api/chat/private', 
+            { headers: header(this.props.jwt) }).then(res => {
             if (res.ok)
                 return (res.json());
-            throw new Error('Server is not running.');
+            this.setState({
+                errorCode: res.status
+            });
         }).then(res => {
             this.setState({
                 listChannelPrivate: res
@@ -145,6 +148,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         })
     }
     onChange = (e: ChangeEvent<HTMLInputElement>): void => {
+        e.stopPropagation();
         const name = e.currentTarget.name;
         const value = e.currentTarget.value;
         this.setState((prevState => (
@@ -154,27 +158,28 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
 
     onSubmit = (e: FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
-        //let elem = new Map<string, number>;
 
-        /* Can't send a map to HTTP REQUEST so need convert */
         if (this.state.rad == "0") {
             const res: any = fetch('http://' + location.host + '/api/chat/new-public/', {
                 method: 'post',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headerPost(this.props.jwt),
                 body: JSON.stringify({
-                    id: '0', //m'en souviens pas
+                    id: '0', //à supprimer
                     name: this.state.channelName,
-                    owner: { idUser: window.navigator.userAgent, username: window.navigator.userAgent },
                     accesstype: this.state.rad,
                     password: this.state.password,
                     lstMsg: [],
                     lstUsr: {},
-                    //setMute: {key: "test", value: 123},
-                    //setBan: {key: "test2", value: 1234},
                     lstMute: {},
                     lstBan: {}
                 })
-            }).then(res => res.json()).then(res => {
+            }).then(res => {
+                if (res.ok)
+                    return (res.json())
+                this.setState({
+                    errorCode: res.status
+                });
+            }).then(res => {
                 if (Array.isArray(res) === true) {
                     this.setState({ hasError: true, listError: res });
                 }
@@ -184,30 +189,15 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                         listChannel: [...this.state.listChannel, res],
                     });
                 }
-                /*if (res.length === 1
-                    && (res[0] === "hasErrorPsw" || res[0] === "hasErrorExist")) {
-                    if (res[0] === "hasErrorPsw")
-                        this.setState({ hasErrorPsw: true, hasErrorExist: false });
-                    if (res[0] === "hasErrorExist")
-                        this.setState({ hasErrorPsw: false, hasErrorExist: true });
-                } else if (res.length === 2 && res[0] === "hasErrorPsw" && res[1] === "hasErrorExist")
-                    this.setState({ hasErrorPsw: true, hasErrorExist: true });
-                else {
-                    this.setState({
-                        listChannel: [...this.state.listChannel, res],
-                        hasErrorPsw: false, hasErrorExist: false
-                    });
-                }*/
             });
         }
         else {
             const res: any = fetch('http://' + location.host + '/api/chat/new-private/', {
                 method: 'post',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headerPost(this.props.jwt),
                 body: JSON.stringify({
-                    id: '0', //idUser
+                    id: '0',
                     name: this.state.channelName,
-                    owner: { idUser: window.navigator.userAgent, username: window.navigator.userAgent },
                     accesstype: this.state.rad,
                     password: this.state.password,
                     lstMsg: [],
@@ -215,7 +205,13 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     lstMute: {},
                     lstBan: {}
                 })
-            }).then(res => res.json()).then(res => {
+            }).then(res => {
+                if (res.ok)
+                    return (res.json());
+                this.setState({
+                    errorCode: res.status
+                });
+            }).then(res => {
                 console.log(res);
                 if (Array.isArray(res) === true) {
                     this.setState({ hasError: true, listError: res });
@@ -227,23 +223,10 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                         privateIdChannel: res.id
                     });
                 }
-                /*if (res.length === 1
-                    && (res[0] === "hasErrorPsw" || res[0] === "hasErrorExist")) {
-                    if (res[0] === "hasErrorPsw")
-                        this.setState({ hasErrorPsw: true, hasErrorExist: false });
-                    if (res[0] === "hasErrorExist")
-                        this.setState({ hasErrorPsw: false, hasErrorExist: true });
-                } else if (res.length === 2 && res[0] === "hasErrorPsw" && res[1] === "hasErrorExist")
-                    this.setState({ hasErrorPsw: true, hasErrorExist: true });
-                else
-                    this.setState({
-                        listChannelPrivate: [...this.state.listChannelPrivate, res],
-                        hasErrorPsw: false, hasErrorExist: false,
-                        privateIdChannel: res.id
-                    });*/
             });
         }
     }
+
     PrintListPublic = (): JSX.Element => {
         let i: number = 0;
         const TypeAccess = (props: Props): JSX.Element => {
@@ -257,7 +240,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             {this.state.listChannel &&
                 this.state.listChannel.map((chan) => (
                     <tr key={++i}>
-                        <td><Link to={{ pathname: "/channels/" + chan.id }} state={{ name: chan.name, username: "" }}>{chan.name}</Link></td><td>{chan.owner}</td><td><TypeAccess access={chan.accesstype} /></td>
+                        <td><Link to={{ pathname: "/channels/" + chan.channel_id }} state={{ name: chan.channel_name, username: "" }}>{chan.channel_name}</Link></td><td>{chan.User_username}</td><td><TypeAccess access={chan.channel_accesstype} /></td>
                     </tr>
                 ))
             }
@@ -269,19 +252,26 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             const access: Readonly<number> = props.access;
             if (access == 2)
                 return (<>Private</>)
-            return (<>Password required</>)
+            return (<>Password required</>);
         };
         return (<tbody>
             {this.state.listChannelPrivate &&
                 this.state.listChannelPrivate.map((chan) => (
                     <tr key={++i}>
-                        <td><Link to={{ pathname: "/channels/" + chan.id }} state={{ name: chan.name, username: "" }}>{chan.name}</Link></td><td>{chan.owner}</td><td><TypeAccess access={chan.accesstype} /></td>
+                        <td><Link to={{ pathname: "/channels/" + chan.channel_id }}
+                            state={{ name: chan.channel_name, username: "" }}>{chan.channel_name}</Link>
+                        </td>
+                        <td>{chan.User_username}</td>
+                        <td><TypeAccess access={chan.channel_accesstype} /></td>
                     </tr>
                 ))
             }
         </tbody>)
     }
+
     render(): JSX.Element {
+        if (this.state.errorCode >= 400)
+            return (<FetchError code={this.state.errorCode} />)
         return (<section className='containerChannel'>
             <h1>List channels + (affichage liste privée à faire + persist dtb)</h1>
             <article className='left'>

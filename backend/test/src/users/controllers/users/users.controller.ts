@@ -13,6 +13,7 @@ import {
 import { CreateUserDto } from "src/users/dto/users.dtos";
 import { UsersService } from "src/users/services/users/users.service";
 import { CustomAuthGuard } from 'src/auth/auth.guard';
+import { FakeAuthGuard } from 'src/auth/fake.guard';
 import { JwtGuard, Public } from 'src/auth/jwt.guard';
 import { AuthService } from 'src/auth/auth.service';
 //import {AuthGuard} from '@nestjs/passport';
@@ -37,6 +38,23 @@ export class UsersController {
     @UseGuards(CustomAuthGuard)
     @Post('login')
     async login(@Request() req: any, @Res({ passthrough: true }) response: any) {
+        console.log("LOGIN POST");
+        const access_token = await this.authService.login(req.user);
+        const refresh = await this.authService.refresh(req.user);
+        console.log(access_token);
+        console.log(refresh);
+        response.cookie('refresh_token', refresh.refresh_token,
+            {
+                maxAge: 300000,
+                httpOnly: true
+            });
+        return (access_token);
+    }
+    /* authguard(strategy name) */
+    @Public()
+    @UseGuards(FakeAuthGuard)
+    @Get('fake-login')
+    async fakeLogin(@Request() req: any, @Res({ passthrough: true }) response: any) {
         console.log("LOGIN POST");
         const access_token = await this.authService.login(req.user);
         const refresh = await this.authService.refresh(req.user);

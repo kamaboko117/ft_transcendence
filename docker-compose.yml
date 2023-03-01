@@ -17,6 +17,7 @@ services:
       - DB_PORT=${DB_PORT}
       - APP_ID=${APP_ID}
       - APP_SECRET=${APP_SECRET}
+      - VITE_APP_URI=${APP_URI}
       - AUTH_SECRET=${AUTH_SECRET}
     volumes:
       - ./backend:/var/www/html
@@ -58,6 +59,8 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - db:/var/lib/postgresql/data/
     deploy:
       restart_policy:
         condition: on-failure

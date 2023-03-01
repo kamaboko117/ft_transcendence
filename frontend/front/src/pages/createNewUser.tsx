@@ -11,7 +11,7 @@ function CreateNewUser(props: any) {
     console.log(response);
     function AddUserHandler(username: string) {
         console.log(`user ID: ${response[1]}`);
-        fetch("http://localhost:4000/api/users/create", {
+        fetch("http://" + location.host + "/api/users/create", {
             method: "POST",
             body: JSON.stringify({
                 userID: response[1],
