@@ -103,16 +103,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           userID: userID
         })
       .getMany();
-    console.log(channel);
     return (channel)
   }
 
   /* GET PM BETWEEN 2 USERS */
   async findPmUsers(userOne: Readonly<number>,
     userTwo: Readonly<string>) {
-    const listUser: ListUser | null | undefined = await this.listUserRepository
+    const listUser: ListUser[] | null | undefined = await this.listUserRepository
       .createQueryBuilder("list_user")
-      .select("list_user.chatid")
+      .select("Channel.name")
       .innerJoin("list_user.chat", "Channel")
       .where("list_user.user_id IN (:userOne, :userTwo) AND Channel.accesstype = :type")
       .setParameters({
@@ -120,8 +119,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         userTwo: userTwo,
         type: '4'
       })
-      .groupBy("list_user.chatid")
-      .having("COUNT(list_user.chatid) = :nb", { nb: 2 })
+      .groupBy("Channel.id")
+      .having("COUNT(Channel.name) >= :nb", { nb: 2 })
       .getRawOne();
     return (listUser);
   }
@@ -149,7 +148,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     listUserTwo.chat = channel;
     /* Insert channel into DTB */
     this.listUserRepository.save(listUserOne);
-    this.listUserRepository.save(listUserTwo);
+    this.listUserRepository.insert(listUserTwo);
     return (channel.id);
   }
   /* END OF PRIVATE  */
