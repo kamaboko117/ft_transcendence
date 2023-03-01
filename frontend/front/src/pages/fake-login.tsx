@@ -1,33 +1,24 @@
-import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { useContext } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import UserItem from "../components/Users/UserItem";
 import UserContext from "../contexts/UserContext";
 import { FetchError } from "../components/FetchError";
 import SocketContext from "../contexts/Socket";
 
-function ValidatePage() {
+function FakeLogin() {
   const userCtx: any = useContext(UserContext);
-  const [searchParams] = useSearchParams();
-  const code = searchParams.get("code");
   const [jwt, setJwt] = useState<null | string>(null);
   const [errorCode, setErrorCode] = useState<number>(200);
 
   useEffect(() => {
-    const getUser = (code: string | null | false) => {
-      return (fetch('http://' + location.host + '/api/users/login', {
-        method: 'post',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code: code
-        })
-      }).then(response => {
+    //gets existing user from database if exists. If not, returns [false, <42id>]
+    const getUser = () => {
+      return (fetch('http://' + location.host + '/api/users/fake-login').then(response => {
         if (response.ok)
           return (response.json())
         setErrorCode(response.status);
       }));
     };
-    getUser(code).then(res => {
+    getUser().then(res => {
       console.log(res);
       if (typeof res != "undefined")
         setJwt(res.access_token);
@@ -58,4 +49,4 @@ function ValidatePage() {
   return (<p>Logging user...</p>);
 }
 
-export default ValidatePage;
+export default FakeLogin;

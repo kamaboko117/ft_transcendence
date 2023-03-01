@@ -7,17 +7,19 @@ import { PassportStrategy } from '@nestjs/passport';
 export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor() {
         super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            //jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            jwtFromRequest: ExtractJwt.fromExtractors([
+                ExtractJwt.fromAuthHeaderAsBearerToken(),
+            ]),
             secretOrKey: process.env.AUTH_SECRET,
-            ignoreExpiration: true
         });
     }
 
     async validate(payload: any) {
-        console.log("VALIDATE JWT PART");
+        console.log("payload jwt");
         console.log(payload);
-        const ret = {
-            userID: payload.sub,
+        const ret: {userID: number, token: string, username: string} = {
+            userID: Number(payload.sub),
             token: payload.token,
             username: payload.username
         };

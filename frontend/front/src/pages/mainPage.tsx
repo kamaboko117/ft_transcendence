@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import classes from "./mainPage.module.css";
 
-import LoginButton from "../components/buttons/buttons";
+import { LoginButton, FakeLoginButton } from "../components/buttons/buttons";
 import UserContext, { User } from "../contexts/UserContext";
 
 const client_id = import.meta.env.VITE_APP_ID;
@@ -21,9 +21,9 @@ const loginUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}
 */
 
 function MainPage() {
-  /* Verifier validite token */
   const userCtx: any = useContext(UserContext);
   const user: User = userCtx.user;
+
   if (typeof userCtx.user != "undefined" && userCtx.user.jwt) {
     console.log("logged in as " + userCtx.user.username);
     return (
@@ -32,7 +32,6 @@ function MainPage() {
       </div>
     )
   }
-
   return (
     <div className={classes.splash_middle}>
       <span>{app_uri}</span>
@@ -45,6 +44,9 @@ function MainPage() {
       <div className={classes.splash_content}>
         <LoginButton url={loginUrl} />
       </div>
+	<div className={classes.splash_content}>
+        	<FakeLoginButton />
+      	</div>
     </div>
   );
 }

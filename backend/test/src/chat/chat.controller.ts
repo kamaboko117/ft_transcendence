@@ -1,46 +1,103 @@
-import { Controller, Request, Req, Query, Param, Get, Post, Body, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Request, Query, Get, Post, Body, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
 import { ChatGateway } from './chat.gateway';
-import { Chat, InformationChat } from './chat.interface';
+import { InformationChat, User, DbChat } from './chat.interface';
 import { CreateChatDto } from './create-chat.dto';
 import { PswChat } from './psw-chat.dto';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { JwtGuard } from 'src/auth/jwt.guard';
+import { Channel } from './chat.entity';
+import { ListUser } from './lstuser.entity';
 
 @Controller('chat')
 export class ChatController {
     constructor(private chatGateway: ChatGateway) { }
     /* Get part */
-    //@Guard() IL FAUT UN AUTHGUARD
     @UseGuards(JwtGuard)
     @Get('public')
     getAllPublic(@Request() req: any): Promise<InformationChat[]> {
         return (this.chatGateway.getAllPublic());
     }
+
     @UseGuards(JwtGuard)
     @Get('private')
-    async getAllPrivate(@Request() req: any, 
+    async getAllPrivate(@Request() req: any,
         @Query('id') id: Readonly<string>): Promise<InformationChat[]> {
-        console.log(this.chatGateway.getAllPrivate(id));
-        return (this.chatGateway.getAllPrivate(id));
+        const user: User = req.user;
+        return (await this.chatGateway.getAllPrivate(user.userID));
     }
+
+    @Get('users')
+    async getAllUsersOnChannel(@Request() req: any,
+        @Query('id') id: Readonly<string>) {
+        //creer type listUser
+        const listUsers: any = await this.chatGateway.getAllUsersOnChannel(id);
+        if (typeof listUsers === "undefined" || listUsers === null)
+            return (false);
+        return (listUsers);
+    }
+    /* Start of fixed chatbox part */
+    @Get('list-pm')
+    async getDirectMessage(@Request() req: any) {
+        const user: User = req.user;
+        const channel: Channel[] | null
+            = await this.chatGateway.getAllPmUser(user.userID);
+        return (channel);
+    }
+    @Get('channel-registered')
+    async getAllChanUser(@Request() req: any) {
+        const user: User = req.user;
+        const channel: Channel[] | null
+            = await this.chatGateway.getAllUserOnChannels(user.userID);
+        return (channel);
+    }
+
+    /*
+        find PM from both user
+        if it doesn't exist, create a pm
+    */
+    @Get('private-messages')
+    async openPrivateMessage(@Request() req: any,
+        @Query('id') id: Readonly<string>): Promise<number | null> {
+        const user: User = req.user;
+        console.log("open pm");
+        if (user.userID === Number(id))
+            return (null);
+        console.log("middle pm");
+        //if no channel found, typeorm return NULL
+        const list_user: ListUser[] | null | undefined
+            = await this.chatGateway.findPmUsers(user.userID, id);
+        console.log("list user");
+        //check presence de 2 users
+        //check si dans memes canal
+        console.log(list_user);
+        //create channel between both users
+        if (list_user === null
+            || typeof list_user === "undefined") {
+            const channelId: string
+                = this.chatGateway.createPrivateMessage(user.userID, id);
+        }
+        console.log("end");
+        return (null);
+    }
+    /* End of fixed chatbox part */
+
     /*
         id = id channel
         name = channel's name
     */
-    //@Guard() IL FAUT UN AUTHGUARD
+    @UseGuards(JwtGuard)
     @Get('has-paswd')
-    getHasPaswd(@Query('id') id: Readonly<string>,
-        @Query('iduser') idUser: Readonly<string>): boolean {
-        console.log("aaaaaaa");
-        const channel: undefined | Chat = this.chatGateway.getChannelById(id)
-        if (typeof channel != "undefined") {
-            const getUser = channel.lstUsr.get(idUser);
-            console.log(getUser);
-            if (typeof getUser !== "undefined")
+    async getHasPaswd(@Request() req: any,
+        @Query('id') id: Readonly<string>): Promise<boolean> {
+        const user: User = req.user;
+        const channel: undefined | DbChat = await this.chatGateway.getChannelByTest(id);
+        if (typeof channel != "undefined" && channel != null) {
+            const getUser = await this.chatGateway.getUserOnChannel(id, user.userID);
+            if (typeof getUser !== "undefined" || getUser === null)
                 return (false);
         }
-        if (typeof channel == "undefined" || channel.password == '')
+        if (typeof channel === "undefined" || channel?.password == '' || channel === null)
             return (false);
         return (true);
     }
@@ -48,17 +105,20 @@ export class ChatController {
     /* Post part */
     /* Create new public chat and return them by Name */
     /* admin pas fait */
-    //@Guard() IL FAUT UN AUTHGUARD
+    @UseGuards(JwtGuard)
     @Post('new-public')
-    async postNewPublicChat(@Body() chat: CreateChatDto): Promise<InformationChat | string[]> {
-        const channel: undefined | Chat = this.chatGateway.getChannelByName(chat.name);
+    async postNewPublicChat(@Request() req: any,
+        @Body() chat: CreateChatDto): Promise<InformationChat | string[]> {
+        const user: User = req.user;
+        const channel: undefined | DbChat = await this.chatGateway.getChannelByName(chat.name);
         let err: string[] = [];
-
+        if ((chat.accesstype != '0' && chat.accesstype != '1'))
+            err.push("Illegal access type");
         if (chat.name.length === 0)
             err.push("Chat name must not be empty.");
         else if (chat.name == chat.password)
             err.push("Password and chat name can't be the same.");
-        if (typeof channel !== "undefined")
+        if (channel != null)//   || typeof channel === "undefined")
             err.push("Channel already exist.");
         if (err.length > 0)
             return (err);
@@ -67,36 +127,32 @@ export class ChatController {
         let salt = 10; //DOIT ETRE UTILISE DEPUIS .env
         if (chat.accesstype != '0' || typeof getAll == undefined)
             throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
-        chat.lstUsr = new Map<string | number, string>;
-        chat.lstMute = new Map<string, number>; //([[chat.setMute.key, chat.setMute.value]]);
-        chat.lstBan = new Map<string, number>; //([[chat.setBan.key, chat.setBan.value]]);
-        chat.lstUsr.set(chat.owner.idUser, chat.owner.username);
         if (chat.password != '') {
             chat.accesstype = '1';
             chat.password = bcrypt.hashSync(chat.password, salt);
         }
-        console.log(chat);
-        return (this.chatGateway.createPublic(chat, len, chat.owner));
-        //console.log(this.chatGateway.getAllPublicByName());
-        //return (this.chatGateway.getAllPublicByName());
+        return (this.chatGateway.createChat(chat, len, { idUser: user.userID, username: user.username }));
     }
 
     /* Create new private chat and return them by Name */
     /* admin pas fait */
-    //@Guard() IL FAUT UN AUTHGUARD
     /*
         https://nodejs.org/api/crypto.html#cryptorandombytessize-callback
     */
+    @UseGuards(JwtGuard)
     @Post('new-private')
-    async postNewPrivateChat(@Body() chat: CreateChatDto): Promise<InformationChat | string[]> {
-        const channel: undefined | Chat = this.chatGateway.getChannelByName(chat.name);
+    async postNewPrivateChat(@Request() req: any,
+        @Body() chat: CreateChatDto): Promise<InformationChat | string[]> {
+        const user: User = req.user;
+        const channel: undefined | DbChat = await this.chatGateway.getChannelByName(chat.name);
         let err: string[] = [];
-
+        if ((chat.accesstype != '2' && chat.accesstype != '3'))
+            err.push("Illegal access type");
         if (chat.name.length === 0)
             err.push("Chat name must not be empty.");
         else if (chat.name == chat.password)
             err.push("Password and chat name can't be the same.");
-        if (typeof channel !== "undefined")
+        if (channel != null || typeof channel === "undefined")
             err.push("Channel already exist.");
         if (err.length > 0)
             return (err);
@@ -106,40 +162,37 @@ export class ChatController {
             chat.accesstype = '3';
             chat.password = bcrypt.hashSync(chat.password, salt);
         }
-        chat.lstUsr = new Map<string | number, string>;
-        chat.lstMute = new Map<string, number>; //([[chat.setMute.key, chat.setMute.value]]);
-        chat.lstBan = new Map<string, number>; //([[chat.setBan.key, chat.setBan.value]]);
-        chat.lstUsr.set(chat.owner.idUser, chat.owner.username);
-        /*
-            appeler createPrivate + dedans vérifier si id existe déjà
-        */
-        return (this.chatGateway.createPublic(chat, id, chat.owner));
+        return (this.chatGateway.createChat(chat, id, { idUser: user.userID, username: user.username }));
     }
 
-    //@Guard() IL FAUT UN AUTHGUARD
     @Post('valid-paswd')
-    async passwordIsValid(@Body() psw: PswChat): Promise<boolean> {
-        console.log("psw: " + psw);
-        const channel: undefined | Chat = this.chatGateway.getChannelById(psw.id)
-        console.log("ch: " + channel);
-        if (typeof channel == "undefined" || channel.password == '')
+    async passwordIsValid(@Body() psw: Readonly<PswChat>): Promise<boolean> {
+        const channel: undefined | DbChat = await this.chatGateway.getChannelByTest(psw.id);
+        if (typeof channel == "undefined" || channel === null || channel.password == '')
             return (false);
         const comp = await bcrypt.compare(psw.psw, channel.password);
-        console.log("valid-psw COMP: " + comp);
         return (comp);
     }
-    //
-    //@Guard() IL FAUT UN AUTHGUARD
-    /* Remplacer id et username par un actuel user */
+
     @Get('')
-    async getChannel(@Query('id') id: Readonly<string>,
-        @Query('iduser') idUser: Readonly<string>) {
-        const channel = this.chatGateway.getChannelById(id);
-        let authorized = true;
-        if (typeof channel === "undefined")
+    async getChannel(@Request() req: any,
+        @Query('id') id: Readonly<string>) {
+        const user: User = req.user;
+        const chan = await this.chatGateway.getChannelByTest(id);
+        const listMsg = await this.chatGateway.getListMsgByChannelId(id);
+
+        let channel = {
+            id: chan?.id,
+            name: chan?.name,
+            owner: chan?.user_id,
+            password: chan?.password,
+            accesstype: chan?.accesstype,
+            lstMsg: listMsg
+        };
+        if (typeof channel === "undefined" || channel === null)
             return ({});
-        const getUser = channel.lstUsr.get(idUser);
-        if (typeof getUser === "undefined")
+        const getUser = await this.chatGateway.getUserOnChannel(id, user.userID);
+        if (typeof getUser === "undefined" || getUser === null)
             return ({});
         let arrayStart: number = channel.lstMsg.length - 5;
         let arrayEnd: number = channel.lstMsg.length;
@@ -151,11 +204,7 @@ export class ChatController {
             owner: channel.owner,
             accesstype: channel.accesstype,
             lstMsg: channel.lstMsg.slice(arrayStart, arrayEnd),
-            authorized: authorized
-            //lstUsr: Object.fromEntries(channel.lstUsr),
-            /*,
-            lstMute: Object.fromEntries(channel.lstMute),
-            lstBan: Object.fromEntries(channel.lstBan),*/
+            authorized: true
         };
         return (convertChannel);
     }
