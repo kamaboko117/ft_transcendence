@@ -60,17 +60,24 @@ export class ChatController {
     async openPrivateMessage(@Request() req: any,
         @Query('id') id: Readonly<string>): Promise<number | null> {
         const user: User = req.user;
-
+        console.log("open pm");
         if (user.userID === Number(id))
             return (null);
+        console.log("middle pm");
         //if no channel found, typeorm return NULL
-        const list_user: ListUser | null | undefined
+        const list_user: ListUser[] | null | undefined
             = await this.chatGateway.findPmUsers(user.userID, id);
+        console.log("list user");
+        //check presence de 2 users
+        //check si dans memes canal
+        console.log(list_user);
         //create channel between both users
-        if (list_user === null || typeof list_user === "undefined") {
-            const channelId: string = this.chatGateway.createPrivateMessage(user.userID, id);
-            console.log(channelId);
+        if (list_user === null
+            || typeof list_user === "undefined") {
+            const channelId: string
+                = this.chatGateway.createPrivateMessage(user.userID, id);
         }
+        console.log("end");
         return (null);
     }
     /* End of fixed chatbox part */
