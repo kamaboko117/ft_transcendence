@@ -10,6 +10,7 @@ import { SocketModule } from "./socket/socket.module";
 import { MatchmakingModule } from './matchmaking/matchmaking.module';
 import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [

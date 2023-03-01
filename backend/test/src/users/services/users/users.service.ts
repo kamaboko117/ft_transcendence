@@ -72,6 +72,14 @@ export class UsersService {
         return this.userRepository.find();
     }
 
+    async updatePathAvatarUser(user_id: number, path: string) {
+        this.userRepository.createQueryBuilder()
+            .update(User)
+            .set({avatarPath: path})
+            .where("user_id = :id")
+            .setParameters({id: user_id})
+            .execute()
+        }
     /*
         exemple requete sql avec un innerjoin facon typeorm
         createQueryBuilder("list_msg")
@@ -84,7 +92,7 @@ export class UsersService {
     */
     async getUserProfile(id: number) {
         const user: any = await this.userRepository.createQueryBuilder("user")
-            .select(['user.username', 'user.token', 'user.userID', 'user.avatarPath'])
+            .select(['user.username', 'user.userID', 'user.avatarPath'])
             .where('user.user_id = :user') //:user = setParameters()
             .setParameters({ user: id })//anti hack
             .getOne();
@@ -94,7 +102,7 @@ export class UsersService {
 
     async findUsersById(id: number) {
         const user: any = await this.userRepository.createQueryBuilder("user")
-            .select(['user.username', 'user.token', 'user.userID', 'user.avatarPath'])
+            .select(['user.username', 'user.userID', 'user.avatarPath'])
             .where('user.user_id = :user')
             .setParameters({ user: id })
             .getOne();

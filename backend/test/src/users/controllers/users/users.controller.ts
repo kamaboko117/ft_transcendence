@@ -8,7 +8,7 @@ import {
     UseGuards,
     UsePipes,
     ValidationPipe,
-    Request, Res
+    Request, Res, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator
 } from "@nestjs/common";
 import { CreateUserDto } from "src/users/dto/users.dtos";
 import { UsersService } from "src/users/services/users/users.service";
@@ -16,6 +16,8 @@ import { CustomAuthGuard } from 'src/auth/auth.guard';
 import { FakeAuthGuard } from 'src/auth/fake.guard';
 import { JwtGuard, Public } from 'src/auth/jwt.guard';
 import { AuthService } from 'src/auth/auth.service';
+import { FileInterceptor } from "@nestjs/platform-express";
+
 //import {AuthGuard} from '@nestjs/passport';
 
 @Controller("users")
@@ -66,6 +68,20 @@ export class UsersController {
                 httpOnly: true
             });
         return (access_token);
+    }
+
+    @Post('avatarfile')
+    @UseInterceptors(FileInterceptor('fileset', {dest: './upload_avatar'}))
+    uploadFile(@Request() req: any, @UploadedFile(new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 1000000 }),
+          new FileTypeValidator({ fileType: 'image/png'}),
+        ],
+      }),
+    ) file: Express.Multer.File) {
+        const user = req.user;
+        this.userService.updatePathAvatarUser(user.userID, file.path);
+        return ({path: file.path});
     }
 
     /*

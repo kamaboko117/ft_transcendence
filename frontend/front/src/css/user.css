@@ -17,3 +17,8 @@ label.userInfo {
 .userInfoClick>* {
     display: inline-flex;
 }
+
+img.avatar {
+    height: 50%;
+    max-width: 200px;
+}
