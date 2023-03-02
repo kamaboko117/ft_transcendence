@@ -39,8 +39,6 @@ class SendMsgPm {
   username: string;
   @IsString()
   content: string;
-  @IsBoolean()
-  isPm: boolean
 }
 
 /*
@@ -362,12 +360,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (typeof data === "undefined"
       || !user || typeof user.userID != "number")
       return;
-    console.log("USER: " + socket.user.userID);
-    console.log("STOP EMIT AT");
     const getChannel: any = await this.getUserOnChannel(data.id, user.userID);
     if (typeof getChannel !== "undefined" && getChannel !== null) {
       socket.leave(data.id + getChannel.channel_name);
-      console.log(data.id + getChannel.channel_name);
     }
   }
 
@@ -391,7 +386,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         chatid: data.id
       }])
       .execute();
-    console.log("pm 1");
     console.log(getUser.channel_id + getUser.channel_name);
     console.log(this.server.sockets.adapter.rooms.get(getUser.channel_id + getUser.channel_name));
     this.server.to(getUser.channel_id + getUser.channel_name).emit("sendBackMsg", {
@@ -405,44 +399,41 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       content: data.content
     });
   }
-
-  @UseGuards(JwtGuard)
-  @SubscribeMessage('sendMsg2')
-  async newPostChatFromPmPart(@ConnectedSocket() socket: Readonly<any>,
-    @MessageBody() data: Readonly<SendMsgPm>) {
-    const user = socket.user;
-    if (typeof user.userID != "number")
-      return;
-    const getUser = await this.getUserOnChannel(data.id, user.userID);
-    if (typeof getUser === "undefined" || getUser === null)
-      return (undefined);
-    this.listMsgRepository
-      .createQueryBuilder()
-      .insert()
-      .into(ListMsg)
-      .values([{
-        user_id: user.userID, //username: getUser.User_username,
-        content: data.content,
-        chatid: data.id
-      }])
-      .execute();
-    console.log("pm 2");
-    console.log(getUser.channel_id + getUser.channel_name);
-    console.log(this.server.sockets.adapter.rooms.get(getUser.channel_id + getUser.channel_name));
-    if (data.isPm === false) {
+  /*
+    @UseGuards(JwtGuard)
+    @SubscribeMessage('sendMsg2')
+    async newPostChatFromPmPart(@ConnectedSocket() socket: Readonly<any>,
+      @MessageBody() data: Readonly<SendMsg>) {
+      const user = socket.user;
+      if (typeof user.userID != "number")
+        return;
+      const getUser = await this.getUserOnChannel(data.id, user.userID);
+      if (typeof getUser === "undefined" || getUser === null)
+        return (undefined);
+      this.listMsgRepository
+        .createQueryBuilder()
+        .insert()
+        .into(ListMsg)
+        .values([{
+          user_id: user.userID, //username: getUser.User_username,
+          content: data.content,
+          chatid: data.id
+        }])
+        .execute();
+      ///if (data.isPm === false) {
       this.server.to(getUser.channel_id + getUser.channel_name).emit("sendBackMsg", {
         user_id: user.userID,
         user: { username: getUser.User_username },
         content: data.content
       });
-    }
-    this.server.to(getUser.channel_id + getUser.channel_name).emit("sendBackMsg2", {
-      user_id: user.userID,
-      user: { username: getUser.User_username },
-      content: data.content
-    });
-
-  }
+      //}
+      this.server.to(getUser.channel_id + getUser.channel_name).emit("sendBackMsg2", {
+        user_id: user.userID,
+        user: { username: getUser.User_username },
+        content: data.content
+      });
+  
+    }*/
 
   /* Tests ws */
   handleConnection(client: Socket) {
