@@ -43,7 +43,7 @@ type propsListChannel = {
         name: string,
     }>,
     setId: React.Dispatch<React.SetStateAction<string>>,
-    setIsPrivate: React.Dispatch<React.SetStateAction<boolean>>
+    //setIsPrivate: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const directMessage = (event: MouseEvent<HTMLButtonElement>,
@@ -60,7 +60,7 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>,
 const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
     usrSocket: any, obj: any, ref: any, setMsg: any) => {
     e.preventDefault();
-    usrSocket.emit('sendMsg2', obj, (res) => {
+    usrSocket.emit('sendMsg', obj, (res) => {
         console.log("res: ");
         console.log(res);
     })
@@ -72,8 +72,7 @@ const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
     usrSocket: any, obj: any, ref: any, setMsg: any) => {
     if (e.key === "Enter" && e.shiftKey === false) {
         e.preventDefault();
-        usrSocket.emit('sendMsg2', obj, (res) => {
-            console.log("res: ");
+        usrSocket.emit('sendMsg', obj, (res) => {
             console.log(res);
         })
         setMsg("");
@@ -96,14 +95,10 @@ const Button = () => {
 
 const handleClick = (event: React.MouseEvent<HTMLUListElement>,
     setId: React.Dispatch<React.SetStateAction<string>>,
-    setIsPrivate: React.Dispatch<React.SetStateAction<boolean>>,
-    isPrivate: boolean) => {
+    //setIsPrivate: React.Dispatch<React.SetStateAction<boolean>>,
+    /*isPrivate: boolean*/) => {
     event.preventDefault()
     const target: HTMLElement = event.target as HTMLElement;
-    if (isPrivate === true)
-        setIsPrivate(true);
-    else
-        setIsPrivate(false);
     setId(target.id);
 }
 1
@@ -117,7 +112,7 @@ const ListDiscussion = (props: propsListChannel) => {
             { overflowY: 'scroll', overflowX: 'hidden', height: '90%' }
         }>
             <ul onClick={(e: React.MouseEvent<HTMLUListElement>) =>
-                handleClick(e, props.setId, props.setIsPrivate, true)} className='listDiscussion'>
+                handleClick(e, props.setId)} className='listDiscussion'>
                 {props.listPm && props.listPm.map((chan: { id: string, name: string }) => (
                     <li key={++i} id={chan.id}>
                         {chan.name}
@@ -131,7 +126,7 @@ const ListDiscussion = (props: propsListChannel) => {
             { overflowY: 'scroll', overflowX: 'hidden', height: '90%' }
         }>
             <ul onClick={(e: React.MouseEvent<HTMLUListElement>) =>
-                handleClick(e, props.setId, props.setIsPrivate, false)} className='listDiscussion'>
+                handleClick(e, props.setId)} className='listDiscussion'>
                 {props.listChannel && props.listChannel.map((chan: { id: string, name: string }) => (
                     <li key={++i} id={chan.id}>
                         {chan.name}
@@ -153,29 +148,34 @@ const DiscussionBox = (props: {
     isPrivate: boolean
 }) => {
     const stringRegex = /(\/\w*\/)/;
+    const regex = RegExp(stringRegex, 'g')
     const getLocation = useLocation()?.pathname;
-    let replaceLocationPath = '';
-    if (typeof getLocation !== "undefined")
-        replaceLocationPath = getLocation.replace(stringRegex, "");
-    console.log(replaceLocationPath);
+    const getFirstPartRegex = regex.exec(getLocation);
+    let getSecondPartRegex = '';
+
+    if (typeof getLocation !== "undefined") {
+        getSecondPartRegex = getLocation.replace(stringRegex, "");
+    }
+    console.log(getSecondPartRegex);
     const refElem = useRef(null);
     const { usrSocket } = useContext(SocketContext);
     const [online, setOnline] = useState<undefined | boolean>(undefined)
     useEffect(() => {
         //subscribeChat
-        usrSocket.emit("joinRoomChat", {
-            id: props.id,
-        }, (res: boolean) => {
-            console.log(res);
-            if (res === true)
-                setOnline(true);
-            else
-                setOnline(false);
-        });
-        //listen to excption sent by backend
+        console.log("JOIN ROOM ID: " + props.id);
+        if (props.id != "") {
+            usrSocket.emit("joinRoomChat", {
+                id: props.id,
+            }, (res: boolean) => {
+                console.log(res);
+                if (res === true)
+                    setOnline(true);
+                else
+                    setOnline(false);
+            });
+        }
+        //listen to exception sent by backend
         usrSocket.on('exception', (res) => {
-            console.log("err");
-            console.log(res);
             if (res.status === "error" && res.message === "Token not valid")
                 props.setErrorCode(403);
             else
@@ -185,9 +185,17 @@ const DiscussionBox = (props: {
         return (() => {
             //unsubscribeChat
             console.log("unmount");
-            usrSocket.emit("stopEmit", { id: props.id }, () => {
-                setOnline(false);
-            });
+            console.log("replace: " + getSecondPartRegex);
+            console.log("props.id:" + props.id);
+            if (getSecondPartRegex != props.id
+                && getFirstPartRegex && getFirstPartRegex[0] == "/channels/") {
+                console.log("emit has stopped");
+                usrSocket.emit("stopEmit", { id: props.id }, () => {
+                    setOnline(false);
+                });
+            } else {
+                console.log("must not stop emit from chat");
+            }
             usrSocket.off("exception");
         })
     }, [props.id]);
@@ -205,11 +213,7 @@ const DiscussionBox = (props: {
                     props.setErrorCode(res.status);
                 });
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
-                console.log("load msg");
-                console.log(res);
                 setLstMsg(res.lstMsg);
-                //if (res.accesstype === "2" || res.accesstype === "3")
-                //    contextUserLeave();
             }
             console.log("load...");
         }
@@ -217,8 +221,6 @@ const DiscussionBox = (props: {
             ft_lst();
         console.log("liste mount");
         usrSocket.on("sendBackMsg2", (res: any) => {
-            console.log("msg");
-            console.log(res);
             setLstMsg((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
@@ -229,9 +231,9 @@ const DiscussionBox = (props: {
     }, [lstMsg.keys, props.id, online]);
     const [msg, setMsg] = useState<null | string>(null);
 
-    if (online === false)
+    if (props.id != "" && online === false)
         return (<article className='containerDiscussionBox'>Unauthorized connection</article>)
-    else if (typeof online == "undefined")
+    else if (props.id != "" && typeof online == "undefined")
         return (<article className='containerDiscussionBox'>Connecting to chat...</article>)
     return (<div className='containerDiscussionBox'>
         <ListMsg lstMsg={lstMsg} />
@@ -300,7 +302,7 @@ const Box = (props: settingBox) => {
             opacity: props.opacity,
         }}>
             <ListDiscussion listPm={lstPm} listChannel={lstChannel}
-                setId={props.setId} setIsPrivate={setIsPrivate} />
+                setId={props.setId} />
             <DiscussionBox id={props.id} jwt={props.jwt}
                 setErrorCode={props.setErrorCode} isPrivate={isPrivate} />
         </article>
@@ -323,7 +325,7 @@ const UnfoldDirectMessage = (props: settingChat) => {
     const [errorCode, setErrorCode] = useState<number>(200);
 
     if (errorCode >= 400) // a placer devant fonctions asynchrones semblerait t'il, le composant react se recharge
-        return (<FetchError code={errorCode} />); //lorsqu'il se met a jour, semblerait t'il
+        return (<FetchError code={errorCode} />);
     if (props.render === false)
         return <FoldDirectMessage render={props.render} id={props.id}
             width={props.width} height={50}
