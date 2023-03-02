@@ -58,7 +58,7 @@ const handleLeave = async (e: React.MouseEvent<HTMLButtonElement>, contextUserLe
     });
 }
 /* Post msg */
-export const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
+const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
     usrSocket: any, obj: any, ref: any, setMsg: any) => {
     e.preventDefault();
     usrSocket.emit('sendMsg', obj, (res) => {
@@ -69,7 +69,7 @@ export const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
     ref.current.value = "";
 }
 
-export const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
+const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
     usrSocket: any, obj: any, ref: any, setMsg: any) => {
     if (e.key === "Enter" && e.shiftKey === false) {
         e.preventDefault();
@@ -108,8 +108,10 @@ const MainChat = (props: any) => {
                 props.setErrorCode(500);
         })
         console.log("mount");
+        console.log("START EMIT");
         return (() => {
             //unsubscribeChat
+            console.log("STOP EMIT");
             console.log("unmount");
             usrSocket.emit("stopEmit", { id: props.id }, () => {
                 setOnline(false);

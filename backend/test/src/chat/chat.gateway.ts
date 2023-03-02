@@ -5,7 +5,7 @@ import {
 import { Socket, Server } from 'socket.io';
 import { CreateChatDto, Owner } from './create-chat.dto';
 import { Chat, InformationChat, User, DbChat } from './chat.interface';
-import { IsString } from 'class-validator';
+import { IsBoolean, IsString } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -31,6 +31,16 @@ class SendMsg {
   username: string;
   @IsString()
   content: string;
+}
+class SendMsgPm {
+  @IsString()
+  id: string;
+  @IsString()
+  username: string;
+  @IsString()
+  content: string;
+  @IsBoolean()
+  isPm: boolean
 }
 
 /*
@@ -109,24 +119,26 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   /* GET PM BETWEEN 2 USERS */
   async findPmUsers(userOne: Readonly<number>,
     userTwo: Readonly<string>) {
-    const listUser: ListUser[] | null | undefined = await this.listUserRepository
+    const listUser: ListUser | undefined = await this.listUserRepository
       .createQueryBuilder("list_user")
-      .select("Channel.name")
+      .select("Channel.id", "Channel.name")
       .innerJoin("list_user.chat", "Channel")
-      .where("list_user.user_id IN (:userOne, :userTwo) AND Channel.accesstype = :type")
+      .where("list_user.user_id IN (:userOne, :userTwo)")
       .setParameters({
         userOne: userOne,
-        userTwo: userTwo,
-        type: '4'
+        userTwo: Number(userTwo)
       })
+      .andWhere("Channel.accesstype = :type")
+      .setParameters({ type: '4' })
       .groupBy("Channel.id")
-      .having("COUNT(Channel.name) >= :nb", { nb: 2 })
+      .orHaving("COUNT(Channel.id) >= :nb")
+      .setParameters({ nb: 2 })
       .getRawOne();
     return (listUser);
   }
   /* Create private message part */
-  createPrivateMessage(userOne: Readonly<number>,
-    userTwo: Readonly<string>): string {
+  async createPrivateMessage(userOne: Readonly<number>,
+    userTwo: Readonly<string>) {
     let newChat: {
       id: number, name: string, accesstype: string
     } = {
@@ -134,22 +146,28 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       name: String(userOne + userTwo),
       accesstype: '4'
     };
-    /* Channel part */
-    const channel = new Channel();
-    const listUserOne = new ListUser();
-    const listUserTwo = new ListUser();
-    channel.id = String(userOne + userTwo);
-    channel.name = String(userOne + userTwo);
-    channel.accesstype = '4';
-    /* Add both users to channel */
-    listUserOne.user_id = userOne;
-    listUserOne.chat = channel;
-    listUserTwo.user_id = Number(userTwo);
-    listUserTwo.chat = channel;
-    /* Insert channel into DTB */
-    this.listUserRepository.save(listUserOne);
-    this.listUserRepository.insert(listUserTwo);
-    return (channel.id);
+    /* create Private message channel */
+    await this.chatsRepository.createQueryBuilder()
+      .insert().into(Channel)
+      .values({
+        id: String(userOne + userTwo),
+        name: String(userOne + userTwo),
+        accesstype: '4'
+      })
+      .execute();
+    /* insert first user */
+    await this.listUserRepository.createQueryBuilder()
+      .insert().into(ListUser)
+      .values([
+        { role: "", user_id: userOne, chatid: String(userOne + userTwo) }
+      ]).execute();
+    /* insert second user */
+    await this.listUserRepository.createQueryBuilder()
+      .insert().into(ListUser)
+      .values([
+        { role: "", user_id: Number(userTwo), chatid: String(userOne + userTwo) }
+      ]).execute();
+    return (true);
   }
   /* END OF PRIVATE  */
 
@@ -341,11 +359,16 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async stopEmit(@ConnectedSocket() socket: Readonly<any>,
     @MessageBody() data: Readonly<any>) {
     const user = socket.user;
-    if (typeof data === "undefined")
+    if (typeof data === "undefined"
+      || !user || typeof user.userID != "number")
       return;
+    console.log("USER: " + socket.user.userID);
+    console.log("STOP EMIT AT");
     const getChannel: any = await this.getUserOnChannel(data.id, user.userID);
-    if (typeof getChannel !== "undefined" && getChannel !== null)
+    if (typeof getChannel !== "undefined" && getChannel !== null) {
       socket.leave(data.id + getChannel.channel_name);
+      console.log(data.id + getChannel.channel_name);
+    }
   }
 
   @UseGuards(JwtGuard)
@@ -368,11 +391,57 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         chatid: data.id
       }])
       .execute();
+    console.log("pm 1");
+    console.log(getUser.channel_id + getUser.channel_name);
+    console.log(this.server.sockets.adapter.rooms.get(getUser.channel_id + getUser.channel_name));
     this.server.to(getUser.channel_id + getUser.channel_name).emit("sendBackMsg", {
       user_id: user.userID,
       user: { username: getUser.User_username },
       content: data.content
     });
+    this.server.to(getUser.channel_id + getUser.channel_name).emit("sendBackMsg2", {
+      user_id: user.userID,
+      user: { username: getUser.User_username },
+      content: data.content
+    });
+  }
+
+  @UseGuards(JwtGuard)
+  @SubscribeMessage('sendMsg2')
+  async newPostChatFromPmPart(@ConnectedSocket() socket: Readonly<any>,
+    @MessageBody() data: Readonly<SendMsgPm>) {
+    const user = socket.user;
+    if (typeof user.userID != "number")
+      return;
+    const getUser = await this.getUserOnChannel(data.id, user.userID);
+    if (typeof getUser === "undefined" || getUser === null)
+      return (undefined);
+    this.listMsgRepository
+      .createQueryBuilder()
+      .insert()
+      .into(ListMsg)
+      .values([{
+        user_id: user.userID, //username: getUser.User_username,
+        content: data.content,
+        chatid: data.id
+      }])
+      .execute();
+    console.log("pm 2");
+    console.log(getUser.channel_id + getUser.channel_name);
+    console.log(this.server.sockets.adapter.rooms.get(getUser.channel_id + getUser.channel_name));
+    if (data.isPm === false) {
+      this.server.to(getUser.channel_id + getUser.channel_name).emit("sendBackMsg", {
+        user_id: user.userID,
+        user: { username: getUser.User_username },
+        content: data.content
+      });
+    }
+    this.server.to(getUser.channel_id + getUser.channel_name).emit("sendBackMsg2", {
+      user_id: user.userID,
+      user: { username: getUser.User_username },
+      content: data.content
+    });
+
   }
 
   /* Tests ws */

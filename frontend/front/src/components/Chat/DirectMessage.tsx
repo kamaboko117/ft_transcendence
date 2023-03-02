@@ -1,11 +1,11 @@
 import React, { useState, MouseEvent, useContext, useEffect, useRef } from 'react';
 import { FetchError, header, headerPost } from '../FetchError';
-import { lstMsg, ListMsg, handleSubmitButton, handleSubmitArea } from './Chat';
+import { lstMsg, ListMsg } from './Chat';
 import "../../css/directMessage.css";
 import ContextDisplayChannel from '../../contexts/displayChat';
 import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
-import { createPath } from 'react-router-dom';
+import { createPath, useLocation, useParams } from 'react-router-dom';
 
 type settingChat = {
     render: boolean,
@@ -14,7 +14,7 @@ type settingChat = {
     height: number,
     opacity: number,
     jwt: string,
-    setId: React.Dispatch<React.SetStateAction<string> >
+    setId: React.Dispatch<React.SetStateAction<string>>
 }
 
 type settingBox = {
@@ -24,8 +24,8 @@ type settingBox = {
     height: number,
     opacity: number,
     jwt: string,
-    setErrorCode: React.Dispatch<React.SetStateAction<number> >,
-    setId: React.Dispatch<React.SetStateAction<string> >
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    setId: React.Dispatch<React.SetStateAction<string>>
 }
 
 type listPm = {
@@ -42,7 +42,8 @@ type propsListChannel = {
         id: string,
         name: string,
     }>,
-    setId: React.Dispatch<React.SetStateAction<string> >
+    setId: React.Dispatch<React.SetStateAction<string>>,
+    setIsPrivate: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const directMessage = (event: MouseEvent<HTMLButtonElement>,
@@ -55,24 +56,54 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>,
         setDisplay(true);
 }
 
+/* Post msg */
+const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
+    usrSocket: any, obj: any, ref: any, setMsg: any) => {
+    e.preventDefault();
+    usrSocket.emit('sendMsg2', obj, (res) => {
+        console.log("res: ");
+        console.log(res);
+    })
+    setMsg("");
+    ref.current.value = "";
+}
+
+const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
+    usrSocket: any, obj: any, ref: any, setMsg: any) => {
+    if (e.key === "Enter" && e.shiftKey === false) {
+        e.preventDefault();
+        usrSocket.emit('sendMsg2', obj, (res) => {
+            console.log("res: ");
+            console.log(res);
+        })
+        setMsg("");
+        ref.current.value = "";
+    }
+}
+
 const Button = () => {
     const { renderDirectMessage, setDisplay } = useContext(ContextDisplayChannel);
 
     return (
         <button onClick={
             (e: React.MouseEvent<HTMLButtonElement>) =>
-            directMessage(e,
-            renderDirectMessage,
-            setDisplay)
+                directMessage(e,
+                    renderDirectMessage,
+                    setDisplay)
         }>X</button>
     );
 }
 
 const handleClick = (event: React.MouseEvent<HTMLUListElement>,
-    setId: React.Dispatch<React.SetStateAction<string> >) => {
+    setId: React.Dispatch<React.SetStateAction<string>>,
+    setIsPrivate: React.Dispatch<React.SetStateAction<boolean>>,
+    isPrivate: boolean) => {
     event.preventDefault()
     const target: HTMLElement = event.target as HTMLElement;
-
+    if (isPrivate === true)
+        setIsPrivate(true);
+    else
+        setIsPrivate(false);
     setId(target.id);
 }
 1
@@ -81,36 +112,36 @@ const ListDiscussion = (props: propsListChannel) => {
     let i = 0;
 
     return (<div className='listDiscussion'>
-    <span>Privates messages</span>
-    <Element name="container" className="element" style={
-        {overflowY: 'scroll', overflowX: 'hidden', height: '90%'}
-    }>
-    <ul onClick={(e: React.MouseEvent<HTMLUListElement>) =>
-            handleClick(e, props.setId)} className='listDiscussion'>
-        {props.listPm && props.listPm.map((chan: {id: string, name: string}) => (
-            <li key={++i} id={chan.id}>
-                {chan.name}
-            </li>
-        )) }
-    </ul>
-    </Element>
+        <span>Privates messages</span>
+        <Element name="container" className="element" style={
+            { overflowY: 'scroll', overflowX: 'hidden', height: '90%' }
+        }>
+            <ul onClick={(e: React.MouseEvent<HTMLUListElement>) =>
+                handleClick(e, props.setId, props.setIsPrivate, true)} className='listDiscussion'>
+                {props.listPm && props.listPm.map((chan: { id: string, name: string }) => (
+                    <li key={++i} id={chan.id}>
+                        {chan.name}
+                    </li>
+                ))}
+            </ul>
+        </Element>
 
-    <span>List channel</span>
-    <Element name="container" className="element" style={
-        {overflowY: 'scroll', overflowX: 'hidden', height: '90%'}
-    }>
-    <ul onClick={(e: React.MouseEvent<HTMLUListElement>) =>
-            handleClick(e, props.setId)} className='listDiscussion'>
-        {props.listChannel && props.listChannel.map((chan: {id: string, name: string}) => (
-            <li key={++i} id={chan.id}>
-                {chan.name}
-            </li>
-        )) }
-    </ul>
-    </Element>
+        <span>List channel</span>
+        <Element name="container" className="element" style={
+            { overflowY: 'scroll', overflowX: 'hidden', height: '90%' }
+        }>
+            <ul onClick={(e: React.MouseEvent<HTMLUListElement>) =>
+                handleClick(e, props.setId, props.setIsPrivate, false)} className='listDiscussion'>
+                {props.listChannel && props.listChannel.map((chan: { id: string, name: string }) => (
+                    <li key={++i} id={chan.id}>
+                        {chan.name}
+                    </li>
+                ))}
+            </ul>
+        </Element>
 
-    <input type="text" /*onChange={}*/ placeholder='Direct message a user' name="user" />
-    <button>Search</button>
+        <input type="text" /*onChange={}*/ placeholder='Direct message a user' name="user" />
+        <button>Search</button>
     </div>
     );
 }
@@ -118,8 +149,15 @@ const ListDiscussion = (props: propsListChannel) => {
 const DiscussionBox = (props: {
     id: string,
     jwt: string,
-    setErrorCode: React.Dispatch<React.SetStateAction<number> >,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    isPrivate: boolean
 }) => {
+    const stringRegex = /(\/\w*\/)/;
+    const getLocation = useLocation()?.pathname;
+    let replaceLocationPath = '';
+    if (typeof getLocation !== "undefined")
+        replaceLocationPath = getLocation.replace(stringRegex, "");
+    console.log(replaceLocationPath);
     const refElem = useRef(null);
     const { usrSocket } = useContext(SocketContext);
     const [online, setOnline] = useState<undefined | boolean>(undefined)
@@ -153,7 +191,6 @@ const DiscussionBox = (props: {
             usrSocket.off("exception");
         })
     }, [props.id]);
-    
 
     const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
     useEffect(() => {
@@ -179,14 +216,14 @@ const DiscussionBox = (props: {
         if (online === true)
             ft_lst();
         console.log("liste mount");
-        usrSocket.on("sendBackMsg", (res: any) => {
+        usrSocket.on("sendBackMsg2", (res: any) => {
             console.log("msg");
             console.log(res);
             setLstMsg((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
             console.log("liste unmount");
-            usrSocket.off("sendBackMsg");
+            usrSocket.off("sendBackMsg2");
             setLstMsg([]);
         });
     }, [lstMsg.keys, props.id, online]);
@@ -197,28 +234,31 @@ const DiscussionBox = (props: {
     else if (typeof online == "undefined")
         return (<article className='containerDiscussionBox'>Connecting to chat...</article>)
     return (<div className='containerDiscussionBox'>
-    <ListMsg lstMsg={lstMsg} />
-    <div className='containerPost'>
-        <textarea ref={refElem} id="submitArea"
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMsg(e.currentTarget.value)}
-            onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
-                handleSubmitArea(e,
-                    usrSocket, {
-                    id: props.id,
-                    content: msg
-                },
-                refElem,
-                setMsg)}
-        className="chatBox" name="msg"></textarea>
-        <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmitButton(e,
-            usrSocket, {
-            id: props.id,
-            content: msg
-        }, refElem, setMsg)}
-        >Go</button>
-        <Button />
-    </div>
-</div>);
+        <ListMsg lstMsg={lstMsg} />
+        <div className='containerPost'>
+            <textarea ref={refElem} id="submitArea"
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMsg(e.currentTarget.value)}
+                onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
+                    handleSubmitArea(e,
+                        usrSocket, {
+                        id: props.id,
+                        content: msg,
+                        isPm: props.isPrivate,
+                    },
+                        refElem,
+                        setMsg
+                    )}
+                className="chatBox" name="msg"></textarea>
+            <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmitButton(e,
+                usrSocket, {
+                id: props.id,
+                content: msg,
+                isPm: props.isPrivate,
+            }, refElem, setMsg)}
+            >Go</button>
+            <Button />
+        </div>
+    </div>);
 }
 
 const Box = (props: settingBox) => {
@@ -236,11 +276,11 @@ const Box = (props: settingBox) => {
             })
             .then(res => {
                 setPm(res);
-        });
+            });
         /* load all channels */
         fetch('http://' + location.host + '/api/chat/channel-registered',
             { headers: header(props.jwt) })
-            .then (res => {
+            .then(res => {
                 if (res.ok)
                     return (res.json());
                 props.setErrorCode(res.status);
@@ -252,29 +292,31 @@ const Box = (props: settingBox) => {
             setChannel([]);
         })
     }, [lstPm.keys, lstChannel.keys]);
+    const [isPrivate, setIsPrivate] = useState<boolean>(false);
     return (
         <article className='containerDirectMessage unfold' style={{
             maxWidth: props.width,
             maxHeight: props.height,
             opacity: props.opacity,
         }}>
-            <ListDiscussion listPm={ lstPm } listChannel={lstChannel} setId={ props.setId }/>
+            <ListDiscussion listPm={lstPm} listChannel={lstChannel}
+                setId={props.setId} setIsPrivate={setIsPrivate} />
             <DiscussionBox id={props.id} jwt={props.jwt}
-                setErrorCode={props.setErrorCode} />
+                setErrorCode={props.setErrorCode} isPrivate={isPrivate} />
         </article>
-    );   
+    );
 }
 
 /*
     Waiting for user displaying Direct Message part
 */
-const FoldDirectMessage = (props:settingChat) => {
+const FoldDirectMessage = (props: settingChat) => {
     return (<article className='containerDirectMessage fold' style={{
-        maxWidth:props.width,
+        maxWidth: props.width,
         height: props.height,
         opacity: props.opacity,
         background: 'red'
-    }}><Button/><span>Open chat box</span></article>);
+    }}><Button /><span>Open chat box</span></article>);
 }
 
 const UnfoldDirectMessage = (props: settingChat) => {
@@ -289,10 +331,10 @@ const UnfoldDirectMessage = (props: settingChat) => {
             setId={props.setId}
         />
     return <Box render={props.render} id={props.id}
-                width={props.width} height={props.height}
-                opacity={0.9} jwt={props.jwt}
-                setErrorCode={setErrorCode} setId={props.setId}
-        />
+        width={props.width} height={props.height}
+        opacity={0.9} jwt={props.jwt}
+        setErrorCode={setErrorCode} setId={props.setId}
+    />
 }
 
 export default UnfoldDirectMessage;

@@ -27,35 +27,6 @@ type PropsUserInfo = {
     jwt: string
 }
 
-/*
-<table className='tableInfo'>
-    <thead>
-        <tr>
-            <th>User(s) connected</th>
-        </tr>
-    </thead>
-    <tbody onClick={this.handleClick}>
-        {this.state.listUser &&
-            this.state.listUser.map((usr) => (
-                <tr key={++i}>
-                    <td>{usr.content}</td>
-                </tr>
-            ))
-        }
-    </tbody>
-</table>
-*/
-
-/*
-<div className={chooseClassName}>
-    <label className="userInfo">{this.state.userName}</label>
-    <button onClick={this.BlockUnblock} className="userInfo">Block/Unblock</button>
-    <button onClick={this.InviteGame} className="userInfo">Invite to a game</button>
-    <button onClick={this.UserProfile} className="userInfo">User Profile</button>
-    <button onClick={this.DirectMessage} className="userInfo">Direct message</button>
-</div>
-*/
-
 const blockUnblock = (event: MouseEvent<HTMLButtonElement>): void => {
     event.preventDefault();
 }
@@ -77,14 +48,14 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>,
     renderDirectMessage: boolean, setDisplay: any,
     userId: number, jwt: string): void => {
     event.preventDefault();
-    if (renderDirectMessage === true)
-        setDisplay(false)
-    else {
-        fetch('http://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
-            id: String(userId),
-        }), { headers: header(jwt) })
-        setDisplay(true);
-    }
+    //if (renderDirectMessage === true)
+    //    setDisplay(false)
+    //else {
+    fetch('http://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
+        id: String(userId),
+    }), { headers: header(jwt) })
+    setDisplay(true);
+    //}
 }
 
 const handleClick = (event: React.MouseEvent<HTMLDivElement>,
@@ -226,7 +197,7 @@ const ListUser = (props: { id: string, jwt: string }) => {
             setLstUser([]);
             usrSocket.off("updateListChat");
         });
-    }, [lstUser.keys]);
+    }, [lstUser?.keys]);
     if (errorCode >= 400) // a placer devant fonctions asynchrones semblerait t'il, le composant react se recharge
         return (<FetchError code={errorCode} />); //lorsqu'il se met a jour, semblerait t'il
     return (
