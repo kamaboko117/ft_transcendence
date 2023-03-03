@@ -9,6 +9,10 @@ import { JwtGuard } from 'src/auth/jwt.guard';
 import { Channel } from './chat.entity';
 import { ListUser } from './lstuser.entity';
 
+type Channel_ret = {
+    Channel_id: string
+}
+
 @Controller('chat')
 export class ChatController {
     constructor(private chatGateway: ChatGateway) { }
@@ -40,7 +44,7 @@ export class ChatController {
     @Get('list-pm')
     async getDirectMessage(@Request() req: any) {
         const user: User = req.user;
-        const channel: Channel[] | null
+        const channel: ListUser[] | null
             = await this.chatGateway.getAllPmUser(user.userID);
         return (channel);
     }
@@ -58,19 +62,20 @@ export class ChatController {
     */
     @Get('private-messages')
     async openPrivateMessage(@Request() req: any,
-        @Query('id') id: Readonly<string>): Promise<boolean | null> {
+        @Query('id') id: Readonly<string>): Promise<string | null> {
         const user: User = req.user;
 
         if (user.userID === Number(id))
             return (null);
-        const list_user: ListUser | undefined
+        const list_user: Channel_ret | undefined
             = await this.chatGateway.findPmUsers(user.userID, id);
         if (typeof list_user === "undefined") {
-            const ret: boolean
+            const ret: string
                 = await this.chatGateway.createPrivateMessage(user.userID, id);
             return (ret);
         }
-        return (true);
+        console.log(list_user);
+        return (list_user.Channel_id);
     }
     /* End of fixed chatbox part */
 
