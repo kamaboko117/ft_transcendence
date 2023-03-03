@@ -24,7 +24,8 @@ type PropsUserInfo = {
         user_id: number,
         user: { username: string },
     }>,
-    jwt: string
+    jwt: string,
+    id: string
 }
 
 const blockUnblock = (event: MouseEvent<HTMLButtonElement>): void => {
@@ -45,7 +46,7 @@ const userProfile = (event: MouseEvent<HTMLButtonElement>): void => {
     DirectMessage component will load messages itself
 */
 const directMessage = (event: MouseEvent<HTMLButtonElement>,
-    renderDirectMessage: boolean, setDisplay: any,
+    renderDirectMessage: boolean, setDisplay: any, setId: React.Dispatch<React.SetStateAction<string>>,
     userId: number, jwt: string): void => {
     event.preventDefault();
     //if (renderDirectMessage === true)
@@ -54,7 +55,17 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>,
     fetch('http://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
         id: String(userId),
     }), { headers: header(jwt) })
-    setDisplay(true);
+    .then(res => {
+        console.log(res);
+        if (res.ok){
+            return (res.text());
+        }
+    }).then((res: string | undefined) => {
+        console.log(res);
+        setDisplay(true);
+        if (typeof res !== "undefined")
+            setId(res);
+    })
     //}
 }
 
@@ -64,6 +75,8 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     const e: HTMLElement = event.target as HTMLElement;
     const name: string = e.textContent as string;
     const attributes: NamedNodeMap = e.attributes as NamedNodeMap;
+    const parentNode: HTMLElement = e.parentNode as HTMLElement;
+        console.log(e);
     if (username === "" || username != name) {
         setUserId(Number(attributes[0].value));
         setUsername(name);
@@ -72,7 +85,7 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
         setUserId(0);
         setUsername("");
     }
-    setTop(e.offsetTop);
+    setTop(parentNode.offsetTop);
 }
 
 const UserInfo = (props: PropsUserInfo): JSX.Element => {
@@ -92,16 +105,11 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
     const callback = useCallback(
         debounce(function resizeFunction() {
             if (username != "") {
-                const length = ref.current?.childBindings?.domNode?.childNodes.length;
-                const arr = ref.current?.childBindings?.domNode?.childNodes;
-                let i = 0;
-                for (i = 0; i < length; i++) {
-                    if (username === arr[i].textContent) {
-                        console.log(arr[i].textContent);
-                        setTop(arr[i].offsetTop);
-                        break;
-                    }
-                }
+                console.log("ref");
+                console.log();
+                const top = ref.current?.childBindings?.domNode?.offsetTop;
+                if (typeof top !== "undefined")
+                    setTop(top);
             }
         }, 100), [username]
     );
@@ -116,7 +124,8 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
     return (
         <>
             <Element name="container" className="element fullBoxListUser" ref={ref}
-                onClick={(e: React.MouseEvent<HTMLDivElement>) => handleClick(e, username, setUsername, setUserId, setTop)}>
+                onClick={(e: React.MouseEvent<HTMLDivElement>) => handleClick(e, username, setUsername,
+                    setUserId, setTop)}>
                 {props.listUser &&
                     props.listUser.map((usr) => (
                         <span tabIndex={usr.user_id} key={++i}>{usr.user.username}</span>
@@ -129,7 +138,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
                 <button onClick={inviteGame} className="userInfo">Invite to a game</button>
                 <button onClick={userProfile} className="userInfo">User Profile</button>
                 <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-                    directMessage(e, renderDirectMessage, setDisplay,
+                    directMessage(e, renderDirectMessage, setDisplay, setId,
                         userId, props.jwt)
                 } className="userInfo">Direct message</button>
             </div>
@@ -203,7 +212,7 @@ const ListUser = (props: { id: string, jwt: string }) => {
     return (
         <React.Fragment>
             <h2>List users</h2>
-            <UserInfo listUser={lstUser} jwt={props.jwt} />
+            <UserInfo id={props.id} listUser={lstUser} jwt={props.jwt} />
         </React.Fragment>
     );
 }

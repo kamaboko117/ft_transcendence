@@ -149,7 +149,8 @@ const MainChat = (props: any) => {
         usrSocket.on("sendBackMsg", (res: any) => {
             console.log("msg");
             console.log(res);
-            setLstMsg((lstMsg) => [...lstMsg, res]);
+            if (res.room === props.id)
+                setLstMsg((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
             console.log("liste unmount");

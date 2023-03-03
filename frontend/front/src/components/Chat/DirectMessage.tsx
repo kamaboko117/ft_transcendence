@@ -29,14 +29,23 @@ type settingBox = {
 }
 
 type listPm = {
+    chatid: string,
+    user: {
+        username: string,
+    }
+}
+
+type listChan = {
     id: string,
     name: string,
 }
 
 type propsListChannel = {
     listPm: Array<{
-        id: string,
-        name: string,
+        chatid: string,
+        user: {
+            username: string
+        },
     }>,
     listChannel: Array<{
         id: string,
@@ -113,9 +122,9 @@ const ListDiscussion = (props: propsListChannel) => {
         }>
             <ul onClick={(e: React.MouseEvent<HTMLUListElement>) =>
                 handleClick(e, props.setId)} className='listDiscussion'>
-                {props.listPm && props.listPm.map((chan: { id: string, name: string }) => (
-                    <li key={++i} id={chan.id}>
-                        {chan.name}
+                {props.listPm && props.listPm.map((chan: listPm) => (
+                    <li key={++i} id={chan.chatid}>
+                        {chan.user.username}
                     </li>
                 ))}
             </ul>
@@ -221,7 +230,8 @@ const DiscussionBox = (props: {
             ft_lst();
         console.log("liste mount");
         usrSocket.on("sendBackMsg2", (res: any) => {
-            setLstMsg((lstMsg) => [...lstMsg, res]);
+            if (res.room === props.id)
+                setLstMsg((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
             console.log("liste unmount");
@@ -265,7 +275,7 @@ const DiscussionBox = (props: {
 
 const Box = (props: settingBox) => {
     const [lstPm, setPm] = useState<listPm[]>([] as listPm[]);
-    const [lstChannel, setChannel] = useState<listPm[]>([] as listPm[]);
+    const [lstChannel, setChannel] = useState<listChan[]>([] as listChan[]);
 
     useEffect(() => {
         /* load privates messages */
@@ -323,10 +333,9 @@ const FoldDirectMessage = (props: settingChat) => {
 
 const UnfoldDirectMessage = (props: settingChat) => {
     const [errorCode, setErrorCode] = useState<number>(200);
-
     if (errorCode >= 400) // a placer devant fonctions asynchrones semblerait t'il, le composant react se recharge
         return (<FetchError code={errorCode} />);
-    if (props.render === false)
+    if (props.render === false || typeof props.id === "undefined")
         return <FoldDirectMessage render={props.render} id={props.id}
             width={props.width} height={50}
             opacity={0.6} jwt={props.jwt}
