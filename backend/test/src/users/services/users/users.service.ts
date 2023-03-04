@@ -89,16 +89,14 @@ export class UsersService {
             .setParameters({ user: id })
             .getOne();
         return (user);
-        //return this.userRepository.findOneBy({id: id});
     }
 
     async findUsersById(id: number) {
-        const user: any = await this.userRepository.createQueryBuilder("user")
+        const user: User | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.token', 'user.userID', 'user.avatarPath'])
             .where('user.user_id = :user')
             .setParameters({ user: id })
             .getOne();
         return (user);
-        //return this.userRepository.findOneBy({id: id});
     }
 }

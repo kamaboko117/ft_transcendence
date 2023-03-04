@@ -1,6 +1,7 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from 'src/users/services/users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { WsException } from '@nestjs/websockets';
 
 type User = {
     userID: any,
@@ -18,11 +19,10 @@ export class AuthService {
         if (typeof token === "undefined")
             return (undefined);
         const iduser: number = await this.usersServices.getInformationBearer(token);
-        console.log("iduser: " + iduser);
         let user: any = await this.usersServices.findUsersById(iduser);
+
         if (!user)
             user = await this.usersServices.createUser({ userID: iduser, username: '', token: '' });
-        console.log(user);
         return (user);
 	}
 	/* create fake user */
@@ -46,57 +46,17 @@ export class AuthService {
         const access_token = { access_token: this.jwtService.sign(payload) };
         return (access_token);
     }
-    verifyToken(token: string) {
+
+    async verifyToken(token: string) {
         console.log("TOK: " + token);
         try {
-            console.log("verify");
             const decoded = this.jwtService.verify(token, { secret: process.env.AUTH_SECRET });
-            console.log("end verify");
-            return (decoded);
+            const userExistInDb: User | null = await this.usersServices.findUsersById(decoded.sub)
+            
+            return (userExistInDb);
         } catch (e) {
-	//console.log(e);
             return (false);
         }
-        return (false);
-        //try {
-
-        /*} catch (e) {
-            console.log(e);
-            console.log(request.cookies.refresh_token)
-            //PARTIE IF typeof request.cookies.refresh_token === "undefined"
-
-            //PARTIE NOT UNDEFINED ACCESS TOKEN EXPIRED
-            if (typeof e.expiredAt != "undefined"
-                && typeof request.cookies.refresh_token != "undefined") {
-                //use refresh token to get new access
-                console.log("error cookie");
-                console.log("cookie defined");
-                console.log(request.cookies.refresh_token);//y a des cookies adminer
-                console.log("---");
-                console.log("check refresh token");
-                //try {
-                    this.jwtService.verify(request.cookies.refresh_token, {
-                        secret: process.env.AUTH_SECRET,
-                    });
-                }
-                catch (e) {
-                    const payload = {};
-                    if (typeof e.expiredAt != "undefined") {
-                        console.log("cookie token expired");
-                        const access_token = this.jwtService.sign(payload)
-                        //throw new UnauthorizedException("TEST THROW");
-                        return (access_token);
-                    }
-                    throw new UnauthorizedException("Access not authorized.");
-                }
-                console.log("ppppppppppppp");
-                return (true);
-            }
-            console.log("ERROR THROW: ");
-            console.log(e);
-            console.log("END THROW?");
-            console.log("faut t'il re throw pour que canActivate catch?????????? wtf js");
-        }*/
     }
 
     async refresh(user: User) {
