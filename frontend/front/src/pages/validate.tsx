@@ -3,6 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import { useContext } from "react";
 import UserItem from "../components/Users/UserItem";
 import UserContext from "../contexts/UserContext";
+import { FetchError } from "../components/FetchError";
+import SocketContext from "../contexts/Socket";
 
 function ValidatePage() {
   const userCtx: any = useContext(UserContext);
@@ -12,7 +14,6 @@ function ValidatePage() {
   const [errorCode, setErrorCode] = useState<number>(200);
 
   useEffect(() => {
-    //gets existing user from database if exists. If not, returns [false, <42id>]
     const getUser = (code: string | null | false) => {
       return (fetch('http://' + location.host + '/api/users/login', {
         method: 'post',
@@ -32,22 +33,19 @@ function ValidatePage() {
         setJwt(res.access_token);
     })
   }, []);
-
+  const { setToken } = useContext(SocketContext);
   useEffect(() => {
-    userCtx.loginUser({
-      jwt: jwt,
-      username: ""
-    });
+    const login = async () => {
+      await userCtx.loginUser({
+        jwt: jwt,
+        username: ""
+      });
+    }
+    login();
+    setToken(jwt);
   }, [jwt])
-  /*if (isLoading) {
-    return <div>Loading...</div>;
-  }*/
-
-  /*if (!response[0]) {
-    return <CreateNewUser props={response} />;
-  }*/
-
-  //console.log(userCtx.user);
+  if (errorCode >= 400)
+    return (<FetchError code={errorCode} />);
   if (typeof jwt != "undefined" && jwt != null) {
     console.log(userCtx);
     return (

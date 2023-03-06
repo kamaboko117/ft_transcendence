@@ -19,7 +19,6 @@ export class UsersService {
 
     async createUser(createUserDto: CreateUserDto) {
         const newUser = this.userRepository.create(createUserDto);
-        //newUser.token = randomBytes(64).toString('hex');
         this.userRepository.save(newUser)
         return (newUser);
     }
@@ -59,7 +58,6 @@ export class UsersService {
         if (typeof token == "undefined")
             return (undefined);
         return (token);
-        //return (undefined);
     }
     async getInformationBearer(token: { access_token: string, refresh_token: string }): Promise<number> {
         const res = await fetch(infoURL, {
@@ -69,51 +67,6 @@ export class UsersService {
         }).then(res => res.json());
         return (res.resource_owner_id);
 	}
-/*
-    //ne pas toucher à cette fonction
-    async validateUser(code: string) {
-        console.log("ALLO");
-        const formData = new FormData();
-        formData.append("grant_type", "authorization_code");
-        formData.append("client_id", appId);
-        formData.append("client_secret", appSecret);
-        formData.append("code", code);
-        formData.append("redirect_uri", "http://localhost:4000/validate");
-        formData.append("state", "pouet2");
-        console.log(formData);
-
-        let res = await fetch(validateURL, {
-            method: "POST",
-            body: formData
-        })
-        // console.log(res);
-        let resJSON = await res.json();
-        console.log("resJson: " + resJSON);
-        const token = resJSON.access_token;
-        console.log(`token: ${token}`);
-        if (typeof token == "undefined")
-            return ([false, -1]);
-        res = await fetch(infoURL, {
-            headers: {
-                authorization: `Bearer ${token}`
-            }
-        })
-        //undefined part
-        resJSON = await res.json();
-        return (resJSON);
-        /*
-        if (typeof token == "undefined")
-            return ([false, undefined]);
-        const id: number = resJSON.resource_owner_id;
-        console.log(`id: ${id}`);
-        const user = await this.userRepository.findOneBy({userID: id});
-        if (user && user.username) {
-            return [true, user];
-        }
-    
-        return [false, id];*/
-    //}*/
-//
     getUsers() {
         return this.userRepository.find();
     }
@@ -135,16 +88,23 @@ export class UsersService {
             .setParameters({ user: id })
             .getOne();
         return (user);
-        //return this.userRepository.findOneBy({id: id});
     }
 
     async findUsersById(id: number) {
-        const user: any = await this.userRepository.createQueryBuilder("user")
+        const user: User | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.token', 'user.userID', 'user.avatarPath'])
             .where('user.user_id = :user')
             .setParameters({ user: id })
             .getOne();
         return (user);
-        //return this.userRepository.findOneBy({id: id});
+    }
+
+    async findUserByName(username: string) {
+        const user: User | null = await this.userRepository.createQueryBuilder("user")
+            .select(["user.userID", "user.username"])
+            .where('user.username = :name')
+            .setParameters({ name: username })
+            .getOne();
+        return (user);
     }
 }

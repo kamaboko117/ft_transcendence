@@ -3,22 +3,20 @@ import ListUser from './ListUser';
 import { FetchError, header, headerPost } from '../FetchError';
 import "../../css/chat.css";
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import img from "../../assets/react.svg";
+import img from "../../assets/react.svg";//a remplacer avec user image
 import scroll from 'react-scroll';
-//import { io, Socket } from 'socket.io-client';
-import { SocketContext } from '../../contexts/Socket';
+import SocketContext from '../../contexts/Socket';
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
 
-type lstMsg = {
+export type lstMsg = {
     lstMsg: Array<{
         idUser: string,
-        username: string, //à enlever pour un find dans repository
         content: string
     }>
 }
 
 /* return user state list */
-const ListMsg = (props: any) => {
+export const ListMsg = (props: any) => {
     const scrollBottom = useRef<any>();
     const Element = scroll.Element;
     let EScroll = scroll.animateScroll;
@@ -37,7 +35,7 @@ const ListMsg = (props: any) => {
                 props.lstMsg.slice(arrayLength, props.lstMsg.length).map((msg: any) => (
                     <React.Fragment key={++i}>
                         <div><img src={img} className="chatBox" />
-                            <label className="chatBox">{msg.username}</label>
+                            <label className="chatBox">{msg.user.username}</label>
                         </div>
                         <span className="chatBox">{msg.content}</span>
                     </React.Fragment>
@@ -63,7 +61,10 @@ const handleLeave = async (e: React.MouseEvent<HTMLButtonElement>, contextUserLe
 const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
     usrSocket: any, obj: any, ref: any, setMsg: any) => {
     e.preventDefault();
-    usrSocket.emit('sendMsg', obj);
+    usrSocket.emit('sendMsg', obj, (res) => {
+        console.log("res: ");
+        console.log(res);
+    })
     setMsg("");
     ref.current.value = "";
 }
@@ -72,26 +73,23 @@ const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
     usrSocket: any, obj: any, ref: any, setMsg: any) => {
     if (e.key === "Enter" && e.shiftKey === false) {
         e.preventDefault();
-        usrSocket.emit('sendMsg', obj);
+        usrSocket.emit('sendMsg', obj, (res) => {
+            console.log("res: ");
+            console.log(res);
+        })
         setMsg("");
         ref.current.value = "";
     }
 }
 
-/* besoin context utilisateur */
-
 const MainChat = (props: any) => {
     const refElem = useRef(null);
-    //const Element = scroll.Element;
     const [online, setOnline] = useState<undefined | boolean>(undefined)
-    const usrSocket = useContext(SocketContext);
+    const { usrSocket } = useContext(SocketContext);
     useEffect(() => {
         //subscribeChat
         usrSocket.emit("joinRoomChat", {
             id: props.id,
-            //idUser: window.navigator.userAgent,
-            //username: window.navigator.userAgent,
-            //name: props.getLocation.state.name,
             psw: props.psw
         }, (res: boolean) => {
             console.log(res);
@@ -100,13 +98,25 @@ const MainChat = (props: any) => {
             else
                 setOnline(false);
         });
+        //listen to excption sent by backend
+        usrSocket.on('exception', (res) => {
+            console.log("err");
+            console.log(res);
+            if (res.status === "error" && res.message === "Token not valid")
+                props.setErrorCode(403);
+            else
+                props.setErrorCode(500);
+        })
         console.log("mount");
+        console.log("START EMIT");
         return (() => {
             //unsubscribeChat
+            console.log("STOP EMIT");
             console.log("unmount");
-            usrSocket.emit("stopEmit", { id: props.id /*, name: props.getLocation.state.name*/ }, () => {
+            usrSocket.emit("stopEmit", { id: props.id }, () => {
                 setOnline(false);
             });
+            usrSocket.off("exception");
         })
     }, [props.id]);
     const contextUserLeave = useContext(ContextUserLeave);
@@ -138,7 +148,9 @@ const MainChat = (props: any) => {
         console.log("liste mount");
         usrSocket.on("sendBackMsg", (res: any) => {
             console.log("msg");
-            setLstMsg((lstMsg) => [...lstMsg, res]);
+            console.log(res);
+            if (res.room === props.id)
+                setLstMsg((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
             console.log("liste unmount");
@@ -162,9 +174,6 @@ const MainChat = (props: any) => {
                 <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleLeave(e,
                     contextUserLeave, usrSocket, {
                     id: props.id,
-                    //idUser: window.navigator.userAgent,
-                    // username: window.navigator.userAgent,
-                    /*name: props.getLocation.state.name*/
                 }, navigate)}
                     className='chatLeave'>Leave</button>
             </div>
@@ -176,7 +185,6 @@ const MainChat = (props: any) => {
                         handleSubmitArea(e,
                             usrSocket, {
                             id: props.id,
-                            //idUser: window.navigator.userAgent,
                             content: msg
                         },
                             refElem,
@@ -192,7 +200,7 @@ const MainChat = (props: any) => {
             </div>
         </article>
         <article className='right'>
-            <ListUser />
+            <ListUser id={props.id} jwt={props.jwt} />
         </article>
     </>);
 }
@@ -225,7 +233,6 @@ const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>, s
     console.log("HAS PSWD");
     return (await fetch('http://' + location.host + '/api/chat/has-paswd?' + new URLSearchParams({
         id: id,
-        //iduser: window.navigator.userAgent,
     }),
         { headers: header(jwt) })
         .then(res => {
@@ -295,14 +302,14 @@ const Chat = () => {
     const getLocation = useLocation();
     const id = useParams().id as string;
     const [errorCode, setErrorCode] = useState<number>(200);
-    const hasPass: Promise<boolean> = hasPassword(id, jwt, setErrorCode);
     const [psw, setLoadPsw] = useState<boolean | undefined>(undefined);
 
-    if (errorCode >= 400)
-        return (<FetchError code={errorCode} />)
+    if (errorCode >= 400) // a placer devant fonctions asynchrones semblerait t'il, le composant react se recharge
+        return (<FetchError code={errorCode} />); //lorsqu'il se met a jour, semblerait t'il
+    const hasPass: Promise<boolean> = hasPassword(id, jwt, setErrorCode);
     hasPass.then(res => {
         setLoadPsw(res);
-    })
+    });
     return (<BlockChat id={id} getLocation={getLocation}
         setErrorCode={setErrorCode} jwt={jwt}
         hasPsw={psw} />);
