@@ -5,7 +5,7 @@ import "../../css/directMessage.css";
 import ContextDisplayChannel from '../../contexts/displayChat';
 import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
-import { createPath, useLocation, useParams } from 'react-router-dom';
+import { createPath, FormEncType, useLocation, useParams } from 'react-router-dom';
 
 type settingChat = {
     render: boolean,
@@ -41,6 +41,7 @@ type listChan = {
 }
 
 type propsListChannel = {
+    jwt: string
     listPm: Array<{
         chatid: string,
         user: {
@@ -52,7 +53,7 @@ type propsListChannel = {
         name: string,
     }>,
     setId: React.Dispatch<React.SetStateAction<string>>,
-    //setIsPrivate: React.Dispatch<React.SetStateAction<boolean>>
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 }
 
 const directMessage = (event: MouseEvent<HTMLButtonElement>,
@@ -102,10 +103,42 @@ const Button = () => {
     );
 }
 
-const handleClick = (event: React.MouseEvent<HTMLUListElement>,
+const handleSubmitPmUser = (e: React.FormEvent<HTMLFormElement>, user: string, jwt: string,
     setId: React.Dispatch<React.SetStateAction<string>>,
-    //setIsPrivate: React.Dispatch<React.SetStateAction<boolean>>,
-    /*isPrivate: boolean*/) => {
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>) => {
+        e.preventDefault();
+        fetch('http://' + location.host + '/api/chat/find-pm-username?' + new URLSearchParams({
+                username: String(user)
+        }), { headers: header(jwt) })
+        .then(res => {
+            console.log(res);
+            if (res.ok)
+                return (res.text());
+            setErrorCode(res.status);
+        }).then(res => {
+            if (res)
+                setId(res);
+        });
+}
+
+const BoxPmUser = (props: {setId: React.Dispatch<React.SetStateAction<string>>,
+        setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    jwt: string}) => {
+    const [user, setUser] = useState<string>("");
+
+    return (
+    <form className='formPm' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
+        handleSubmitPmUser(e, user, props.jwt, props.setId, props.setErrorCode)}>
+        <input type="text" placeholder='Direct message a user' name="user"
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setUser(e?.target?.value)} />
+        <input type="submit" value ="Search User" />
+    </form>
+    );
+}
+
+const handleClick = (event: React.MouseEvent<HTMLUListElement>,
+    setId: React.Dispatch<React.SetStateAction<string>>) => {
     event.preventDefault()
     const target: HTMLElement = event.target as HTMLElement;
     setId(target.id);
@@ -143,9 +176,7 @@ const ListDiscussion = (props: propsListChannel) => {
                 ))}
             </ul>
         </Element>
-
-        <input type="text" /*onChange={}*/ placeholder='Direct message a user' name="user" />
-        <button>Search</button>
+        <BoxPmUser setId={props.setId} setErrorCode={props.setErrorCode} jwt={props.jwt} />
     </div>
     );
 }
@@ -165,7 +196,6 @@ const DiscussionBox = (props: {
     if (typeof getLocation !== "undefined") {
         getSecondPartRegex = getLocation.replace(stringRegex, "");
     }
-    console.log(getSecondPartRegex);
     const refElem = useRef(null);
     const { usrSocket } = useContext(SocketContext);
     const [online, setOnline] = useState<undefined | boolean>(undefined)
@@ -312,7 +342,8 @@ const Box = (props: settingBox) => {
             opacity: props.opacity,
         }}>
             <ListDiscussion listPm={lstPm} listChannel={lstChannel}
-                setId={props.setId} />
+                setId={props.setId} setErrorCode={props.setErrorCode}
+                jwt={props.jwt} />
             <DiscussionBox id={props.id} jwt={props.jwt}
                 setErrorCode={props.setErrorCode} isPrivate={isPrivate} />
         </article>

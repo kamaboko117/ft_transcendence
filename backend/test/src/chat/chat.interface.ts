@@ -30,7 +30,7 @@ export interface Chat {
     lstBan: Map<string, number>,
 }
 
-export interface User {
+export interface TokenUser {
     userID: number,
     token: string,
     username: string
