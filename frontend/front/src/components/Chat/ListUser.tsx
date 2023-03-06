@@ -86,6 +86,32 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     setTop(parentNode.offsetTop);
 }
 
+/*
+    Owner part:
+        Nommer utilisateur admin
+        ne dois pas oublier, lorsque owner quitte un channel, un user est nommé owner, si possible admin
+        ptete un bouton nommer utilisateur owner
+    Admin part:
+        Bannir(durée déterminée)/ kick (durée temps actuel kick == dékick) / mute (durée déterminée), mais pas les owners
+*/
+const AdminComponent = (props: {jwt: string}) => {
+    const [role, setRole] = useState<string | null>(null);
+    const callback = useCallback(()=> {
+        fetch('http://' + location.host + '/api/chat-role/getRole', { headers: header(props.jwt) })
+    }, []);
+    useEffect(() => {
+        callback();
+        return (() => {})
+    }, [])
+    return (
+        <>
+        
+        </>
+    );
+}
+
+/* useCallback allow to cache functions between re-render */
+
 const UserInfo = (props: PropsUserInfo): JSX.Element => {
     const [username, setUsername] = useState<string>("");
     const [offsetTop, setTop] = useState<number>(0);
@@ -116,7 +142,6 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
             window.removeEventListener("resize", callback);
         }
     }, [username, window.innerWidth, window.innerHeight]);
-    //const [, refOne, ] = useDisplayChat();
     return (
         <>
             <Element name="container" className="element fullBoxListUser" ref={ref}
@@ -137,29 +162,11 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
                     directMessage(e, renderDirectMessage, setDisplay, setId,
                         userId, props.jwt)
                 } className="userInfo">Direct message</button>
+                <AdminComponent jwt={props.jwt} />
             </div>
         </>
     );
 }
-
-/*
-    userInfoDisplay: false,
-            userName: '',
-            listUser: [{
-                id: 0,
-                content: 'abc'
-            }, {
-                id: 0,
-                content: 'def'
-            }],
-*/
-
-/*
-listUser: Array<{
-        id: number,
-        username: string,
-    }>
-*/
 
 /* socket.on pour ecouter les user qui rejoignent le chat et les afficher */
 /*
