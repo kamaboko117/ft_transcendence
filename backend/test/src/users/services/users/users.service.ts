@@ -99,4 +99,13 @@ export class UsersService {
             .getOne();
         return (user);
     }
+
+    async findUserByName(username: string) {
+        const user: User | null = await this.userRepository.createQueryBuilder("user")
+            .select(["user.userID", "user.username"])
+            .where('user.username = :name')
+            .setParameters({ name: username })
+            .getOne();
+        return (user);
+    }
 }

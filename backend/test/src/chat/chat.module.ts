@@ -7,11 +7,12 @@ import { ListMsg } from './lstmsg.entity';
 import { ListUser } from './lstuser.entity';
 import { ListMute } from './lstmute.entity';
 import { ListBan } from './lstban.entity';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
     providers: [ChatGateway,],
     imports: [TypeOrmModule.forFeature([Channel, ListMsg,
-        ListUser, ListMute, ListBan])],
+        ListUser, ListMute, ListBan]), UsersModule],
     exports: [ChatGateway],
     controllers: [ChatController]
 })

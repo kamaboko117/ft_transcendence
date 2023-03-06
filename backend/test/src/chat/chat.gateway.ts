@@ -4,8 +4,8 @@ import {
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { CreateChatDto, Owner } from './create-chat.dto';
-import { Chat, InformationChat, User, DbChat } from './chat.interface';
-import { IsBoolean, IsString } from 'class-validator';
+import { Chat, InformationChat, DbChat } from './chat.interface';
+import {  IsString } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -16,7 +16,6 @@ import { ListMute } from './lstmute.entity';
 import { ListUser } from './lstuser.entity';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { UseGuards } from '@nestjs/common';
-import { from } from 'rxjs';
 
 type Channel_ret = {
   Channel_id: string
@@ -96,13 +95,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return arr;
   }
 
-  /*
-    select channel.id, list_user.user_id, (select list_user.user_id from list_user inner join channel on channel.id = list_user.chatid where accesstype = '4' AND list_user.user_id != 69814 AND channel.id IN (channel.id)) AS second
-    from list_user
-    inner join channel on channel.id = list_user.chatid
-    where accesstype = '4' AND list_user.user_id = 69814
-  */
-
   /* PRIVATE MESSAGE PART */
   async getAllPmUser(userID: Readonly<number>) {
       const subquery = this.chatsRepository
@@ -125,8 +117,39 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         .getMany();
     return (channel)
   }
+  /* find and delete duplicate */
+  async findDuplicateAndDelete(user_id: Readonly<string>) {
+    const channel: {
+      list_user_user_id: string, 
+      Channel_id: string,
+      Channel_name: string
+    } | undefined = await this.listUserRepository
+    .createQueryBuilder("list_user")
+    .select("list_user.user_id")
+    .addSelect(["Channel.id", "Channel.name"])
+    .innerJoin("list_user.chat", "Channel")
+    .where("list_user.user_id = :id")
+    .setParameters({id: user_id})
+    .andWhere("Channel.accesstype = :type")
+    .setParameters({type: '4'})
+    .groupBy("list_user.user_id")
+    .addGroupBy("Channel.id")
+    .having("COUNT(list_user.user_id) >= :nb", {nb: 2})
+    .orHaving("COUNT(Channel.id) >= :otherNb", {otherNb: 2})
+    .getRawOne()
+    
+    if (channel) {
+      await this.chatsRepository
+      .createQueryBuilder()
+      .delete()
+      .from(Channel)
+      .where("id = :id")
+      .setParameters({ id: channel.Channel_id })
+      .execute();
+    }
+  }
 
-  /* GET PM BETWEEN 2 USERS */
+  /* GET PM BETWEEN 2 USERS BY NEEDED ID */
   async findPmUsers(userOne: Readonly<number>,
     userTwo: Readonly<string>) {
     const listUser: Channel_ret | undefined = await this.listUserRepository
@@ -146,6 +169,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       .getRawOne();
     return (listUser);
   }
+
+  /* GET PM BY USERNAME */
+
   /* Create private message part */
   async createPrivateMessage(userOne: Readonly<number>,
     userTwo: Readonly<string>): Promise<string> {
@@ -284,7 +310,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   async setNewUserChannel(channel: Readonly<any>, user_id: Readonly<number>,
     data: Readonly<Room>): Promise<undefined | boolean> {
-    if (channel.password != '') {
+    if (channel.password != '' && channel.password != null) {
       if (data.psw === "" || data.psw === null)
         return (undefined)
       const comp = bcrypt.compareSync(data.psw, channel.password);
@@ -393,13 +419,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       .insert()
       .into(ListMsg)
       .values([{
-        user_id: user.userID, //username: getUser.User_username,
+        user_id: user.userID,
         content: data.content,
         chatid: data.id
       }])
       .execute();
-    console.log(data.id);
-    console.log(this.server.sockets.adapter.rooms.get(data.id));
     this.server.to(data.id).emit("sendBackMsg", {
       room: data.id,
       user_id: user.userID,
@@ -413,41 +437,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       content: data.content
     });
   }
-  /*
-    @UseGuards(JwtGuard)
-    @SubscribeMessage('sendMsg2')
-    async newPostChatFromPmPart(@ConnectedSocket() socket: Readonly<any>,
-      @MessageBody() data: Readonly<SendMsg>) {
-      const user = socket.user;
-      if (typeof user.userID != "number")
-        return;
-      const getUser = await this.getUserOnChannel(data.id, user.userID);
-      if (typeof getUser === "undefined" || getUser === null)
-        return (undefined);
-      this.listMsgRepository
-        .createQueryBuilder()
-        .insert()
-        .into(ListMsg)
-        .values([{
-          user_id: user.userID, //username: getUser.User_username,
-          content: data.content,
-          chatid: data.id
-        }])
-        .execute();
-      ///if (data.isPm === false) {
-      this.server.to(getUser.channel_id + getUser.channel_name).emit("sendBackMsg", {
-        user_id: user.userID,
-        user: { username: getUser.User_username },
-        content: data.content
-      });
-      //}
-      this.server.to(getUser.channel_id + getUser.channel_name).emit("sendBackMsg2", {
-        user_id: user.userID,
-        user: { username: getUser.User_username },
-        content: data.content
-      });
-  
-    }*/
 
   /* Tests ws */
   handleConnection(client: Socket) {

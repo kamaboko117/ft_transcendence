@@ -56,17 +56,16 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>,
         id: String(userId),
     }), { headers: header(jwt) })
     .then(res => {
-        console.log(res);
         if (res.ok){
             return (res.text());
         }
     }).then((res: string | undefined) => {
-        console.log(res);
-        setDisplay(true);
-        if (typeof res !== "undefined")
+        if (res)
+        {
+            setDisplay(true);
             setId(res);
-    })
-    //}
+        }
+    });
 }
 
 const handleClick = (event: React.MouseEvent<HTMLDivElement>,
@@ -76,7 +75,6 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     const name: string = e.textContent as string;
     const attributes: NamedNodeMap = e.attributes as NamedNodeMap;
     const parentNode: HTMLElement = e.parentNode as HTMLElement;
-        console.log(e);
     if (username === "" || username != name) {
         setUserId(Number(attributes[0].value));
         setUsername(name);
@@ -105,8 +103,6 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
     const callback = useCallback(
         debounce(function resizeFunction() {
             if (username != "") {
-                console.log("ref");
-                console.log();
                 const top = ref.current?.childBindings?.domNode?.offsetTop;
                 if (typeof top !== "undefined")
                     setTop(top);
@@ -183,20 +179,16 @@ const ListUser = (props: { id: string, jwt: string }) => {
             return (await fetch('http://' + location.host + '/api/chat/users?' + new URLSearchParams({
                 id: id,
             }), { headers: header(jwt) }).then(res => {
-                console.log("res1: " + res);
                 if (res.ok)
                     return (res.json());
                 setErrorCode(res.status);
             }));
         }
         fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
-            console.log(res);
             setLstUser(res);
         });
         usrSocket.on("updateListChat", (res: boolean) => {
-            console.log(res);
             fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
-                console.log(res);
                 setLstUser(res);
             });
         });
