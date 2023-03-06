@@ -4,8 +4,8 @@ import {
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { CreateChatDto, Owner } from './create-chat.dto';
-import { Chat, InformationChat, User, DbChat } from './chat.interface';
-import { IsString } from 'class-validator';
+import { Chat, InformationChat, DbChat } from './chat.interface';
+import {  IsString } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -17,18 +17,26 @@ import { ListUser } from './lstuser.entity';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { UseGuards } from '@nestjs/common';
 
+type Channel_ret = {
+  Channel_id: string
+}
+
 class Room {
   @IsString()
   id: string;
-  @IsString()
-  username: string;
-  @IsString()
-  name: string;
   @IsString()
   psw: string
 }
 
 class SendMsg {
+  @IsString()
+  id: string;
+  @IsString()
+  username: string;
+  @IsString()
+  content: string;
+}
+class SendMsgPm {
   @IsString()
   id: string;
   @IsString()
@@ -43,13 +51,7 @@ class SendMsg {
   avec react context socket query token
   BONUS part https://dev.to/bravemaster619/how-to-use-socket-io-client-correctly-in-react-app-o65
 */
-/*
-const filterAccessPublic = (elem: Chat) => {
-  if (elem.accesstype === "0" || elem.accesstype === "1")
-    return (true);
-  return (false);
-}
-*/
+
 
 @WebSocketGateway({
   cors: {
@@ -59,115 +61,172 @@ const filterAccessPublic = (elem: Chat) => {
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   afterInit(server: Server) { }
-  //private readonly publicChats: Chat[] = [];
   @InjectRepository(Channel)
   private chatsRepository: Repository<Channel>;
   @InjectRepository(ListUser)
   private listUserRepository: Repository<ListUser>;
   @InjectRepository(ListMsg)
   private listMsgRepository: Repository<ListMsg>;
-  /*
-    async onModuleInit() {
-      //remplacer any[] par Chat[] quand mute et ban
-      let arr: Channel[] = await this.chatsRepository.find();
-      //console.log(arr);
-      //
-      arr.forEach(async (element) => {*/
-  /* LOAD MSGS BY CHANNEL */
-  /*const lstMsg: ListMsg[] = await this.listMsgRepository
-    .createQueryBuilder("list_msg")
-    .select(['list_msg.user_id',
-      'list_msg.username', 'list_msg.content'])
-    .innerJoin("list_msg.chat", "lstMsg")
-    .where("list_msg.chatid = :id")
-    .setParameters({ id: element.id })
-    .getMany();
-    */
-  /* LOAD USERS BY CHANNEL */
-  /* const lstUser: ListUser[] = await this.listUserRepository
-     .createQueryBuilder("list_user")
-     .select(['list_user.user_id',])
-     .innerJoin("list_user.chat", "lstUsr")
-     .where("list_user.chatid = :id")
-     .setParameters({ id: element.id })
-     .getMany();
-   console.log("arr: " + lstUser);*/
-  /*let mapUser: Map<number | string, string> = new Map<string | number, string>;
-  lstUser.forEach((elem: any) => {
-    mapUser.set(elem.iduser, elem.username)
-  })
-  console.log("Map: " + mapUser);
-  */
-  /*this.publicChats.push({
-     id: element.id,
-     name: element.name,
-     owner: element.user_id,
-     accesstype: element.accesstype,
-     password: element.password,
-     lstMsg: lstMsg,
-     lstUsr: mapUser,
-     lstMute: new Map<string, number>,
-     lstBan: new Map<string, number>,
-   });*/
-  /*  });
-   // console.log(this.publicChats);
-  }*/
   async getAllPublic(): Promise<any[]> {
     const arr: Channel[] = await this.chatsRepository
       .createQueryBuilder("channel")
+      .innerJoin("channel.user", "User")
       .select(['channel.id',
-        'channel.name', 'channel.user_id', 'channel.accesstype'])
+        'channel.name', 'channel.user_id', 'channel.accesstype', "User.username"])
       .where("accesstype = :a1 OR accesstype = :a2")
       .setParameters({ a1: 0, a2: 1 })
-      .getMany();
+      .getRawMany();
     return arr;
   }
 
-
-  async getAllPrivate(id: Readonly<string>, userID: Readonly<number>): Promise<any[]> {
+  async getAllPrivate(userID: Readonly<number>): Promise<any[]> {
     const arr: Channel[] = await this.chatsRepository
       .createQueryBuilder("channel")
       .innerJoin("channel.lstUsr", "ListUser")
-      .innerJoinAndSelect("ListUser.user", "User")
-      .select(["channel.id", "channel.name",
-        'channel.user_id', "channel.accesstype", "User.username"])
-      .where("(accesstype = :a1 OR accesstype = :a2) AND User.userID = :userID")// AND ListUser.user_id = :iduser")
+      .innerJoin("ListUser.user", "User")
+      .select(['channel.id', 'channel.name',
+        'channel.user_id', 'channel.accesstype',
+        'User.username'])
+      .where("(accesstype = :a1 OR accesstype = :a2) AND ListUser.user_id = :userID")
       .setParameters({ a1: 2, a2: 3, userID: userID })
-      .getMany();
-    console.log("allP");
-    console.log(arr);
+      .getRawMany();
     return arr;
   }
-  /*getAllPublicByName(): InformationChat[] {
-    let arrName: InformationChat[] = [];
 
-    const size: number = this.publicChats.length;
+  /* PRIVATE MESSAGE PART */
+  async getAllPmUser(userID: Readonly<number>) {
+      const subquery = this.chatsRepository
+      .createQueryBuilder("channel").subQuery()
+      .from(Channel, "channel")
+      .select("channel.id")
+      .innerJoin("channel.lstUsr", "ListUser")
+      .innerJoin("ListUser.user", "User")
+      .where("channel.accesstype = :type", {type: '4'})
+      .andWhere("ListUser.user_id = :user_id", {user_id: userID})
 
-    for (let i: number = 0; i < size; ++i) {
-      arrName[i] = {
-        id: this.publicChats[i].id, name: this.publicChats[i].name,
-        owner: this.publicChats[i].owner, accesstype: this.publicChats[i].accesstype
-      };
+    const channel: ListUser[] | null = await this.listUserRepository
+        .createQueryBuilder("list_user")
+        .select("list_user.chatid")
+        .addSelect("User.username")
+        .innerJoin("list_user.user", "User")
+        .where("list_user.chatid IN " + subquery.getQuery())
+        .andWhere("list_user.user_id != :user_id")
+        .setParameters({type: '4', user_id: userID})
+        .getMany();
+    return (channel)
+  }
+  /* find and delete duplicate */
+  async findDuplicateAndDelete(user_id: Readonly<string>) {
+    const channel: {
+      list_user_user_id: string, 
+      Channel_id: string,
+      Channel_name: string
+    } | undefined = await this.listUserRepository
+    .createQueryBuilder("list_user")
+    .select("list_user.user_id")
+    .addSelect(["Channel.id", "Channel.name"])
+    .innerJoin("list_user.chat", "Channel")
+    .where("list_user.user_id = :id")
+    .setParameters({id: user_id})
+    .andWhere("Channel.accesstype = :type")
+    .setParameters({type: '4'})
+    .groupBy("list_user.user_id")
+    .addGroupBy("Channel.id")
+    .having("COUNT(list_user.user_id) >= :nb", {nb: 2})
+    .orHaving("COUNT(Channel.id) >= :otherNb", {otherNb: 2})
+    .getRawOne()
+    
+    if (channel) {
+      await this.chatsRepository
+      .createQueryBuilder()
+      .delete()
+      .from(Channel)
+      .where("id = :id")
+      .setParameters({ id: channel.Channel_id })
+      .execute();
     }
-    return arrName;
-  }*/
+  }
 
-  /*getChannelById(id: string): undefined | Chat {
-    const elem: number = this.publicChats.findIndex(x => x.id == id)
-    return (this.publicChats[elem]);
-  }*/
+  /* GET PM BETWEEN 2 USERS BY NEEDED ID */
+  async findPmUsers(userOne: Readonly<number>,
+    userTwo: Readonly<string>) {
+    const listUser: Channel_ret | undefined = await this.listUserRepository
+      .createQueryBuilder("list_user")
+      .select("Channel.id")
+      .innerJoin("list_user.chat", "Channel")
+      .where("list_user.user_id IN (:userOne, :userTwo)")
+      .setParameters({
+        userOne: userOne,
+        userTwo: Number(userTwo)
+      })
+      .andWhere("Channel.accesstype = :type")
+      .setParameters({ type: '4' })
+      .groupBy("Channel.id")
+      .orHaving("COUNT(Channel.id) >= :nb")
+      .setParameters({ nb: 2 })
+      .getRawOne();
+    return (listUser);
+  }
 
-  //"ListMsg.username", "ListMsg.content", "ListMsg.user_id"
+  /* GET PM BY USERNAME */
+
+  /* Create private message part */
+  async createPrivateMessage(userOne: Readonly<number>,
+    userTwo: Readonly<string>): Promise<string> {
+    let newChat: {
+      id: number, name: string, accesstype: string
+    } = {
+      id: userOne + Number(userTwo),
+      name: String(userOne + userTwo),
+      accesstype: '4'
+    };
+    /* create Private message channel */
+    await this.chatsRepository.createQueryBuilder()
+      .insert().into(Channel)
+      .values({
+        id: String(userOne + userTwo),
+        name: String(userOne + userTwo),
+        accesstype: '4'
+      })
+      .execute();
+    /* insert first user */
+    await this.listUserRepository.createQueryBuilder()
+      .insert().into(ListUser)
+      .values([
+        { role: "", user_id: userOne, chatid: String(userOne + userTwo) }
+      ]).execute();
+    /* insert second user */
+    await this.listUserRepository.createQueryBuilder()
+      .insert().into(ListUser)
+      .values([
+        { role: "", user_id: Number(userTwo), chatid: String(userOne + userTwo) }
+      ]).execute();
+    return (String(userOne) + userTwo);
+  }
+  /* END OF PRIVATE  */
+
+  /* Get all channels where the user is registered, except privates messages */
+  async getAllUserOnChannels(userID: Readonly<number>) {
+    const channel: Channel[] | null = await this.chatsRepository
+      .createQueryBuilder("channel")
+      .select(["channel.id", "channel.name"])
+      .innerJoin("channel.lstUsr", "ListUser")
+      .where("(accesstype = :a1 OR accesstype = :a2 OR accesstype = :a3 OR accesstype = :a4) AND ListUser.user_id = :userID")
+      .setParameters({ a1: 0, a2: 1, a3: 2, a4: 3, userID: userID })
+      .getMany();
+    return (channel);
+  }
+
   async getListMsgByChannelId(id: string) {
     const listMsg: Array<{
       user_id: number,
-      username: string, //à enlever pour un find dans repository
       content: string
     }> = await this.listMsgRepository.createQueryBuilder("list_msg")
-      .select(["list_msg.user_id", "list_msg.username", "list_msg.content"])
-      .innerJoin("list_msg.chat", "Channel")
-      .where("Channel.id = :id")
+      .select(["list_msg.user_id", "User.username", "list_msg.content"])
+      .innerJoin("list_msg.user", "User")
+      .where("list_msg.chatid = :id")
       .setParameters({ id: id })
+      .orderBy("list_msg.id", 'ASC')
       .getMany();
     return (listMsg);
   }
@@ -182,10 +241,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       .getOne();
     return (channel);
   }
-  async getChannelByName(name: string): Promise<undefined | DbChat> {
-    // const elem: number = this.publicChats.findIndex(x => x.name == name)
 
-    // return (this.publicChats[elem]);
+  async getChannelByName(name: string): Promise<undefined | DbChat> {
     const channel: any = await this.chatsRepository.findOne({
       where: {
         name: name
@@ -205,6 +262,19 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return (user);
   }
 
+  async getAllUsersOnChannel(id: string) {
+    const arr: any = await this.listUserRepository
+      .createQueryBuilder("list_user")
+      .select("list_user.user_id")
+      .addSelect("User.username")
+      .innerJoin("list_user.user", "User")
+      .where("list_user.chatid = :id")
+      .setParameters({ id: id })
+      .orderBy("User.username", 'ASC')
+      .getMany();
+    return (arr);
+  }
+
   createChat(chat: CreateChatDto, id: string, owner: Owner): InformationChat {
     chat.id = id;
     let newChat: Chat = {
@@ -214,7 +284,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       lstUsr: chat.lstUsr, lstMute: chat.lstMute,
       lstBan: chat.lstBan
     };
-    //this.publicChats.push(newChat);
     /* New Channel in DB */
     const channel = new Channel();
     channel.id = newChat.id;
@@ -228,25 +297,24 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     listUsr.chat = channel;
     this.listUserRepository.save(listUsr);
     const return_chat: InformationChat = {
-      id: newChat.id,
-      name: newChat.name,
-      owner: newChat.owner,
-      accesstype: newChat.accesstype,
+      channel_id: newChat.id,
+      channel_name: newChat.name,
+      User_username: owner.username,
+      channel_accesstype: newChat.accesstype,
     }
     return (return_chat);
   }
 
-  setNewUserChannel(channel: Readonly<any>, user_id: Readonly<number>,
-    data: Readonly<Room>): undefined | boolean {
-    if (channel.password != '') {
+  async setNewUserChannel(channel: Readonly<any>, user_id: Readonly<number>,
+    data: Readonly<Room>): Promise<undefined | boolean> {
+    if (channel.password != '' && channel.password != null) {
       if (data.psw === "" || data.psw === null)
         return (undefined)
       const comp = bcrypt.compareSync(data.psw, channel.password);
       if (comp === false)
         return (undefined)
     }
-    //this.publicChats[idx].lstUsr.set(user_id, String(username));
-    this.listUserRepository
+    await this.listUserRepository
       .createQueryBuilder()
       .insert()
       .into(ListUser)
@@ -257,6 +325,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       .execute();
     return (true);
   }
+
   /* Socket part */
   @UseGuards(JwtGuard)
   @SubscribeMessage('joinRoomChat')
@@ -266,32 +335,26 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     if (typeof user.userID != "number")
       return (false);
-    /*const index = this.publicChats.findIndex(x => x.id == data.id);
-    console.log("index: " + index);
-    if (index === -1)
-      return (false);
-    const channel: undefined | Chat = this.publicChats[index];
-    */
-
     const channel: any = await this.chatsRepository.findOne({
       where: {
         id: data.id
       }
     });
+    const getName = channel?.name;
     if (typeof channel != "undefined" && channel != null) {
       const getUser: any = await this.getUserOnChannel(data.id, user.userID);
-      //const getUser = channel.lstUsr.get(user.userID);
       if (typeof getUser === "undefined" || getUser === null) {
-        const newUser = this.setNewUserChannel(channel, user.userID, data);
+        const newUser = await this.setNewUserChannel(channel, user.userID, data);
         if (typeof newUser === "undefined") {
           return (false);
         }
+        this.server.to(data.id).emit("updateListChat", true);
       }
     }
-    const getName = channel?.name;
-    socket.join(data.id + getName);
+    socket.join(data.id);
     return (true);
   }
+
   @UseGuards(JwtGuard)
   @SubscribeMessage('leaveRoomChat')
   async leaveRoomChat(@ConnectedSocket() socket: Readonly<any>,
@@ -300,14 +363,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     if (typeof user.userID != "number")
       return ("Couldn't' leave chat, wrong type id?");
-    //const index = this.publicChats.findIndex(x => x.id == data.id);
-
-    //if (index === -1)
-    //  return (undefined);
-    //const getUser = this.publicChats[index].lstUsr.get(user.userID);
-    //if (typeof getUser === "undefined")
-    //  return ("User not found");
     const getUser: any = await this.getUserOnChannel(data.id, user.userID);
+    if (typeof getUser === "undefined" || getUser === null)
+      return ("No user found");
     await this.chatsRepository
       .createQueryBuilder()
       .delete()
@@ -322,8 +380,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     });
     const [listUsr, count]: any = await this.listUserRepository.findAndCountBy({ chatid: data.id })
     const getName = channel.name;
-    socket.leave(data.id + getName);
-    if (channel != undefined && count === 0)
+    socket.leave(data.id);
+    this.server.to(data.id).emit("updateListChat", true);
+    if (channel != undefined && channel != null && count === 0)
       this.chatsRepository.delete(data);
     return (getUser.User_username + " left the chat");
   }
@@ -333,11 +392,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async stopEmit(@ConnectedSocket() socket: Readonly<any>,
     @MessageBody() data: Readonly<any>) {
     const user = socket.user;
-    //const getName = this.getChannelById(data.id)?.name;
+    if (typeof data === "undefined"
+      || !user || typeof user.userID != "number")
+      return;
     const getChannel: any = await this.getUserOnChannel(data.id, user.userID);
-    console.log(getChannel);
-    socket.leave(data.id + getChannel.channel_name);
-  }//
+    if (typeof getChannel !== "undefined" && getChannel !== null) {
+      socket.leave(data.id);
+    }
+  }
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('sendMsg')
@@ -346,41 +408,31 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const user = socket.user;
     if (typeof user.userID != "number")
       return;
-    //const chat: Chat[] = this.publicChats;
-    //const index = chat.findIndex(x => x.id == data.id);
-    //if (index === -1)
-    //  return (undefined);
-    //const getUsername = chat[index].lstUsr.get(user.userID);
-    //if (typeof getUsername === "undefined")
-    //  return ("User not found");
-    //if typeChat === public
-    //console.log("index: " + index);
-    //chat[index].lstMsg.push({
-    //  user_id: user.userID,
-    //  username: getUsername, content: data.content
-    //});
     const getUser = await this.getUserOnChannel(data.id, user.userID);
-
+    if (typeof getUser === "undefined" || getUser === null)
+      return (undefined);
     this.listMsgRepository
       .createQueryBuilder()
       .insert()
       .into(ListMsg)
       .values([{
-        user_id: user.userID, username: getUser.User_username,
+        user_id: user.userID,
         content: data.content,
         chatid: data.id
       }])
       .execute();
-    /*//else if (typechat === private)
-    console.log(chat[index].id + chat[index].name);
-    const length = chat[index].lstMsg.length;
-    console.log("chatId: " + chat[index].id + " chatName: " + chat[index].name);
-    */
-    this.server.to(getUser.channel_id + getUser.channel_name).emit("sendBackMsg", {
+    this.server.to(data.id).emit("sendBackMsg", {
+      room: data.id,
       user_id: user.userID,
-      username: getUser.User_username,
+      user: { username: getUser.User_username },
       content: data.content
-    });// chat[index].lstMsg[length - 1]);
+    });
+    this.server.to(data.id).emit("sendBackMsg2", {
+      room: data.id,
+      user_id: user.userID,
+      user: { username: getUser.User_username },
+      content: data.content
+    });
   }
 
   /* Tests ws */

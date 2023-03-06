@@ -42,13 +42,13 @@ export class User {
 
   @OneToMany(() => ListMsg, (listMsg) => listMsg.user)
   lstMsg: User[];
-
+  
   @OneToMany(() => ListUser, (listUsr) => listUsr.user)
   lstUsr: User[];
-
+  
   @OneToMany(() => ListBan, (listBan) => listBan.user)
   lstBan: User[];
-
+  
   @OneToMany(() => ListMute, (listMute) => listMute.user)
   lstMute: User[];
 }

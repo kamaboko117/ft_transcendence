@@ -19,11 +19,11 @@ function UserItem(props: ItemProps) {
         fetch('http://' + location.host + '/api/users/profile/', {
             headers: header
         })
-            .then(res => {
-                if (res.ok)
-                    return (res.json());
-            })
-            .then(res => setUsername(res.userID));
+        .then(res => {
+            if (res.ok)
+                return (res.json());
+        })
+        .then(res => setUsername(res.userID));
     }, [props.jwt])
     return (<div>
         <span>Hello USER ID: {username}</span>

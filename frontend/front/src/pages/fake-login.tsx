@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useContext } from "react";
 import UserItem from "../components/Users/UserItem";
 import UserContext from "../contexts/UserContext";
+import { FetchError } from "../components/FetchError";
+import SocketContext from "../contexts/Socket";
 
 function FakeLogin() {
   const userCtx: any = useContext(UserContext);
@@ -22,22 +24,19 @@ function FakeLogin() {
         setJwt(res.access_token);
     })
   }, []);
-  console.log(userCtx);
+  const { setToken } = useContext(SocketContext);
   useEffect(() => {
-    userCtx.loginUser({
-      jwt: jwt,
-      username: ""
-    });
+    const login = async () => {
+      await userCtx.loginUser({
+        jwt: jwt,
+        username: ""
+      });
+    }
+    login();
+    setToken(jwt);
   }, [jwt])
-  /*if (isLoading) {
-    return <div>Loading...</div>;
-  }*/
-
-  /*if (!response[0]) {
-    return <CreateNewUser props={response} />;
-  }*/
-
-  //console.log(userCtx.user);
+  if (errorCode >= 400)
+    return (<FetchError code={errorCode} />);
   if (typeof jwt != "undefined" && jwt != null) {
     console.log(userCtx);
     return (

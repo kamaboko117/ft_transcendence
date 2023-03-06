@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import React, { useRef } from "react";
 
 function NewUserForm(props: any) {
     const usernameInputRef = useRef<HTMLInputElement>(null);

@@ -1,7 +1,7 @@
 import React from 'react';
 import NewUserForm from '../components/Users/NewUserForm';
 import { useContext } from "react";
-import UserContext from "../store/user-context";
+import UserContext from "../contexts/UserContext";
 import MainPage from './mainPage';
 
 function CreateNewUser(props: any) {
@@ -11,7 +11,7 @@ function CreateNewUser(props: any) {
     console.log(response);
     function AddUserHandler(username: string) {
         console.log(`user ID: ${response[1]}`);
-        fetch("http://localhost:4000/users/create", {
+        fetch("http://" + location.host + "/api/users/create", {
             method: "POST",
             body: JSON.stringify({
                 userID: response[1],
@@ -36,7 +36,7 @@ function CreateNewUser(props: any) {
         return <MainPage />;
     }
     return (
-        <NewUserForm onAddUser={AddUserHandler}/>
+        <NewUserForm onAddUser={AddUserHandler} />
     )
 }
 

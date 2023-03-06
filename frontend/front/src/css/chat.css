@@ -21,6 +21,7 @@
 
 .fullBox {
     display: block !important;
+    /*flex-direction: column !important;*/
     width: 100% !important;
     height: 400px !important;
     margin: 0 !important;
@@ -61,8 +62,9 @@ span.chatBox {
     margin: auto;
     margin-left: 10px;
     overflow-wrap: break-word;
-    */ margin-bottom: 20px;
+    margin-bottom: 20px;
     margin-right: 10px;
+    max-width: 555px;
     width: 100%;
     min-width: 0;
 }
@@ -94,8 +96,10 @@ button.chatBox {
     height: 80%;
 }
 
+/* User List Part */
 .right {
-    display: inline-flex;
+    display: flex;
+    flex-direction: column;
     order: 5;
     /*align-content: center;*/
     align-items: flex-start;
@@ -108,11 +112,35 @@ button.chatBox {
     min-width: 150px;
 }
 
+.right>h2 {
+    flex: 1;
+    align-self: center;
+}
+
+.fullBoxListUser {
+    display: flex !important;
+    flex-direction: column;
+    width: 100% !important;
+    height: 300px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: center !important;
+    overflow-y: scroll !important;
+}
+
+.fullBoxListUser>span:hover {
+    cursor: pointer;
+}
+
+/* End user list part */
+
 table.tableInfo {
     width: 100%;
 }
 
 .userInfoClick {
+    position: absolute;
+    width: auto !important;
     display: inline-flex;
 }
 
@@ -120,37 +148,9 @@ table.tableInfo {
     display: inline-flex;
 }
 
-@media screen and (max-width: 1200px) {
-    .container-chat {
-        /*width: 100%;*/
-    }
-
-    .userInfo {
-        display: none;
-        width: 100%;
-        background-color: aquamarine;
-    }
-
-    .userInfoClick {
-        display: inline-flex;
-    }
-
-    .userInfoClick>* {
-        display: inline-flex;
-    }
-}
-
 @media screen and (max-width: 600px) {
     label.userInfo {
         text-align: center;
-    }
-
-    .userInfoClick {
-        display: inline-flex;
-    }
-
-    .userInfoClick>* {
-        display: inline-flex;
     }
 
     .container-chat {
@@ -165,6 +165,7 @@ table.tableInfo {
     }
 
     span.chatBox {
+        margin: 0;
         width: 100%;
     }
 }
