@@ -74,7 +74,13 @@ export class ChatController {
     /* Find user PM by username */
     @Get('find-pm-username')
     async openPrivateMessageByUsername(@Request() req: any,
-        @Query('username') username: Readonly<string>): Promise<string | null> {
+        @Query('username') username: Readonly<string>): Promise<{channel_id: string, listPm:{
+            chatid: string,
+            user: {
+                username: string
+            },
+        }} | null>
+        {
         const tokenUser: TokenUser = req.user;
 
         if (username === "" || typeof username === "undefined")
@@ -82,11 +88,15 @@ export class ChatController {
         const user: User | null = await this.userService.findUserByName(username);
         if (!user || tokenUser.userID === Number(user.userID))
             return (null);
+        console.log("user pm:")
+        console.log(user);
         const channel_id = await this.findPm(tokenUser.userID, String(user.userID));
-        return (channel_id);
+        return ({channel_id: channel_id, 
+            listPm: {
+                chatid: channel_id, user: {username: user.username}
+            }
+        });
     }
-
-    
 
     /*
         find PM from both user
