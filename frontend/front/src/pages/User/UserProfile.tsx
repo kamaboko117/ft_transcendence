@@ -85,13 +85,17 @@ function FormUpdateUser(props: {jwt: string,
 	
 	return (
 		<>
-		{file && <><h2>Preview avatar</h2><img className="avatar" src={URL.createObjectURL(file)} /></>}
-		<form encType="multipart/form-data" onSubmit={(event: FormEvent<HTMLFormElement>) => UploadForm(event,
-			file, props.jwt,
-			props.setErrorCode, props.setavatar_path)}>
-			<input type="file" name="uploadAvatar" onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)} />
-			<input type="submit" value="Update avatar"/>
-		</form>
+		{file && <><h2>Preview avatar</h2>
+			<img alt="preview avatar"
+			className="avatar"src={URL.createObjectURL(file)} /></>}
+			<form encType="multipart/form-data" onSubmit={(event: FormEvent<HTMLFormElement>) =>
+				UploadForm(event,
+					file, props.jwt,
+					props.setErrorCode, props.setavatar_path)}>
+					<input type="file" name="uploadAvatar"
+						onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)} />
+					<input type="submit" value="Update avatar"/>
+			</form>
 		</>
 	);
 }
@@ -99,7 +103,7 @@ function FormUpdateUser(props: {jwt: string,
 const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	if (props.jwt === null)
 		return (<div>Must be logged</div>);
-		const [avatar_path, setavatar_path] = useState<string>("");
+	const [avatar_path, setavatar_path] = useState<string>("");
 	/*
 	const [username, setUsername] = useState<string | null>(null);
 	const [victory, setVictory] = useState<number>();
@@ -132,7 +136,7 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 		<FormUpdateUser jwt={props.jwt} setavatar_path={setavatar_path}
 			setErrorCode={setErrorCode} />
 		<h1>Username: {user?.username}</h1>
-		<img className="avatar" src={avatar_path} />
+		<img className="avatar" src={avatar_path} alt={"avatar " + user?.username} />
 		<ul>
 			<li>Victoire: {user?.sstat.victory}</li>
 			<li>Défaite: {user?.sstat.defeat}</li>	

@@ -10,10 +10,16 @@ import { debounce } from 'debounce';
 import ContextDisplayChannel from '../../contexts/displayChat';
 import AdminComponent from './Admin';
 
+type typeUserInfo = {
+    username: string,
+    role: string
+}
+
 type PropsUserInfo = {
     listUser: Array<{
         user_id: number,
-        user: { username: string },
+        role: string,
+        user: {username: string},
     }>,
     jwt: string,
     id: string,
@@ -29,6 +35,7 @@ type typeButtonsInfo = {
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     userId: number,
     jwt: string,
+    userInfo: typeUserInfo
 }
 
 const blockUnblock = (event: MouseEvent<HTMLButtonElement>): void => {
@@ -53,9 +60,7 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     userId: number, jwt: string): void => {
     event.preventDefault();
-    //if (renderDirectMessage === true)
-    //    setDisplay(false)
-    //else {
+
     fetch('http://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
         id: String(userId),
     }), { headers: header(jwt) })
@@ -73,25 +78,30 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>,
 }
 
 const handleClick = (event: React.MouseEvent<HTMLDivElement>,
-    username: string, setUsername: any, setUserId: any, setTop: any): void => {
+    userInfo: typeUserInfo,
+    setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
+    setUserId: any, setTop: any): void => {
     event.preventDefault();
     const e: HTMLElement = event.target as HTMLElement;
     const name: string = e.textContent as string;
     const attributes: NamedNodeMap = e.attributes as NamedNodeMap;
     const parentNode: HTMLElement = e.parentNode as HTMLElement;
-    if (username === "" || username != name) {
+
+    if (userInfo.username === "" || userInfo.username != name) {
         setUserId(Number(attributes[0].value));
-        setUsername(name);
+        if (attributes.length === 2)
+            setUserInfo({username: name, role: attributes[1].value});
+        else
+        setUserInfo({username: name, role: ""});
     }
     else {
         setUserId(0);
-        setUsername("");
+        setUserInfo({username: "", role: ""})
     }
     setTop(parentNode.offsetTop);
 }
 
 const ButtonsInfos = (props: typeButtonsInfo) => {
-    console.log("userid: " + props.userId);
     return (<>
         <button onClick={blockUnblock} className="userInfo">Block/Unblock</button>
         <button onClick={inviteGame} className="userInfo">Invite to a game</button>
@@ -103,34 +113,36 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
         } className="userInfo">Direct message</button>
         <AdminComponent
             id={props.id} userId={props.userId} jwt={props.jwt} chooseClassName={props.chooseClassName}
-                setErrorCode={props.setErrorCode} />
+                setErrorCode={props.setErrorCode} userInfo={props.userInfo} />
     </>)
 }
 
 /* useCallback allow to cache functions between re-render */
 
 const UserInfo = (props: PropsUserInfo): JSX.Element => {
-    const [username, setUsername] = useState<string>("");
+    const [userInfo, setUserInfo] = useState<typeUserInfo>({
+        username: "", role:""
+    })
     const [offsetTop, setTop] = useState<number>(0);
     const { renderDirectMessage, userId, id, setDisplay, setUserId, setId } = useContext(ContextDisplayChannel);
-    const chooseClassName: string = (username != "" ? "userInfo userInfoClick" : "userInfo");
+    const chooseClassName: string = (userInfo.username != "" ? "userInfo userInfoClick" : "userInfo");
     let i: number = 0;
     const Element = scroll.Element;
 
     const handleListenerClick = () => {
-        setUsername("");
+        setUserInfo({username: "", role: ""});
     }
     //Read React's reference doc
     const ref: any = useEventListenerUserInfo(handleListenerClick);
     //need callback otherwise useEffect will add X time function and will bug
     const callback = useCallback(
         debounce(function resizeFunction() {
-            if (username != "") {
+            if (userInfo.username != "") {
                 const top = ref.current?.childBindings?.domNode?.offsetTop;
                 if (typeof top !== "undefined")
                     setTop(top);
             }
-        }, 100), [username]
+        }, 100), [userInfo.username]
     );
     //For resize the info user Box
     useEffect(() => {
@@ -138,24 +150,26 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
         return () => {
             window.removeEventListener("resize", callback);
         }
-    }, [username, window.innerWidth, window.innerHeight]);
+    }, [userInfo.username, window.innerWidth, window.innerHeight]);
     return (
         <>
             <Element name="container" className="element fullBoxListUser" ref={ref}
-                onClick={(e: React.MouseEvent<HTMLDivElement>) => handleClick(e, username, setUsername,
+                onClick={(e: React.MouseEvent<HTMLDivElement>) => handleClick(e, userInfo, setUserInfo,
                     setUserId, setTop)}>
                 {props.listUser &&
                     props.listUser.map((usr) => (
-                        <span tabIndex={usr.user_id} key={++i}>{usr.user.username}</span>
+                        <span data-user-id={usr.user_id}
+                            data-role={usr.role}
+                            key={++i}>{usr.user.username}</span>
                     ))
                 }
             </Element >
             <div className={chooseClassName} style={{ top: offsetTop }}>
-                <label className="userInfo">{username}</label>
+                <label className="userInfo">{userInfo.username}</label>
                 <ButtonsInfos id={props.id} chooseClassName={chooseClassName}
                     renderDirectMessage={renderDirectMessage} setDisplay={setDisplay}
                     setId={setId} setErrorCode={props.setErrorCode}
-                    userId={userId} jwt={props.jwt} />
+                    userId={userId} jwt={props.jwt} userInfo={userInfo} />
             </div>
         </>
     );

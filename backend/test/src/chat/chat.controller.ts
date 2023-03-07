@@ -36,7 +36,6 @@ export class ChatController {
     @Get('users')
     async getAllUsersOnChannel(@Request() req: any,
         @Query('id') id: Readonly<string>) {
-        //creer type listUser
         const listUsers: any = await this.chatGateway.getAllUsersOnChannel(id);
         if (typeof listUsers === "undefined" || listUsers === null)
             return (false);

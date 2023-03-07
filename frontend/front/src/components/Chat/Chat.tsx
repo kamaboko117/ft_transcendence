@@ -3,7 +3,6 @@ import ListUser from './ListUser';
 import { FetchError, header, headerPost } from '../FetchError';
 import "../../css/chat.css";
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import img from "../../assets/react.svg";//a remplacer avec user image
 import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
@@ -11,7 +10,8 @@ import { ContextUserLeave } from '../../contexts/LeaveChannel';
 export type lstMsg = {
     lstMsg: Array<{
         idUser: string,
-        content: string
+        content: string,
+        img: string
     }>
 }
 
@@ -34,7 +34,8 @@ export const ListMsg = (props: any) => {
                 props.lstMsg &&
                 props.lstMsg.slice(arrayLength, props.lstMsg.length).map((msg: any) => (
                     <React.Fragment key={++i}>
-                        <div><img src={img} className="chatBox" />
+                        <div><img src={"/" + msg.user.avatarPath} className="chatBox"
+                                alt={"avatar " + msg.user.username} />
                             <label className="chatBox">{msg.user.username}</label>
                         </div>
                         <span className="chatBox">{msg.content}</span>

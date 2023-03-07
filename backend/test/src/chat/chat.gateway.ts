@@ -223,7 +223,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       user_id: number,
       content: string
     }> = await this.listMsgRepository.createQueryBuilder("list_msg")
-      .select(["list_msg.user_id", "User.username", "list_msg.content"])
+      .select(["list_msg.user_id", "User.username", "User.avatarPath", "list_msg.content"])
       .innerJoin("list_msg.user", "User")
       .where("list_msg.chatid = :id")
       .setParameters({ id: id })
@@ -256,7 +256,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       .createQueryBuilder("channel")
       .innerJoin("channel.lstUsr", "ListUser")
       .innerJoinAndSelect("ListUser.user", "User")
-      .select(["channel.id", "channel.name", "channel.accesstype", "User.username"])
+      .select(["channel.id", "channel.name", "channel.accesstype", "User.username", "User.avatarPath"])
       .where("(channel.id = :id AND User.userID = :user_id)")// AND ListUser.user_id = :iduser")
       .setParameters({ id: id, user_id: user_id })
       .getRawOne();
@@ -266,7 +266,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async getAllUsersOnChannel(id: string) {
     const arr: any = await this.listUserRepository
       .createQueryBuilder("list_user")
-      .select("list_user.user_id")
+      .select(["list_user.user_id", "list_user.role"])
       .addSelect("User.username")
       .innerJoin("list_user.user", "User")
       .where("list_user.chatid = :id")
@@ -423,16 +423,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         chatid: data.id
       }])
       .execute();
+    console.log(getUser);
     this.server.to(data.id).emit("sendBackMsg", {
       room: data.id,
       user_id: user.userID,
-      user: { username: getUser.User_username },
+      user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
       content: data.content
     });
     this.server.to(data.id).emit("sendBackMsg2", {
       room: data.id,
       user_id: user.userID,
-      user: { username: getUser.User_username },
+      user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
       content: data.content
     });
   }
