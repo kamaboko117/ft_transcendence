@@ -4,6 +4,7 @@ import { User } from "src/typeorm";
 import { Repository } from "typeorm";
 import { CreateUserDto } from "src/users/dto/users.dtos";
 import { randomBytes } from "crypto";
+import { Stat } from "src/typeorm/stat.entity";
 
 const validateURL = "https://api.intra.42.fr/oauth/token"
 const infoURL = "https://api.intra.42.fr/oauth/token/info"
@@ -14,13 +15,36 @@ const appSecret = process.env.APP_SECRET!;
 export class UsersService {
     constructor(
         @InjectRepository(User)
-        private readonly userRepository: Repository<User>
+        private readonly userRepository: Repository<User>,
+        @InjectRepository(Stat)
+        private readonly statRepository: Repository<Stat>,
     ) { }
 
+    /*
+        consulte ca pour t'aider :
+        https://orkhan.gitbook.io/typeorm/docs/select-query-builder
+        UTILISE CA POUR AJOUTER LA FRIEND LIST ET BLACK LIST
+        await this.listUserRepository
+        .createQueryBuilder()
+        .insert()
+        .into(ListUser) << modifier pour les entites
+        .values([{
+            user_id: user_id, << modifier dans values
+            chatid: data.id
+        }])
+        .execute();
+    */
     async createUser(createUserDto: CreateUserDto) {
         const newUser = this.userRepository.create(createUserDto);
+        const stat = new Stat();
 
-        this.userRepository.save(newUser)
+        stat.defeat = 0;
+        stat.level = 0;
+        stat.nb_games = 0;
+        stat.rank = 0;
+        stat.user = newUser;
+        stat.victory = 0;
+        this.statRepository.save(stat);
         return (newUser);
     }
 
@@ -91,17 +115,21 @@ export class UsersService {
         .getMany() OU getOne();
     */
     async getUserProfile(id: number) {
-        const user: any = await this.userRepository.createQueryBuilder("user")
+        const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath'])
+            .addSelect(["Stat.victory", "Stat.defeat",
+                "Stat.nb_games", "Stat.level", "Stat.rank"])//ici ajout les column des inner joins
+            .innerJoin('user.sstat', 'Stat')// utiliser l''alias a droite, obligatoire je crois
             .where('user.user_id = :user') //:user = setParameters()
             .setParameters({ user: id })//anti hack
             .getOne();
+        console.log();
         return (user);
         //return this.userRepository.findOneBy({id: id});
     }
 
-    async findUsersById(id: number) {
-        const user: any = await this.userRepository.createQueryBuilder("user")
+    async findUsersById(id: number) { 
+        const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath'])
             .where('user.user_id = :user')
             .setParameters({ user: id })
