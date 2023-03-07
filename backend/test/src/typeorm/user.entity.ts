@@ -1,9 +1,11 @@
-import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToMany, OneToOne } from 'typeorm';
 import { Channel } from '../chat/chat.entity';
 import { ListMsg } from '../chat/lstmsg.entity';
 import { ListUser } from '../chat/lstuser.entity';
 import { ListBan } from '../chat/lstban.entity';
 import { ListMute } from '../chat/lstmute.entity';
+import { BlackFriendList } from './blackFriendList.entity';
+import { Stat } from './stat.entity';
 
 @Entity()
 export class User {
@@ -51,4 +53,13 @@ export class User {
   
   @OneToMany(() => ListMute, (listMute) => listMute.user)
   lstMute: User[];
+
+  //OneToMany vers blackfriendList
+  @OneToMany(() => BlackFriendList, (blackfriendlist) => blackfriendlist.owner_id)
+  lstBlackFriendOwner: BlackFriendList[];
+  @OneToMany(() => BlackFriendList, (blackfriendlist) => blackfriendlist.userFocus)
+  lstBlackFriendFocus: BlackFriendList[];
+  @OneToOne(() => Stat, (stat) => stat.user)
+  sstat: Stat[]
+  
 }
