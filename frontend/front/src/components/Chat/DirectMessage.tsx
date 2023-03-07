@@ -54,6 +54,7 @@ type propsListChannel = {
     }>,
     setId: React.Dispatch<React.SetStateAction<string>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    setPm: React.Dispatch<React.SetStateAction<listPm[]>>
 }
 
 const directMessage = (event: MouseEvent<HTMLButtonElement>,
@@ -105,7 +106,14 @@ const Button = () => {
 
 const handleSubmitPmUser = (e: React.FormEvent<HTMLFormElement>, user: string, jwt: string,
     setId: React.Dispatch<React.SetStateAction<string>>,
-    setErrorCode: React.Dispatch<React.SetStateAction<number>>) => {
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    setPm: React.Dispatch<React.SetStateAction<listPm[]>>,
+    listPm: Array<{
+        chatid: string,
+        user: {
+            username: string
+        },
+    }>,) => {
         e.preventDefault();
         fetch('http://' + location.host + '/api/chat/find-pm-username?' + new URLSearchParams({
                 username: String(user)
@@ -113,22 +121,39 @@ const handleSubmitPmUser = (e: React.FormEvent<HTMLFormElement>, user: string, j
         .then(res => {
             console.log(res);
             if (res.ok)
-                return (res.text());
+                return (res.json());
             setErrorCode(res.status);
-        }).then(res => {
+        }).then((res: {channel_id: string, listPm:{
+            chatid: string,
+            user: {
+                username: string
+            },
+        }}) => {
             if (res)
-                setId(res);
+            {
+                setId(res.channel_id);
+                setPm((listPm) => [...listPm, res.listPm]);
+            }
+                
         });
 }
 
 const BoxPmUser = (props: {setId: React.Dispatch<React.SetStateAction<string>>,
         setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+        setPm: React.Dispatch<React.SetStateAction<listPm[]>>,
+        listPm: Array<{
+            chatid: string,
+            user: {
+                username: string
+            },
+        }>,
     jwt: string}) => {
     const [user, setUser] = useState<string>("");
 
     return (
     <form className='formPm' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
-        handleSubmitPmUser(e, user, props.jwt, props.setId, props.setErrorCode)}>
+        handleSubmitPmUser(e, user, props.jwt,
+            props.setId, props.setErrorCode, props.setPm, props.listPm)}>
         <input type="text" placeholder='Direct message a user' name="user"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setUser(e?.target?.value)} />
@@ -176,7 +201,7 @@ const ListDiscussion = (props: propsListChannel) => {
                 ))}
             </ul>
         </Element>
-        <BoxPmUser setId={props.setId} setErrorCode={props.setErrorCode} jwt={props.jwt} />
+        <BoxPmUser setId={props.setId} setErrorCode={props.setErrorCode} setPm={props.setPm} jwt={props.jwt} listPm={props.listPm} />
     </div>
     );
 }
@@ -342,10 +367,11 @@ const Box = (props: settingBox) => {
             opacity: props.opacity,
         }}>
             <ListDiscussion listPm={lstPm} listChannel={lstChannel}
-                setId={props.setId} setErrorCode={props.setErrorCode}
+                setId={props.setId} setErrorCode={props.setErrorCode} setPm={setPm}
                 jwt={props.jwt} />
             <DiscussionBox id={props.id} jwt={props.jwt}
-                setErrorCode={props.setErrorCode} isPrivate={isPrivate} />
+                 setErrorCode={props.setErrorCode}
+                isPrivate={isPrivate} />
         </article>
     );
 }

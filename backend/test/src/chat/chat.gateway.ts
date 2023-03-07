@@ -67,6 +67,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   private listUserRepository: Repository<ListUser>;
   @InjectRepository(ListMsg)
   private listMsgRepository: Repository<ListMsg>;
+
   async getAllPublic(): Promise<any[]> {
     const arr: Channel[] = await this.chatsRepository
       .createQueryBuilder("channel")
@@ -193,13 +194,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     await this.listUserRepository.createQueryBuilder()
       .insert().into(ListUser)
       .values([
-        { role: "", user_id: userOne, chatid: String(userOne + userTwo) }
+        { user_id: userOne, chatid: String(userOne + userTwo) }
       ]).execute();
     /* insert second user */
     await this.listUserRepository.createQueryBuilder()
       .insert().into(ListUser)
       .values([
-        { role: "", user_id: Number(userTwo), chatid: String(userOne + userTwo) }
+        { user_id: Number(userTwo), chatid: String(userOne + userTwo) }
       ]).execute();
     return (String(userOne) + userTwo);
   }
@@ -294,6 +295,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     /* Add owner */
     const listUsr = new ListUser();
     listUsr.user_id = owner.idUser;
+    listUsr.role = "Owner";
     listUsr.chat = channel;
     this.listUserRepository.save(listUsr);
     const return_chat: InformationChat = {
