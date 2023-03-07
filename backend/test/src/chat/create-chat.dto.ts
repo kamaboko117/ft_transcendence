@@ -23,7 +23,7 @@ export class Owner {
     @IsString()
     idUser: number;
     @IsString()
-    username: string
+    username: string | undefined
 }
 
 export class CreateChatDto {

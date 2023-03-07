@@ -36,9 +36,6 @@ export class UsersService {
     */
     async createUser(createUserDto: CreateUserDto) {
         const newUser = this.userRepository.create(createUserDto);
-<<<<<<< HEAD
-        this.userRepository.save(newUser)
-=======
         const stat = new Stat();
 
         stat.defeat = 0;
@@ -48,7 +45,6 @@ export class UsersService {
         stat.user = newUser;
         stat.victory = 0;
         this.statRepository.save(stat);
->>>>>>> dclark
         return (newUser);
     }
 

@@ -165,7 +165,10 @@ export class ChatController {
             chat.accesstype = '1';
             chat.password = bcrypt.hashSync(chat.password, salt);
         }
-        return (this.chatGateway.createChat(chat, len, { idUser: user.userID, username: user.username }));
+        console.log("getall")
+        console.log(getAll);
+        const findUser = await this.userService.findUsersById(user.userID);
+        return (this.chatGateway.createChat(chat, len, { idUser: user.userID, username: findUser?.username }));
     }
 
     /* Create new private chat and return them by Name */
@@ -196,7 +199,8 @@ export class ChatController {
             chat.accesstype = '3';
             chat.password = bcrypt.hashSync(chat.password, salt);
         }
-        return (this.chatGateway.createChat(chat, id, { idUser: user.userID, username: user.username }));
+        const findUser = await this.userService.findUsersById(user.userID);
+        return (this.chatGateway.createChat(chat, id, { idUser: user.userID, username: findUser?.username }));
     }
 
     @Post('valid-paswd')
