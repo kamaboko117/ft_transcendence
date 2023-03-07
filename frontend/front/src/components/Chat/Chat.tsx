@@ -206,7 +206,8 @@ const MainChat = (props: any) => {
 }
 
 const onSubmit = async (e: React.FormEvent<HTMLFormElement>
-    , value: string | null, jwt: string | null, id: string, setErrorCode: any): Promise<boolean> => {
+    , value: string | null, jwt: string | null, id: string,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>): Promise<boolean> => {
     e.preventDefault();
     console.log("psw: " + value);
     if (value === "" || value === null)
@@ -229,7 +230,8 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
 /* Detect and return if a password for the channel is used
     return a promise 
 */
-const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>, setErrorCode: any): Promise<boolean> => {
+const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>): Promise<boolean> => {
     console.log("HAS PSWD");
     return (await fetch('http://' + location.host + '/api/chat/has-paswd?' + new URLSearchParams({
         id: id,

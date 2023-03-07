@@ -8,16 +8,7 @@ import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { debounce } from 'debounce';
 import ContextDisplayChannel from '../../contexts/displayChat';
-//import useDisplayChat from '../../useHook/useDisplayChat';
-
-type State = {
-    userInfoDisplay: boolean,
-    userName: string,
-    listUser: Array<{
-        id: number,
-        content: string,
-    }>
-}
+import AdminComponent from './Admin';
 
 type PropsUserInfo = {
     listUser: Array<{
@@ -25,7 +16,19 @@ type PropsUserInfo = {
         user: { username: string },
     }>,
     jwt: string,
-    id: string
+    id: string,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>
+}
+
+type typeButtonsInfo = {
+    id: string,
+    chooseClassName: string,
+    renderDirectMessage: boolean,
+    setDisplay: React.Dispatch<React.SetStateAction<boolean>>,
+    setId: React.Dispatch<React.SetStateAction<string>>,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    userId: number,
+    jwt: string,
 }
 
 const blockUnblock = (event: MouseEvent<HTMLButtonElement>): void => {
@@ -47,6 +50,7 @@ const userProfile = (event: MouseEvent<HTMLButtonElement>): void => {
 */
 const directMessage = (event: MouseEvent<HTMLButtonElement>,
     renderDirectMessage: boolean, setDisplay: any, setId: React.Dispatch<React.SetStateAction<string>>,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     userId: number, jwt: string): void => {
     event.preventDefault();
     //if (renderDirectMessage === true)
@@ -56,9 +60,9 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>,
         id: String(userId),
     }), { headers: header(jwt) })
     .then(res => {
-        if (res.ok){
+        if (res.ok)
             return (res.text());
-        }
+        setErrorCode(res.status)
     }).then((res: string | undefined) => {
         if (res)
         {
@@ -86,28 +90,21 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     setTop(parentNode.offsetTop);
 }
 
-/*
-    Owner part:
-        Nommer utilisateur admin
-        ne dois pas oublier, lorsque owner quitte un channel, un user est nommé owner, si possible admin
-        ptete un bouton nommer utilisateur owner
-    Admin part:
-        Bannir(durée déterminée)/ kick (durée temps actuel kick == dékick) / mute (durée déterminée), mais pas les owners
-*/
-const AdminComponent = (props: {jwt: string}) => {
-    const [role, setRole] = useState<string | null>(null);
-    const callback = useCallback(()=> {
-        fetch('http://' + location.host + '/api/chat-role/getRole', { headers: header(props.jwt) })
-    }, []);
-    useEffect(() => {
-        callback();
-        return (() => {})
-    }, [])
-    return (
-        <>
-        
-        </>
-    );
+const ButtonsInfos = (props: typeButtonsInfo) => {
+    console.log("userid: " + props.userId);
+    return (<>
+        <button onClick={blockUnblock} className="userInfo">Block/Unblock</button>
+        <button onClick={inviteGame} className="userInfo">Invite to a game</button>
+        <button onClick={userProfile} className="userInfo">User Profile</button>
+        <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+            directMessage(e, props.renderDirectMessage, props.setDisplay,
+                props.setId, props.setErrorCode,
+                props.userId, props.jwt)
+        } className="userInfo">Direct message</button>
+        <AdminComponent
+            id={props.id} userId={props.userId} jwt={props.jwt} chooseClassName={props.chooseClassName}
+                setErrorCode={props.setErrorCode} />
+    </>)
 }
 
 /* useCallback allow to cache functions between re-render */
@@ -155,14 +152,10 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
             </Element >
             <div className={chooseClassName} style={{ top: offsetTop }}>
                 <label className="userInfo">{username}</label>
-                <button onClick={blockUnblock} className="userInfo">Block/Unblock</button>
-                <button onClick={inviteGame} className="userInfo">Invite to a game</button>
-                <button onClick={userProfile} className="userInfo">User Profile</button>
-                <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-                    directMessage(e, renderDirectMessage, setDisplay, setId,
-                        userId, props.jwt)
-                } className="userInfo">Direct message</button>
-                <AdminComponent jwt={props.jwt} />
+                <ButtonsInfos id={props.id} chooseClassName={chooseClassName}
+                    renderDirectMessage={renderDirectMessage} setDisplay={setDisplay}
+                    setId={setId} setErrorCode={props.setErrorCode}
+                    userId={userId} jwt={props.jwt} />
             </div>
         </>
     );
@@ -211,7 +204,8 @@ const ListUser = (props: { id: string, jwt: string }) => {
     return (
         <React.Fragment>
             <h2>List users</h2>
-            <UserInfo id={props.id} listUser={lstUser} jwt={props.jwt} />
+            <UserInfo id={props.id} listUser={lstUser} jwt={props.jwt}
+                setErrorCode={setErrorCode} />
         </React.Fragment>
     );
 }
