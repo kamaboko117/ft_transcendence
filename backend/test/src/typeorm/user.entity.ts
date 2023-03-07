@@ -31,7 +31,7 @@ export class User {
   })
   username: string;
   @Column({ nullable: true })
-  avatarPath: string;
+  avatarPath!: string;
   /* Refresh token */
   @Column({
     nullable: false,
