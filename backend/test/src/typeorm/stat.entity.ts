@@ -7,13 +7,13 @@ export class Stat {
 	id: number;
 
 	@Column()
-	victoire: number;
+	victory: number;
 
 	@Column()
-	défaite: number;
+	defeat: number;
 
 	@Column()
-	nbGames: number;
+	nb_games: number;
 
 	@Column()
 	level: number;
@@ -21,10 +21,10 @@ export class Stat {
 	@Column()
 	rank: number;
 
-	@OneToOne(() => User, (user) => user.sstat, { nullable: false, cascade: true })
-	@JoinColumn({name: 'userID'})
+	@OneToOne(() => User, (user) => user.sstat, { nullable: false, cascade: true, onDelete: 'CASCADE' })
+	@JoinColumn({name: 'user_id'})
 	user: User;
 	@Column({nullable: false})
-	userID: string
+	user_id: string
 
 }

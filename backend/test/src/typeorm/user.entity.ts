@@ -54,12 +54,12 @@ export class User {
   @OneToMany(() => ListMute, (listMute) => listMute.user)
   lstMute: User[];
 
-    //OneToMany vers blackfriendList
-    @OneToMany(() => BlackFriendList, (blackfriendlist) => blackfriendlist.owner_id)
-    lstBlackFriendOwner: BlackFriendList[];
-    @OneToMany(() => BlackFriendList, (blackfriendlist) => blackfriendlist.userFocus)
-    lstBlackFriendFocus: BlackFriendList[];
-    @OneToOne(() => Stat, (stat) => stat.user)
-    sstat: Stat[]
+  //OneToMany vers blackfriendList
+  @OneToMany(() => BlackFriendList, (blackfriendlist) => blackfriendlist.owner_id)
+  lstBlackFriendOwner: BlackFriendList[];
+  @OneToMany(() => BlackFriendList, (blackfriendlist) => blackfriendlist.userFocus)
+  lstBlackFriendFocus: BlackFriendList[];
+  @OneToOne(() => Stat, (stat) => stat.user)
+  sstat: Stat[]
   
 }

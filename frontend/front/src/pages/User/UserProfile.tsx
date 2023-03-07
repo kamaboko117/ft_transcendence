@@ -2,11 +2,20 @@ import React, {useEffect, useState, ChangeEvent, FormEvent } from "react";
 import { FetchError } from "../../components/FetchError";
 import '../../css/user.css';
 
+type statInfo = {
+	victory; number,
+	defeat: number,
+	nb_games: number,
+	level: number,
+	rank: number
+}
+
 type userInfo = {
 	username: string,
 	token: string,
 	userID: number,
-	avatarPath: string
+	avatarPath: string,
+	sstat: statInfo
 }
 
 const header = (props: Readonly<{ jwt: string | null }>) => {
@@ -90,9 +99,14 @@ function FormUpdateUser(props: {jwt: string,
 const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	if (props.jwt === null)
 		return (<div>Must be logged</div>);
+		const [avatar_path, setavatar_path] = useState<string>("");
+	/*
 	const [username, setUsername] = useState<string | null>(null);
-	const [avatar_path, setavatar_path] = useState<string>("");
+	const [victory, setVictory] = useState<number>();
+	const [defeat, setDefeat] = useState<number>();
+	*/
 	const [errorCode, setErrorCode] = useState<number>(200);
+	const [user, setSstat] = useState<userInfo>();
 	useEffect(() => {
 		fetch('http://' + location.host + '/api/users/profile/', { headers: header(props) })
             .then(res => {
@@ -101,26 +115,47 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
                 setErrorCode(res.status);
             }).then((res: userInfo) => {
 				console.log(res);
-                setUsername(res?.username);
-				setavatar_path(res?.avatarPath);
+                setavatar_path(res?.avatarPath);
+				/*
+				setUsername(res?.username);
+				setVictory(res?.sstat.victory);
+				setDefeat(res?.sstat.defeat);
+				*/
+				setSstat(res);
             })
-	})
+	}, [])
 	if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
+	if (/*OwnUser*/ 1) {
 	return (
-		<>	
+		<>
 		<FormUpdateUser jwt={props.jwt} setavatar_path={setavatar_path}
 			setErrorCode={setErrorCode} />
-		<h1>Username: {username}</h1>
+		<h1>Username: {user?.username}</h1>
 		<img className="avatar" src={avatar_path} />
 		<ul>
-			<li>Victoire: </li>
-			<li>Défaite: </li>	
-			<li>Match Blanc (Victoire): </li>		
-			<li>Match Blanc (Défaite): </li>		
+			<li>Victoire: {user?.sstat.victory}</li>
+			<li>Défaite: {user?.sstat.defeat}</li>	
+			<li>Rank: {user?.sstat.rank}</li>		
+			<li>Level: {user?.sstat.level}</li>		
 		</ul>
 		</>
 	);
+	} else {
+		return (
+			<>
+			<h1>Username: {user?.username}</h1>
+			<img className="avatar" src={avatar_path} />
+			<ul>
+				<li>Victoire: {user?.sstat.victory}</li>
+				<li>Défaite: {user?.sstat.defeat}</li>	
+				<li>Rank: {user?.sstat.rank}</li>		
+				<li>Level: {user?.sstat.level}</li>		
+			</ul>
+			</>
+	
+		);
+	 }
 }
 
 export default UserProfile;
