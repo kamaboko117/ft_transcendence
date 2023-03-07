@@ -301,7 +301,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const return_chat: InformationChat = {
       channel_id: newChat.id,
       channel_name: newChat.name,
-      User_username: owner.username,
+      User_username: String(owner.username),
       channel_accesstype: newChat.accesstype,
     }
     return (return_chat);
