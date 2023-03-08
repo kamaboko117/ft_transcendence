@@ -1,17 +1,21 @@
 type RoomProps = {
-    roomID: number,
-    roomName: string,
-    roomCapacity: number,
-}
+  uid: string;
+  roomName: string;
+  roomCapacity: number;
+  join: any;
+};
 
 function RoomItem(props: RoomProps) {
-    return <li>
-        <div>
-            <h3>{props.roomID}</h3>
-            <h3>{props.roomName}</h3>
-            <h3>{props.roomCapacity}</h3>
-        </div>
-    </li>
+    function joinRoom() {
+        props.join(props.uid);
+    }
+
+  return (
+    <div className="room_item" onClick={joinRoom}>
+      <h3 className="room_name">{props.roomName}</h3>
+      <h3>capacity: {props.roomCapacity}</h3>
+    </div>
+  );
 }
 
 export default RoomItem;

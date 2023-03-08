@@ -3,10 +3,38 @@ import { useRef } from "react";
 function NewRoomModal(props: any) {
     const roomNameInputRef = useRef<HTMLInputElement>(null);
 
-    function submitHandler(event: React.FormEvent<HTMLFormElement>) {
+    async function AddRoomHandler(roomname: string) {
+        let room;
+        await fetch("http://localhost:5000/rooms/create", {
+            method: "POST",
+            body: JSON.stringify({
+                roomName: roomname,
+            }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                room = data.uid;
+            });
+        return room;
+    }
+
+    async function submitHandler(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         const roomName = roomNameInputRef.current!.value;
-        props.onAddUser(roomName);
+        
+        const room = await AddRoomHandler(roomName);
+        props.onSubmit(room);
+        props.onCancel();
+       
+    }
+
+    function cancelHandler() {
+        props.onCancel();
     }
 
     return (
@@ -18,8 +46,8 @@ function NewRoomModal(props: any) {
                     placeholder="room name"
                     ref={roomNameInputRef}
                 />
-                <button className="btn">Create</button>
-                <button className="btn btn--alt">Cancel</button>
+                <button className="btn" type="submit">Create</button>
+                <button className="btn btn--alt" onClick={cancelHandler}>Cancel</button>
             </form>
         </div>
     );

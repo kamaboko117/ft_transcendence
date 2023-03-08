@@ -1,6 +1,7 @@
 
 * {
   box-sizing: border-box;
+  /* border: 1px solid yellow; */
 }
 
 body {
@@ -46,7 +47,37 @@ body {
     padding: 1rem;
     width: 20rem;
   }
+
+  .room_item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #333333;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    width: 20rem;
+    margin: 1rem;
+  }
+
+  .room_item:hover {
+    background-color: #2b2927;
+  }
+
+  .room_name {
+    color: #9c1458;
+    font-size: 1.5rem;
+    margin: 0.5rem 0;
+  }
   
+  
+  .room_list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #333333;
+  }
+
   .actions {
     text-align: right;
   }

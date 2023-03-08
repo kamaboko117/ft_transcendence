@@ -3,19 +3,21 @@ import RoomItem from "./RoomItem";
 
 interface IRoomProps {
   rooms: any;
+  join: any;
 }
 
-export function RoomList(props: IRoomProps) {
+export default function RoomList(props: IRoomProps) {
   return (
     <div>
       Room List
-      <ul>
+      <ul className="room_list">
         {props.rooms.map((item: any) => (
           <RoomItem
             key={item.id}
-            roomID={item.roomID}
+            uid={item.uid}
             roomName={item.roomName}
-            roomCapacity={item.roomCapacity}
+            roomCapacity={item.Capacity}
+            join={props.join}
           />
         ))}
       </ul>

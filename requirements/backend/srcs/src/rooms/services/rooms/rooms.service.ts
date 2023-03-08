@@ -21,7 +21,7 @@ export class RoomsService {
     return this.roomRepository.find();
   }
 
-  findRoomById(id: number) {
-    return this.roomRepository.findOneBy({id: id});
+  findRoomById(uid: string) {
+    return this.roomRepository.findOneBy({uid: uid});
   }
 }

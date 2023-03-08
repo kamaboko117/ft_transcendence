@@ -2,11 +2,8 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Room {
-  @PrimaryGeneratedColumn({
-    type: 'bigint',
-    name: 'room_id',
-  })
-  id: number;
+  @PrimaryGeneratedColumn("uuid")
+  uid: string;
 
   @Column({
     nullable: false,
