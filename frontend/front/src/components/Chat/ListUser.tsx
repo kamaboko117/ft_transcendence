@@ -12,13 +12,14 @@ import AdminComponent from './Admin';
 
 type typeUserInfo = {
     username: string,
-    role: string
+    role: string | null,
+    id: number
 }
 
 type PropsUserInfo = {
     listUser: Array<{
         user_id: number,
-        role: string,
+        role: string | null,
         user: {username: string},
     }>,
     jwt: string,
@@ -88,15 +89,20 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     const parentNode: HTMLElement = e.parentNode as HTMLElement;
 
     if (userInfo.username === "" || userInfo.username != name) {
+        console.log(attributes);
         setUserId(Number(attributes[0].value));
         if (attributes.length === 2)
-            setUserInfo({username: name, role: attributes[1].value});
+            setUserInfo({
+                username: name,
+                role: attributes[1].value,
+                id: Number(attributes[0].value)
+            });
         else
-        setUserInfo({username: name, role: ""});
+        setUserInfo({username: name, role: "", id: 0});
     }
     else {
         setUserId(0);
-        setUserInfo({username: "", role: ""})
+        setUserInfo({username: "", role: "", id: 0})
     }
     setTop(parentNode.offsetTop);
 }
@@ -120,17 +126,29 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
 /* useCallback allow to cache functions between re-render */
 
 const UserInfo = (props: PropsUserInfo): JSX.Element => {
-    const [userInfo, setUserInfo] = useState<typeUserInfo>({
-        username: "", role:""
-    })
-    const [offsetTop, setTop] = useState<number>(0);
     const { renderDirectMessage, userId, id, setDisplay, setUserId, setId } = useContext(ContextDisplayChannel);
+    const [userInfo, setUserInfo] = useState<typeUserInfo>({
+        username: "", role: "", id: 0
+    })
+    //need to search in listUser, to update userInfo 
+    //  variable content (like this AdminComponent get updated properly)
+    const object = props.listUser;
+    const found = object.find(elem => Number(elem.user_id) === userInfo.id);
+    useEffect(() => {
+        if (found) {
+            setUserInfo({username: userInfo.username,
+                role: found.role,
+                id: userInfo.id
+            });
+        }
+    }, [found, props.id]);
+    const [offsetTop, setTop] = useState<number>(0);
     const chooseClassName: string = (userInfo.username != "" ? "userInfo userInfoClick" : "userInfo");
     let i: number = 0;
     const Element = scroll.Element;
 
     const handleListenerClick = () => {
-        setUserInfo({username: "", role: ""});
+        setUserInfo({username: "", role: "", id: 0});
     }
     //Read React's reference doc
     const ref: any = useEventListenerUserInfo(handleListenerClick);
@@ -144,7 +162,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
             }
         }, 100), [userInfo.username]
     );
-    //For resize the info user Box
+    //When resizing info user Box
     useEffect(() => {
         window.addEventListener("resize", callback);
         return () => {
@@ -159,7 +177,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
                 {props.listUser &&
                     props.listUser.map((usr) => (
                         <span data-user-id={usr.user_id}
-                            data-role={usr.role}
+                            data-role={(usr.role == null ? "" : usr.role)}
                             key={++i}>{usr.user.username}</span>
                     ))
                 }
@@ -201,7 +219,7 @@ const ListUser = (props: { id: string, jwt: string }) => {
         fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
             setLstUser(res);
         });
-        usrSocket.on("updateListChat", (res: boolean) => {
+        usrSocket.on("updateListChat", () => {
             fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
                 setLstUser(res);
             });
@@ -212,9 +230,9 @@ const ListUser = (props: { id: string, jwt: string }) => {
             setLstUser([]);
             usrSocket.off("updateListChat");
         });
-    }, [lstUser?.keys]);
-    if (errorCode >= 400) // a placer devant fonctions asynchrones semblerait t'il, le composant react se recharge
-        return (<FetchError code={errorCode} />); //lorsqu'il se met a jour, semblerait t'il
+    }, [lstUser?.keys, props.id]);
+    if (errorCode >= 400) //catch errors code from async functions
+        return (<FetchError code={errorCode} />);
     return (
         <React.Fragment>
             <h2>List users</h2>

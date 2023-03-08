@@ -6,8 +6,7 @@ import { User } from '../typeorm/user.entity';
 export class ListMute {
     @PrimaryGeneratedColumn()
     id: number;
-    @Column({ nullable: false })
-    keyuser: string;
+
     @Column({ nullable: true })
     time: number;
 
@@ -17,6 +16,9 @@ export class ListMute {
     @Column({ nullable: false })
     user_id: number;
 
-    @ManyToOne(() => Channel, (chat) => chat.lstMsg, { nullable: false, cascade: true, onDelete: 'CASCADE' })
-    chat: Channel[];
+    @ManyToOne(() => Channel, (chat) => chat.lstMute, { nullable: false, cascade: true, onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'chatid' })
+    chat: Channel;
+    @Column({ nullable: false })
+    chatid: string;
 }

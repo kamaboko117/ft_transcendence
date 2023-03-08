@@ -10,9 +10,10 @@ import { ListMute } from './lstmute.entity';
 import { ListBan } from './lstban.entity';
 import { UsersModule } from 'src/users/users.module';
 import { RoleController } from './role.controller';
+import { RoleGateway } from './role.gateway';
 
 @Module({
-    providers: [ChatGateway, RoleService],
+    providers: [ChatGateway, RoleService, RoleGateway],
     imports: [TypeOrmModule.forFeature([Channel, ListMsg,
         ListUser, ListMute, ListBan]), UsersModule],
     exports: [ChatGateway],
