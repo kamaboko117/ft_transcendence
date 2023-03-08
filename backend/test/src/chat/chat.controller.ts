@@ -1,7 +1,7 @@
 import { Controller, Request, Query, Get, Post, Body, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
 import { ChatGateway } from './chat.gateway';
 import { InformationChat, TokenUser, DbChat } from './chat.interface';
-import { CreateChatDto } from './create-chat.dto';
+import { CreateChatDto } from './dto/create-chat.dto';
 import { PswChat } from './psw-chat.dto';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -41,6 +41,7 @@ export class ChatController {
             return (false);
         return (listUsers);
     }
+
     /* Start of fixed chatbox part */
     @Get('list-pm')
     async getDirectMessage(@Request() req: any) {
@@ -203,7 +204,7 @@ export class ChatController {
     }
 
     @Post('valid-paswd')
-    async passwordIsValid(@Body() psw: Readonly<PswChat>): Promise<boolean> {
+    async passwordIsValid(@Body() psw: PswChat): Promise<boolean> {
         const channel: undefined | DbChat = await this.chatGateway.getChannelByTest(psw.id);
         if (typeof channel == "undefined" || channel === null || channel.password == '')
             return (false);

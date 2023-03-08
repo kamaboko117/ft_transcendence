@@ -15,6 +15,7 @@ export const useEventListenerUserInfo = (callback: any) => {
       //get the div parent from user option, in ListUser>UserInfo component
       const attributesTarget =  target?.parentNode?.attributes;
       let i = 0;
+
       //loop whole list user array from event
       for (i = 0; i < length; ++i)
       {
@@ -23,7 +24,8 @@ export const useEventListenerUserInfo = (callback: any) => {
       }
       //will run handleClick in ListUser.tsx
       if (i >= length
-          && attributesTarget?.class?.nodeValue !== "userInfo userInfoClick")
+          && attributesTarget?.class?.nodeValue !== "userInfo userInfoClick"
+          && attributesTarget?.class?.nodeValue !== "adminBox")
           callback();
     }
     //listening to JS event
