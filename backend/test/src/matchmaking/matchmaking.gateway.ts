@@ -50,31 +50,38 @@ export class MatchMakingGateway
   async handleConnection(client: Socket) 
   {
     console.log("client id: " + client.id + 'made a new connection Matchmaking Gateway');
+    client.join(client.id);
   }
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('queuein')
-  async queuein(@ConnectedSocket() socket: any) {
+  async queuein(@ConnectedSocket() socket: Readonly<any>) {
     try {
       console.log('queue in');
       const user = socket.user;
       
       if (typeof user.userID != 'number') return false;
-       socket.join("testtt");
-      console.log(this.server.sockets.adapter.rooms);
-      this.server.emit('matchmakingfailed', {room: "testtt", tt:true});
-      this.server.to(socket.user).emit('matchmakingfailed', {
-          message: "matchmaking failed",
-        });
       
-     // this.MMService.queuein(user, socket, this.server);
+      /*
+      console.log(socket.rooms)
+      socket.join('aRoom');
+      console.log(".------------------------.")
+      console.log(socket.rooms)
+      */
+
+//      console.log(this.server.sockets.adapter.rooms);
+
+      console.log("socket id: " + socket.id);
+      //this.server.to(socket.id).emit('matchmakingfailed', true);
+      this.server.emit('matchmakingfailed', {
+          message: socket.id,
+       });
+      
+      this.MMService.queuein(user, socket, this.server);
     } catch (error) {
-      this.server.emit('matchmakingfailed', {room: "testtt", tt:true});
       console.log('matchmaking failed');
-      //this.server.to(socket.user.room).emit('matchmakingfailed', {
-      //  message: "matchmaking failed"
-      //});
-    }
+   }
+   return { event: 'roomCreated', room: 'aRoom' };
   }
 
   @UseGuards(JwtGuard)

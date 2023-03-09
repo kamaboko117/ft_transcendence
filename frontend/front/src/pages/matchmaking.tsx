@@ -68,7 +68,16 @@ export default function MatchmakingPage() {
   const onQueuePop = () => {
     openAlert();
   };
-
+  useEffect(() => {
+    console.log("load exception listener");
+    usrSocket.on("matchmakingfailed", (res: any) => {
+      console.log(res);
+  });
+  return (() => {
+    console.log("unload exception listener");
+      usrSocket.off('matchmakingfailed');
+  })
+  }, []);
   const startMatching = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     enterQueue(true);
@@ -99,16 +108,7 @@ export default function MatchmakingPage() {
     closeAlert();
   };
 
-  useEffect(() => {
-    console.log("load exception listener");
-    usrSocket.on("matchmakingfailed", (res: any) => {
-      console.log(res);
-  });
-  return (() => {
-    console.log("unload exception listener");
-      usrSocket.off('matchmakingfailed');
-  })
-  }, []);
+  
   return (
     <>
     {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}
