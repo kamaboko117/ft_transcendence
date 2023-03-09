@@ -1,4 +1,5 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect } from "react";
+import { useState } from "react";
 
 const UserContext = createContext({});
 
@@ -6,17 +7,17 @@ export type User = {
   jwt: string | null,
   username: string | null
 }
-
 /* Verifier validite token */
 /* redirect navigation pour renommer user si username === '' */
 export function UserProvider(props: any) {
-  let [user, setUser] = useState<User>();
+  let [user, setUser] = useState<User>({
+    jwt: localStorage.getItem("ft_transcendence_gdda_jwt"),
+    username: localStorage.getItem("ft_transcendence_gdda_username")
+  });
   useEffect(() => {
-    const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
-    const username: string | null = localStorage.getItem("ft_transcendence_gdda_username");
     setUser({
-      jwt: jwt,
-      username: username
+      jwt: localStorage.getItem("ft_transcendence_gdda_jwt"),
+      username: localStorage.getItem("ft_transcendence_gdda_username")
     });
   }, []);
   function loginUser(props: User) {

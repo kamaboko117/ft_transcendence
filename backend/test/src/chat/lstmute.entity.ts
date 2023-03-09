@@ -11,12 +11,12 @@ export class ListMute {
     @Column({ nullable: true })
     time: number;
 
-    @ManyToOne(() => User, (user) => user.lstMute, { nullable: false, cascade: true })
+    @ManyToOne(() => User, (user) => user.lstMute, { nullable: false, cascade: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     user: User;
     @Column({ nullable: false })
     user_id: number;
-    
-    @ManyToOne(() => Channel, (chat) => chat.lstMsg, { nullable: false, cascade: true })
+
+    @ManyToOne(() => Channel, (chat) => chat.lstMsg, { nullable: false, cascade: true, onDelete: 'CASCADE' })
     chat: Channel[];
 }

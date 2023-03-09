@@ -6,16 +6,17 @@ import { User } from '../typeorm/user.entity';
 export class ListUser {
     @PrimaryGeneratedColumn()
     id: number;
-    //@Column({ nullable: false })
-    //iduser: string;
 
-    @ManyToOne(() => User, (user) => user.lstUsr, { nullable: false, cascade: true })
+    @Column({ nullable: true }) //owner and administrator
+    role: string;
+
+    @ManyToOne(() => User, (user) => user.lstUsr, { nullable: false, cascade: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     user: User;
     @Column({ nullable: false })
     user_id: number;
 
-    @ManyToOne(() => Channel, (chat) => chat.lstUsr, { nullable: false, cascade: true })
+    @ManyToOne(() => Channel, (chat) => chat.lstUsr, { nullable: false, cascade: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'chatid' })
     chat: Channel;
     @Column({ nullable: false })

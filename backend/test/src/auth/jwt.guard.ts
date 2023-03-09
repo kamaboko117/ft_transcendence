@@ -1,9 +1,12 @@
-import { ExecutionContext, Injectable, SetMetadata, Inject, UnauthorizedException } from '@nestjs/common';
+import { ExecutionContext, Injectable, SetMetadata, Inject } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ExtractJwt } from 'passport-jwt';
 //import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { Reflector } from '@nestjs/core';
+import { WsException } from '@nestjs/websockets';
+import { resolve } from 'path';
+import { User } from 'src/typeorm';
+import { Observable } from 'rxjs';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
@@ -14,36 +17,37 @@ export class JwtGuard extends AuthGuard('jwt') {
         private reflector: Reflector) {
         super({ passReqToCallback: true });
     }
-    canActivate(context: ExecutionContext) {
+
+    async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest(); //see guard doc
-        const websocket = context.switchToWs().getClient();
         const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
             context.getHandler(), context.getClass()
         ]);
         let bearer: string = "";
-        console.log("enter guard jwt");
         if (isPublic)
             return (true);
-        if (typeof request.route != "undefined")
+        if (typeof request.route != "undefined"
+            && typeof request.headers.authorization != "undefined")
             bearer = request.headers.authorization.split('Bearer ')[1];
-        else if (typeof request.route == "undefined")
-        {
+        else if (typeof request.route == "undefined") {
             bearer = request.handshake.headers.authorization;
         }
         if (typeof bearer == "undefined")
             return (false);
-        const decoded = this.authService.verifyToken(bearer);
-        if (decoded === false)
-                return (false);
-        if (typeof request.route == "undefined")
-        {
-            console.log("bearer: " + bearer);
+        const decoded = await this.authService.verifyToken(bearer);
+        if ((decoded === null && typeof request.route == "undefined")
+            || (decoded === false && typeof request.route == "undefined")) {
+            throw new WsException('Token not valid');
+        }
+        else if (decoded === null || decoded === false)
+            return (false);
+        if (typeof request.route == "undefined") {
             request.headers = {};
             request.headers.authorization = "Bearer " + bearer;
-            //return (Boolean(decoded));
         }
-        //console.log("zzzzzzzzzzzzzzzzzzzzzzz");
-        //return (this.handleRequest(request, request.user));*/
-        return (super.canActivate(context));
+        console.log("bearer :" + bearer);
+        super.canActivate(context)
+        console.log("super.canActivate OK")
+        return (true);
     }
 }
