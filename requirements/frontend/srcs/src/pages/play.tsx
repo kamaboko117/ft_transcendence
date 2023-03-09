@@ -27,37 +27,42 @@ export default function PlayPage() {
   const gameContextValue: IGameContext = {
     isInRoom: isInRoom,
     setInRoom: setIsInRoom,
+    playerSide: 1,
   };
 
   useEffect(() => {
-    fetch("http://localhost:5000/rooms").then((response) => {
-      return response.json();
-    }).then((data) => {
-      const rooms = [];
-      for (const key in data) {
-        const room = {
-          id: key,
-          ...data[key],
-        };
-        rooms.push(room);
-      }
-      setLoadedRooms(rooms);
-      setIsLoading(false);
-    });
+    fetch("http://localhost:5000/rooms")
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        const rooms = [];
+        for (const key in data) {
+          const room = {
+            id: key,
+            ...data[key],
+          };
+          rooms.push(room);
+        }
+        setLoadedRooms(rooms);
+        setIsLoading(false);
+      });
   }, []);
 
   const joinRoom = async (roomId: string) => {
     const socket = socketService.socket;
-    console.log("here")
+    console.log("here");
     if (!socket) {
       return;
     }
     setIsLoading(true);
-    const joined = await gameService.joinGameRoom(socket, roomId).catch((err) => {
-      console.log("joining room")
-      alert(err);
-    });
-    console.log("joined")
+    const joined = await gameService
+      .joinGameRoom(socket, roomId)
+      .catch((err) => {
+        console.log("joining room");
+        alert(err);
+      });
+    console.log("joined");
     if (joined) {
       setIsInRoom(true);
     }
@@ -74,16 +79,24 @@ export default function PlayPage() {
   }
 
   if (isInRoom) {
-    return <Game />
+    return <Game />;
   }
 
   return (
     <GameContext.Provider value={gameContextValue}>
       <div>Play</div>
-      <button className="btn" onClick={openModalHandler}>create new room</button>
-      {modalIsOpen && <Modal onCancel={closeModalHandler} onSubmit={joinRoom}/>}
-      {modalIsOpen && <Backdrop onClick={closeModalHandler}/>}
-      {isLoading ? <div>Loading...</div> : <RoomList rooms={loadedRooms} join={joinRoom}/>}
+      <button className="btn" onClick={openModalHandler}>
+        create new room
+      </button>
+      {modalIsOpen && (
+        <Modal onCancel={closeModalHandler} onSubmit={joinRoom} />
+      )}
+      {modalIsOpen && <Backdrop onClick={closeModalHandler} />}
+      {isLoading ? (
+        <div>Loading...</div>
+      ) : (
+        <RoomList rooms={loadedRooms} join={joinRoom} />
+      )}
     </GameContext.Provider>
   );
 }

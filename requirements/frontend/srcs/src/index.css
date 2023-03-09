@@ -95,6 +95,21 @@ body {
     left: calc(50% - 15rem);
   }
   
+  .game {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .game_canvas {
+    background-color: #333333;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    width: 50rem;
+    margin: 1rem;
+  }
+
   .backdrop {
     position: fixed;
     z-index: 1;
