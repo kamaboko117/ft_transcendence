@@ -50,7 +50,7 @@ export default function MatchmakingPage() {
   const toast = useToast();
   const navigate = useNavigate();
   const [count, setCount] = useState(0);
-  const usrSocket = useContext(SocketContext);
+  const {usrSocket} = useContext(SocketContext);
 
   type MMState = "ACCEPTED" | "DECLINED";
 
