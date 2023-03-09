@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../chat/chat.interface';
+import { Server } from 'socket.io';
 
 const { FifoMatchmaker } = require('matchmaking');
 
@@ -30,13 +31,16 @@ private mm = new FifoMatchmaker(this.runGame, { checkInterval: 2000 });
 
   }
 
-
-  queuein(user: User) {
+/*
+  user rejoint room de socket
+  faire
+  server.to(user.room).emit('message', { user: user.name, text: message });
+*/
+  queuein(user: User, socket: Readonly<any>, server: Server) {
     //check if player is already in match
     //if not, add to match
     //if yes, throw error
-
-
+    console.log(server.sockets.adapter.rooms);
     //check if player is already in queue
     //if not, add to queue
     //if yes, throw error
