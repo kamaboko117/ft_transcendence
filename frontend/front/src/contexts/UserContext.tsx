@@ -1,5 +1,6 @@
 import React, { createContext, useEffect } from "react";
 import { useState } from "react";
+import { FetchError} from '../components/FetchError';
 
 const UserContext = createContext({});
 
@@ -26,7 +27,6 @@ export function UserProvider(props: any) {
     console.log("set localStorage");
     if (typeof user != "undefined") {
       if (props.jwt != null && props.username != null) {
-        console.log("ALLLOO");
         localStorage.setItem("ft_transcendence_gdda_jwt", props.jwt);
         localStorage.setItem("ft_transcendence_gdda_username", props.username);
       }
@@ -53,6 +53,7 @@ export function UserProvider(props: any) {
     logoutUser: logoutUser,
     getJwt: getJwt
   };
+  
   return (
     <UserContext.Provider value={context}>
       {props.children}

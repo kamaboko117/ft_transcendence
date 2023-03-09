@@ -39,17 +39,13 @@ import { MatchMakingService } from './matchmaking.services';
 export class MatchMakingGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
 {
-  @WebSocketServer()
-  server: Server;
+  @WebSocketServer() server: Server;
+  afterInit(server: Server) { console.log('Matchmaking Gateway initialized'); }
 
   constructor(
     private readonly MMService: MatchMakingService,
     ) {  }
 
-  afterInit(server: Server) 
-  {
-    console.log('Matchmaking Gateway initialized');
-  }
 
   async handleConnection(client: Socket) 
   {
@@ -58,22 +54,26 @@ export class MatchMakingGateway
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('queuein')
-  async queuein(@ConnectedSocket() socket: Readonly<any>) {
+  async queuein(@ConnectedSocket() socket: any) {
     try {
       console.log('queue in');
       const user = socket.user;
-
+      
       if (typeof user.userID != 'number') return false;
-
-      this.MMService.queuein(user, socket, this.server);
-
-
+       socket.join("testtt");
+      console.log(this.server.sockets.adapter.rooms);
+      this.server.emit('matchmakingfailed', {room: "testtt", tt:true});
+      this.server.to(socket.user).emit('matchmakingfailed', {
+          message: "matchmaking failed",
+        });
+      
+     // this.MMService.queuein(user, socket, this.server);
     } catch (error) {
+      this.server.emit('matchmakingfailed', {room: "testtt", tt:true});
       console.log('matchmaking failed');
-      this.server.to(socket.user.room).emit('matchmakingfailed', {
-        message: "matchmaking failed"
-      });
-      throw new WsException(error);
+      //this.server.to(socket.user.room).emit('matchmakingfailed', {
+      //  message: "matchmaking failed"
+      //});
     }
   }
 
@@ -95,7 +95,6 @@ export class MatchMakingGateway
       this.server.to(socket.user.room).emit('queueoutfailed', {
         message: "queue out failed"
       });
-      throw new WsException(error);
     }
   }
 
@@ -115,7 +114,6 @@ export class MatchMakingGateway
       this.server.to(socket.user.room).emit('acceptMMmatchFailed', {
         message: "accept MM match failed"
       });
-      throw new WsException(error);
     }
   }
 
@@ -135,7 +133,6 @@ export class MatchMakingGateway
       this.server.to(socket.user.room).emit('declineMMmatchFailed', {
         message: "decline match failed"
       });
-      throw new WsException(error);
     }
   }
 
@@ -151,7 +148,6 @@ export class MatchMakingGateway
       this.server.to(socket.user.room).emit('disconnect MM failed', {
         message: "disconnect MM fail"
       });
-      throw new WsException(error);
     }
   }
 }

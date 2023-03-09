@@ -45,7 +45,7 @@ private mm = new FifoMatchmaker(this.runGame, { checkInterval: 2000 });
     //if not, add to queue
     //if yes, throw error
   
-    this.mm.push(user.userID);
+   // this.mm.push(user.userID);
   }
 
   queueout(user: TokenUser) {

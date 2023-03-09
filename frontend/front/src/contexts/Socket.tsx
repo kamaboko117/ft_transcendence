@@ -1,6 +1,6 @@
 import io, { Socket } from 'socket.io-client';
 import React, { createContext, Dispatch, useEffect, useState } from 'react';
-
+import { FetchError} from '../components/FetchError';
 //const token: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");;
 
 export let usrSocket = io("http://" + location.host, {
@@ -28,6 +28,7 @@ export const SocketProvider = (props: any) => {
         setToken: setToken,
         usrSocket: usrSocket
     }
+    const [errorCode, setErrorCode] = useState<number>(200);
     useEffect(() => {
         usrSocket = io("http://" + location.host, {
             withCredentials: true,
@@ -35,9 +36,22 @@ export const SocketProvider = (props: any) => {
                 authorization: String(token)
             }
         });
-    }, [token])
+        usrSocket.on('exception', (res) => {
+            if (res.status === "error" && res.message === "Token not valid"){
+                setErrorCode(403)
+                console.log("Token not valid");
+            }
+            else
+            {
+                console.log("Fatal Error");
+                setErrorCode(500);
+            }
+        })
+    }, [token]);
+    
     return (
         <SocketContext.Provider value={context}>
+            {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}
             {props.children}
         </SocketContext.Provider>
     )
