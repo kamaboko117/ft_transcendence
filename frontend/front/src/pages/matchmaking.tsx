@@ -52,6 +52,27 @@ export default function MatchmakingPage() {
   const [count, setCount] = useState(0);
   const {usrSocket} = useContext(SocketContext);
 
+  const findMatch = () => {
+    console.log("start queue in");
+    console.log(usrSocket.id);
+    usrSocket.emit("queuein",  (res) => {
+      console.log("res: ");
+      console.log(res);
+    });
+  }
+  
+  const declineMatch = () => {
+    usrSocket.emit("declineMMmatch");
+  }
+  
+  const acceptMatch = () => {
+    usrSocket.emit("acceptMMmatch");
+  }
+  
+  const stopFindingMatch = () => {
+    usrSocket.emit("queueout");
+  }
+
   type MMState = "ACCEPTED" | "DECLINED";
 
   const cancelRef = React.useRef(null);
@@ -78,11 +99,12 @@ export default function MatchmakingPage() {
       usrSocket.off('matchmakingfailed');
   })
   }, []);
+
   const startMatching = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     enterQueue(true);
     try {
-      findMatch(usrSocket);
+      findMatch();
     } catch (e) {
       toast({
         id: toastId,
@@ -98,13 +120,13 @@ export default function MatchmakingPage() {
   //In both cases, an alert is supposed to show up and it's dismissed
   const refuseMatch = () => {
     //user refused the match found by queue;
-    declineMatch(usrSocket);
+    declineMatch();
     closeAlert();
   };
 
   const acceptMatchFt = () => {
     //user accepted the match found by queue
-    acceptMatch(usrSocket);  
+    acceptMatch();  
     closeAlert();
   };
 

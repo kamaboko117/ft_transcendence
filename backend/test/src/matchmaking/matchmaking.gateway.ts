@@ -72,10 +72,10 @@ export class MatchMakingGateway
 //      console.log(this.server.sockets.adapter.rooms);
 
       console.log("socket id: " + socket.id);
-      //this.server.to(socket.id).emit('matchmakingfailed', true);
-      this.server.emit('matchmakingfailed', {
-          message: socket.id,
-       });
+      this.server.to(socket.id).emit('matchmakingfailed', true);
+      //this.server.emit('matchmakingfailed', {
+      //    message: socket.id,
+//       });
       
       this.MMService.queuein(user, socket, this.server);
     } catch (error) {
