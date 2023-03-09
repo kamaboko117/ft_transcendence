@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '../chat/chat.interface';
+import { TokenUser } from '../chat/chat.interface';
 import { Server } from 'socket.io';
 
 const { FifoMatchmaker } = require('matchmaking');
@@ -14,7 +14,7 @@ type Match = {
 @Injectable()
 export class MatchMakingService {
 
-private mmQueue: { [key: string]: User[] } = {};
+private mmQueue: { [key: string]: TokenUser[] } = {};
 private mm = new FifoMatchmaker(this.runGame, { checkInterval: 2000 });
 
   runGame(players : any) {
@@ -24,7 +24,7 @@ private mm = new FifoMatchmaker(this.runGame, { checkInterval: 2000 });
 
   constructor() {}
 
-  private createMatch(player1: User, player2: User) {
+  private createMatch(player1: TokenUser, player2: TokenUser) {
     //create match if handmade here?
     //send match to both players
     //remove players from queue
@@ -36,7 +36,7 @@ private mm = new FifoMatchmaker(this.runGame, { checkInterval: 2000 });
   faire
   server.to(user.room).emit('message', { user: user.name, text: message });
 */
-  queuein(user: User, socket: Readonly<any>, server: Server) {
+  queuein(user: TokenUser, socket: Readonly<any>, server: Server) {
     //check if player is already in match
     //if not, add to match
     //if yes, throw error
@@ -48,14 +48,14 @@ private mm = new FifoMatchmaker(this.runGame, { checkInterval: 2000 });
     this.mm.push(user.userID);
   }
 
-  queueout(user: User) {
+  queueout(user: TokenUser) {
     //check if player is in queue
     //if yes, remove from queue
     //if no, throw error
     this.mm.leaveQueue(user.userID);
   }
 
-  async acceptMatch(user: User) {
+  async acceptMatch(user: TokenUser) {
     //check if player is in match
     //if yes, change match status to accepted
     //if no, throw error
@@ -63,14 +63,14 @@ private mm = new FifoMatchmaker(this.runGame, { checkInterval: 2000 });
 
   }
 
-  declineMatch(user: User) {
+  declineMatch(user: TokenUser) {
     //check if player is in made match
     //if yes, change match status to declined
     //if no, throw error
     
   }
 
-  private bothcheck(player1: User, player2: User) {
+  private bothcheck(player1: TokenUser, player2: TokenUser) {
     //check if both players are accepted
     //if yes, return true
     //if no, return false

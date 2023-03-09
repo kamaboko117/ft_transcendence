@@ -27,7 +27,7 @@ import {
   NotImplementedException,
 } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/jwt.guard';
-import { User } from '../chat/chat.interface';
+import { TokenUser } from '../chat/chat.interface';
 import { MatchMakingService } from './matchmaking.services';
 
 
@@ -70,9 +70,8 @@ export class MatchMakingGateway
 
     } catch (error) {
       console.log('matchmaking failed');
-      this.server.to(error.response.recipient).emit('matchmakingfailed', {
-        message: error.response.message,
-        match: error.response.match,
+      this.server.to(socket.user.room).emit('matchmakingfailed', {
+        message: "matchmaking failed"
       });
       throw new WsException(error);
     }
@@ -93,9 +92,8 @@ export class MatchMakingGateway
 
     } catch (error) {
       console.log('leaving queue failed');
-      this.server.to(error.response.recipient).emit('queueoutfailed', {
-        message: error.response.message,
-        match: error.response.match,
+      this.server.to(socket.user.room).emit('queueoutfailed', {
+        message: "queue out failed"
       });
       throw new WsException(error);
     }
@@ -114,9 +112,8 @@ export class MatchMakingGateway
 
     } catch (error) {
       console.log('accept match failed');
-      this.server.to(error.response.recipient).emit('acceptMMmatchfailed', {
-        message: error.response.message,
-        match: error.response.match,
+      this.server.to(socket.user.room).emit('acceptMMmatchFailed', {
+        message: "accept MM match failed"
       });
       throw new WsException(error);
     }
@@ -135,26 +132,24 @@ export class MatchMakingGateway
 
     } catch (error) {
       console.log('decline match failed');
-      this.server.to(error.response.recipient).emit('declineMMmatchfailed', {
-        message: error.response.message,
-        match: error.response.match,
+      this.server.to(socket.user.room).emit('declineMMmatchFailed', {
+        message: "decline match failed"
       });
       throw new WsException(error);
     }
   }
 
   @UseGuards(JwtGuard)
-  handleDisconnect(client: Socket) {
+  handleDisconnect(@ConnectedSocket() socket: Readonly<any>) {
     try {
       // leave the page? = leave queue
 
-
+      const user = socket.user;
       
     } catch (error) {
       console.log('disconnect MM failed');
-      this.server.to(error.response.recipient).emit('disconnectMMfailed', {
-        message: error.response.message,
-        match: error.response.match,
+      this.server.to(socket.user.room).emit('disconnect MM failed', {
+        message: "disconnect MM fail"
       });
       throw new WsException(error);
     }
