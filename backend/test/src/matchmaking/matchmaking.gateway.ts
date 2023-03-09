@@ -32,7 +32,9 @@ import { MatchMakingService } from './matchmaking.services';
 
 
 @WebSocketGateway({
-  namespace: 'matchmaking',
+  cors: {
+    origin: "http://127.0.0.1:4000/ ", credential: true
+  }
 })
 export class MatchMakingGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
@@ -42,7 +44,6 @@ export class MatchMakingGateway
 
   constructor(
     private readonly MMService: MatchMakingService,
-    private readonly jwtService: JwtService
     ) {  }
 
   afterInit(server: Server) 
@@ -64,7 +65,7 @@ export class MatchMakingGateway
 
       if (typeof user.userID != 'number') return false;
 
-      this.MMService.queuein(user);
+      this.MMService.queuein(user, socket, this.server);
 
 
     } catch (error) {

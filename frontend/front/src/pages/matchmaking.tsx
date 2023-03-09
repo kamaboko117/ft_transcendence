@@ -21,8 +21,9 @@ import {
   AlertDialogFooter,
   Button,
 } from "@chakra-ui/react";
-
-
+//import {MMClass} from "../components/matchmaking/matchmakingsocket";
+import {findMatch, declineMatch, acceptMatch, stopFindingMatch} from "../components/matchmaking/matchmakingsocket"
+import { FetchError, header, headerPost } from '../components/FetchError';
 //location.host = "localhost:4000"
 
 //client 192.168.1.31:4000
@@ -61,9 +62,21 @@ export default function MatchmakingPage() {
     onClose: closeAlert,
   } = useDisclosure();
 
-  const [Queue, enterQueue] = useState(false);
 
-  useEffect(() => {});
+  useEffect(() => {
+    usrSocket.on('exception', (res) => {
+      console.log("err");
+      console.log(res);
+      if (res.status === "error" && res.message === "Token not valid")
+          setErrorCode(403);
+      else
+          setErrorCode(500);
+      
+  }) 
+  }, []);
+
+  const [errorCode, setErrorCode] = useState<number>(200);
+  const [Queue, enterQueue] = useState(false);
 
   const onQueuePop = () => {
     openAlert();
@@ -73,7 +86,7 @@ export default function MatchmakingPage() {
     e.preventDefault();
     enterQueue(true);
     try {
-      //find match function?
+      findMatch(usrSocket);
     } catch (e) {
       toast({
         id: toastId,
@@ -89,15 +102,18 @@ export default function MatchmakingPage() {
   //In both cases, an alert is supposed to show up and it's dismissed
   const refuseMatch = () => {
     //user refused the match found by queue;
+    declineMatch(usrSocket);
     closeAlert();
   };
 
-  const acceptMatch = () => {
+  const acceptMatchFt = () => {
     //user accepted the match found by queue
+    acceptMatch(usrSocket);  
     closeAlert();
   };
-
   return (
+    <>
+    {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}
     <div className="matchmakingPage">
       <Button onClick={startMatching}>
         <Flex alignItems={"center"}>
@@ -131,7 +147,7 @@ export default function MatchmakingPage() {
           <AlertDialogCloseButton />
           <AlertDialogBody>Are you ready for the next battle?</AlertDialogBody>
           <AlertDialogFooter>
-            <Button color="#f194ff" onClick={acceptMatch}>
+            <Button color="#f194ff" onClick={acceptMatchFt}>
               Accept
             </Button>
             <Button color="#f194ff" onClick={refuseMatch}></Button>
@@ -139,5 +155,6 @@ export default function MatchmakingPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </>
   );
 }
