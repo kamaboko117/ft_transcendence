@@ -1,0 +1,24 @@
+.userInfo {
+    display: none;
+    flex-direction: column;
+    width: 200px;
+    background-color: red;
+}
+
+label.userInfo {
+    text-align: center;
+}
+
+.userInfoClick {
+    z-index: 2;
+    display: inline-flex;
+}
+
+.userInfoClick>* {
+    display: inline-flex;
+}
+
+img.avatar {
+    height: 50%;
+    max-width: 200px;
+}

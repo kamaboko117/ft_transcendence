@@ -32,7 +32,6 @@ function MainPage() {
       </div>
     )
   }
-
   return (
     <div className={classes.splash_middle}>
       <span>{app_uri}</span>

@@ -4,6 +4,7 @@ import { User } from "src/typeorm";
 import { Repository } from "typeorm";
 import { CreateUserDto } from "src/users/dto/users.dtos";
 import { randomBytes } from "crypto";
+import { Stat } from "src/typeorm/stat.entity";
 
 const validateURL = "https://api.intra.42.fr/oauth/token"
 const infoURL = "https://api.intra.42.fr/oauth/token/info"
@@ -14,13 +15,36 @@ const appSecret = process.env.APP_SECRET!;
 export class UsersService {
     constructor(
         @InjectRepository(User)
-        private readonly userRepository: Repository<User>
+        private readonly userRepository: Repository<User>,
+        @InjectRepository(Stat)
+        private readonly statRepository: Repository<Stat>,
     ) { }
 
+    /*
+        consulte ca pour t'aider :
+        https://orkhan.gitbook.io/typeorm/docs/select-query-builder
+        UTILISE CA POUR AJOUTER LA FRIEND LIST ET BLACK LIST
+        await this.listUserRepository
+        .createQueryBuilder()
+        .insert()
+        .into(ListUser) << modifier pour les entites
+        .values([{
+            user_id: user_id, << modifier dans values
+            chatid: data.id
+        }])
+        .execute();
+    */
     async createUser(createUserDto: CreateUserDto) {
         const newUser = this.userRepository.create(createUserDto);
-        //newUser.token = randomBytes(64).toString('hex');
-        this.userRepository.save(newUser)
+        const stat = new Stat();
+
+        stat.defeat = 0;
+        stat.level = 0;
+        stat.nb_games = 0;
+        stat.rank = 0;
+        stat.user = newUser;
+        stat.victory = 0;
+        this.statRepository.save(stat);
         return (newUser);
     }
 
@@ -59,7 +83,6 @@ export class UsersService {
         if (typeof token == "undefined")
             return (undefined);
         return (token);
-        //return (undefined);
     }
     async getInformationBearer(token: { access_token: string, refresh_token: string }): Promise<number> {
         const res = await fetch(infoURL, {
@@ -69,55 +92,18 @@ export class UsersService {
         }).then(res => res.json());
         return (res.resource_owner_id);
 	}
-/*
-    //ne pas toucher à cette fonction
-    async validateUser(code: string) {
-        console.log("ALLO");
-        const formData = new FormData();
-        formData.append("grant_type", "authorization_code");
-        formData.append("client_id", appId);
-        formData.append("client_secret", appSecret);
-        formData.append("code", code);
-        formData.append("redirect_uri", "http://localhost:4000/validate");
-        formData.append("state", "pouet2");
-        console.log(formData);
-
-        let res = await fetch(validateURL, {
-            method: "POST",
-            body: formData
-        })
-        // console.log(res);
-        let resJSON = await res.json();
-        console.log("resJson: " + resJSON);
-        const token = resJSON.access_token;
-        console.log(`token: ${token}`);
-        if (typeof token == "undefined")
-            return ([false, -1]);
-        res = await fetch(infoURL, {
-            headers: {
-                authorization: `Bearer ${token}`
-            }
-        })
-        //undefined part
-        resJSON = await res.json();
-        return (resJSON);
-        /*
-        if (typeof token == "undefined")
-            return ([false, undefined]);
-        const id: number = resJSON.resource_owner_id;
-        console.log(`id: ${id}`);
-        const user = await this.userRepository.findOneBy({userID: id});
-        if (user && user.username) {
-            return [true, user];
-        }
-    
-        return [false, id];*/
-    //}*/
-//
     getUsers() {
         return this.userRepository.find();
     }
 
+    async updatePathAvatarUser(user_id: number, path: string) {
+        this.userRepository.createQueryBuilder()
+            .update(User)
+            .set({avatarPath: path})
+            .where("user_id = :id")
+            .setParameters({id: user_id})
+            .execute()
+        }
     /*
         exemple requete sql avec un innerjoin facon typeorm
         createQueryBuilder("list_msg")
@@ -129,22 +115,33 @@ export class UsersService {
         .getMany() OU getOne();
     */
     async getUserProfile(id: number) {
-        const user: any = await this.userRepository.createQueryBuilder("user")
-            .select(['user.username', 'user.token', 'user.userID', 'user.avatarPath'])
-            .where('user.user_id = :user')
-            .setParameters({ user: id })
+        const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
+            .select(['user.username', 'user.userID', 'user.avatarPath'])
+            .addSelect(["Stat.victory", "Stat.defeat",
+                "Stat.nb_games", "Stat.level", "Stat.rank"])//ici ajout les column des inner joins
+            .innerJoin('user.sstat', 'Stat')// utiliser l''alias a droite, obligatoire je crois
+            .where('user.user_id = :user') //:user = setParameters()
+            .setParameters({ user: id })//anti hack
             .getOne();
+        console.log();
         return (user);
-        //return this.userRepository.findOneBy({id: id});
     }
 
-    async findUsersById(id: number) {
-        const user: any = await this.userRepository.createQueryBuilder("user")
-            .select(['user.username', 'user.token', 'user.userID', 'user.avatarPath'])
+    async findUsersById(id: number) { 
+        const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
+            .select(['user.username', 'user.userID', 'user.avatarPath'])
             .where('user.user_id = :user')
             .setParameters({ user: id })
             .getOne();
         return (user);
-        //return this.userRepository.findOneBy({id: id});
+    }
+
+    async findUserByName(username: string) {
+        const user: User | null = await this.userRepository.createQueryBuilder("user")
+            .select(["user.userID", "user.username"])
+            .where('user.username = :name')
+            .setParameters({ name: username })
+            .getOne();
+        return (user);
     }
 }
