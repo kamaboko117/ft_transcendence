@@ -141,63 +141,18 @@ export default function Game() {
     drawCircle(ctx, ball.x, ball.y, ball.radius, ball.color);
   }
 
-  function collision(player: IPlayer, ball: any) {
-    player.top = player.y;
-    player.bottom = player.y + player.height;
-    player.left = player.x;
-    player.right = player.x + player.width;
-
-    ball.top = ball.y - ball.radius;
-    ball.bottom = ball.y + ball.radius;
-    ball.left = ball.x - ball.radius;
-    ball.right = ball.x + ball.radius;
-
-    return (
-      ball.left < player.right &&
-      ball.top < player.bottom &&
-      ball.right > player.left &&
-      ball.bottom > player.top
-    );
-  }
-
-  function resetBall() {
-    ball.x = CANVAS_WIDTH / 2;
-    ball.y = CANVAS_HEIGHT / 2;
-    ball.speed = 5;
-    ball.velocityX = -ball.velocityX;
-  }
-
-  function update() {
-    ball.x += ball.velocityX;
-    ball.y += ball.velocityY;
-    if (ball.y + ball.radius > CANVAS_HEIGHT || ball.y - ball.radius < 0) {
-      ball.velocityY = -ball.velocityY;
-    }
-    let player = ball.x < CANVAS_WIDTH / 2 ? player1 : player2;
-    if (collision(player, ball)) {
-      let collidePoint = ball.y - (player.y + player.height / 2);
-      collidePoint = collidePoint / (player.height / 2);
-      let angleRad = (Math.PI / 4) * collidePoint;
-      let direction = ball.x + ball.radius < CANVAS_WIDTH / 2 ? 1 : -1;
-      ball.velocityX = direction * ball.speed * Math.cos(angleRad);
-      ball.velocityY = ball.speed * Math.sin(angleRad);
-      ball.speed += 0.1;
-    }
-    if (ball.x - ball.radius < 0) {
-      player2.score++;
-      resetBall();
-    } else if (ball.x + ball.radius > CANVAS_WIDTH) {
-      player1.score++;
-      resetBall();
-    }
-  }
-
   const handleReceivedUpdate = () => {
     let player = side === 1 ? player2 : player1;
     if (socketService.socket) {
       gameService.onGameUpdate(socketService.socket, (data: any) => {
         console.log(data);
-        player.y = data.player.y;
+        player.y = side === 1 ? data.player2.y : data.player1.y;
+        player1.score = data.player1.score;
+        player2.score = data.player2.score;
+        ball.x = data.ball.x;
+        ball.y = data.ball.y;
+        ball.velocityX = data.ball.velocityX;
+        ball.velocityY = data.ball.velocityY;
       });
     }
   };
@@ -208,7 +163,7 @@ export default function Game() {
     if (!rect) return;
     player.y = e.clientY - rect.top - player.height / 2;
     if (socketService.socket)
-      gameService.updateGame(socketService.socket, { player });
+      gameService.updatePlayerPosition(socketService.socket, { side: side, y: player.y });
   }
 
   useEffect(() => {
@@ -223,7 +178,6 @@ export default function Game() {
     }
     function game() {
       if (!ctx) return;
-      update();
       render(ctx, player1, player2);
     }
     console.log("d");
