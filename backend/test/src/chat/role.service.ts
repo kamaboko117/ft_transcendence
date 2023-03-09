@@ -19,38 +19,72 @@ export class RoleService {
         @InjectRepository(ListMute)
         private listMuteRepository: Repository<ListMute>;
 
-        constructor(private dataSource: DataSource, private roleGateway: RoleGateway) {}
+        constructor(private dataSource: DataSource, private roleGateway: RoleGateway) { }
 
         /* id == idChannel */
         getOwner(id: Readonly<string>): Promise<Channel | null> {
                 const channel: Promise<Channel | null> = this.chatsRepository.createQueryBuilder("channel")
-                .where("channel.id = :id")
-                .setParameters({id: id})
-                .getOne();
+                        .where("channel.id = :id")
+                        .setParameters({ id: id })
+                        .getOne();
                 return (channel)
         }
 
         getRole(id: Readonly<string>, userId: Readonly<number>): Promise<ListUser | null> {
                 const list_user: Promise<ListUser | null> = this.listUserRepository.createQueryBuilder("list_user")
-                .where("list_user.chatid = :id")
-                .andWhere("list_user.user_id = :userId")
-                .setParameters({id: id, userId: userId})
-                .getOne()
+                        .where("list_user.chatid = :id")
+                        .andWhere("list_user.user_id = :userId")
+                        .setParameters({ id: id, userId: userId })
+                        .getOne()
                 return (list_user);
         }
 
         getUser(id: Readonly<string>, userId: Readonly<number>): Promise<ListUser | null> {
                 return (
                         this.listUserRepository.createQueryBuilder("list_user")
-                        .where("list_user.chatid = :id")
-                        .andWhere("list_user.user_id = :userId")
-                        .setParameters({id: id, userId: userId})
-                        .getOne()
+                                .where("list_user.chatid = :id")
+                                .andWhere("list_user.user_id = :userId")
+                                .setParameters({ id: id, userId: userId })
+                                .getOne()
                 );
         }
 
-        async banUser(id: Readonly<string>, userId: Readonly<number>, time: Readonly<number>) {
+        async banUser(id: Readonly<string>, user_id: Readonly<number>,
+                time: Readonly<number>) {
+                const runner = this.dataSource.createQueryRunner();
 
+                await runner.connect();
+                await runner.startTransaction();
+                try {
+                        const user: ListUser | null = await this.getUser(id, user_id);
+                        if (!user) {
+                                throw new NotFoundException("User not found, couldn't grant user.");
+                        }
+                        await this.listBanRepository.createQueryBuilder()
+                                .insert()
+                                .into(ListBan)
+                                .values({
+                                        time: Date.now() + (time * 1000),
+                                        user_id: user_id,
+                                        chatid: id
+                                }).execute();
+                        await this.listUserRepository
+                                .createQueryBuilder()
+                                .delete()
+                                .from(ListUser)
+                                .where("chatid = :id")
+                                .setParameters({ id: id })
+                                .andWhere("user_id = :user_id")
+                                .setParameters({ user_id: user_id })
+                                .execute();
+                        await runner.commitTransaction();
+                        this.roleGateway.updateListChat(id);
+                } catch (e) {
+                        await runner.rollbackTransaction();
+                } finally {
+                        //doc want it released
+                        await runner.release();
+                }
         }
         /* run transaction
                 find the future user granted
@@ -68,9 +102,9 @@ export class RoleService {
                                 throw new NotFoundException("User not found, couldn't grant user.");
                         }
                         await this.listUserRepository.createQueryBuilder().update(ListUser)
-                                .set({role: newRole})
+                                .set({ role: newRole })
                                 .where("id = :id")
-                                .setParameters({id: user.id})
+                                .setParameters({ id: user.id })
                                 .execute();
                         await runner.commitTransaction();
                         this.roleGateway.updateListChat(id);

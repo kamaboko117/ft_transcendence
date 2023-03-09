@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FetchError, header, headerPost } from '../FetchError';
 
 type typeUserInfo = {
@@ -21,6 +21,13 @@ type typeShortProps = {
     jwt: string,
     focusUserId: number
 }
+type typeFetchToBack = {
+    channelId: string,
+    action: string,
+    jwt: string,
+    userId: number,
+    time: number
+}
 
 const handleClick = (event: React.MouseEvent<HTMLButtonElement>, channelId: string,
     action: string, jwt: string, userId: number) => {
@@ -32,7 +39,18 @@ const handleClick = (event: React.MouseEvent<HTMLButtonElement>, channelId: stri
         body: JSON.stringify({
             id: channelId, action: action, time: 0, userId: userId
         })
-    })
+    });
+}
+
+const fetchToBackWithTimer = (elem: typeFetchToBack) => {
+    fetch('http://' + location.host + '/api/chat-role/role-action', {
+        method: 'post',
+        headers: headerPost(elem.jwt),
+        body: JSON.stringify({
+            id: elem.channelId, action: elem.action,
+            time: elem.time, userId: elem.userId
+        })
+    });
 }
 
 /*
@@ -44,7 +62,7 @@ const handleClick = (event: React.MouseEvent<HTMLButtonElement>, channelId: stri
         Bannir(durée déterminée)/ kick (durée temps actuel kick - cur == dékick) / mute (durée déterminée), mais pas les owners
 */
 
-const GrantAdmin = (props: {shortPropsVariable: typeShortProps}) => {
+const GrantAdmin = (props: { shortPropsVariable: typeShortProps }) => {
     //Need to load current chosen user privilege
     const values = props.shortPropsVariable;
     const privilege = (values.role !== "Administrator" ? "Grant" : "Remove");
@@ -52,39 +70,81 @@ const GrantAdmin = (props: {shortPropsVariable: typeShortProps}) => {
     return (<button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
         handleClick(e, values.channelId, privilege,
             values.jwt, values.focusUserId)} className="adminInfoUser">
-            { privilege } admin privileges
-        </button>);
+        {privilege} admin privileges
+    </button>);
 }
 
 const handleBan = (event: React.MouseEvent<HTMLButtonElement>,
-    setTime: React.Dispatch<React.SetStateAction<string>>, time: string) => {
+    setTime: React.Dispatch<React.SetStateAction<string | null>>,
+    ref: React.RefObject<HTMLInputElement>,
+    time: string | null) => {
+    event.preventDefault();
     const target: HTMLElement = event.target as HTMLElement;
 
-    if (target && time === "-1")
+    if (target && time === null) {
         setTime("0");
-    else
-        setTime("-1");
+        if (ref && ref.current)
+            ref.current.value = "0";
+    }
+    else {
+        setTime(null);
+        if (ref && ref.current)
+            ref.current.value = "";
+    }
 }
 
-const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+const handleSubmit = (event: React.FormEvent<HTMLFormElement>,
+    time: number,
+    setTime: React.Dispatch<React.SetStateAction<string | null>>,
+    ref: React.RefObject<HTMLInputElement>,
+    elem: typeFetchToBack) => {
+    event.preventDefault();
     const target: HTMLElement = event.target as HTMLElement;
+
+    if (isNaN(time) || typeof time != "number") {
+        setTime("Not a number");
+        if (ref && ref.current)
+            ref.current.value = "Not a number";
+        return;
+    }
+    setTime("User banned");
+    //fetch (ban) data to backend
+    fetchToBackWithTimer({
+        channelId: elem.channelId,
+        action: "Ban",
+        jwt: elem.jwt,
+        userId: elem.userId,
+        time: time
+    });
+    if (ref && ref.current)
+        ref.current.value = "User banned";
 }
 
-const BanUser = () => {
-    const [time, setTime] = useState<string>("-1");
-
-    if (Number(time) >= 0)
+const BanUser = (props: { shortPropsVariable: typeShortProps }) => {
+    const [time, setTime] = useState<string | null>(null);
+    const refElem = useRef<HTMLInputElement>(null);
+    const object: typeFetchToBack = {
+        channelId: props.shortPropsVariable.channelId,
+        action: "Ban",
+        jwt: props.shortPropsVariable.jwt,
+        userId: props.shortPropsVariable.focusUserId,
+        time: 0
+    }
+    if (time != null) {
         return (<>
             <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-                handleBan(e, setTime, time)} className="adminInfoUser">Ban user</button>
-            <form className='adminBox' onSubmit={handleSubmit}>
-                <input type="text" onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setTime(e.currentTarget.value)}/>
+                handleBan(e, setTime, refElem, time)} className="adminInfoUser">Ban user</button>
+            <form className='adminBox' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
+                handleSubmit(e, Number(time), setTime, refElem, object)}>
+                <input ref={refElem} type="text"
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setTime(e.currentTarget.value)} />
             </form>
         </>
         );
+    }
     return (<button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-        handleBan(e, setTime, time)} className="adminInfoUser">Ban user</button>);
+        handleBan(e, setTime, refElem, time)} className="adminInfoUser">Ban user</button>);
 }
 
 const MuteUser = () => {
@@ -97,8 +157,10 @@ const KickUser = () => {
 
 
 
-const AdminButtons = (props: {id: string, role: string | null, focusUserId: number,
-    userId: number | undefined, userInfo: typeUserInfo, jwt: string }) => {
+const AdminButtons = (props: {
+    id: string, role: string | null, focusUserId: number,
+    userId: number | undefined, userInfo: typeUserInfo, jwt: string
+}) => {
     const role: string | null = props.role;
     let haveAdminGrant: boolean = false;
     const shortPropsVariable = {
@@ -116,9 +178,9 @@ const AdminButtons = (props: {id: string, role: string | null, focusUserId: numb
     return (
         <>
             {role && role === "Owner" && <GrantAdmin shortPropsVariable={shortPropsVariable} />}
-            {haveAdminGrant && <BanUser/>}
-            {haveAdminGrant && <MuteUser/>}
-            {haveAdminGrant && <KickUser/>}
+            {haveAdminGrant && <BanUser shortPropsVariable={shortPropsVariable} />}
+            {haveAdminGrant && <MuteUser />}
+            {haveAdminGrant && <KickUser />}
         </>
     )
 }
@@ -132,34 +194,32 @@ const AdminComponent = (props: AdminCompType) => {
             fetch('http://' + location.host + '/api/chat-role/getRole?' + new URLSearchParams({
                 id: props.id,
             }), { headers: header(props.jwt) })
-            .then(res => {
-                if (res.ok)
-                    return (res.json());
-                props.setErrorCode(res.status)
-            })
-            .then((res) => {
-                if (res.role)
-                {
-                    setUserId(res.userId);
-                    setRole(res.role);
-                }
-                else
-                {
-                    setUserId(res.userId);
-                    setRole("");
-                }
-            });
+                .then(res => {
+                    if (res.ok)
+                        return (res.json());
+                    props.setErrorCode(res.status)
+                })
+                .then((res) => {
+                    if (res && res.role) {
+                        setUserId(res.userId);
+                        setRole(res.role);
+                    }
+                    else {
+                        setUserId(0);
+                        setRole("");
+                    }
+                });
         };
         //check if userInfo box is displayed on client
         if (props.chooseClassName === "userInfo userInfoClick")
             getRole();
-        return (() => {})
+        return (() => { })
     }, [props.chooseClassName])
     return (
         <>
             {role && (role === "Owner" || role === "Administrator")
                 && <AdminButtons id={props.id} focusUserId={props.userId}
-                        userId={userId} role={role} userInfo={props.userInfo} jwt={props.jwt} />}
+                    userId={userId} role={role} userInfo={props.userInfo} jwt={props.jwt} />}
         </>
     );
 }
