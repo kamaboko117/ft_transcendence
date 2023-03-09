@@ -62,19 +62,6 @@ export default function MatchmakingPage() {
     onClose: closeAlert,
   } = useDisclosure();
 
-
-  useEffect(() => {
-    usrSocket.on('exception', (res) => {
-      console.log("err");
-      console.log(res);
-      if (res.status === "error" && res.message === "Token not valid")
-          setErrorCode(403);
-      else
-          setErrorCode(500);
-      
-  }) 
-  }, []);
-
   const [errorCode, setErrorCode] = useState<number>(200);
   const [Queue, enterQueue] = useState(false);
 
@@ -111,6 +98,17 @@ export default function MatchmakingPage() {
     acceptMatch(usrSocket);  
     closeAlert();
   };
+
+  useEffect(() => {
+    console.log("load exception listener");
+    usrSocket.on("matchmakingfailed", (res: any) => {
+      console.log(res);
+  });
+  return (() => {
+    console.log("unload exception listener");
+      usrSocket.off('matchmakingfailed');
+  })
+  }, []);
   return (
     <>
     {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}

@@ -16,7 +16,7 @@ export const FetchError = (props: { code: number }) => {
         }
         else if (props.code >= 400)
             throw new Error('Something went wrong while fetching data');
-    })
+    }, [])
     return (<></>);
 }
 
