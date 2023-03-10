@@ -9,10 +9,6 @@ type userInput = {
 	avatar: string,
 }
 
-function SubmitForm() {
-
-}
-
 function ChangeHandler(event: ChangeEvent<HTMLInputElement>
 	, setFile: React.Dispatch<React.SetStateAction<File | undefined> >) {
 	event.preventDefault();
@@ -24,14 +20,20 @@ function ChangeHandler(event: ChangeEvent<HTMLInputElement>
 	}
 }
 
-function FirstConnectionPage() {
+function UploadForm(event: FormEvent<HTMLFormElement>,
+					fileSet: File | undefined,
+					jwt: string | null) {
+
+}
+
+function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 	const [username, setUsername] = useState<string>("");
 	const [FA, setFA] = useState<boolean>(false);
 	const [avatar, setavatar] = useState<string>("");
 	const [file, setFile] = useState<File | undefined>();
 	return(<section>
 		<article>
-			<form /*onSubmit={SubmitForm}*/>
+			<form onSubmit={(event: FormEvent<HTMLFormElement>) => UploadForm(event, file, props.jwt)}>
 				<label htmlFor="username">Username</label><br />
 				<input type="text" id="username" name="username" placeholder="ex: Charly"
 					onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.currentTarget.value)} /><br/><br/>
