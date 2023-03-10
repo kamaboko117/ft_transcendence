@@ -159,7 +159,6 @@ export class SocketEvents {
         console.log("Starting game");
         client.emit("start_game", { side: 1 });
         client.to(data.roomId).emit("start_game", { side: 2 });
-        //we start the game loop and we update the game for 60FPS
         setInterval(() => {
           update();
           client.emit("on_game_update", {
