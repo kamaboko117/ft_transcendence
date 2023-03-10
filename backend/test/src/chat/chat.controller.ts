@@ -232,7 +232,11 @@ export class ChatController {
         if (typeof channel === "undefined" || channel === null)
             return ({});
         const getUser = await this.chatGateway.getUserOnChannel(id, user.userID);
-        if (typeof getUser === "undefined" || getUser === null)
+        console.log(getUser);
+        if (getUser === "Ban")
+            return ({ ban: true });
+        if (typeof getUser === "undefined" || getUser === null
+            || getUser === "Ban")
             return ({});
         let arrayStart: number = channel.lstMsg.length - 5;
         let arrayEnd: number = channel.lstMsg.length;

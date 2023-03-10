@@ -46,16 +46,15 @@ function ValidatePage() {
   }, [jwt])
   if (errorCode >= 400)
     return (<FetchError code={errorCode} />);
-  if (typeof jwt != "undefined" && jwt != null) {
-    console.log(userCtx);
-    return (
-      <div>
-        <h1>Logged as</h1>
-        <UserItem jwt={jwt} /*userID={userCtx.user.userID} username={userCtx.user.username}*/ />
-      </div>
-    );
-  }
-  return (<p>Logging user...</p>);
+  //if (typeof jwt != "undefined" && jwt != null) {
+  // console.log(userCtx);
+  return (
+    <div>
+      <h1>Logged as</h1>
+      <UserItem jwt={jwt} /*userID={userCtx.user.userID} username={userCtx.user.username}*/ />
+    </div>
+  );
+  // }
 }
 
 export default ValidatePage;

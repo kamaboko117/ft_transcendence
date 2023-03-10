@@ -60,15 +60,19 @@ export class RoleService {
                         if (!user) {
                                 throw new NotFoundException("User not found, couldn't grant user.");
                         }
+                        let date = new Date();
+                        date.setSeconds(date.getSeconds() + time);
+                        //ban user
                         await this.listBanRepository.createQueryBuilder()
                                 .insert()
                                 .into(ListBan)
                                 .values({
-                                        time: "NOW()",
+                                        time: date,
                                         user_id: user_id,
                                         chatid: id
                                 })
                                 .execute();
+                        //remove user from channel
                         await this.listUserRepository
                                 .createQueryBuilder()
                                 .delete()
