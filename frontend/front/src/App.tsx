@@ -25,6 +25,7 @@ import UserProfile from "./pages/User/UserProfile";
 import Setting from "./pages/User/Setting";
 import FriendList from "./pages/User/FriendList";
 import BlackList from "./pages/User/BlackList";
+import FirstConnectionPage from "./components/Users/FirstConnectionPage";
 
 import PlayPage from "./pages/play";
 import MatchmakingPage from "./pages/matchmaking";
@@ -79,6 +80,7 @@ function App() {
                 <Route path="/setting" element={<Setting />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/fake-login" element={<FakeLogin />} />
+                <Route path="/first-login" element={<FirstConnectionPage />} />
                 <Route path="/logout" element={<Logout />} />
                 <Route path="/validate" element={<ValidatePage />} />
                 <Route path="/register" element={<CreateNewUser />} />
