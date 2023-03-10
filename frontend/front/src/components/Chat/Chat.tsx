@@ -114,7 +114,7 @@ const MainChat = (props: any) => {
                 props.setErrorCode(403);
             else
                 props.setErrorCode(500);
-        })
+        });
         console.log("mount");
         console.log("START EMIT");
         return (() => {
@@ -154,6 +154,17 @@ const MainChat = (props: any) => {
         if (online === true)
             ft_lst();
         console.log("liste mount");
+        usrSocket.on("actionOnUser", (res: any/*{
+            room: string, user_id: number,
+            user: {
+                username: string, avatarPath: string,
+            }, content: string, type: string
+        }*/) => {
+            console.log(res)
+            if (res.type === "Ban") {
+                setLstMsg((lstMsg) => [...lstMsg, res])
+            }
+        })
         usrSocket.on("sendBackMsg", (res: any) => {
             console.log("msg");
             console.log(res);
@@ -162,6 +173,7 @@ const MainChat = (props: any) => {
         });
         return (() => {
             console.log("liste unmount");
+            usrSocket.off("actionOnUser");
             usrSocket.off("sendBackMsg");
             setLstMsg([]);
             setChatName("");
@@ -219,7 +231,7 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
     , value: string | null, jwt: string | null, id: string,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>): Promise<boolean> => {
     e.preventDefault();
-    console.log("psw: " + value);
+
     if (value === "" || value === null)
         return (false);
     return (await fetch("http://" + location.host + "/api/chat/valid-paswd/", {

@@ -42,8 +42,11 @@ export class RoleService {
         getUser(id: Readonly<string>, userId: Readonly<number>): Promise<ListUser | null> {
                 return (
                         this.listUserRepository.createQueryBuilder("list_user")
+                                .addSelect(["User.username", "User.avatarPath"])
+                                .innerJoin("list_user.user", "User")
                                 .where("list_user.chatid = :id")
                                 .andWhere("list_user.user_id = :userId")
+                                //get username aussi
                                 .setParameters({ id: id, userId: userId })
                                 .getOne()
                 );
@@ -84,6 +87,8 @@ export class RoleService {
                                 .execute();
                         await runner.commitTransaction();
                         this.roleGateway.updateListChat(id);
+                        this.roleGateway.actionOnUser(id, user_id,
+                                user.user.username, user.user.avatarPath, "Ban");
                 } catch (e) {
                         await runner.rollbackTransaction();
                 } finally {
