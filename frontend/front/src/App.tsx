@@ -80,7 +80,7 @@ function App() {
                 <Route path="/setting" element={<Setting />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/fake-login" element={<FakeLogin />} />
-                <Route path="/first-login" element={<FirstConnectionPage />} />
+                <Route path="/first-login" element={<FirstConnectionPage jwt={jwt}/>} />
                 <Route path="/logout" element={<Logout />} />
                 <Route path="/validate" element={<ValidatePage />} />
                 <Route path="/register" element={<CreateNewUser />} />
