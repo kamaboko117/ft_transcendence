@@ -8,8 +8,8 @@ function UserList(props: any) {
                     key={item.id}
                     userID={item.userID}
                     username={item.username}
-                    // email={item.email}
-                    // password={item.password}
+                // email={item.email}
+                // password={item.password}
                 />
             ))}
         </ul>

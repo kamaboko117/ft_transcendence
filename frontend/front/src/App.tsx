@@ -87,7 +87,7 @@ function App() {
                   <Route path=":id" element={<Chat />} />
                 </Route>
                 <Route path="/ws" element={<WebSocketTestGc id={0} />} />
-                <Route path="/play" element={<PlayPage />} />
+                <Route path="/play" element={<PlayPage jwt={jwt} />} />
                 <Route path="/matchmaking" element={<MatchmakingPage />} />
               </Routes>
               {jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
