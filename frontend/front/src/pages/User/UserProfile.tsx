@@ -3,7 +3,7 @@ import { FetchError } from "../../components/FetchError";
 import '../../css/user.css';
 
 type statInfo = {
-	victory; number,
+	victory: number,
 	defeat: number,
 	nb_games: number,
 	level: number,
@@ -99,7 +99,7 @@ function FormUpdateUser(props: {jwt: string,
 const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	if (props.jwt === null)
 		return (<div>Must be logged</div>);
-		const [avatar_path, setavatar_path] = useState<string>("");
+	const [avatar_path, setavatar_path] = useState<string>("");
 	/*
 	const [username, setUsername] = useState<string | null>(null);
 	const [victory, setVictory] = useState<number>();
@@ -126,7 +126,6 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	}, [])
 	if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
-	if (/*OwnUser*/ 1) {
 	return (
 		<>
 		<FormUpdateUser jwt={props.jwt} setavatar_path={setavatar_path}
@@ -141,21 +140,6 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 		</ul>
 		</>
 	);
-	} else {
-		return (
-			<>
-			<h1>Username: {user?.username}</h1>
-			<img className="avatar" src={avatar_path} />
-			<ul>
-				<li>Victoire: {user?.sstat.victory}</li>
-				<li>Défaite: {user?.sstat.defeat}</li>	
-				<li>Rank: {user?.sstat.rank}</li>		
-				<li>Level: {user?.sstat.level}</li>		
-			</ul>
-			</>
-	
-		);
-	 }
 }
 
 export default UserProfile;
