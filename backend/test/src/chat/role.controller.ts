@@ -59,9 +59,11 @@ export class RoleController {
         @Body() body: PostActionDto): Promise<boolean> {
         const user: TokenUser = req.user;
         const action: string = body.action;
-        const getRole = await this.getRole(user.userID, body.id)
+        const getRole = await this.getRole(user.userID, body.id);
+        const getRoleUserFocus = await this.getRole(body.userId, body.id);
 
-        console.log(body);
+        if (!getRoleUserFocus || getRoleUserFocus.role === "Owner")
+            return (false);
         if (!getRole || user.userID === body.userId
             || (getRole.role !== "Owner" && getRole.role !== "Administrator"))
             return (false);

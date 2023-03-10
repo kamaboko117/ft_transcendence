@@ -5,7 +5,7 @@ import {
 import { Socket, Server } from 'socket.io';
 import { CreateChatDto, Owner } from './dto/create-chat.dto';
 import { Chat, InformationChat, DbChat, TokenUser } from './chat.interface';
-import {  IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -68,7 +68,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @InjectRepository(ListMsg)
   private listMsgRepository: Repository<ListMsg>;
 
-  constructor(private dataSource: DataSource) {}
+  constructor(private dataSource: DataSource) { }
 
   async getAllPublic(): Promise<any[]> {
     const arr: Channel[] = await this.chatsRepository
@@ -98,55 +98,55 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   /* PRIVATE MESSAGE PART */
   async getAllPmUser(userID: Readonly<number>) {
-      const subquery = this.chatsRepository
+    const subquery = this.chatsRepository
       .createQueryBuilder("channel").subQuery()
       .from(Channel, "channel")
       .select("channel.id")
       .innerJoin("channel.lstUsr", "ListUser")
       .innerJoin("ListUser.user", "User")
-      .where("channel.accesstype = :type", {type: '4'})
-      .andWhere("ListUser.user_id = :user_id", {user_id: userID})
+      .where("channel.accesstype = :type", { type: '4' })
+      .andWhere("ListUser.user_id = :user_id", { user_id: userID })
 
     const channel: ListUser[] | null = await this.listUserRepository
-        .createQueryBuilder("list_user")
-        .select("list_user.chatid")
-        .addSelect("User.username")
-        .innerJoin("list_user.user", "User")
-        .where("list_user.chatid IN " + subquery.getQuery())
-        .andWhere("list_user.user_id != :user_id")
-        .setParameters({type: '4', user_id: userID})
-        .getMany();
+      .createQueryBuilder("list_user")
+      .select("list_user.chatid")
+      .addSelect("User.username")
+      .innerJoin("list_user.user", "User")
+      .where("list_user.chatid IN " + subquery.getQuery())
+      .andWhere("list_user.user_id != :user_id")
+      .setParameters({ type: '4', user_id: userID })
+      .getMany();
     return (channel)
   }
   /* find and delete duplicate */
   async findDuplicateAndDelete(user_id: Readonly<string>) {
     const channel: {
-      list_user_user_id: string, 
+      list_user_user_id: string,
       Channel_id: string,
       Channel_name: string
     } | undefined = await this.listUserRepository
-    .createQueryBuilder("list_user")
-    .select("list_user.user_id")
-    .addSelect(["Channel.id", "Channel.name"])
-    .innerJoin("list_user.chat", "Channel")
-    .where("list_user.user_id = :id")
-    .setParameters({id: user_id})
-    .andWhere("Channel.accesstype = :type")
-    .setParameters({type: '4'})
-    .groupBy("list_user.user_id")
-    .addGroupBy("Channel.id")
-    .having("COUNT(list_user.user_id) >= :nb", {nb: 2})
-    .orHaving("COUNT(Channel.id) >= :otherNb", {otherNb: 2})
-    .getRawOne()
-    
+      .createQueryBuilder("list_user")
+      .select("list_user.user_id")
+      .addSelect(["Channel.id", "Channel.name"])
+      .innerJoin("list_user.chat", "Channel")
+      .where("list_user.user_id = :id")
+      .setParameters({ id: user_id })
+      .andWhere("Channel.accesstype = :type")
+      .setParameters({ type: '4' })
+      .groupBy("list_user.user_id")
+      .addGroupBy("Channel.id")
+      .having("COUNT(list_user.user_id) >= :nb", { nb: 2 })
+      .orHaving("COUNT(Channel.id) >= :otherNb", { otherNb: 2 })
+      .getRawOne()
+
     if (channel) {
       await this.chatsRepository
-      .createQueryBuilder()
-      .delete()
-      .from(Channel)
-      .where("id = :id")
-      .setParameters({ id: channel.Channel_id })
-      .execute();
+        .createQueryBuilder()
+        .delete()
+        .from(Channel)
+        .where("id = :id")
+        .setParameters({ id: channel.Channel_id })
+        .execute();
     }
   }
 
@@ -253,6 +253,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
     return (channel);
   }
+  /*
+  select user_id
+  from list_ban
+  where user_id = 9699880
+  */
+
+  /*
+  select channel.id, channel.name, channel.accesstype, channel.user_id, "user".username
+  from channel
+  inner join list_user on list_user.chatid = channel.id
+  inner join "user" on "user".user_id = list_user.user_id
+  where channel.id = '0' and "user".user_id = 9699880
+  */
   async getUserOnChannel(id: string, user_id: number) {
     const user: any = await this.chatsRepository
       .createQueryBuilder("channel")
@@ -365,30 +378,28 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     let listUser: ListUser[] = await this.listUserRepository.createQueryBuilder("list_user")
       .select(["list_user.id", "list_user.user_id"])
       .where("list_user.chatid = :id")
-      .setParameters({id: id})
+      .setParameters({ id: id })
       .andWhere("list_user.role = :role")
-      .setParameters({role: 'Administrator'})
+      .setParameters({ role: 'Administrator' })
       .getMany();
-    
-    if (listUser.length === 0)
-    {
+
+    if (listUser.length === 0) {
       listUser = await this.listUserRepository.createQueryBuilder("list_user")
         .select(["list_user.id", "list_user.user_id"])
         .where("list_user.chatid = :id")
-        .setParameters({id: id})
+        .setParameters({ id: id })
         .getMany();
     }
-    if (listUser.length > 0)
-    {
+    if (listUser.length > 0) {
       await this.chatsRepository.createQueryBuilder().update(Channel)
-        .set({user_id: listUser[0].user_id})
+        .set({ user_id: listUser[0].user_id })
         .where("id = :id")
-        .setParameters({id: id})
+        .setParameters({ id: id })
         .execute();
       await this.listUserRepository.createQueryBuilder().update(ListUser)
-        .set({role: "Owner"})
+        .set({ role: "Owner" })
         .where("id = :id")
-        .setParameters({id: listUser[0].id})
+        .setParameters({ id: listUser[0].id })
         .execute();
     }
   }
@@ -396,21 +407,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   /* Delete current owner, and try to set a new one */
   async setNewOwner(userId: number, id: string, ownerId: string) {
     const runner = this.dataSource.createQueryRunner();
-  
+
     await runner.connect();
     await runner.startTransaction();
     try {
       //remove user from channel
       await this.chatsRepository
-      .createQueryBuilder()
-      .delete()
-      .from(ListUser)
-      .where("user_id = :id")
-      .setParameters({ id: userId })
-      .execute();
-      
-      if (Number(ownerId) === userId)
-      {
+        .createQueryBuilder()
+        .delete()
+        .from(ListUser)
+        .where("user_id = :id")
+        .setParameters({ id: userId })
+        .execute();
+
+      if (Number(ownerId) === userId) {
         //try set first admin as owner
         //if no admin, then first user on list channel become owner
         await this.searchAndSetAdministratorsChannel(id);
