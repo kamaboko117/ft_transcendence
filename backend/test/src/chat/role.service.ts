@@ -64,10 +64,11 @@ export class RoleService {
                                 .insert()
                                 .into(ListBan)
                                 .values({
-                                        time: Date.now() + (time * 1000),
+                                        time: "NOW()",
                                         user_id: user_id,
                                         chatid: id
-                                }).execute();
+                                })
+                                .execute();
                         await this.listUserRepository
                                 .createQueryBuilder()
                                 .delete()

@@ -35,7 +35,7 @@ export const ListMsg = (props: any) => {
                 props.lstMsg.slice(arrayLength, props.lstMsg.length).map((msg: any) => (
                     <React.Fragment key={++i}>
                         <div><img src={"/" + msg.user.avatarPath} className="chatBox"
-                                alt={"avatar " + msg.user.username} />
+                            alt={"avatar " + msg.user.username} />
                             <label className="chatBox">{msg.user.username}</label>
                         </div>
                         <span className="chatBox">{msg.content}</span>
@@ -180,7 +180,7 @@ const MainChat = (props: any) => {
             </div>
             <ListMsg lstMsg={lstMsg} />
             <div className="sendMsg">
-                <textarea ref={refElem} id="submitArea"
+                <textarea ref={refElem} id="submitArea" placeholder='Inclure commande deban dans chat'
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMsg(e.currentTarget.value)}
                     onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
                         handleSubmitArea(e,

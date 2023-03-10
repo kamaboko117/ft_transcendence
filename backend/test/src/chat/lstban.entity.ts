@@ -7,8 +7,8 @@ export class ListBan {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ nullable: true, type: 'bigint' })
-    time: number;
+    @Column({ nullable: true, type: 'timestamptz' })
+    time: Date;
 
     @ManyToOne(() => User, (user) => user.lstBan, { nullable: false, cascade: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
