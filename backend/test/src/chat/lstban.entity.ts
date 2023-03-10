@@ -6,7 +6,7 @@ import { User } from '../typeorm/user.entity';
 export class ListBan {
     @PrimaryGeneratedColumn()
     id: number;
-
+    /* z = timezone */
     @Column({ nullable: true, type: 'timestamptz' })
     time: Date;
 

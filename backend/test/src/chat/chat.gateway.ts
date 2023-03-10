@@ -16,6 +16,7 @@ import { ListMute } from './lstmute.entity';
 import { ListUser } from './lstuser.entity';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { UseGuards } from '@nestjs/common';
+import { User } from 'src/typeorm';
 
 type Channel_ret = {
   Channel_id: string
@@ -67,6 +68,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private listUserRepository: Repository<ListUser>;
   @InjectRepository(ListMsg)
   private listMsgRepository: Repository<ListMsg>;
+  @InjectRepository(ListBan)
+  private listBanRepository: Repository<ListBan>;
 
   constructor(private dataSource: DataSource) { }
 
@@ -254,26 +257,50 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return (channel);
   }
   /*
-  select user_id
+  select list_ban.user_id
   from list_ban
-  where user_id = 9699880
+  where list_ban.user_id = 1659745
+and NOW() < list_ban.time
+and list_ban.chatid = '0'
   */
 
   /*
-  select channel.id, channel.name, channel.accesstype, channel.user_id, "user".username
+select channel.id, channel.name, channel.accesstype, channel.user_id, "user".username
   from channel
   inner join list_user on list_user.chatid = channel.id
   inner join "user" on "user".user_id = list_user.user_id
-  where channel.id = '0' and "user".user_id = 9699880
+  where "user".user_id not in (select list_ban.user_id
+  from list_ban
+  where list_ban.user_id = 1659745
+and NOW() < list_ban.time
+and list_ban.chatid = '0') and list_user.user_id = 1659745
+and channel.id = '0'
   */
   async getUserOnChannel(id: string, user_id: number) {
+
+    const listBan: ListBan[] = await this.listBanRepository
+      .createQueryBuilder("list_ban")
+      .select("list_ban.user_id")
+      .where("list_ban.user_id = :user_id")
+      .setParameters({ user_id: user_id })
+      .andWhere("list_ban.time > :time")
+      .setParameters({ time: "NOW()" })
+      .andWhere("list_ban.chatid = :id")
+      .setParameters({ id: id })
+      .getMany();
+    console.log(listBan);
+    if (listBan.length > 0)
+      return ("Ban")
+    console.log("bip");
     const user: any = await this.chatsRepository
       .createQueryBuilder("channel")
       .innerJoin("channel.lstUsr", "ListUser")
       .innerJoinAndSelect("ListUser.user", "User")
       .select(["channel.id", "channel.name", "channel.accesstype", "Channel.user_id", "User.username", "User.avatarPath"])
-      .where("(channel.id = :id AND User.userID = :user_id)")// AND ListUser.user_id = :iduser")
-      .setParameters({ id: id, user_id: user_id })
+      .where("channel.id = :id")// AND ListUser.user_id = :iduser")
+      .setParameters({ id: id })
+      .andWhere("User.userID = :user_id")
+      .setParameters({ user_id: user_id })
       .getRawOne();
     return (user);
   }
@@ -348,7 +375,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @UseGuards(JwtGuard)
   @SubscribeMessage('joinRoomChat')
   async joinRoomChat(@ConnectedSocket() socket: Readonly<any>,
-    @MessageBody() data: Readonly<Room>): Promise<boolean> {
+    @MessageBody() data: Readonly<Room>): Promise<boolean | { ban: boolean }> {
     const user = socket.user;
 
     if (typeof user.userID != "number")
@@ -361,6 +388,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const getName = channel?.name;
     if (typeof channel != "undefined" && channel != null) {
       const getUser: any = await this.getUserOnChannel(data.id, user.userID);
+      if (getUser === "Ban")
+        return ({ ban: true });
       if (typeof getUser === "undefined" || getUser === null) {
         const newUser = await this.setNewUserChannel(channel, user.userID, data);
         if (typeof newUser === "undefined") {
@@ -443,12 +472,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @UseGuards(JwtGuard)
   @SubscribeMessage('leaveRoomChat')
   async leaveRoomChat(@ConnectedSocket() socket: Readonly<any>,
-    @MessageBody() data: Readonly<Room>): Promise<string | undefined> {
+    @MessageBody() data: Readonly<Room>): Promise<string | undefined | { ban: boolean }> {
     const user: TokenUser = socket.user;
 
     if (typeof user.userID != "number")
       return ("Couldn't' leave chat, wrong type id?");
     const getUser: any = await this.getUserOnChannel(data.id, user.userID);
+    if (getUser === "Ban")
+      return ({ ban: true });
     if (typeof getUser === "undefined" || getUser === null)
       return ("No user found");
     console.log(getUser);
@@ -471,6 +502,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       || !user || typeof user.userID != "number")
       return;
     const getChannel: any = await this.getUserOnChannel(data.id, user.userID);
+    if (getChannel === "Ban")
+      return ({ ban: true });
     if (typeof getChannel !== "undefined" && getChannel !== null) {
       socket.leave(data.id);
     }
@@ -484,6 +517,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (typeof user.userID != "number")
       return;
     const getUser = await this.getUserOnChannel(data.id, user.userID);
+    if (getUser === "Ban")
+      return ({ ban: true });
     if (typeof getUser === "undefined" || getUser === null)
       return (undefined);
     this.listMsgRepository
