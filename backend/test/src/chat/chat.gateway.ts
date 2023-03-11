@@ -503,7 +503,10 @@ and channel.id = '0'
       return;
     const getChannel: any = await this.getUserOnChannel(data.id, user.userID);
     if (getChannel === "Ban")
+    {
+      socket.leave(data.id);
       return ({ ban: true });
+    }
     if (typeof getChannel !== "undefined" && getChannel !== null) {
       socket.leave(data.id);
     }

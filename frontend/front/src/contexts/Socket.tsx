@@ -12,14 +12,14 @@ export let usrSocket = io("http://" + location.host, {
 
 type typeSocket = {
     setToken: Dispatch<React.SetStateAction<string | null> >,
-    usrSocket: Socket<any, any>
+    usrSocket: Socket<any, any>,
 }
 
 const defaultValue = () => {}
 
 const SocketContext = createContext<typeSocket>({
     setToken: defaultValue,
-    usrSocket: usrSocket
+    usrSocket: usrSocket,
 });
 
 export const SocketProvider = (props: any) => {

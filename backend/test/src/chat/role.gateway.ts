@@ -28,6 +28,7 @@ export class RoleGateway {
       content: username + " is banned from this channel",
       type: emit_name
     });
+    //doit faire quitter socket de la room
   }
   /* id = id channel */
   updateListChat(id: string) {

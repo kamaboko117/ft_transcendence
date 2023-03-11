@@ -10,7 +10,6 @@ import CreateNewUser from "./pages/createNewUser";
 import Counter from "./components/Counter";
 import Homepage from "./components/Homepage";
 import PlayerApp from "./components/PlayerApp";
-import WebSocketTestGc from './TestWebSocketGc'
 
 /* NavBar */
 import NavBar from './components/navbar/NavBar';
@@ -86,7 +85,6 @@ function App() {
                 <Route path="/channels" element={<ListChannel jwt={jwt} />}>
                   <Route path=":id" element={<Chat />} />
                 </Route>
-                <Route path="/ws" element={<WebSocketTestGc id={0} />} />
                 <Route path="/play" element={<PlayPage jwt={jwt} />} />
                 <Route path="/matchmaking" element={<MatchmakingPage />} />
               </Routes>
