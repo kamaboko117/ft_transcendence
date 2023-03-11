@@ -1,5 +1,6 @@
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
+import { ChatGateway } from './chat.gateway';
 
 @WebSocketGateway({
   cors: {
@@ -9,6 +10,8 @@ import { Server } from 'socket.io';
 export class RoleGateway {
   @WebSocketServer() server: Server;
   afterInit(server: Server) { }
+
+  constructor(private chatGateway: ChatGateway) {}
 
   /* id = id channel */
   actionOnUser(id: string, user_id: number,
@@ -28,6 +31,9 @@ export class RoleGateway {
       content: username + " is banned from this channel",
       type: emit_name
     });
+    const mapSocket = this.chatGateway.getMap();
+    for (let socketId of mapSocket)
+      console.log("sockettId: " + socketId);
     //doit faire quitter socket de la room
   }
   /* id = id channel */

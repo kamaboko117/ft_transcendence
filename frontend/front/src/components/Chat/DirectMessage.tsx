@@ -228,7 +228,7 @@ const DiscussionBox = (props: {
         //subscribeChat
         console.log("JOIN ROOM ID: " + props.id);
         if (props.id != "") {
-            usrSocket.emit("joinRoomChat", {
+            usrSocket?.emit("joinRoomChat", {
                 id: props.id,
             }, (res: boolean) => {
                 console.log(res);
@@ -239,7 +239,7 @@ const DiscussionBox = (props: {
             });
         }
         //listen to exception sent by backend
-        usrSocket.on('exception', (res) => {
+        usrSocket?.on('exception', (res) => {
             if (res.status === "error" && res.message === "Token not valid")
                 props.setErrorCode(403);
             else
@@ -254,15 +254,15 @@ const DiscussionBox = (props: {
             if (getSecondPartRegex != props.id
                 && getFirstPartRegex && getFirstPartRegex[0] == "/channels/") {
                 console.log("emit has stopped");
-                usrSocket.emit("stopEmit", { id: props.id }, () => {
+                usrSocket?.emit("stopEmit", { id: props.id }, () => {
                     setOnline(false);
                 });
             } else {
                 console.log("must not stop emit from chat");
             }
-            usrSocket.off("exception");
+            usrSocket?.off("exception");
         })
-    }, [props.id]);
+    }, [props.id, usrSocket]);
 
     const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
     useEffect(() => {
@@ -284,7 +284,7 @@ const DiscussionBox = (props: {
         if (online === true)
             ft_lst();
         console.log("liste mount");
-        usrSocket.on("actionOnUser2", (res: any/*{
+        usrSocket?.on("actionOnUser2", (res: any/*{
             room: string, user_id: number,
             user: {
                 username: string, avatarPath: string,
@@ -294,17 +294,17 @@ const DiscussionBox = (props: {
                 setLstMsg((lstMsg) => [...lstMsg, res])
             }
         })
-        usrSocket.on("sendBackMsg2", (res: any) => {
+        usrSocket?.on("sendBackMsg2", (res: any) => {
             if (res.room === props.id)
                 setLstMsg((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
             console.log("liste unmount");
-            usrSocket.off("actionOnUser2");
-            usrSocket.off("sendBackMsg2");
+            usrSocket?.off("actionOnUser2");
+            usrSocket?.off("sendBackMsg2");
             setLstMsg([]);
         });
-    }, [lstMsg.keys, props.id, online]);
+    }, [lstMsg.keys, props.id, online, usrSocket]);
     const [msg, setMsg] = useState<null | string>(null);
 
     if (props.id != "" && online === false)
@@ -401,6 +401,7 @@ const FoldDirectMessage = (props: settingChat) => {
 
 const UnfoldDirectMessage = (props: settingChat) => {
     const [errorCode, setErrorCode] = useState<number>(200);
+
     if (errorCode >= 400) // a placer devant fonctions asynchrones semblerait t'il, le composant react se recharge
         return (<FetchError code={errorCode} />);
     if (props.render === false || typeof props.id === "undefined")

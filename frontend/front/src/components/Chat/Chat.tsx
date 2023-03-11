@@ -91,11 +91,10 @@ const MainChat = (props: any) => {
     const { usrSocket } = useContext(SocketContext);
     useEffect(() => {
         //subscribeChat
-        usrSocket.emit("joinRoomChat", {
+        usrSocket?.emit("joinRoomChat", {
             id: props.id,
             psw: props.psw
         }, (res: any) => {
-            console.log(res);
             //prevoir kekchose pour ban
             if (res.ban === true)
                 setOnline("Ban");
@@ -107,9 +106,8 @@ const MainChat = (props: any) => {
             }
         });
         //listen to excption sent by backend
-        usrSocket.on('exception', (res) => {
+        usrSocket?.on('exception', (res) => {
             console.log("err");
-            console.log(res);
             if (res.status === "error" && res.message === "Token not valid")
                 props.setErrorCode(403);
             else
@@ -121,12 +119,12 @@ const MainChat = (props: any) => {
             //unsubscribeChat
             console.log("STOP EMIT");
             console.log("unmount");
-            usrSocket.emit("stopEmit", { id: props.id }, () => {
+            usrSocket?.emit("stopEmit", { id: props.id }, () => {
                 setOnline(false);
             });
-            usrSocket.off("exception");
+            usrSocket?.off("exception");
         })
-    }, [props.id]);
+    }, [props.id, usrSocket]);
     const contextUserLeave = useContext(ContextUserLeave);
     const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
     const [chatName, setChatName] = useState<string>("");
@@ -141,7 +139,6 @@ const MainChat = (props: any) => {
                         return (res.json());
                     props.setErrorCode(res.status);
                 });
-            console.log(res);
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
                 console.log("load msg");
                 setLstMsg(res.lstMsg);
@@ -154,7 +151,7 @@ const MainChat = (props: any) => {
         if (online === true)
             ft_lst();
         console.log("liste mount");
-        usrSocket.on("actionOnUser", (res: any/*{
+        usrSocket?.on("actionOnUser", (res: any/*{
             room: string, user_id: number,
             user: {
                 username: string, avatarPath: string,
@@ -165,7 +162,7 @@ const MainChat = (props: any) => {
                 setLstMsg((lstMsg) => [...lstMsg, res]);
             }
         })
-        usrSocket.on("sendBackMsg", (res: any) => {
+        usrSocket?.on("sendBackMsg", (res: any) => {
             console.log("msg");
             console.log(res);
             if (res.room === props.id)
@@ -173,12 +170,12 @@ const MainChat = (props: any) => {
         });
         return (() => {
             console.log("liste unmount");
-            usrSocket.off("actionOnUser");
-            usrSocket.off("sendBackMsg");
+            usrSocket?.off("actionOnUser");
+            usrSocket?.off("sendBackMsg");
             setLstMsg([]);
             setChatName("");
         });
-    }, [lstMsg.keys, props.id, online])
+    }, [lstMsg.keys, props.id, online, usrSocket])
 
     const [msg, setMsg] = useState<null | string>(null);
     const navigate = useNavigate();
@@ -322,8 +319,8 @@ const BlockChat = (props: any) => {
     return (<></>);
 }
 
-const Chat = () => {
-    const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
+const Chat = (props: {jwt: string}) => {
+    //const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
     const getLocation = useLocation();
     const id = useParams().id as string;
     const [errorCode, setErrorCode] = useState<number>(200);
@@ -331,12 +328,12 @@ const Chat = () => {
 
     if (errorCode >= 400) // a placer devant fonctions asynchrones semblerait t'il, le composant react se recharge
         return (<FetchError code={errorCode} />); //lorsqu'il se met a jour, semblerait t'il
-    const hasPass: Promise<boolean> = hasPassword(id, jwt, setErrorCode);
+    const hasPass: Promise<boolean> = hasPassword(id, props.jwt, setErrorCode);
     hasPass.then(res => {
         setLoadPsw(res);
     });
     return (<BlockChat id={id} getLocation={getLocation}
-        setErrorCode={setErrorCode} jwt={jwt}
+        setErrorCode={setErrorCode} jwt={props.jwt}
         hasPsw={psw} />);
 }
 

@@ -67,7 +67,7 @@ export class UsersController {
                 maxAge: 300000,
                 httpOnly: true
             });
-        return ({access_token: access_token, user_id: req.user.userID});
+        return ({token: access_token, user_id: req.user.userID});
     }
 
     @Post('avatarfile')

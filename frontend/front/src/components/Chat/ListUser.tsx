@@ -219,7 +219,7 @@ const ListUser = (props: { id: string, jwt: string }) => {
         fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
             setLstUser(res);
         });
-        usrSocket.on("updateListChat", () => {
+        usrSocket?.on("updateListChat", () => {
             fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
                 setLstUser(res);
             });
@@ -228,9 +228,9 @@ const ListUser = (props: { id: string, jwt: string }) => {
         return (() => {
             console.log("list user unmount");
             setLstUser([]);
-            usrSocket.off("updateListChat");
+            usrSocket?.off("updateListChat");
         });
-    }, [lstUser?.keys, props.id]);
+    }, [lstUser?.keys, props.id, usrSocket]);
     if (errorCode >= 400) //catch errors code from async functions
         return (<FetchError code={errorCode} />);
     return (
