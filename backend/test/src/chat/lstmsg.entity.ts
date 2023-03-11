@@ -6,10 +6,7 @@ import { User } from '../typeorm/user.entity';
 export class ListMsg {
     @PrimaryGeneratedColumn()
     id: number;
-    //@Column({ nullable: false })
-    //idUser: string;
-    //@Column({ nullable: false })
-    //username: string;
+
     @Column({ nullable: true })
     content: string;
 

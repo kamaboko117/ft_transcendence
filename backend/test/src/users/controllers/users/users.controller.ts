@@ -71,17 +71,17 @@ export class UsersController {
     }
 
     @Post('avatarfile')
-    @UseInterceptors(FileInterceptor('fileset', {dest: './upload_avatar'}))
+    @UseInterceptors(FileInterceptor('fileset', { dest: './upload_avatar' }))
     uploadFile(@Request() req: any, @UploadedFile(new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 1000000 }),
-          new FileTypeValidator({ fileType: 'image/png'}),
+            new MaxFileSizeValidator({ maxSize: 1000000 }),
+            new FileTypeValidator({ fileType: 'image/png' }),
         ],
-      }),
+    }),
     ) file: Express.Multer.File) {
         const user = req.user;
         this.userService.updatePathAvatarUser(user.userID, file.path);
-        return ({path: file.path});
+        return ({ path: file.path });
     }
 
     /*
@@ -100,15 +100,17 @@ export class UsersController {
     */
     @UseGuards(JwtGuard)
     @Get('profile')
-    getProfile(@Request() req: any) {
+    async getProfile(@Request() req: any) {
         console.log("call profile");
         console.log(req.user);
         const user: {
             userID: number,
             token: string,
-            username: string} = req.user;
-        const ret_user = this.userService.getUserProfile(user.userID);
-        
+            username: string
+        } = req.user;
+        const ret_user = await this.userService.getUserProfile(user.userID);
+        console.log("profile");
+        console.log(ret_user);
         return (ret_user);
     }
 
