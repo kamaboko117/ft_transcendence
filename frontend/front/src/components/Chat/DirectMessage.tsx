@@ -284,12 +284,23 @@ const DiscussionBox = (props: {
         if (online === true)
             ft_lst();
         console.log("liste mount");
+        usrSocket.on("actionOnUser2", (res: any/*{
+            room: string, user_id: number,
+            user: {
+                username: string, avatarPath: string,
+            }, content: string, type: string
+        }*/) => {
+            if (res.type === "Ban") {
+                setLstMsg((lstMsg) => [...lstMsg, res])
+            }
+        })
         usrSocket.on("sendBackMsg2", (res: any) => {
             if (res.room === props.id)
                 setLstMsg((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
             console.log("liste unmount");
+            usrSocket.off("actionOnUser2");
             usrSocket.off("sendBackMsg2");
             setLstMsg([]);
         });

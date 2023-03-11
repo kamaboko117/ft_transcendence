@@ -162,7 +162,7 @@ const MainChat = (props: any) => {
         }*/) => {
             console.log(res)
             if (res.type === "Ban") {
-                setLstMsg((lstMsg) => [...lstMsg, res])
+                setLstMsg((lstMsg) => [...lstMsg, res]);
             }
         })
         usrSocket.on("sendBackMsg", (res: any) => {
