@@ -19,7 +19,8 @@ export class RoleService {
         @InjectRepository(ListMute)
         private listMuteRepository: Repository<ListMute>;
 
-        constructor(private dataSource: DataSource, private roleGateway: RoleGateway) { }
+        constructor(private dataSource: DataSource,
+                private roleGateway: RoleGateway) { }
 
         /* id == idChannel */
         getOwner(id: Readonly<string>): Promise<Channel | null> {

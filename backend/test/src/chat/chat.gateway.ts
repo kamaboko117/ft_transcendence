@@ -15,8 +15,9 @@ import { ListMsg } from './lstmsg.entity';
 import { ListMute } from './lstmute.entity';
 import { ListUser } from './lstuser.entity';
 import { JwtGuard } from 'src/auth/jwt.guard';
-import { UseGuards } from '@nestjs/common';
+import { ConsoleLogger, UseGuards } from '@nestjs/common';
 import { User } from 'src/typeorm';
+import { AuthService } from 'src/auth/auth.service';
 
 type Channel_ret = {
   Channel_id: string
@@ -59,6 +60,7 @@ class SendMsgPm {
     origin: "http://127.0.0.1:4000", credential: true
   }
 })
+
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   afterInit(server: Server) { }
@@ -71,7 +73,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @InjectRepository(ListBan)
   private listBanRepository: Repository<ListBan>;
 
-  constructor(private dataSource: DataSource) { }
+  private readonly mapSocket: Map<string, string>;
+
+  constructor(private dataSource: DataSource,
+    private authService: AuthService) {
+    this.mapSocket = new Map();
+  }
+
+  getMap() {
+    return (this.mapSocket);
+  }
 
   async getAllPublic(): Promise<any[]> {
     const arr: Channel[] = await this.chatsRepository
@@ -288,10 +299,8 @@ and channel.id = '0'
       .andWhere("list_ban.chatid = :id")
       .setParameters({ id: id })
       .getMany();
-    console.log(listBan);
     if (listBan.length > 0)
       return ("Ban")
-    console.log("bip");
     const user: any = await this.chatsRepository
       .createQueryBuilder("channel")
       .innerJoin("channel.lstUsr", "ListUser")
@@ -549,11 +558,18 @@ and channel.id = '0'
     });
   }
 
-  /* Tests ws */
-  handleConnection(client: Socket) {
+  @UseGuards(JwtGuard)
+  async handleConnection(client: Socket) {
     console.log("connect client id: " + client.id);
+    const bearer = client.handshake.headers.authorization;
+    if (bearer)
+    {
+      const user: any = await this.authService.verifyToken(bearer);
+      this.mapSocket.set(client.id, user.userID);
+    }
   }
   handleDisconnect(client: Socket) {
     console.log("disconnect client id: " + client.id);
+    this.mapSocket.delete(client.id);
   }
 }

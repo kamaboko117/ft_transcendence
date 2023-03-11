@@ -7,7 +7,6 @@ export const FetchError = (props: { code: number }) => {
     const navigate = useNavigate();
     const userCtx: any = useContext(UserContext);
     const { renderDirectMessage, userId, setDisplay, setUserId } = useContext(ContextDisplayChannel);
-
     useEffect(() => {
         if (props.code === 403 || props.code === 401) {
             setDisplay(false);
@@ -15,7 +14,14 @@ export const FetchError = (props: { code: number }) => {
             navigate("/logout");
         }
         else if (props.code >= 400)
-            throw new Error('Something went wrong while fetching data');
+        {
+            try {
+                throw new Error('Error ' + props.code);
+            } catch (e) {
+                navigate("/error-page", { state: {code: props.code} });
+            }
+        }
+            
     }, [])
     return (<></>);
 }
