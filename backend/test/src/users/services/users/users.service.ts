@@ -91,7 +91,7 @@ export class UsersService {
             }
         }).then(res => res.json());
         return (res.resource_owner_id);
-	}
+    }
     getUsers() {
         return this.userRepository.find();
     }
@@ -99,11 +99,11 @@ export class UsersService {
     async updatePathAvatarUser(user_id: number, path: string) {
         this.userRepository.createQueryBuilder()
             .update(User)
-            .set({avatarPath: path})
+            .set({ avatarPath: path })
             .where("user_id = :id")
-            .setParameters({id: user_id})
+            .setParameters({ id: user_id })
             .execute()
-        }
+    }
     /*
         exemple requete sql avec un innerjoin facon typeorm
         createQueryBuilder("list_msg")
@@ -123,11 +123,11 @@ export class UsersService {
             .where('user.user_id = :user') //:user = setParameters()
             .setParameters({ user: id })//anti hack
             .getOne();
-        console.log();
+        console.log(user);
         return (user);
     }
 
-    async findUsersById(id: number) { 
+    async findUsersById(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath'])
             .where('user.user_id = :user')

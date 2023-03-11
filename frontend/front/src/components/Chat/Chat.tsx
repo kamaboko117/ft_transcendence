@@ -3,7 +3,6 @@ import ListUser from './ListUser';
 import { FetchError, header, headerPost } from '../FetchError';
 import "../../css/chat.css";
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import img from "../../assets/react.svg";//a remplacer avec user image
 import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
@@ -11,7 +10,8 @@ import { ContextUserLeave } from '../../contexts/LeaveChannel';
 export type lstMsg = {
     lstMsg: Array<{
         idUser: string,
-        content: string
+        content: string,
+        img: string
     }>
 }
 
@@ -34,7 +34,8 @@ export const ListMsg = (props: any) => {
                 props.lstMsg &&
                 props.lstMsg.slice(arrayLength, props.lstMsg.length).map((msg: any) => (
                     <React.Fragment key={++i}>
-                        <div><img src={img} className="chatBox" />
+                        <div><img src={"/" + msg.user.avatarPath} className="chatBox"
+                            alt={"avatar " + msg.user.username} />
                             <label className="chatBox">{msg.user.username}</label>
                         </div>
                         <span className="chatBox">{msg.content}</span>
@@ -76,6 +77,8 @@ const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
         usrSocket.emit('sendMsg', obj, (res) => {
             console.log("res: ");
             console.log(res);
+            if (res.ban === true) { }
+            //prevoir kekchose pour ban
         })
         setMsg("");
         ref.current.value = "";
@@ -84,19 +87,24 @@ const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
 
 const MainChat = (props: any) => {
     const refElem = useRef(null);
-    const [online, setOnline] = useState<undefined | boolean>(undefined)
+    const [online, setOnline] = useState<undefined | boolean | string>(undefined)
     const { usrSocket } = useContext(SocketContext);
     useEffect(() => {
         //subscribeChat
         usrSocket.emit("joinRoomChat", {
             id: props.id,
             psw: props.psw
-        }, (res: boolean) => {
+        }, (res: any) => {
             console.log(res);
-            if (res === true)
-                setOnline(true);
-            else
-                setOnline(false);
+            //prevoir kekchose pour ban
+            if (res.ban === true)
+                setOnline("Ban");
+            else {
+                if (res === true)
+                    setOnline(true);
+                else
+                    setOnline(false);
+            }
         });
         //listen to excption sent by backend
         usrSocket.on('exception', (res) => {
@@ -133,9 +141,9 @@ const MainChat = (props: any) => {
                         return (res.json());
                     props.setErrorCode(res.status);
                 });
+            console.log(res);
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
                 console.log("load msg");
-                console.log(res);
                 setLstMsg(res.lstMsg);
                 setChatName(res.name);
                 if (res.accesstype === "2" || res.accesstype === "3")
@@ -162,7 +170,9 @@ const MainChat = (props: any) => {
 
     const [msg, setMsg] = useState<null | string>(null);
     const navigate = useNavigate();
-    if (online === false)
+    if (online === "Ban")
+        return (<article className='containerChat'>You are banned from this chat</article>)
+    else if (online === false)
         return (<article className='containerChat'>Unauthorized connection</article>)
     else if (typeof online == "undefined")
         return (<article className='containerChat'>Connecting to chat...</article>)
@@ -179,7 +189,7 @@ const MainChat = (props: any) => {
             </div>
             <ListMsg lstMsg={lstMsg} />
             <div className="sendMsg">
-                <textarea ref={refElem} id="submitArea"
+                <textarea ref={refElem} id="submitArea" placeholder='Inclure commande deban dans chat'
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMsg(e.currentTarget.value)}
                     onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
                         handleSubmitArea(e,
@@ -268,6 +278,7 @@ const PasswordBox = (props: Readonly<any>): JSX.Element => {
             <form onSubmit={async (e: React.FormEvent<HTMLFormElement>) => {
                 const result = await onSubmit(e, value, props.jwt, props.id, props.setErrorCode);
                 setValid(result);
+                console.log(result);
                 (valid === false) ? setError(true) : setError(false);
             }}>
                 <label>Password * :</label>

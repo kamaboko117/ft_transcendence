@@ -46,9 +46,7 @@ export class JwtGuard extends AuthGuard('jwt') {
             request.headers = {};
             request.headers.authorization = "Bearer " + bearer;
         }
-        console.log("bearer :" + bearer);
         super.canActivate(context)
-        console.log("super.canActivate OK")
         return (true);
     }
 }

@@ -3,12 +3,12 @@ import {
   , ConnectedSocket, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
-import { CreateChatDto, Owner } from './create-chat.dto';
-import { Chat, InformationChat, DbChat } from './chat.interface';
-import {  IsString } from 'class-validator';
+import { CreateChatDto, Owner } from './dto/create-chat.dto';
+import { Chat, InformationChat, DbChat, TokenUser } from './chat.interface';
+import { IsString } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Channel } from './chat.entity';
 import { ListBan } from './lstban.entity';
 import { ListMsg } from './lstmsg.entity';
@@ -16,6 +16,7 @@ import { ListMute } from './lstmute.entity';
 import { ListUser } from './lstuser.entity';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { UseGuards } from '@nestjs/common';
+import { User } from 'src/typeorm';
 
 type Channel_ret = {
   Channel_id: string
@@ -58,7 +59,7 @@ class SendMsgPm {
     origin: "http://127.0.0.1:4000", credential: true
   }
 })
-export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   afterInit(server: Server) { }
   @InjectRepository(Channel)
@@ -67,6 +68,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   private listUserRepository: Repository<ListUser>;
   @InjectRepository(ListMsg)
   private listMsgRepository: Repository<ListMsg>;
+  @InjectRepository(ListBan)
+  private listBanRepository: Repository<ListBan>;
+
+  constructor(private dataSource: DataSource) { }
 
   async getAllPublic(): Promise<any[]> {
     const arr: Channel[] = await this.chatsRepository
@@ -96,55 +101,55 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   /* PRIVATE MESSAGE PART */
   async getAllPmUser(userID: Readonly<number>) {
-      const subquery = this.chatsRepository
+    const subquery = this.chatsRepository
       .createQueryBuilder("channel").subQuery()
       .from(Channel, "channel")
       .select("channel.id")
       .innerJoin("channel.lstUsr", "ListUser")
       .innerJoin("ListUser.user", "User")
-      .where("channel.accesstype = :type", {type: '4'})
-      .andWhere("ListUser.user_id = :user_id", {user_id: userID})
+      .where("channel.accesstype = :type", { type: '4' })
+      .andWhere("ListUser.user_id = :user_id", { user_id: userID })
 
     const channel: ListUser[] | null = await this.listUserRepository
-        .createQueryBuilder("list_user")
-        .select("list_user.chatid")
-        .addSelect("User.username")
-        .innerJoin("list_user.user", "User")
-        .where("list_user.chatid IN " + subquery.getQuery())
-        .andWhere("list_user.user_id != :user_id")
-        .setParameters({type: '4', user_id: userID})
-        .getMany();
+      .createQueryBuilder("list_user")
+      .select("list_user.chatid")
+      .addSelect("User.username")
+      .innerJoin("list_user.user", "User")
+      .where("list_user.chatid IN " + subquery.getQuery())
+      .andWhere("list_user.user_id != :user_id")
+      .setParameters({ type: '4', user_id: userID })
+      .getMany();
     return (channel)
   }
   /* find and delete duplicate */
   async findDuplicateAndDelete(user_id: Readonly<string>) {
     const channel: {
-      list_user_user_id: string, 
+      list_user_user_id: string,
       Channel_id: string,
       Channel_name: string
     } | undefined = await this.listUserRepository
-    .createQueryBuilder("list_user")
-    .select("list_user.user_id")
-    .addSelect(["Channel.id", "Channel.name"])
-    .innerJoin("list_user.chat", "Channel")
-    .where("list_user.user_id = :id")
-    .setParameters({id: user_id})
-    .andWhere("Channel.accesstype = :type")
-    .setParameters({type: '4'})
-    .groupBy("list_user.user_id")
-    .addGroupBy("Channel.id")
-    .having("COUNT(list_user.user_id) >= :nb", {nb: 2})
-    .orHaving("COUNT(Channel.id) >= :otherNb", {otherNb: 2})
-    .getRawOne()
-    
+      .createQueryBuilder("list_user")
+      .select("list_user.user_id")
+      .addSelect(["Channel.id", "Channel.name"])
+      .innerJoin("list_user.chat", "Channel")
+      .where("list_user.user_id = :id")
+      .setParameters({ id: user_id })
+      .andWhere("Channel.accesstype = :type")
+      .setParameters({ type: '4' })
+      .groupBy("list_user.user_id")
+      .addGroupBy("Channel.id")
+      .having("COUNT(list_user.user_id) >= :nb", { nb: 2 })
+      .orHaving("COUNT(Channel.id) >= :otherNb", { otherNb: 2 })
+      .getRawOne()
+
     if (channel) {
       await this.chatsRepository
-      .createQueryBuilder()
-      .delete()
-      .from(Channel)
-      .where("id = :id")
-      .setParameters({ id: channel.Channel_id })
-      .execute();
+        .createQueryBuilder()
+        .delete()
+        .from(Channel)
+        .where("id = :id")
+        .setParameters({ id: channel.Channel_id })
+        .execute();
     }
   }
 
@@ -223,7 +228,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       user_id: number,
       content: string
     }> = await this.listMsgRepository.createQueryBuilder("list_msg")
-      .select(["list_msg.user_id", "User.username", "list_msg.content"])
+      .select(["list_msg.user_id", "User.username", "User.avatarPath", "list_msg.content"])
       .innerJoin("list_msg.user", "User")
       .where("list_msg.chatid = :id")
       .setParameters({ id: id })
@@ -251,14 +256,51 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     });
     return (channel);
   }
+  /*
+  select list_ban.user_id
+  from list_ban
+  where list_ban.user_id = 1659745
+and NOW() < list_ban.time
+and list_ban.chatid = '0'
+  */
+
+  /*
+select channel.id, channel.name, channel.accesstype, channel.user_id, "user".username
+  from channel
+  inner join list_user on list_user.chatid = channel.id
+  inner join "user" on "user".user_id = list_user.user_id
+  where "user".user_id not in (select list_ban.user_id
+  from list_ban
+  where list_ban.user_id = 1659745
+and NOW() < list_ban.time
+and list_ban.chatid = '0') and list_user.user_id = 1659745
+and channel.id = '0'
+  */
   async getUserOnChannel(id: string, user_id: number) {
+
+    const listBan: ListBan[] = await this.listBanRepository
+      .createQueryBuilder("list_ban")
+      .select("list_ban.user_id")
+      .where("list_ban.user_id = :user_id")
+      .setParameters({ user_id: user_id })
+      .andWhere("list_ban.time > :time")
+      .setParameters({ time: "NOW()" })
+      .andWhere("list_ban.chatid = :id")
+      .setParameters({ id: id })
+      .getMany();
+    console.log(listBan);
+    if (listBan.length > 0)
+      return ("Ban")
+    console.log("bip");
     const user: any = await this.chatsRepository
       .createQueryBuilder("channel")
       .innerJoin("channel.lstUsr", "ListUser")
       .innerJoinAndSelect("ListUser.user", "User")
-      .select(["channel.id", "channel.name", "channel.accesstype", "User.username"])
-      .where("(channel.id = :id AND User.userID = :user_id)")// AND ListUser.user_id = :iduser")
-      .setParameters({ id: id, user_id: user_id })
+      .select(["channel.id", "channel.name", "channel.accesstype", "Channel.user_id", "User.username", "User.avatarPath"])
+      .where("channel.id = :id")// AND ListUser.user_id = :iduser")
+      .setParameters({ id: id })
+      .andWhere("User.userID = :user_id")
+      .setParameters({ user_id: user_id })
       .getRawOne();
     return (user);
   }
@@ -266,7 +308,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async getAllUsersOnChannel(id: string) {
     const arr: any = await this.listUserRepository
       .createQueryBuilder("list_user")
-      .select("list_user.user_id")
+      .select(["list_user.user_id", "list_user.role"])
       .addSelect("User.username")
       .innerJoin("list_user.user", "User")
       .where("list_user.chatid = :id")
@@ -298,6 +340,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     listUsr.role = "Owner";
     listUsr.chat = channel;
     this.listUserRepository.save(listUsr);
+
     const return_chat: InformationChat = {
       channel_id: newChat.id,
       channel_name: newChat.name,
@@ -332,7 +375,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @UseGuards(JwtGuard)
   @SubscribeMessage('joinRoomChat')
   async joinRoomChat(@ConnectedSocket() socket: Readonly<any>,
-    @MessageBody() data: Readonly<Room>): Promise<boolean> {
+    @MessageBody() data: Readonly<Room>): Promise<boolean | { ban: boolean }> {
     const user = socket.user;
 
     if (typeof user.userID != "number")
@@ -345,6 +388,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const getName = channel?.name;
     if (typeof channel != "undefined" && channel != null) {
       const getUser: any = await this.getUserOnChannel(data.id, user.userID);
+      if (getUser === "Ban")
+        return ({ ban: true });
       if (typeof getUser === "undefined" || getUser === null) {
         const newUser = await this.setNewUserChannel(channel, user.userID, data);
         if (typeof newUser === "undefined") {
@@ -357,31 +402,90 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return (true);
   }
 
+  /* search list admin, and set one as new owner*/
+  async searchAndSetAdministratorsChannel(id: string) {
+    let listUser: ListUser[] = await this.listUserRepository.createQueryBuilder("list_user")
+      .select(["list_user.id", "list_user.user_id"])
+      .where("list_user.chatid = :id")
+      .setParameters({ id: id })
+      .andWhere("list_user.role = :role")
+      .setParameters({ role: 'Administrator' })
+      .getMany();
+
+    if (listUser.length === 0) {
+      listUser = await this.listUserRepository.createQueryBuilder("list_user")
+        .select(["list_user.id", "list_user.user_id"])
+        .where("list_user.chatid = :id")
+        .setParameters({ id: id })
+        .getMany();
+    }
+    if (listUser.length > 0) {
+      await this.chatsRepository.createQueryBuilder().update(Channel)
+        .set({ user_id: listUser[0].user_id })
+        .where("id = :id")
+        .setParameters({ id: id })
+        .execute();
+      await this.listUserRepository.createQueryBuilder().update(ListUser)
+        .set({ role: "Owner" })
+        .where("id = :id")
+        .setParameters({ id: listUser[0].id })
+        .execute();
+    }
+  }
+
+  /* Delete current owner, and try to set a new one */
+  async setNewOwner(userId: number, id: string, ownerId: string) {
+    const runner = this.dataSource.createQueryRunner();
+
+    await runner.connect();
+    await runner.startTransaction();
+    try {
+      //remove user from channel
+      await this.chatsRepository
+        .createQueryBuilder()
+        .delete()
+        .from(ListUser)
+        .where("user_id = :id")
+        .setParameters({ id: userId })
+        .execute();
+
+      if (Number(ownerId) === userId) {
+        //try set first admin as owner
+        //if no admin, then first user on list channel become owner
+        await this.searchAndSetAdministratorsChannel(id);
+      }
+      const channel: Channel | null = await this.chatsRepository.findOne({
+        where: {
+          id: id
+        }
+      });
+      await runner.commitTransaction();
+      return (channel);
+    } catch (e) {
+      await runner.rollbackTransaction();
+    } finally {
+      //doc want it released
+      await runner.release();
+    }
+  }
+
   @UseGuards(JwtGuard)
   @SubscribeMessage('leaveRoomChat')
   async leaveRoomChat(@ConnectedSocket() socket: Readonly<any>,
-    @MessageBody() data: Readonly<Room>): Promise<string | undefined> {
-    const user = socket.user;
+    @MessageBody() data: Readonly<Room>): Promise<string | undefined | { ban: boolean }> {
+    const user: TokenUser = socket.user;
 
     if (typeof user.userID != "number")
       return ("Couldn't' leave chat, wrong type id?");
     const getUser: any = await this.getUserOnChannel(data.id, user.userID);
+    if (getUser === "Ban")
+      return ({ ban: true });
     if (typeof getUser === "undefined" || getUser === null)
       return ("No user found");
-    await this.chatsRepository
-      .createQueryBuilder()
-      .delete()
-      .from(ListUser)
-      .where("user_id = :id")
-      .setParameters({ id: user.userID })
-      .execute();
-    const channel: any = await this.chatsRepository.findOne({
-      where: {
-        id: data.id
-      }
-    });
-    const [listUsr, count]: any = await this.listUserRepository.findAndCountBy({ chatid: data.id })
-    const getName = channel.name;
+    console.log(getUser);
+    const channel = await this.setNewOwner(user.userID, data.id, getUser.user_id);
+    const [listUsr, count]: any = await this.listUserRepository.findAndCountBy({ chatid: data.id });
+    //const getName = channel?.name;
     socket.leave(data.id);
     this.server.to(data.id).emit("updateListChat", true);
     if (channel != undefined && channel != null && count === 0)
@@ -398,6 +502,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       || !user || typeof user.userID != "number")
       return;
     const getChannel: any = await this.getUserOnChannel(data.id, user.userID);
+    if (getChannel === "Ban")
+      return ({ ban: true });
     if (typeof getChannel !== "undefined" && getChannel !== null) {
       socket.leave(data.id);
     }
@@ -411,6 +517,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (typeof user.userID != "number")
       return;
     const getUser = await this.getUserOnChannel(data.id, user.userID);
+    if (getUser === "Ban")
+      return ({ ban: true });
     if (typeof getUser === "undefined" || getUser === null)
       return (undefined);
     this.listMsgRepository
@@ -423,16 +531,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         chatid: data.id
       }])
       .execute();
+    console.log(getUser);
     this.server.to(data.id).emit("sendBackMsg", {
       room: data.id,
       user_id: user.userID,
-      user: { username: getUser.User_username },
+      user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
       content: data.content
     });
     this.server.to(data.id).emit("sendBackMsg2", {
       room: data.id,
       user_id: user.userID,
-      user: { username: getUser.User_username },
+      user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
       content: data.content
     });
   }
