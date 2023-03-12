@@ -62,11 +62,6 @@ export class MatchMakingGateway
 
       if (typeof user.userID != 'number') return false;
 
-      console.log('socket id: ' + socket.id);
-      this.server.to(socket.id).emit('matchmakingfailed', {
-        message: socket.id,
-      });
-
       this.MMService.queuein(user, socket, this.server);
     } catch (error) {
       console.log('matchmaking failed');
