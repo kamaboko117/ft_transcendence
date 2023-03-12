@@ -93,10 +93,33 @@ export default function MatchmakingPage() {
     console.log("load exception listener");
     usrSocket.on("matchmakingfailed", (res: any) => {
       console.log(res);
-  });
+  })
+  
+  usrSocket.on("queueoutfailed", (res: any) => {
+    console.log(res);
+})
+
+usrSocket.on("acceptMMmatchFailed", (res: any) => {
+  console.log(res);
+})
+
+usrSocket.on("declineMMmatchFailed", (res: any) => {
+  console.log(res);
+})
+
+usrSocket.on("queueoutfailed", (res: any) => {
+  console.log(res);
+})
+  
+  ;
   return (() => {
     console.log("unload exception listener");
-      usrSocket.off('matchmakingfailed');
+    usrSocket.off('matchmakingfailed');
+    usrSocket.off('acceptMMmatchFailed');
+    usrSocket.off('declineMMmatchFailed');
+    usrSocket.off('queueoutfailed');
+    usrSocket.off('queueoutfailed');
+
   })
   }, [usrSocket]);
 
