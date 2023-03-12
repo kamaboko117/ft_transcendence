@@ -98,7 +98,7 @@ export default function MatchmakingPage() {
     console.log("unload exception listener");
       usrSocket.off('matchmakingfailed');
   })
-  }, []);
+  }, [usrSocket]);
 
   const startMatching = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
