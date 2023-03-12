@@ -89,7 +89,7 @@ export class MatchMakingGateway
       this.MMService.queueout(user);
     } catch (error) {
       console.log('leaving queue failed');
-      this.server.to(socket.user.room).emit('queueoutfailed', {
+      this.server.to(socket.id).emit('queueoutfailed', {
         message: 'queue out failed',
       });
     }
@@ -105,7 +105,7 @@ export class MatchMakingGateway
       // accepting matchmaking match after queue found a match
     } catch (error) {
       console.log('accept match failed');
-      this.server.to(socket.user.room).emit('acceptMMmatchFailed', {
+      this.server.to(socket.id).emit('acceptMMmatchFailed', {
         message: 'accept MM match failed',
       });
     }
@@ -121,7 +121,7 @@ export class MatchMakingGateway
       // refusing matchmaking match after queue found a match
     } catch (error) {
       console.log('decline match failed');
-      this.server.to(socket.user.room).emit('declineMMmatchFailed', {
+      this.server.to(socket.id).emit('declineMMmatchFailed', {
         message: 'decline match failed',
       });
     }
@@ -135,7 +135,7 @@ export class MatchMakingGateway
       const user = socket.user;
     } catch (error) {
       console.log('disconnect MM failed');
-      this.server.to(socket.user.room).emit('disconnect MM failed', {
+      this.server.to(socket.id).emit('disconnect MM failed', {
         message: 'disconnect MM fail',
       });
     }
