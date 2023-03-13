@@ -53,6 +53,38 @@ export class RoleService {
                 );
         }
 
+        async kickUser(id: Readonly<string>, user_id: Readonly<number>,
+                askKick: Readonly<boolean>) {
+                const runner = this.dataSource.createQueryRunner();
+                
+                await runner.connect();
+                await runner.startTransaction();
+                try {
+                        const user: ListUser | null = await this.getUser(id, user_id);
+                        if (!user) {
+                                throw new NotFoundException("User not found, couldn't kick user.");
+                        }
+                        //remove user from channel
+                        await this.listUserRepository
+                                .createQueryBuilder()
+                                .delete()
+                                .from(ListUser)
+                                .where("chatid = :id")
+                                .setParameters({ id: id })
+                                .andWhere("user_id = :user_id")
+                                .setParameters({ user_id: user_id })
+                                .execute();
+                        this.roleGateway.updateListChat(id);
+                        this.roleGateway.actionOnUser(id, user_id,
+                                user.user.username, user.user.avatarPath, "Kick");
+                } catch (e) {
+                        await runner.rollbackTransaction();
+                } finally {
+                        //doc want it released
+                        await runner.release();
+                }
+        }
+
         async banUser(id: Readonly<string>, user_id: Readonly<number>,
                 time: Readonly<number>) {
                 const runner = this.dataSource.createQueryRunner();
@@ -62,7 +94,7 @@ export class RoleService {
                 try {
                         const user: ListUser | null = await this.getUser(id, user_id);
                         if (!user) {
-                                throw new NotFoundException("User not found, couldn't grant user.");
+                                throw new NotFoundException("User not found, couldn't ban user.");
                         }
                         let date = new Date();
                         date.setSeconds(date.getSeconds() + time);

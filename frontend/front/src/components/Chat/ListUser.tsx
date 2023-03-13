@@ -89,7 +89,6 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     const parentNode: HTMLElement = e.parentNode as HTMLElement;
 
     if (userInfo.username === "" || userInfo.username != name) {
-        console.log(attributes);
         setUserId(Number(attributes[0].value));
         if (attributes.length === 2)
             setUserInfo({
@@ -98,7 +97,7 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
                 id: Number(attributes[0].value)
             });
         else
-        setUserInfo({username: name, role: "", id: 0});
+            setUserInfo({username: name, role: "", id: 0});
     }
     else {
         setUserId(0);

@@ -59,7 +59,6 @@ function App() {
   return (
           <>
           <SocketProvider>
-            
             <ContextDisplayChannel.Provider value={providers}>
               <Routes>
                 <Route path="/" element={

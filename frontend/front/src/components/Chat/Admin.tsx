@@ -26,7 +26,7 @@ type typeFetchToBack = {
     action: string,
     jwt: string,
     userId: number,
-    time: number
+    option: number | boolean
 }
 
 const handleClick = (event: React.MouseEvent<HTMLButtonElement>, channelId: string,
@@ -48,7 +48,7 @@ const fetchToBackWithTimer = (elem: typeFetchToBack) => {
         headers: headerPost(elem.jwt),
         body: JSON.stringify({
             id: elem.channelId, action: elem.action,
-            time: elem.time, userId: elem.userId
+            option: elem.option, userId: elem.userId
         })
     });
 }
@@ -81,7 +81,8 @@ const handleBan = (event: React.MouseEvent<HTMLButtonElement>,
     event.preventDefault();
     const target: HTMLElement = event.target as HTMLElement;
 
-    if (target && time === null) {
+    if (target && time === null
+        ) {
         setTime("0");
         if (ref && ref.current)
             ref.current.value = "0";
@@ -93,31 +94,33 @@ const handleBan = (event: React.MouseEvent<HTMLButtonElement>,
     }
 }
 
-const handleSubmit = (event: React.FormEvent<HTMLFormElement>,
+const handleSubmitBanMute = (event: React.FormEvent<HTMLFormElement>,
     time: number,
     setTime: React.Dispatch<React.SetStateAction<string | null>>,
     ref: React.RefObject<HTMLInputElement>,
-    elem: typeFetchToBack) => {
+    object: typeFetchToBack) => {
     event.preventDefault();
     const target: HTMLElement = event.target as HTMLElement;
-
+    
+    if (!target)
+        return ;
     if (isNaN(time) || typeof time != "number") {
         setTime("Not a number");
         if (ref && ref.current)
             ref.current.value = "Not a number";
         return;
     }
-    setTime("User banned");
+    setTime("");
     //fetch (ban) data to backend
     fetchToBackWithTimer({
-        channelId: elem.channelId,
+        channelId: object.channelId,
         action: "Ban",
-        jwt: elem.jwt,
-        userId: elem.userId,
-        time: time
+        jwt: object.jwt,
+        userId: object.userId,
+        option: time
     });
     if (ref && ref.current)
-        ref.current.value = "User banned";
+        ref.current.value = "";
 }
 
 const BanUser = (props: { shortPropsVariable: typeShortProps }) => {
@@ -128,14 +131,17 @@ const BanUser = (props: { shortPropsVariable: typeShortProps }) => {
         action: "Ban",
         jwt: props.shortPropsVariable.jwt,
         userId: props.shortPropsVariable.focusUserId,
-        time: 0
+        option: 0
     }
+    useEffect(() => {
+        setTime(null);
+    }, [props.shortPropsVariable.focusUserId]);
     if (time != null) {
         return (<>
             <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
                 handleBan(e, setTime, refElem, time)} className="adminInfoUser">Ban user</button>
             <form className='adminBox' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
-                handleSubmit(e, Number(time), setTime, refElem, object)}>
+                handleSubmitBanMute(e, Number(time), setTime, refElem, object)}>
                 <input ref={refElem} type="text"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setTime(e.currentTarget.value)} />
@@ -151,8 +157,63 @@ const MuteUser = () => {
     return (<button className="adminInfoUser">Mute user</button>);
 }
 
-const KickUser = () => {
-    return (<button className="adminInfoUser">Kick user</button>);
+const fetchKick = (event: React.MouseEvent<HTMLButtonElement>,
+    object: typeFetchToBack, askKick: boolean) => {
+    const target: HTMLElement = event.target as HTMLElement;
+
+    if (!target)
+        return ;
+    if (askKick === true) {
+        fetch('http://' + location.host + '/api/chat-role/role-action', {
+        method: 'post',
+        headers: headerPost(object.jwt),
+        body: JSON.stringify({
+            id: object.channelId, action: object.action,
+            option: object.option, userId: object.userId
+        })
+    });
+    }
+    
+}
+
+const handleKick = (event: React.MouseEvent<HTMLButtonElement>,
+    setAskKick: React.Dispatch<React.SetStateAction<boolean>>,
+    askKick: boolean) => {
+    event.preventDefault();
+    const target: HTMLElement = event.target as HTMLElement;
+
+    if (target && askKick === false)
+        setAskKick(true);
+    else
+        setAskKick(false);
+}
+
+const AskKick = (props: {askKick: boolean, object: typeFetchToBack}) => {
+    return (<button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+        fetchKick(e, props.object, props.askKick)}>Click to kick</button>);
+}
+
+const KickUser = (props: { shortPropsVariable: typeShortProps }) => {
+    const [askKick, setAskKick] = useState<boolean>(false);
+    const object: typeFetchToBack = {
+        channelId: props.shortPropsVariable.channelId,
+        action: "Kick",
+        jwt: props.shortPropsVariable.jwt,
+        userId: props.shortPropsVariable.focusUserId,
+        option: 0
+    }
+
+    useEffect(() => {
+        setAskKick(false);
+    }, [props.shortPropsVariable.focusUserId])
+    if (askKick === true)
+    {
+        return (<><button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+            handleKick(e, setAskKick, askKick)} className="adminInfoUser">Kick user</button>
+        <AskKick askKick={askKick} object={object} /></>);
+    }
+    return (<button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+        handleKick(e, setAskKick, askKick)} className="adminInfoUser">Kick user</button>);
 }
 
 
@@ -180,7 +241,7 @@ const AdminButtons = (props: {
             {role && role === "Owner" && <GrantAdmin shortPropsVariable={shortPropsVariable} />}
             {haveAdminGrant && <BanUser shortPropsVariable={shortPropsVariable} />}
             {haveAdminGrant && <MuteUser />}
-            {haveAdminGrant && <KickUser />}
+            {haveAdminGrant && <KickUser shortPropsVariable={shortPropsVariable} />}
         </>
     )
 }

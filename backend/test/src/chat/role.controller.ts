@@ -49,8 +49,16 @@ export class RoleController {
 
     banUser(id: Readonly<string>, userId: number,
         time: number, role: Readonly<string>) {
+        if (time < 0)
+            return ;
         if (role === "Administrator" || role === "Owner")
             this.roleService.banUser(id, userId, time);
+    }
+
+    kickUser(id: Readonly<string>, userId: number,
+        option: boolean, role: Readonly<string>) {
+        if (role === "Administrator" || role === "Owner")
+            this.roleService.kickUser(id, userId, option);
     }
 
     /* POST */
@@ -61,7 +69,7 @@ export class RoleController {
         const action: string = body.action;
         const getRole = await this.getRole(user.userID, body.id);
         const getRoleUserFocus = await this.getRole(body.userId, body.id);
-
+        
         if (!getRoleUserFocus || getRoleUserFocus.role === "Owner")
             return (false);
         if (!getRole || user.userID === body.userId
@@ -77,7 +85,10 @@ export class RoleController {
                     body.userId, body.id, "");
                 break;
             case "Ban":
-                this.banUser(body.id, body.userId, body.time, getRole.role);
+                this.banUser(body.id, body.userId, Number(body.option), getRole.role);
+                break;
+            case "Kick":
+                this.kickUser(body.id, body.userId, Boolean(body.option), getRole.role);
                 break;
             default:
                 break;

@@ -10,7 +10,7 @@ export class PostActionDto {
 
     @IsOptional()
     @IsNumber()
-    time: number;
+    option: number | boolean;
 
     @IsNumber()
     userId: number;

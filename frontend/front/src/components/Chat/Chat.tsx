@@ -6,6 +6,7 @@ import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
+import UserContext from "../../contexts/UserContext";
 
 export type lstMsg = {
     lstMsg: Array<{
@@ -88,6 +89,7 @@ const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
 const MainChat = (props: any) => {
     const refElem = useRef(null);
     const [online, setOnline] = useState<undefined | boolean | string>(undefined)
+    const userCtx: any = useContext(UserContext);
     const { usrSocket } = useContext(SocketContext);
     useEffect(() => {
         //subscribeChat
@@ -125,6 +127,7 @@ const MainChat = (props: any) => {
             usrSocket?.off("exception");
         })
     }, [props.id, usrSocket]);
+    const navigate = useNavigate();
     const contextUserLeave = useContext(ContextUserLeave);
     const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
     const [chatName, setChatName] = useState<string>("");
@@ -158,9 +161,14 @@ const MainChat = (props: any) => {
             }, content: string, type: string
         }*/) => {
             console.log(res)
-            if (res.type === "Ban") {
-                setLstMsg((lstMsg) => [...lstMsg, res]);
+            console.log(typeof userCtx.getUserId());
+            console.log(typeof res.user_id);
+            if ((res.type === "Ban" || res.type === "Kick")
+                && userCtx.getUserId() === res.user_id) {
+                navigate("/channels");
+                contextUserLeave();
             }
+            setLstMsg((lstMsg) => [...lstMsg, res]);
         })
         usrSocket?.on("sendBackMsg", (res: any) => {
             console.log("msg");
@@ -178,7 +186,6 @@ const MainChat = (props: any) => {
     }, [lstMsg.keys, props.id, online, usrSocket])
 
     const [msg, setMsg] = useState<null | string>(null);
-    const navigate = useNavigate();
     if (online === "Ban")
         return (<article className='containerChat'>You are banned from this chat</article>)
     else if (online === false)
