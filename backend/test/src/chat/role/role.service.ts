@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, Repository, Server } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Channel } from './chat.entity';
-import { ListUser } from './lstuser.entity';
+import { Channel } from '../chat.entity';
+import { ListUser } from '../lstuser.entity';
 import { RoleGateway } from './role.gateway';
-import { ListBan } from './lstban.entity';
-import { ListMute } from './lstmute.entity';
+import { ListBan } from '../lstban.entity';
+import { ListMute } from '../lstmute.entity';
 
 
 @Injectable()
@@ -53,8 +53,7 @@ export class RoleService {
                 );
         }
 
-        async kickUser(id: Readonly<string>, user_id: Readonly<number>,
-                askKick: Readonly<boolean>) {
+        async kickUser(id: Readonly<string>, user_id: Readonly<number>) {
                 const runner = this.dataSource.createQueryRunner();
                 
                 await runner.connect();
@@ -74,9 +73,44 @@ export class RoleService {
                                 .andWhere("user_id = :user_id")
                                 .setParameters({ user_id: user_id })
                                 .execute();
+                        await runner.commitTransaction();
                         this.roleGateway.updateListChat(id);
                         this.roleGateway.actionOnUser(id, user_id,
                                 user.user.username, user.user.avatarPath, "Kick");
+                } catch (e) {
+                        await runner.rollbackTransaction();
+                } finally {
+                        //doc want it released
+                        await runner.release();
+                }
+        }
+
+        async muteUser(id: Readonly<string>, user_id: Readonly<number>,
+                time: Readonly<number>) {
+                const runner = this.dataSource.createQueryRunner();
+
+                await runner.connect();
+                await runner.startTransaction();
+                try {
+                        const user: ListUser | null = await this.getUser(id, user_id);
+                        if (!user) {
+                                throw new NotFoundException("User not found, couldn't mute user.");
+                        }
+                        let date = new Date();
+                        date.setSeconds(date.getSeconds() + time);
+                        //mute user
+                        await this.listMuteRepository.createQueryBuilder()
+                                .insert()
+                                .into(ListMute)
+                                .values({
+                                        time: date,
+                                        user_id: user_id,
+                                        chatid: id
+                                })
+                                .execute();
+                        await runner.commitTransaction();
+                        this.roleGateway.actionOnUser(id, user_id,
+                                user.user.username, user.user.avatarPath, "Mute");
                 } catch (e) {
                         await runner.rollbackTransaction();
                 } finally {

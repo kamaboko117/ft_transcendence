@@ -74,15 +74,14 @@ const GrantAdmin = (props: { shortPropsVariable: typeShortProps }) => {
     </button>);
 }
 
-const handleBan = (event: React.MouseEvent<HTMLButtonElement>,
+const handleBanMute = (event: React.MouseEvent<HTMLButtonElement>,
     setTime: React.Dispatch<React.SetStateAction<string | null>>,
     ref: React.RefObject<HTMLInputElement>,
     time: string | null) => {
     event.preventDefault();
     const target: HTMLElement = event.target as HTMLElement;
 
-    if (target && time === null
-        ) {
+    if (target && time === null) {
         setTime("0");
         if (ref && ref.current)
             ref.current.value = "0";
@@ -114,7 +113,7 @@ const handleSubmitBanMute = (event: React.FormEvent<HTMLFormElement>,
     //fetch (ban) data to backend
     fetchToBackWithTimer({
         channelId: object.channelId,
-        action: "Ban",
+        action: object.action,
         jwt: object.jwt,
         userId: object.userId,
         option: time
@@ -133,13 +132,14 @@ const BanUser = (props: { shortPropsVariable: typeShortProps }) => {
         userId: props.shortPropsVariable.focusUserId,
         option: 0
     }
+
     useEffect(() => {
         setTime(null);
     }, [props.shortPropsVariable.focusUserId]);
     if (time != null) {
         return (<>
             <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-                handleBan(e, setTime, refElem, time)} className="adminInfoUser">Ban user</button>
+                handleBanMute(e, setTime, refElem, time)} className="adminInfoUser">Ban user</button>
             <form className='adminBox' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
                 handleSubmitBanMute(e, Number(time), setTime, refElem, object)}>
                 <input ref={refElem} type="text"
@@ -150,11 +150,38 @@ const BanUser = (props: { shortPropsVariable: typeShortProps }) => {
         );
     }
     return (<button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-        handleBan(e, setTime, refElem, time)} className="adminInfoUser">Ban user</button>);
+        handleBanMute(e, setTime, refElem, time)} className="adminInfoUser">Ban user</button>);
 }
 
-const MuteUser = () => {
-    return (<button className="adminInfoUser">Mute user</button>);
+const MuteUser = (props: { shortPropsVariable: typeShortProps }) => {
+    const [time, setTime] = useState<string | null>(null);
+    const refElem = useRef<HTMLInputElement>(null);
+    const object: typeFetchToBack = {
+        channelId: props.shortPropsVariable.channelId,
+        action: "Mute",
+        jwt: props.shortPropsVariable.jwt,
+        userId: props.shortPropsVariable.focusUserId,
+        option: 0
+    }
+
+    useEffect(() => {
+        setTime(null);
+    }, [props.shortPropsVariable.focusUserId]);
+    if (time != null) {
+        return (<>
+            <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+                handleBanMute(e, setTime, refElem, time)} className="adminInfoUser">Mute user</button>
+            <form className='adminBox' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
+                handleSubmitBanMute(e, Number(time), setTime, refElem, object)}>
+                <input ref={refElem} type="text"
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setTime(e.currentTarget.value)} />
+            </form>
+        </>
+        );
+    }
+    return (<button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+        handleBanMute(e, setTime, refElem, time)} className="adminInfoUser">Mute user</button>);
 }
 
 const fetchKick = (event: React.MouseEvent<HTMLButtonElement>,
@@ -190,7 +217,7 @@ const handleKick = (event: React.MouseEvent<HTMLButtonElement>,
 
 const AskKick = (props: {askKick: boolean, object: typeFetchToBack}) => {
     return (<button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-        fetchKick(e, props.object, props.askKick)}>Click to kick</button>);
+        fetchKick(e, props.object, props.askKick)}>Confirm kick</button>);
 }
 
 const KickUser = (props: { shortPropsVariable: typeShortProps }) => {
@@ -216,8 +243,6 @@ const KickUser = (props: { shortPropsVariable: typeShortProps }) => {
         handleKick(e, setAskKick, askKick)} className="adminInfoUser">Kick user</button>);
 }
 
-
-
 const AdminButtons = (props: {
     id: string, role: string | null, focusUserId: number,
     userId: number | undefined, userInfo: typeUserInfo, jwt: string
@@ -240,7 +265,7 @@ const AdminButtons = (props: {
         <>
             {role && role === "Owner" && <GrantAdmin shortPropsVariable={shortPropsVariable} />}
             {haveAdminGrant && <BanUser shortPropsVariable={shortPropsVariable} />}
-            {haveAdminGrant && <MuteUser />}
+            {haveAdminGrant && <MuteUser shortPropsVariable={shortPropsVariable} />}
             {haveAdminGrant && <KickUser shortPropsVariable={shortPropsVariable} />}
         </>
     )

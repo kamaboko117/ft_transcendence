@@ -1,6 +1,6 @@
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
-import { ChatGateway } from './chat.gateway';
+import { ChatGateway } from '../chat.gateway';
 
 @WebSocketGateway({
   cors: {
@@ -21,7 +21,9 @@ export class RoleGateway {
     if (emit_name === "Ban")
       content = username + " is banned from this channel";
     else if (emit_name === "Kick")
-    content = username + " is kick from this channel";
+      content = username + " is kicked from this channel";
+    else
+      content = username + " is muted from this channel";
     this.server.to(id).emit("actionOnUser", {
       room: id,
       user_id: String(user_id),
@@ -42,18 +44,18 @@ export class RoleGateway {
   /* id = id channel */
   actionOnUser(id: string, user_id: number,
     username: string, avatar_path: string, emit_name: string) {
-    
     this.emitToRoom(id, user_id, username, avatar_path, emit_name);
-    const mapSocket = this.chatGateway.getMap();
     const map = this.chatGateway.getMap();
-
-    map.forEach((value, key) => {
-      if (value === username)
-      {
-        this.server.in(key).socketsLeave(id);
-        return ;
-      }
-    })
+  
+    if (emit_name === "Ban" || emit_name === "Kick") {
+      map.forEach((value, key) => {
+        if (value === username)
+        {
+          this.server.in(key).socketsLeave(id);
+          return ;
+        }
+      })
+    }
   }
   /* id = id channel */
   updateListChat(id: string) {

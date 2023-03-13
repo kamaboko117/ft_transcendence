@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Post, Query, Request, ValidationPipe } from '@nestjs/common';
-import { Channel } from './chat.entity';
-import { TokenUser } from './chat.interface';
-import { PostActionDto } from './dto/role-action-dto';
-import { ListUser } from './lstuser.entity';
+import { Body, Controller, Get, Post, Query, Request } from '@nestjs/common';
+import { Channel } from '../chat.entity';
+import { TokenUser } from '../chat.interface';
+import { PostActionDto } from '../dto/role-action-dto';
+import { ListUser } from '../lstuser.entity';
 import { RoleService } from './role.service';
 
 type typeGetRole = {
@@ -55,10 +55,18 @@ export class RoleController {
             this.roleService.banUser(id, userId, time);
     }
 
-    kickUser(id: Readonly<string>, userId: number,
-        option: boolean, role: Readonly<string>) {
+    muteUser(id: Readonly<string>, userId: number,
+        time: number, role: Readonly<string>) {
+        if (time < 0)
+            return ;
         if (role === "Administrator" || role === "Owner")
-            this.roleService.kickUser(id, userId, option);
+            this.roleService.muteUser(id, userId, time);
+    }
+
+    kickUser(id: Readonly<string>, userId: number,
+        role: Readonly<string>) {
+        if (role === "Administrator" || role === "Owner")
+            this.roleService.kickUser(id, userId, );
     }
 
     /* POST */
@@ -87,8 +95,11 @@ export class RoleController {
             case "Ban":
                 this.banUser(body.id, body.userId, Number(body.option), getRole.role);
                 break;
+            case "Mute":
+                this.muteUser(body.id, body.userId, Number(body.option), getRole.role);
+                break ;
             case "Kick":
-                this.kickUser(body.id, body.userId, Boolean(body.option), getRole.role);
+                this.kickUser(body.id, body.userId, getRole.role);
                 break;
             default:
                 break;

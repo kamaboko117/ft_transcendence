@@ -1,5 +1,5 @@
 import React, { MouseEvent, useCallback, useContext, useEffect, useState } from 'react';
-import { FetchError, header } from '../FetchError';
+import { FetchError, header, headerPost } from '../FetchError';
 import { useEventListenerUserInfo } from '../../useHook/useEventListener'
 import "../../css/channel.css";
 import "../../css/chat.css";
@@ -39,8 +39,22 @@ type typeButtonsInfo = {
     userInfo: typeUserInfo
 }
 
-const blockUnblock = (event: MouseEvent<HTMLButtonElement>): void => {
+const blockUnblock = (event: MouseEvent<HTMLButtonElement>, jwt: string,
+    userId: number, setErrorCode: React.Dispatch<React.SetStateAction<number>>): void => {
     event.preventDefault();
+    console.log(event);
+    fetch("http://" + location.host + "/api/users/block-unblock", {
+        method: 'post',
+        headers: headerPost(jwt),
+        body: JSON.stringify({
+            userId: userId
+        })
+    }).then(res => {
+        if (res.ok)
+            return (res.json())
+        setErrorCode(res.status);
+        return (false);
+    })
 }
 const inviteGame = (event: MouseEvent<HTMLButtonElement>): void => {
     event.preventDefault();
@@ -57,7 +71,7 @@ const userProfile = (event: MouseEvent<HTMLButtonElement>): void => {
     DirectMessage component will load messages itself
 */
 const directMessage = (event: MouseEvent<HTMLButtonElement>,
-    renderDirectMessage: boolean, setDisplay: any, setId: React.Dispatch<React.SetStateAction<string>>,
+    setDisplay: any, setId: React.Dispatch<React.SetStateAction<string>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     userId: number, jwt: string): void => {
     event.preventDefault();
@@ -108,11 +122,12 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
 
 const ButtonsInfos = (props: typeButtonsInfo) => {
     return (<>
-        <button onClick={blockUnblock} className="userInfo">Block/Unblock</button>
+        <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+            blockUnblock(e, props.jwt, props.userInfo.id, props.setErrorCode)} className="userInfo">Block/Unblock</button>
         <button onClick={inviteGame} className="userInfo">Invite to a game</button>
         <button onClick={userProfile} className="userInfo">User Profile</button>
         <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-            directMessage(e, props.renderDirectMessage, props.setDisplay,
+            directMessage(e, props.setDisplay,
                 props.setId, props.setErrorCode,
                 props.userId, props.jwt)
         } className="userInfo">Direct message</button>
@@ -125,7 +140,7 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
 /* useCallback allow to cache functions between re-render */
 
 const UserInfo = (props: PropsUserInfo): JSX.Element => {
-    const { renderDirectMessage, userId, id, setDisplay, setUserId, setId } = useContext(ContextDisplayChannel);
+    const { renderDirectMessage, userId, setDisplay, setUserId, setId } = useContext(ContextDisplayChannel);
     const [userInfo, setUserInfo] = useState<typeUserInfo>({
         username: "", role: "", id: 0
     })
