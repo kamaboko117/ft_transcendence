@@ -13,6 +13,7 @@ export default function NavBar() {
 			<nav className="nav">
 				<ul>
 					<CustomLink to="/">Home</CustomLink>
+					<CustomLink to="/login">Log In</CustomLink>
 				</ul>
 			</nav>
 		)
@@ -25,7 +26,8 @@ export default function NavBar() {
 				<CustomLink to="/FriendList">FriendList</CustomLink>
 				<CustomLink to="/BlackList">BlackList</CustomLink>
 				<CustomLink to="/Setting">Setting</CustomLink>
-				<CustomLink to="/channels">Channel</CustomLink>
+				<CustomLink to="/channels">Channels</CustomLink>
+				<CustomLink to="/logout">Log Out</CustomLink>
 			</ul>
 		</nav>
 	)

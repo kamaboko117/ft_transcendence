@@ -13,28 +13,47 @@ export class RoleGateway {
 
   constructor(private chatGateway: ChatGateway) {}
 
-  /* id = id channel */
-  actionOnUser(id: string, user_id: number,
-    username: string, avatarPath: string, emit_name: string) {
+  /* emit action to room */
+  emitToRoom(id: string, user_id: number,
+    username: string, avatar_path: string, emit_name: string) {
+    let content = "";
+
+    if (emit_name === "Ban")
+      content = username + " is banned from this channel";
+    else if (emit_name === "Kick")
+    content = username + " is kick from this channel";
     this.server.to(id).emit("actionOnUser", {
       room: id,
-      user_id: user_id,
-      user: { username: username, avatarPath: avatarPath },
-      content: username + " is banned from this channel",
+      user_id: String(user_id),
+      user: { username: username, avatarPath: avatar_path },
+      content: content,
       type: emit_name
     });
     //2 for second chat if open by client
     this.server.to(id).emit("actionOnUser" + "2", {
       room: id,
-      user_id: user_id,
-      user: { username: username, avatarPath: avatarPath },
-      content: username + " is banned from this channel",
+      user_id: String(user_id),
+      user: { username: username, avatarPath: avatar_path },
+      content: content,
       type: emit_name
     });
+  }
+
+  /* id = id channel */
+  actionOnUser(id: string, user_id: number,
+    username: string, avatar_path: string, emit_name: string) {
+    
+    this.emitToRoom(id, user_id, username, avatar_path, emit_name);
     const mapSocket = this.chatGateway.getMap();
-    for (let socketId of mapSocket)
-      console.log("sockettId: " + socketId);
-    //doit faire quitter socket de la room
+    const map = this.chatGateway.getMap();
+
+    map.forEach((value, key) => {
+      if (value === username)
+      {
+        this.server.in(key).socketsLeave(id);
+        return ;
+      }
+    })
   }
   /* id = id channel */
   updateListChat(id: string) {
