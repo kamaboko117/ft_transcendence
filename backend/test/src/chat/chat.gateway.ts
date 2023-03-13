@@ -72,6 +72,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private listMsgRepository: Repository<ListMsg>;
   @InjectRepository(ListBan)
   private listBanRepository: Repository<ListBan>;
+  @InjectRepository(ListMute)
+  private listMuteRepository: Repository<ListMute>;
 
   private readonly mapSocket: Map<string, string>;
 
@@ -267,28 +269,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
     return (channel);
   }
-  /*
-  select list_ban.user_id
-  from list_ban
-  where list_ban.user_id = 1659745
-and NOW() < list_ban.time
-and list_ban.chatid = '0'
-  */
+  
+  /* check if user is not muted */
+  getUserMuted(id: string, user_id: number) {
+    const user: Promise<ListMute | null> = this.listMuteRepository
+      .createQueryBuilder("list_mute")
+      .where("list_mute.chatid = :id")
+      .setParameters({id: id})
+      .andWhere("list_mute.user_id = :user_id")
+      .setParameters({user_id: user_id})
+      .andWhere("list_mute.time > :time")
+      .setParameters({ time: "NOW()" })
+      .getOne()
+      return (user);
+  }
 
-  /*
-select channel.id, channel.name, channel.accesstype, channel.user_id, "user".username
-  from channel
-  inner join list_user on list_user.chatid = channel.id
-  inner join "user" on "user".user_id = list_user.user_id
-  where "user".user_id not in (select list_ban.user_id
-  from list_ban
-  where list_ban.user_id = 1659745
-and NOW() < list_ban.time
-and list_ban.chatid = '0') and list_user.user_id = 1659745
-and channel.id = '0'
-  */
+  /* check if user is on channel and not banned */
   async getUserOnChannel(id: string, user_id: number) {
-
     const listBan: ListBan[] = await this.listBanRepository
       .createQueryBuilder("list_ban")
       .select("list_ban.user_id")
@@ -526,13 +523,27 @@ and channel.id = '0'
   async newPostChat(@ConnectedSocket() socket: Readonly<any>,
     @MessageBody() data: Readonly<SendMsg>) {
     const user = socket.user;
+
     if (typeof user.userID != "number")
       return;
     const getUser = await this.getUserOnChannel(data.id, user.userID);
     if (getUser === "Ban")
-      return ({ ban: true });
+      return ({
+        room: data.id,
+        user_id: user.userID,
+        user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
+        content: "You are banned from this channel"
+      });
     if (typeof getUser === "undefined" || getUser === null)
       return (undefined);
+    const isMuted = await this.getUserMuted(data.id, user.userID);
+    if (isMuted)
+      return ({
+        room: data.id,
+        user_id: user.userID,
+        user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
+        content: "You are muted from this channel"
+      });
     this.listMsgRepository
       .createQueryBuilder()
       .insert()
@@ -543,19 +554,24 @@ and channel.id = '0'
         chatid: data.id
       }])
       .execute();
-    console.log(getUser);
-    this.server.to(data.id).emit("sendBackMsg", {
+    socket.to(data.id).emit("sendBackMsg", {
       room: data.id,
       user_id: user.userID,
       user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
       content: data.content
     });
-    this.server.to(data.id).emit("sendBackMsg2", {
+    socket.to(data.id).emit("sendBackMsg2", {
       room: data.id,
       user_id: user.userID,
       user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
       content: data.content
     });
+    return ({
+        room: data.id,
+        user_id: user.userID,
+        user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
+        content: data.content
+      })
   }
 
   @UseGuards(JwtGuard)

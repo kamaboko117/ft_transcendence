@@ -6,9 +6,9 @@ import { User } from '../typeorm/user.entity';
 export class ListMute {
     @PrimaryGeneratedColumn()
     id: number;
-
-    @Column({ nullable: true })
-    time: number;
+    /* z = timezone */
+    @Column({ nullable: true, type: 'timestamptz' })
+    time: Date;
 
     @ManyToOne(() => User, (user) => user.lstMute, { nullable: false, cascade: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })

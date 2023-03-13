@@ -33,6 +33,14 @@ import ContextDisplayChannel from "./contexts/displayChat";
 import UserContext from "./contexts/UserContext";
 import { useLocation } from 'react-router-dom';
 
+type lstMsg = {
+  lstMsg: Array<{
+      idUser: string,
+      content: string,
+      img: string
+  }>
+}
+
 const ErrorPage = () => {
   const location = useLocation();
   console.log(location);
@@ -47,13 +55,19 @@ function App() {
   const [renderDirectMessage, setDisplay] = useState<boolean>(false);
   const [userId, setUserId] = useState<number>(0);
   const [id, setId] = useState<string>("");
+  const [lstMsgChat, setLstMsgChat] = useState<lstMsg[]>([] as lstMsg[]);
+  const [lstMsgPm, setLstMsgPm] = useState<lstMsg[]>([] as lstMsg[]);
   const providers = {
     renderDirectMessage: renderDirectMessage,
     userId: userId,
     id: id,
+    lstMsgChat: lstMsgChat,
+    lstMsgPm: lstMsgPm,
     setDisplay: setDisplay,
     setUserId: setUserId,
-    setId: setId
+    setId: setId,
+    setLstMsgChat: setLstMsgChat,
+    setLstMsgPm: setLstMsgPm
   };
   let jwt = userCtx.getJwt();
   return (

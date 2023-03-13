@@ -7,6 +7,8 @@ import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
 import UserContext from "../../contexts/UserContext";
+import ContextDisplayChannel from '../../contexts/displayChat';
+//import ContextDisplayChannel from '../../contexts/displayChat';
 
 export type lstMsg = {
     lstMsg: Array<{
@@ -61,25 +63,42 @@ const handleLeave = async (e: React.MouseEvent<HTMLButtonElement>, contextUserLe
 }
 /* Post msg */
 const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
-    usrSocket: any, obj: any, ref: any, setMsg: any) => {
+    usrSocket: any, obj: any,
+    ref: any, setMsg: any,
+    setLstMsgChat:  React.Dispatch<React.SetStateAction<lstMsg[]>>,
+    setLstMsgPm:  React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
     e.preventDefault();
     usrSocket.emit('sendMsg', obj, (res) => {
         console.log("res: ");
         console.log(res);
+        /*if (res.ban === true) { }
+        else if (res.mute === true) { }
+        else {*/
+        console.log("box: " + obj.idBox)
+        if (res.room === obj.id)
+            setLstMsgChat((lstMsg) => [...lstMsg, res]);
+        if (res.room === obj.id && obj.id == obj.idBox)
+            setLstMsgPm((lstMsg) => [...lstMsg, res]);
+        //}
     })
     setMsg("");
     ref.current.value = "";
 }
 
 const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
-    usrSocket: any, obj: any, ref: any, setMsg: any) => {
+    usrSocket: any, obj: any, ref: any, setMsg: any,
+    setLstMsgChat:  React.Dispatch<React.SetStateAction<lstMsg[]>>,
+    setLstMsgPm:  React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
     if (e.key === "Enter" && e.shiftKey === false) {
         e.preventDefault();
         usrSocket.emit('sendMsg', obj, (res) => {
             console.log("res: ");
             console.log(res);
-            if (res.ban === true) { }
-            //prevoir kekchose pour ban
+            console.log("box: " + obj.idBox)
+            if (res.room === obj.id)
+                setLstMsgChat((lstMsg) => [...lstMsg, res]);
+            if (res.room === obj.id && obj.id == obj.idBox)
+                setLstMsgPm((lstMsg) => [...lstMsg, res]);
         })
         setMsg("");
         ref.current.value = "";
@@ -97,7 +116,6 @@ const MainChat = (props: any) => {
             id: props.id,
             psw: props.psw
         }, (res: any) => {
-            //prevoir kekchose pour ban
             if (res.ban === true)
                 setOnline("Ban");
             else {
@@ -129,7 +147,8 @@ const MainChat = (props: any) => {
     }, [props.id, usrSocket]);
     const navigate = useNavigate();
     const contextUserLeave = useContext(ContextUserLeave);
-    const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
+    const { id, lstMsgChat, setLstMsgChat, setLstMsgPm } = useContext(ContextDisplayChannel);
+    //const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
     const [chatName, setChatName] = useState<string>("");
     useEffect(() => {
         const ft_lst = async () => {
@@ -144,7 +163,9 @@ const MainChat = (props: any) => {
                 });
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
                 console.log("load msg");
-                setLstMsg(res.lstMsg);
+                console.log(res);
+                //setLstMsg(res.lstMsg);
+                setLstMsgChat(res.lstMsg);
                 setChatName(res.name);
                 if (res.accesstype === "2" || res.accesstype === "3")
                     contextUserLeave();
@@ -154,36 +175,34 @@ const MainChat = (props: any) => {
         if (online === true)
             ft_lst();
         console.log("liste mount");
-        usrSocket?.on("actionOnUser", (res: any/*{
-            room: string, user_id: number,
-            user: {
-                username: string, avatarPath: string,
-            }, content: string, type: string
-        }*/) => {
-            console.log(res)
-            console.log(typeof userCtx.getUserId());
-            console.log(typeof res.user_id);
+        usrSocket?.on("actionOnUser", (res: any) => {
             if ((res.type === "Ban" || res.type === "Kick")
-                && userCtx.getUserId() === res.user_id) {
+                && userCtx.getUserId() === res.user_id
+                && res.room === props.id) {
                 navigate("/channels");
                 contextUserLeave();
             }
-            setLstMsg((lstMsg) => [...lstMsg, res]);
+            if (res.room === props.id)
+                setLstMsgChat((lstMsg) => [...lstMsg, res]);
+            if (res.room === props.id && props.id == id)
+                setLstMsgPm((lstMsg) => [...lstMsg, res]);
         })
         usrSocket?.on("sendBackMsg", (res: any) => {
             console.log("msg");
             console.log(res);
             if (res.room === props.id)
-                setLstMsg((lstMsg) => [...lstMsg, res]);
+                setLstMsgChat((lstMsg) => [...lstMsg, res]);
+            if (res.room === props.id && props.id == id)
+                setLstMsgPm((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
             console.log("liste unmount");
             usrSocket?.off("actionOnUser");
             usrSocket?.off("sendBackMsg");
-            setLstMsg([]);
+            setLstMsgChat([]);
             setChatName("");
         });
-    }, [lstMsg.keys, props.id, online, usrSocket])
+    }, [lstMsgChat.keys, props.id, online, usrSocket])
 
     const [msg, setMsg] = useState<null | string>(null);
     if (online === "Ban")
@@ -203,7 +222,7 @@ const MainChat = (props: any) => {
                 }, navigate)}
                     className='chatLeave'>Leave</button>
             </div>
-            <ListMsg lstMsg={lstMsg} />
+            <ListMsg lstMsg={lstMsgChat} />
             <div className="sendMsg">
                 <textarea ref={refElem} id="submitArea" placeholder='Inclure commande deban dans chat'
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMsg(e.currentTarget.value)}
@@ -211,17 +230,18 @@ const MainChat = (props: any) => {
                         handleSubmitArea(e,
                             usrSocket, {
                             id: props.id,
+                            idBox: id,
                             content: msg
                         },
                             refElem,
-                            setMsg)}
+                            setMsg, setLstMsgChat, setLstMsgPm)}
                     className="chatBox" name="msg"></textarea>
                 <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmitButton(e,
                     usrSocket, {
                     id: props.id,
-                    //idUser: window.navigator.userAgent,
+                    idBox: id,
                     content: msg
-                }, refElem, setMsg)}
+                }, refElem, setMsg, setLstMsgChat, setLstMsgPm)}
                     className="chatBox">Go</button>
             </div>
         </article>

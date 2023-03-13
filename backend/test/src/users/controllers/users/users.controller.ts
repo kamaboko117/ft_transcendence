@@ -10,13 +10,14 @@ import {
     ValidationPipe,
     Request, Res, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator
 } from "@nestjs/common";
-import { CreateUserDto } from "src/users/dto/users.dtos";
+import { CreateUserDto, BlockUnblock } from "src/users/dto/users.dtos";
 import { UsersService } from "src/users/services/users/users.service";
 import { CustomAuthGuard } from 'src/auth/auth.guard';
 import { FakeAuthGuard } from 'src/auth/fake.guard';
 import { JwtGuard, Public } from 'src/auth/jwt.guard';
 import { AuthService } from 'src/auth/auth.service';
 import { FileInterceptor } from "@nestjs/platform-express";
+import { TokenUser } from "src/chat/chat.interface";
 
 //import {AuthGuard} from '@nestjs/passport';
 
@@ -84,6 +85,11 @@ export class UsersController {
         return ({ path: file.path });
     }
 
+    @Post('block-unblock')
+    blockUnblockUser(@Request() req: any, @Body() Body: BlockUnblock) {
+        const user: TokenUser = req.user;
+    }
+
     /*
         useGuard est un middleware
         le middleware peut traiter les requetes et les reponses
@@ -103,11 +109,7 @@ export class UsersController {
     async getProfile(@Request() req: any) {
         console.log("call profile");
         console.log(req.user);
-        const user: {
-            userID: number,
-            token: string,
-            username: string
-        } = req.user;
+        const user: TokenUser = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
         console.log("profile");
         console.log(ret_user);

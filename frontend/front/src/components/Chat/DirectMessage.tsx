@@ -1,11 +1,12 @@
 import React, { useState, MouseEvent, useContext, useEffect, useRef } from 'react';
-import { FetchError, header, headerPost } from '../FetchError';
+import { FetchError, header } from '../FetchError';
 import { lstMsg, ListMsg } from './Chat';
 import "../../css/directMessage.css";
 import ContextDisplayChannel from '../../contexts/displayChat';
 import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
-import { createPath, FormEncType, useLocation, useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import UserContext from '../../contexts/UserContext';
 
 type settingChat = {
     render: boolean,
@@ -69,22 +70,41 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>,
 
 /* Post msg */
 const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
-    usrSocket: any, obj: any, ref: any, setMsg: any) => {
+    usrSocket: any, obj: any,
+    ref: any, setMsg: any,
+    setLstMsgChat:  React.Dispatch<React.SetStateAction<lstMsg[]>>,
+    setLstMsgPm:  React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
     e.preventDefault();
     usrSocket.emit('sendMsg', obj, (res) => {
         console.log("res: ");
         console.log(res);
+        if (res.room === obj.id && obj.idBox === obj.id)
+            setLstMsgChat((lstMsg) => [...lstMsg, res]);
+        if (res.room === obj.id)
+            setLstMsgPm((lstMsg) => [...lstMsg, res]);
     })
     setMsg("");
     ref.current.value = "";
 }
 
 const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
-    usrSocket: any, obj: any, ref: any, setMsg: any) => {
+    usrSocket: any, obj: any,
+    ref: any, setMsg: any,
+    setLstMsgChat:  React.Dispatch<React.SetStateAction<lstMsg[]>>,
+    setLstMsgPm:  React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
     if (e.key === "Enter" && e.shiftKey === false) {
         e.preventDefault();
         usrSocket.emit('sendMsg', obj, (res) => {
             console.log(res);
+            /*if (res.ban === true)
+                setLstMsgChat((lstMsg) => [...lstMsg, res]);
+            else if (res.mute === true) { }
+            else {*/
+            if (res.room === obj.id && obj.idBox === obj.id)
+                setLstMsgChat((lstMsg) => [...lstMsg, res]);
+            if (res.room === obj.id)
+                setLstMsgPm((lstMsg) => [...lstMsg, res]);
+            //}
         })
         setMsg("");
         ref.current.value = "";
@@ -108,12 +128,12 @@ const handleSubmitPmUser = (e: React.FormEvent<HTMLFormElement>, user: string, j
     setId: React.Dispatch<React.SetStateAction<string>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     setPm: React.Dispatch<React.SetStateAction<listPm[]>>,
-    listPm: Array<{
+    /*listPm: Array<{
         chatid: string,
         user: {
             username: string
         },
-    }>,) => {
+    }>,*/) => {
         e.preventDefault();
         fetch('http://' + location.host + '/api/chat/find-pm-username?' + new URLSearchParams({
                 username: String(user)
@@ -153,7 +173,7 @@ const BoxPmUser = (props: {setId: React.Dispatch<React.SetStateAction<string>>,
     return (
     <form className='formPm' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
         handleSubmitPmUser(e, user, props.jwt,
-            props.setId, props.setErrorCode, props.setPm, props.listPm)}>
+            props.setId, props.setErrorCode, props.setPm/*, props.listPm*/)}>
         <input type="text" placeholder='Direct message a user' name="user"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setUser(e?.target?.value)} />
@@ -205,11 +225,12 @@ const ListDiscussion = (props: propsListChannel) => {
     </div>
     );
 }
-
+/* getSecondPartRegex is url id */
 const DiscussionBox = (props: {
     id: string,
     jwt: string,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    setId: React.Dispatch<React.SetStateAction<string>>,
     isPrivate: boolean
 }) => {
     const stringRegex = /(\/\w*\/)/;
@@ -221,21 +242,25 @@ const DiscussionBox = (props: {
     if (typeof getLocation !== "undefined") {
         getSecondPartRegex = getLocation.replace(stringRegex, "");
     }
+    const userCtx: any = useContext(UserContext);
     const refElem = useRef(null);
     const { usrSocket } = useContext(SocketContext);
-    const [online, setOnline] = useState<undefined | boolean>(undefined)
+    const [online, setOnline] = useState<undefined | boolean | string>(undefined)
     useEffect(() => {
         //subscribeChat
         console.log("JOIN ROOM ID: " + props.id);
         if (props.id != "") {
             usrSocket?.emit("joinRoomChat", {
                 id: props.id,
-            }, (res: boolean) => {
-                console.log(res);
-                if (res === true)
-                    setOnline(true);
-                else
-                    setOnline(false);
+            }, (res: any) => {
+                if (res.ban === true)
+                    setOnline("Ban");
+                else {
+                    if (res === true)
+                        setOnline(true);
+                    else
+                        setOnline(false);
+            }
             });
         }
         //listen to exception sent by backend
@@ -264,7 +289,8 @@ const DiscussionBox = (props: {
         })
     }, [props.id, usrSocket]);
 
-    const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
+    //const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
+    const { setLstMsgChat, lstMsgPm, setLstMsgPm } = useContext(ContextDisplayChannel);
     useEffect(() => {
         const ft_lst = async () => {
             const res = await fetch('http://' + location.host + '/api/chat?' + new URLSearchParams({
@@ -276,43 +302,49 @@ const DiscussionBox = (props: {
                         return (res.json());
                     props.setErrorCode(res.status);
                 });
+            console.log(res);
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
-                setLstMsg(res.lstMsg);
+                setLstMsgPm(res.lstMsg);
             }
             console.log("load...");
         }
         if (online === true)
             ft_lst();
         console.log("liste mount");
-        usrSocket?.on("actionOnUser2", (res: any/*{
-            room: string, user_id: number,
-            user: {
-                username: string, avatarPath: string,
-            }, content: string, type: string
-        }*/) => {
-            if (res.type === "Ban") {
-                setLstMsg((lstMsg) => [...lstMsg, res])
+        usrSocket?.on("actionOnUser2", (res: any) => {
+            if ((res.type === "Ban" || res.type === "Kick")
+                && userCtx.getUserId() === res.user_id
+                && res.room === props.id) {
+                props.setId("");
             }
+            if (res.room === props.id && getSecondPartRegex == props.id)
+                setLstMsgChat((lstMsg) => [...lstMsg, res]);
+            if (res.room === props.id)
+                setLstMsgPm((lstMsg) => [...lstMsg, res]);
         })
         usrSocket?.on("sendBackMsg2", (res: any) => {
+            if (res.room === props.id && getSecondPartRegex == props.id)
+                setLstMsgChat((lstMsg) => [...lstMsg, res]);
             if (res.room === props.id)
-                setLstMsg((lstMsg) => [...lstMsg, res]);
+                setLstMsgPm((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
             console.log("liste unmount");
             usrSocket?.off("actionOnUser2");
             usrSocket?.off("sendBackMsg2");
-            setLstMsg([]);
+            setLstMsgPm([]);
         });
-    }, [lstMsg.keys, props.id, online, usrSocket]);
+    }, [lstMsgPm.keys, props.id, online, usrSocket]);
     const [msg, setMsg] = useState<null | string>(null);
 
-    if (props.id != "" && online === false)
-        return (<article className='containerDiscussionBox'>Unauthorized connection</article>)
+    if (online === "Ban" && props.id != "")
+        return (<article className='containerDiscussionBox'><span className='fullBox'>You are banned from this chat</span><Button /></article>)
+    else if (props.id != "" && online === false)
+        return (<article className='containerDiscussionBox'><span className='fullBox'>Unauthorized connection</span><Button /></article>)
     else if (props.id != "" && typeof online == "undefined")
-        return (<article className='containerDiscussionBox'>Connecting to chat...</article>)
+        return (<article className='containerDiscussionBox'><span className='fullBox'>Connecting to chat...</span><Button /></article>)
     return (<div className='containerDiscussionBox'>
-        <ListMsg lstMsg={lstMsg} />
+        <ListMsg lstMsg={lstMsgPm} />
         <div className='containerPost'>
             <textarea ref={refElem} id="submitArea"
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMsg(e.currentTarget.value)}
@@ -320,19 +352,21 @@ const DiscussionBox = (props: {
                     handleSubmitArea(e,
                         usrSocket, {
                         id: props.id,
+                        idBox: getSecondPartRegex,
                         content: msg,
                         isPm: props.isPrivate,
                     },
                         refElem,
-                        setMsg
+                        setMsg, setLstMsgChat, setLstMsgPm
                     )}
                 className="chatBox" name="msg"></textarea>
             <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmitButton(e,
                 usrSocket, {
                 id: props.id,
+                idBox: getSecondPartRegex,
                 content: msg,
                 isPm: props.isPrivate,
-            }, refElem, setMsg)}
+            }, refElem, setMsg, setLstMsgChat, setLstMsgPm)}
             >Go</button>
             <Button />
         </div>
@@ -381,7 +415,7 @@ const Box = (props: settingBox) => {
                 setId={props.setId} setErrorCode={props.setErrorCode} setPm={setPm}
                 jwt={props.jwt} />
             <DiscussionBox id={props.id} jwt={props.jwt}
-                 setErrorCode={props.setErrorCode}
+                 setErrorCode={props.setErrorCode} setId={props.setId}
                 isPrivate={isPrivate} />
         </article>
     );
