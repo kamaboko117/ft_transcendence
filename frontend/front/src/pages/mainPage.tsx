@@ -30,7 +30,7 @@ function MainPage(props: {jwt: string}) {
             .then((res) => {
                 if (res)
                     setUsername(res.username);
-            });
+            }).catch(e=>console.log(e));
     }
 }, [props.jwt])
   if (errorCode >= 400)

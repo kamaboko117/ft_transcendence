@@ -13,13 +13,17 @@ import AdminComponent from './Admin';
 type typeUserInfo = {
     username: string,
     role: string | null,
-    id: number
+    id: number,
+    friend: boolean,
+    block: boolean,
 }
 
 type PropsUserInfo = {
     listUser: Array<{
         user_id: number,
         role: string | null,
+        friend: boolean,
+        block: boolean,
         user: {username: string},
     }>,
     jwt: string,
@@ -39,22 +43,25 @@ type typeButtonsInfo = {
     userInfo: typeUserInfo
 }
 
-const blockUnblock = (event: MouseEvent<HTMLButtonElement>, jwt: string,
-    userId: number, setErrorCode: React.Dispatch<React.SetStateAction<number>>): void => {
+const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
+    userId: number, setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    type: number): void => {
     event.preventDefault();
-    console.log(event);
-    fetch("http://" + location.host + "/api/users/block-unblock", {
+
+    fetch("http://" + location.host + "/api/users/fr-bl-list", {
         method: 'post',
         headers: headerPost(jwt),
         body: JSON.stringify({
-            userId: userId
+            userId: userId, type: type
         })
     }).then(res => {
         if (res.ok)
-            return (res.json())
-        setErrorCode(res.status);
-        return (false);
-    })
+            return (res.json());
+        setErrorCode(res.status)
+    }).then((res: {action: boolean}) => {
+        if (res)
+            console.log(res.action);
+    }).catch(e=>console.log(e));
 }
 const inviteGame = (event: MouseEvent<HTMLButtonElement>): void => {
     event.preventDefault();
@@ -89,7 +96,7 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>,
             setDisplay(true);
             setId(res);
         }
-    });
+    }).catch(e=>console.log(e));
 }
 
 const handleClick = (event: React.MouseEvent<HTMLDivElement>,
@@ -108,14 +115,16 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
             setUserInfo({
                 username: name,
                 role: attributes[1].value,
-                id: Number(attributes[0].value)
+                id: Number(attributes[0].value),
+                friend: false,
+                block: false
             });
         else
-            setUserInfo({username: name, role: "", id: 0});
+            setUserInfo({username: name, role: "", id: 0, block: false, friend: false});
     }
     else {
         setUserId(0);
-        setUserInfo({username: "", role: "", id: 0})
+        setUserInfo({username: "", role: "", id: 0, block: false, friend: false})
     }
     setTop(parentNode.offsetTop);
 }
@@ -123,7 +132,11 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
 const ButtonsInfos = (props: typeButtonsInfo) => {
     return (<>
         <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-            blockUnblock(e, props.jwt, props.userInfo.id, props.setErrorCode)} className="userInfo">Block/Unblock</button>
+            listHandle(e, props.jwt, props.userInfo.id, props.setErrorCode, 1)}
+            className="userInfo">{(props.userInfo.block === true? "Unblock": "Block")}</button>
+        <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+            listHandle(e, props.jwt, props.userInfo.id, props.setErrorCode, 0)}
+            className="userInfo">{(props.userInfo.friend === true? "Remove": "Add")} friend</button>
         <button onClick={inviteGame} className="userInfo">Invite to a game</button>
         <button onClick={userProfile} className="userInfo">User Profile</button>
         <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
@@ -142,7 +155,7 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
 const UserInfo = (props: PropsUserInfo): JSX.Element => {
     const { renderDirectMessage, userId, setDisplay, setUserId, setId } = useContext(ContextDisplayChannel);
     const [userInfo, setUserInfo] = useState<typeUserInfo>({
-        username: "", role: "", id: 0
+        username: "", role: "", id: 0, friend: false, block: false
     })
     //need to search in listUser, to update userInfo 
     //  variable content (like this AdminComponent get updated properly)
@@ -152,7 +165,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
         if (found) {
             setUserInfo({username: userInfo.username,
                 role: found.role,
-                id: userInfo.id
+                id: userInfo.id, friend: userInfo.friend, block: userInfo.block
             });
         }
     }, [found, props.id]);
@@ -162,7 +175,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
     const Element = scroll.Element;
 
     const handleListenerClick = () => {
-        setUserInfo({username: "", role: "", id: 0});
+        setUserInfo({username: "", role: "", id: 0, friend: false, block: false});
     }
     //Read React's reference doc
     const ref: any = useEventListenerUserInfo(handleListenerClick);
@@ -192,6 +205,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
                     props.listUser.map((usr) => (
                         <span data-user-id={usr.user_id}
                             data-role={(usr.role == null ? "" : usr.role)}
+                            data-friend={usr.friend} data-block={usr.block}
                             key={++i}>{usr.user.username}</span>
                     ))
                 }
@@ -228,11 +242,11 @@ const ListUser = (props: { id: string, jwt: string }) => {
                 if (res.ok)
                     return (res.json());
                 setErrorCode(res.status);
-            }));
+            }).catch(e=>console.log(e)));
         }
         fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
             setLstUser(res);
-        });
+        }).catch(e=>console.log(e));
         usrSocket?.on("updateListChat", () => {
             fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
                 setLstUser(res);

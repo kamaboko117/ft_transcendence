@@ -74,7 +74,7 @@ function UploadForm(event: FormEvent<HTMLFormElement>,
 		setErrorCode(res.status);
 	}).then(res => {
 		setavatar_path(res.path);
-	});
+	}).catch(e=>console.log(e));
 }
 
 function FormUpdateUser(props: {jwt: string,
@@ -126,8 +126,8 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 				setDefeat(res?.sstat.defeat);
 				*/
 				setSstat(res);
-            })
-	}, [])
+            }).catch(e=>console.log(e));
+	}, []);
 	if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
 	if (/*OwnUser*/ 1) {

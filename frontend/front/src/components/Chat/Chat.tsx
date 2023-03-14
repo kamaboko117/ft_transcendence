@@ -160,7 +160,7 @@ const MainChat = (props: any) => {
                     if (res.ok)
                         return (res.json());
                     props.setErrorCode(res.status);
-                });
+                }).catch(e=>console.log(e));
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
                 console.log("load msg");
                 console.log(res);
@@ -270,7 +270,7 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
             return (res.json())
         setErrorCode(res.status);
         return (false);
-    }));
+    }).catch(e=>console.log(e)));
 }
 
 /* Detect and return if a password for the channel is used
@@ -287,7 +287,7 @@ const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>,
             if (res.ok)
                 return (res.json());
             setErrorCode(res.status);
-        }));
+        }).catch(e=>console.log(e)));
 }
 
 const DisplayErrorPasswordBox = (props: { error: boolean }) => {
@@ -358,7 +358,7 @@ const Chat = (props: {jwt: string}) => {
     const hasPass: Promise<boolean> = hasPassword(id, props.jwt, setErrorCode);
     hasPass.then(res => {
         setLoadPsw(res);
-    });
+    }).catch(e=>console.log(e));
     return (<BlockChat id={id} getLocation={getLocation}
         setErrorCode={setErrorCode} jwt={props.jwt}
         hasPsw={psw} />);

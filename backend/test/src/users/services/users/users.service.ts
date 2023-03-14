@@ -1,10 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/typeorm";
-import { Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { CreateUserDto } from "src/users/dto/users.dtos";
 import { randomBytes } from "crypto";
 import { Stat } from "src/typeorm/stat.entity";
+import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
 
 const validateURL = "https://api.intra.42.fr/oauth/token"
 const infoURL = "https://api.intra.42.fr/oauth/token/info"
@@ -18,6 +19,9 @@ export class UsersService {
         private readonly userRepository: Repository<User>,
         @InjectRepository(Stat)
         private readonly statRepository: Repository<Stat>,
+        @InjectRepository(BlackFriendList)
+        private readonly blFrRepository: Repository<BlackFriendList>,
+        private dataSource: DataSource
     ) { }
 
     /*
@@ -72,7 +76,7 @@ export class UsersService {
                 return (res.json());
             }
             return (undefined)
-        });
+        }).catch(e=>console.log(e));
         if (typeof res === "undefined" || typeof res.access_token === "undefined")
             return (undefined);
         token = {
@@ -89,7 +93,7 @@ export class UsersService {
             headers: {
                 authorization: `Bearer ${token.access_token}`
             }
-        }).then(res => res.json());
+        }).then(res => res.json()).catch(e=>console.log(e));
         return (res.resource_owner_id);
     }
     getUsers() {
@@ -104,6 +108,7 @@ export class UsersService {
             .setParameters({ id: user_id })
             .execute()
     }
+
     /*
         exemple requete sql avec un innerjoin facon typeorm
         createQueryBuilder("list_msg")
@@ -114,6 +119,7 @@ export class UsersService {
         .setParameters({ id: element.id })
         .getMany() OU getOne();
     */
+
     async getUserProfile(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath'])
@@ -144,4 +150,64 @@ export class UsersService {
             .getOne();
         return (user);
     }
+
+    /* add remove friend - block unblock user part */
+
+    findBlFr(ownerId: number, focusUserId: number, type: number): Promise<BlackFriendList | null> {
+        const list: Promise<BlackFriendList | null> = this.blFrRepository.createQueryBuilder("bl_fr")
+            .where("bl_fr.owner_id = :ownerId")
+            .setParameters({ownerId: ownerId})
+            .andWhere("bl_fr.focus_id = :focusUserId")
+            .setParameters({focusUserId: focusUserId})
+            .andWhere("bl_fr.type_list = :type")
+            .setParameters({type: type})
+            .getOne()
+        return (list)
+    }
+    /* insert blacklist or friendlist */
+    async insertBlFr(ownerId: number, focusUserId: number, type: number) {
+        const runner = this.dataSource.createQueryRunner();
+                
+        await runner.connect();
+        await runner.startTransaction();
+        try {
+            await this.blFrRepository
+                .createQueryBuilder()
+                .insert()
+                .into(BlackFriendList)
+                .values([{
+                    type_list: type, owner_id: ownerId, focus_id: focusUserId
+                }])
+                .execute();
+            await runner.commitTransaction();
+        } catch (e) {
+            await runner.rollbackTransaction();
+        } finally {
+                //doc want it released
+                await runner.release();
+        }
+    }
+
+    async deleteBlFr(ownerId: number, focusUserId: number, type: number, findId: number) {
+        const runner = this.dataSource.createQueryRunner();
+                
+        await runner.connect();
+        await runner.startTransaction();
+        try {
+            await this.blFrRepository
+                .createQueryBuilder()
+                .delete()
+                .from(BlackFriendList)
+                .where("id = :id")
+                .setParameters({ id: findId })
+                .execute();
+            await runner.commitTransaction();
+        } catch (e) {
+            await runner.rollbackTransaction();
+        } finally {
+                //doc want it released
+                await runner.release();
+        }
+    }
+    /* end add remove friend - block unblock user part  */
 }

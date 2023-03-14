@@ -23,7 +23,7 @@ function UserItem(props: ItemProps) {
                 .then((res) => {
                     if (res)
                         setUsername(res.username);
-                });
+                }).catch(e=>console.log(e));
         }
     }, [props.jwt])
     return (<div>

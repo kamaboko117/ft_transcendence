@@ -20,12 +20,12 @@ export class BlackFriendList {
     @JoinColumn({ name: 'owner_id' })
     userOwner: User;
     @Column({ nullable: false })
-    owner_id: string
+    owner_id: number
 	//
 
 	@ManyToOne(() => User, (user) => user.lstBlackFriendFocus, { nullable: false, cascade: true })
     @JoinColumn({ name: 'focus_id' })
     userFocus: User;
     @Column({ nullable: false })
-    focus_id: string
+    focus_id: number
 }
