@@ -36,7 +36,9 @@ export class ChatController {
     @Get('users')
     async getAllUsersOnChannel(@Request() req: any,
         @Query('id') id: Readonly<string>) {
-        const listUsers: any = await this.chatGateway.getAllUsersOnChannel(id);
+        const user: TokenUser = req.user;
+        const listUsers: any = await this.chatGateway.getAllUsersOnChannel(id, user.userID);
+
         if (typeof listUsers === "undefined" || listUsers === null)
             return (false);
         return (listUsers);
@@ -219,7 +221,7 @@ export class ChatController {
         @Query('id') id: Readonly<string>) {
         const user: TokenUser = req.user;
         const chan = await this.chatGateway.getChannelByTest(id);
-        const listMsg = await this.chatGateway.getListMsgByChannelId(id);
+        const listMsg = await this.chatGateway.getListMsgByChannelId(id, user.userID);
 
         let channel = {
             id: chan?.id,

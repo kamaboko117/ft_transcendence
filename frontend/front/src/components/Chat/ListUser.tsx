@@ -14,17 +14,17 @@ type typeUserInfo = {
     username: string,
     role: string | null,
     id: number,
-    friend: boolean,
-    block: boolean,
+    friend: number | null,
+    block: number | null,
 }
 
 type PropsUserInfo = {
     listUser: Array<{
-        user_id: number,
-        role: string | null,
-        friend: boolean,
-        block: boolean,
-        user: {username: string},
+        list_user_user_id: number,
+        list_user_role: string | null,
+        fl: number,
+        bl: number,
+        User_username: string,
     }>,
     jwt: string,
     id: string,
@@ -41,13 +41,24 @@ type typeButtonsInfo = {
     userId: number,
     jwt: string,
     userInfo: typeUserInfo
+    setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
 }
 
+
+
 const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
-    userId: number, setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-    type: number): void => {
+    userId: number,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    type: number,
+    userInfo: typeUserInfo,
+    setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,): void => {
     event.preventDefault();
 
+    function updateUserInfo(username: string, role: string | null, id: number,
+        friend: number | null, block: number | null) {
+            setUserInfo({username: username, role: role,
+                id: id, friend: friend, block: block});
+        }
     fetch("http://" + location.host + "/api/users/fr-bl-list", {
         method: 'post',
         headers: headerPost(jwt),
@@ -58,9 +69,27 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
         if (res.ok)
             return (res.json());
         setErrorCode(res.status)
-    }).then((res: {action: boolean}) => {
-        if (res)
-            console.log(res.action);
+    }).then((res: {add: boolean, type: number}) => {
+        if (res) {
+            if (res.add) {
+                if (res.type === 1) {
+                    updateUserInfo( userInfo.username, userInfo.role, userInfo.id,
+                        userInfo.friend, res.type);
+                } else if (res.type === 0) {
+                    updateUserInfo( userInfo.username, userInfo.role, userInfo.id,
+                        res.type, userInfo.block);
+                }
+            } else {
+                if (res.type === 1) {
+                    updateUserInfo( userInfo.username, userInfo.role, userInfo.id,
+                        userInfo.friend, null);
+                } else if (res.type === 0) {
+                    updateUserInfo( userInfo.username, userInfo.role, userInfo.id,
+                        null, userInfo.block);
+                }
+            }
+            
+        }
     }).catch(e=>console.log(e));
 }
 const inviteGame = (event: MouseEvent<HTMLButtonElement>): void => {
@@ -108,23 +137,23 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     const name: string = e.textContent as string;
     const attributes: NamedNodeMap = e.attributes as NamedNodeMap;
     const parentNode: HTMLElement = e.parentNode as HTMLElement;
-
+        console.log(e);
     if (userInfo.username === "" || userInfo.username != name) {
         setUserId(Number(attributes[0].value));
-        if (attributes.length === 2)
+        if (attributes.length === 4)
             setUserInfo({
                 username: name,
                 role: attributes[1].value,
                 id: Number(attributes[0].value),
-                friend: false,
-                block: false
+                friend: Number(attributes[2].value),
+                block: Number(attributes[3].value)
             });
         else
-            setUserInfo({username: name, role: "", id: 0, block: false, friend: false});
+            setUserInfo({username: name, role: "", id: 0, block: null, friend: null});
     }
     else {
         setUserId(0);
-        setUserInfo({username: "", role: "", id: 0, block: false, friend: false})
+        setUserInfo({username: "", role: "", id: 0, block: null, friend: null})
     }
     setTop(parentNode.offsetTop);
 }
@@ -132,11 +161,15 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
 const ButtonsInfos = (props: typeButtonsInfo) => {
     return (<>
         <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-            listHandle(e, props.jwt, props.userInfo.id, props.setErrorCode, 1)}
-            className="userInfo">{(props.userInfo.block === true? "Unblock": "Block")}</button>
+            listHandle(e, props.jwt,
+                props.userInfo.id, props.setErrorCode,
+                1, props.userInfo, props.setUserInfo)}
+            className="userInfo">{(props.userInfo.block === 1 ? "Unblock": "Block")}</button>
         <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-            listHandle(e, props.jwt, props.userInfo.id, props.setErrorCode, 0)}
-            className="userInfo">{(props.userInfo.friend === true? "Remove": "Add")} friend</button>
+            listHandle(e, props.jwt,
+                props.userInfo.id, props.setErrorCode,
+                0, props.userInfo, props.setUserInfo)}
+            className="userInfo">{(props.userInfo.friend === 0 ? "Remove": "Add")} friend</button>
         <button onClick={inviteGame} className="userInfo">Invite to a game</button>
         <button onClick={userProfile} className="userInfo">User Profile</button>
         <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
@@ -155,16 +188,16 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
 const UserInfo = (props: PropsUserInfo): JSX.Element => {
     const { renderDirectMessage, userId, setDisplay, setUserId, setId } = useContext(ContextDisplayChannel);
     const [userInfo, setUserInfo] = useState<typeUserInfo>({
-        username: "", role: "", id: 0, friend: false, block: false
+        username: "", role: "", id: 0, friend: null, block: null
     })
     //need to search in listUser, to update userInfo 
     //  variable content (like this AdminComponent get updated properly)
     const object = props.listUser;
-    const found = object.find(elem => Number(elem.user_id) === userInfo.id);
+    const found = object.find(elem => Number(elem.list_user_user_id) === userInfo.id);
     useEffect(() => {
         if (found) {
             setUserInfo({username: userInfo.username,
-                role: found.role,
+                role: found.list_user_role,
                 id: userInfo.id, friend: userInfo.friend, block: userInfo.block
             });
         }
@@ -175,7 +208,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
     const Element = scroll.Element;
 
     const handleListenerClick = () => {
-        setUserInfo({username: "", role: "", id: 0, friend: false, block: false});
+        setUserInfo({username: "", role: "", id: 0, friend: null, block: null});
     }
     //Read React's reference doc
     const ref: any = useEventListenerUserInfo(handleListenerClick);
@@ -203,10 +236,11 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
                     setUserId, setTop)}>
                 {props.listUser &&
                     props.listUser.map((usr) => (
-                        <span data-user-id={usr.user_id}
-                            data-role={(usr.role == null ? "" : usr.role)}
-                            data-friend={usr.friend} data-block={usr.block}
-                            key={++i}>{usr.user.username}</span>
+                        <span data-user-id={usr.list_user_user_id}
+                            data-role={(usr.list_user_role == null ? "" : usr.list_user_role)}
+                            data-friend={(usr.fl == null ? "" : usr.fl)}
+                            data-block={(usr.bl == null ? "" : usr.bl)}
+                            key={++i}>{usr.User_username}</span>
                     ))
                 }
             </Element >
@@ -215,7 +249,8 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
                 <ButtonsInfos id={props.id} chooseClassName={chooseClassName}
                     renderDirectMessage={renderDirectMessage} setDisplay={setDisplay}
                     setId={setId} setErrorCode={props.setErrorCode}
-                    userId={userId} jwt={props.jwt} userInfo={userInfo} />
+                    userId={userId} jwt={props.jwt} userInfo={userInfo}
+                    setUserInfo={setUserInfo} />
             </div>
         </>
     );
