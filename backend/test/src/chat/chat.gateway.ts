@@ -15,9 +15,10 @@ import { ListMsg } from './lstmsg.entity';
 import { ListMute } from './lstmute.entity';
 import { ListUser } from './lstuser.entity';
 import { JwtGuard } from 'src/auth/jwt.guard';
-import { ConsoleLogger, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { User } from 'src/typeorm';
 import { AuthService } from 'src/auth/auth.service';
+import { BlackFriendList } from 'src/typeorm/blackFriendList.entity';
 
 type Channel_ret = {
   Channel_id: string
@@ -38,6 +39,7 @@ class SendMsg {
   @IsString()
   content: string;
 }
+/*
 class SendMsgPm {
   @IsString()
   id: string;
@@ -45,7 +47,7 @@ class SendMsgPm {
   username: string;
   @IsString()
   content: string;
-}
+}*/
 
 /*
   middleware nestjs socket
@@ -74,6 +76,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private listBanRepository: Repository<ListBan>;
   @InjectRepository(ListMute)
   private listMuteRepository: Repository<ListMute>;
+  @InjectRepository(BlackFriendList)
+  private readonly blFrRepository: Repository<BlackFriendList>
 
   private readonly mapSocket: Map<string, string>;
 
@@ -236,7 +240,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return (channel);
   }
 
-  async getListMsgByChannelId(id: string) {
+  async getListMsgByChannelId(id: string, userId: number) {
     const listMsg: Array<{
       user_id: number,
       content: string
@@ -255,7 +259,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       .createQueryBuilder("channel")
       .select(["channel.id", "channel.name", "channel.accesstype",
         "channel.user_id", "channel.password"])
-      .where("channel.id = :id")// AND ListUser.user_id = :iduser")
+      .where("channel.id = :id")
       .setParameters({ id: id })
       .getOne();
     return (channel);
@@ -303,7 +307,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       .innerJoin("channel.lstUsr", "ListUser")
       .innerJoinAndSelect("ListUser.user", "User")
       .select(["channel.id", "channel.name", "channel.accesstype", "Channel.user_id", "User.username", "User.avatarPath"])
-      .where("channel.id = :id")// AND ListUser.user_id = :iduser")
+      .where("channel.id = :id")
       .setParameters({ id: id })
       .andWhere("User.userID = :user_id")
       .setParameters({ user_id: user_id })
@@ -311,16 +315,34 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return (user);
   }
 
-  async getAllUsersOnChannel(id: string) {
+  /* join and subquery seem to not work with getMany() */
+  async getAllUsersOnChannel(id: string, userId: number) {
+    const bl = this.blFrRepository.createQueryBuilder("t1").subQuery()
+      .from(BlackFriendList, "t1")
+      .select(["focus_id", "type_list"])
+      .where("owner_id = :ownerId", {ownerId: userId})
+      .andWhere("type_list = :type1", {type1: 1})
+    const fl = this.blFrRepository.createQueryBuilder("t2").subQuery()
+      .from(BlackFriendList, "t2")
+      .select(["focus_id", "type_list"])
+      .where("owner_id = :ownerId", {ownerId: userId})
+      .andWhere("type_list = :type2", {type2: 0})
+
     const arr: any = await this.listUserRepository
       .createQueryBuilder("list_user")
       .select(["list_user.user_id", "list_user.role"])
       .addSelect("User.username")
+      .addSelect("t1.type_list AS bl")
+      .addSelect("t2.type_list AS fl")
       .innerJoin("list_user.user", "User")
+      .leftJoin(bl.getQuery(), "t1", "t1.focus_id = User.user_id")
+      .setParameters({type1: 1, ownerId: userId})
+      .leftJoin(fl.getQuery(), "t2", "t2.focus_id = User.user_id")
+      .setParameters({type2: 0, ownerId: userId})
       .where("list_user.chatid = :id")
       .setParameters({ id: id })
       .orderBy("User.username", 'ASC')
-      .getMany();
+      .getRawMany();
     return (arr);
   }
 

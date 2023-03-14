@@ -112,13 +112,13 @@ export class UsersController {
         if (find) {
             //delete
             this.userService.deleteBlFr(user.userID, body.userId, body.type, find.id);
-            return ({action: true})
+            return ({add: false, type: body.type});
         }
         else {
             //insert
             this.userService.insertBlFr(user.userID, body.userId, body.type);
         }
-        return ({action: false})
+        return ({add: true, type: body.type});
     }
 
      /* authguard(strategy name) */

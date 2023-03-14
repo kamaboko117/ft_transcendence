@@ -3,7 +3,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/typeorm";
 import { DataSource, Repository } from "typeorm";
 import { CreateUserDto } from "src/users/dto/users.dtos";
-import { randomBytes } from "crypto";
 import { Stat } from "src/typeorm/stat.entity";
 import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
 
@@ -21,7 +20,7 @@ export class UsersService {
         private readonly statRepository: Repository<Stat>,
         @InjectRepository(BlackFriendList)
         private readonly blFrRepository: Repository<BlackFriendList>,
-        private dataSource: DataSource
+        private dataSource: DataSource,
     ) { }
 
     /*

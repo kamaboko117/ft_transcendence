@@ -11,11 +11,12 @@ import { ListBan } from './lstban.entity';
 import { UsersModule } from 'src/users/users.module';
 import { RoleController } from './role/role.controller';
 import { RoleGateway } from './role/role.gateway';
+import { BlackFriendList } from 'src/typeorm/blackFriendList.entity';
 
 @Module({
     providers: [ChatGateway, RoleService, RoleGateway],
     imports: [TypeOrmModule.forFeature([Channel, ListMsg,
-        ListUser, ListMute, ListBan]), UsersModule],
+        ListUser, ListMute, ListBan, BlackFriendList]), UsersModule],
     exports: [ChatGateway],
     controllers: [ChatController, RoleController]
 })
