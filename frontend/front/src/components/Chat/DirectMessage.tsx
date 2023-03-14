@@ -155,7 +155,7 @@ const handleSubmitPmUser = (e: React.FormEvent<HTMLFormElement>, user: string, j
                 setPm((listPm) => [...listPm, res.listPm]);
             }
                 
-        });
+        }).catch(e=>console.log(e));
 }
 
 const BoxPmUser = (props: {setId: React.Dispatch<React.SetStateAction<string>>,
@@ -301,7 +301,7 @@ const DiscussionBox = (props: {
                     if (res.ok)
                         return (res.json());
                     props.setErrorCode(res.status);
-                });
+                }).catch(e=>console.log(e));
             console.log(res);
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
                 setLstMsgPm(res.lstMsg);
@@ -388,7 +388,7 @@ const Box = (props: settingBox) => {
             })
             .then(res => {
                 setPm(res);
-            });
+            }).catch(e=>console.log(e));
         /* load all channels */
         fetch('http://' + location.host + '/api/chat/channel-registered',
             { headers: header(props.jwt) })
@@ -398,7 +398,7 @@ const Box = (props: settingBox) => {
                 props.setErrorCode(res.status);
             }).then(res => {
                 setChannel(res);
-            })
+            }).catch(e=>console.log(e))
         return (() => {
             setPm([]);
             setChannel([]);

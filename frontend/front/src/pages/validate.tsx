@@ -26,7 +26,7 @@ function ValidatePage() {
         if (response.ok)
           return (response.json())
         setErrorCode(response.status);
-      }));
+      }).catch(e=>console.log(e)));
     };
     getUser(code).then(res => {
       console.log(res);

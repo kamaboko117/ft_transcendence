@@ -3,6 +3,8 @@ import { IsEmail, IsNotEmpty, IsNumber, MinLength } from "class-validator";
 export class BlockUnblock {
     @IsNumber()
     userId: number;
+    @IsNumber()
+    type: number;
 }
 
 export class CreateUserDto {

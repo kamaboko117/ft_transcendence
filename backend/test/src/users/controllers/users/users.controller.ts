@@ -18,6 +18,7 @@ import { JwtGuard, Public } from 'src/auth/jwt.guard';
 import { AuthService } from 'src/auth/auth.service';
 import { FileInterceptor } from "@nestjs/platform-express";
 import { TokenUser } from "src/chat/chat.interface";
+import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
 
 //import {AuthGuard} from '@nestjs/passport';
 
@@ -36,23 +37,7 @@ export class UsersController {
         return this.userService.findUsersById(id);
     }
 
-    /* authguard(strategy name) */
-    @Public()
-    @UseGuards(CustomAuthGuard)
-    @Post('login')
-    async login(@Request() req: any, @Res({ passthrough: true }) response: any) {
-        console.log("LOGIN POST");
-        const access_token = await this.authService.login(req.user);
-        const refresh = await this.authService.refresh(req.user);
-        console.log(access_token);
-        console.log(refresh);
-        response.cookie('refresh_token', refresh.refresh_token,
-            {
-                maxAge: 300000,
-                httpOnly: true
-            });
-        return ({token: access_token, user_id: req.user.userID});
-    }
+   
     /* authguard(strategy name) */
     @Public()
     @UseGuards(FakeAuthGuard)
@@ -71,24 +56,7 @@ export class UsersController {
         return ({token: access_token, user_id: req.user.userID});
     }
 
-    @Post('avatarfile')
-    @UseInterceptors(FileInterceptor('fileset', { dest: './upload_avatar' }))
-    uploadFile(@Request() req: any, @UploadedFile(new ParseFilePipe({
-        validators: [
-            new MaxFileSizeValidator({ maxSize: 1000000 }),
-            new FileTypeValidator({ fileType: 'image/png' }),
-        ],
-    }),
-    ) file: Express.Multer.File) {
-        const user = req.user;
-        this.userService.updatePathAvatarUser(user.userID, file.path);
-        return ({ path: file.path });
-    }
-
-    @Post('block-unblock')
-    blockUnblockUser(@Request() req: any, @Body() Body: BlockUnblock) {
-        const user: TokenUser = req.user;
-    }
+    
 
     /*
         useGuard est un middleware
@@ -116,11 +84,61 @@ export class UsersController {
         return (ret_user);
     }
 
-    @Get("validate/:code")
+    /*@Get("validate/:code")
     validateUser(@Param("code") code: string) {
         console.log("CODE: " + code);
         //return this.userService.validateUser(code);
+    }*/
+
+    @Post('avatarfile')
+    @UseInterceptors(FileInterceptor('fileset', { dest: './upload_avatar' }))
+    uploadFile(@Request() req: any, @UploadedFile(new ParseFilePipe({
+        validators: [
+            new MaxFileSizeValidator({ maxSize: 1000000 }),
+            new FileTypeValidator({ fileType: 'image/png' }),
+        ],
+    }),
+    ) file: Express.Multer.File) {
+        const user = req.user;
+        this.userService.updatePathAvatarUser(user.userID, file.path);
+        return ({ path: file.path });
     }
+
+    @Post('fr-bl-list')
+    async useBlackFriendList(@Request() req: any, @Body() body: BlockUnblock) {
+        const user: TokenUser = req.user;
+        const find: BlackFriendList | null = await this.userService.findBlFr(user.userID, body.userId, body.type);
+
+        if (find) {
+            //delete
+            this.userService.deleteBlFr(user.userID, body.userId, body.type, find.id);
+            return ({action: true})
+        }
+        else {
+            //insert
+            this.userService.insertBlFr(user.userID, body.userId, body.type);
+        }
+        return ({action: false})
+    }
+
+     /* authguard(strategy name) */
+     @Public()
+     @UseGuards(CustomAuthGuard)
+     @Post('login')
+     async login(@Request() req: any, @Res({ passthrough: true }) response: any) {
+         console.log("LOGIN POST");
+         const access_token = await this.authService.login(req.user);
+         const refresh = await this.authService.refresh(req.user);
+         console.log(access_token);
+         console.log(refresh);
+         response.cookie('refresh_token', refresh.refresh_token,
+             {
+                 maxAge: 300000,
+                 httpOnly: true,
+                 sameSite: 'Strict'
+             });
+         return ({token: access_token, user_id: req.user.userID});
+     }
 
     @Post("create")
     @UsePipes(ValidationPipe)
