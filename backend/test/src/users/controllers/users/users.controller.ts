@@ -37,7 +37,7 @@ export class UsersController {
         return this.userService.findUsersById(id);
     }
 
-   
+
     /* authguard(strategy name) */
     @Public()
     @UseGuards(FakeAuthGuard)
@@ -53,10 +53,10 @@ export class UsersController {
                 maxAge: 300000,
                 httpOnly: true
             });
-        return ({token: access_token, user_id: req.user.userID});
+        return ({ token: access_token, user_id: req.user.userID });
     }
 
-    
+
 
     /*
         useGuard est un middleware
@@ -109,36 +109,38 @@ export class UsersController {
         const user: TokenUser = req.user;
         const find: BlackFriendList | null = await this.userService.findBlFr(user.userID, body.userId, body.type);
 
+        if (user.userID === body.userId)
+            return ({ add: false, type: null });
         if (find) {
             //delete
             this.userService.deleteBlFr(user.userID, body.userId, body.type, find.id);
-            return ({add: false, type: body.type});
+            return ({ add: false, type: body.type });
         }
         else {
             //insert
             this.userService.insertBlFr(user.userID, body.userId, body.type);
         }
-        return ({add: true, type: body.type});
+        return ({ add: true, type: body.type });
     }
 
-     /* authguard(strategy name) */
-     @Public()
-     @UseGuards(CustomAuthGuard)
-     @Post('login')
-     async login(@Request() req: any, @Res({ passthrough: true }) response: any) {
-         console.log("LOGIN POST");
-         const access_token = await this.authService.login(req.user);
-         const refresh = await this.authService.refresh(req.user);
-         console.log(access_token);
-         console.log(refresh);
-         response.cookie('refresh_token', refresh.refresh_token,
-             {
-                 maxAge: 300000,
-                 httpOnly: true,
-                 sameSite: 'Strict'
-             });
-         return ({token: access_token, user_id: req.user.userID});
-     }
+    /* authguard(strategy name) */
+    @Public()
+    @UseGuards(CustomAuthGuard)
+    @Post('login')
+    async login(@Request() req: any, @Res({ passthrough: true }) response: any) {
+        console.log("LOGIN POST");
+        const access_token = await this.authService.login(req.user);
+        const refresh = await this.authService.refresh(req.user);
+        console.log(access_token);
+        console.log(refresh);
+        response.cookie('refresh_token', refresh.refresh_token,
+            {
+                maxAge: 300000,
+                httpOnly: true,
+                sameSite: 'Strict'
+            });
+        return ({ token: access_token, user_id: req.user.userID });
+    }
 
     @Post("create")
     @UsePipes(ValidationPipe)

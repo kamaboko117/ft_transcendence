@@ -75,7 +75,7 @@ export class UsersService {
                 return (res.json());
             }
             return (undefined)
-        }).catch(e=>console.log(e));
+        }).catch(e => console.log(e));
         if (typeof res === "undefined" || typeof res.access_token === "undefined")
             return (undefined);
         token = {
@@ -92,7 +92,7 @@ export class UsersService {
             headers: {
                 authorization: `Bearer ${token.access_token}`
             }
-        }).then(res => res.json()).catch(e=>console.log(e));
+        }).then(res => res.json()).catch(e => console.log(e));
         return (res.resource_owner_id);
     }
     getUsers() {
@@ -150,23 +150,31 @@ export class UsersService {
         return (user);
     }
 
+    async getListUserBlockedBy(user_id: number) {
+        const list = this.blFrRepository.createQueryBuilder("bl")
+            .select(["bl.focus_id"])
+            .where("bl.owner_id = :ownerId")
+            .setParameters({ ownerId: user_id })
+            .getMany();
+        console.log(await list);
+    }
     /* add remove friend - block unblock user part */
 
     findBlFr(ownerId: number, focusUserId: number, type: number): Promise<BlackFriendList | null> {
         const list: Promise<BlackFriendList | null> = this.blFrRepository.createQueryBuilder("bl_fr")
             .where("bl_fr.owner_id = :ownerId")
-            .setParameters({ownerId: ownerId})
+            .setParameters({ ownerId: ownerId })
             .andWhere("bl_fr.focus_id = :focusUserId")
-            .setParameters({focusUserId: focusUserId})
+            .setParameters({ focusUserId: focusUserId })
             .andWhere("bl_fr.type_list = :type")
-            .setParameters({type: type})
+            .setParameters({ type: type })
             .getOne()
         return (list)
     }
     /* insert blacklist or friendlist */
     async insertBlFr(ownerId: number, focusUserId: number, type: number) {
         const runner = this.dataSource.createQueryRunner();
-                
+
         await runner.connect();
         await runner.startTransaction();
         try {
@@ -182,14 +190,14 @@ export class UsersService {
         } catch (e) {
             await runner.rollbackTransaction();
         } finally {
-                //doc want it released
-                await runner.release();
+            //doc want it released
+            await runner.release();
         }
     }
 
     async deleteBlFr(ownerId: number, focusUserId: number, type: number, findId: number) {
         const runner = this.dataSource.createQueryRunner();
-                
+
         await runner.connect();
         await runner.startTransaction();
         try {
@@ -204,8 +212,8 @@ export class UsersService {
         } catch (e) {
             await runner.rollbackTransaction();
         } finally {
-                //doc want it released
-                await runner.release();
+            //doc want it released
+            await runner.release();
         }
     }
     /* end add remove friend - block unblock user part  */

@@ -17,19 +17,22 @@ type typeUserInfo = {
     friend: number | null,
     block: number | null,
 }
-
-type PropsUserInfo = {
+type typeListUser = {
     listUser: Array<{
         list_user_user_id: number,
         list_user_role: string | null,
         fl: number | null,
         bl: number | null,
         User_username: string,
-    }>,
+    }>
+}
+
+type PropsUserInfo = {
+    listUser: typeListUser["listUser"],
     jwt: string,
     id: string,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-    setLstUser: React.Dispatch<React.SetStateAction<PropsUserInfo["listUser"]>>
+    setLstUser: React.Dispatch<React.SetStateAction<typeListUser["listUser"]>>
 }
 
 type typeButtonsInfo = {
@@ -108,6 +111,7 @@ const userProfile = (event: MouseEvent<HTMLButtonElement>): void => {
     setId
     DirectMessage component will load messages itself
 */
+
 const directMessage = (event: MouseEvent<HTMLButtonElement>,
     setDisplay: any, setId: React.Dispatch<React.SetStateAction<string>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
@@ -289,10 +293,12 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
     user doit pouvoir blockUnblock inviteGame userProfile directMessage
 */
 
-const ListUser = (props: { id: string, jwt: string }) => {
+const ListUserChat = (props: {
+    id: string, jwt: string
+}) => {
     const { usrSocket } = useContext(SocketContext);
     const [errorCode, setErrorCode] = useState<number>(200);
-    const [lstUser, setLstUser] = useState<PropsUserInfo["listUser"]>(Array);
+    const { lstUserChat, setLstUserChat } = useContext(ContextDisplayChannel);
 
     useEffect(() => {
         const fetchListUser = async (id: string, jwt: string, setErrorCode: any) => {
@@ -305,29 +311,29 @@ const ListUser = (props: { id: string, jwt: string }) => {
             }).catch(e => console.log(e)));
         }
         fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
-            setLstUser(res);
+            setLstUserChat(res);
         }).catch(e => console.log(e));
         usrSocket?.on("updateListChat", () => {
             fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
-                setLstUser(res);
+                setLstUserChat(res);
             });
         });
         console.log("list user mount");
         return (() => {
             console.log("list user unmount");
-            setLstUser([]);
+            setLstUserChat([]);
             usrSocket?.off("updateListChat");
         });
-    }, [lstUser?.keys, props.id, usrSocket]);
+    }, [lstUserChat?.keys, props.id, usrSocket]);
     if (errorCode >= 400) //catch errors code from async functions
         return (<FetchError code={errorCode} />);
     return (
         <React.Fragment>
             <h2>List users</h2>
-            <UserInfo id={props.id} listUser={lstUser} jwt={props.jwt}
-                setErrorCode={setErrorCode} setLstUser={setLstUser} />
+            <UserInfo id={props.id} listUser={lstUserChat} jwt={props.jwt}
+                setErrorCode={setErrorCode} setLstUser={setLstUserChat} />
         </React.Fragment>
     );
 }
 
-export default ListUser;
+export default ListUserChat;

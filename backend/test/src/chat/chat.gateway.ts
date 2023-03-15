@@ -583,6 +583,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         chatid: data.id
       }])
       .execute();
+
     socket.to(data.id).emit("sendBackMsg", {
       room: data.id,
       user_id: user.userID,
