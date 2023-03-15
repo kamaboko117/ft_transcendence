@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, MutableRefObject, useState, useContext } from 'react';
-import ListUser from './ListUser';
+import ListUserChat from './ListUser';
 import { FetchError, header, headerPost } from '../FetchError';
 import "../../css/chat.css";
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
@@ -8,7 +8,6 @@ import SocketContext from '../../contexts/Socket';
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
 import UserContext from "../../contexts/UserContext";
 import ContextDisplayChannel from '../../contexts/displayChat';
-//import ContextDisplayChannel from '../../contexts/displayChat';
 
 export type lstMsg = {
     lstMsg: Array<{
@@ -147,7 +146,7 @@ const MainChat = (props: any) => {
     }, [props.id, usrSocket]);
     const navigate = useNavigate();
     const contextUserLeave = useContext(ContextUserLeave);
-    const { id, lstMsgChat, setLstMsgChat, setLstMsgPm } = useContext(ContextDisplayChannel);
+    const { id, lstMsgChat, lstUserChat, setLstMsgChat, setLstMsgPm } = useContext(ContextDisplayChannel);
     const [chatName, setChatName] = useState<string>("");
     useEffect(() => {
         const ft_lst = async () => {
@@ -186,10 +185,16 @@ const MainChat = (props: any) => {
         usrSocket?.on("sendBackMsg", (res: any) => {
             console.log("msg");
             console.log(res);
-            if (res.room === props.id)
-                setLstMsgChat((lstMsg) => [...lstMsg, res]);
-            if (res.room === props.id && props.id == id)
-                setLstMsgPm((lstMsg) => [...lstMsg, res]);
+            lstUserChat.forEach((value) => {
+                if (value.list_user_user_id === res.user_id
+                    && !value.bl) {
+                    if (res.room === props.id)
+                        setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                    if (res.room === props.id && props.id == id)
+                        setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                }
+            })
+
         });
         return (() => {
             console.log("liste unmount");
@@ -201,6 +206,7 @@ const MainChat = (props: any) => {
     }, [lstMsgChat.keys, props.id, online, usrSocket])
 
     const [msg, setMsg] = useState<null | string>(null);
+    //const [lstUser, setLstUser] = useState<typeListUser["listUser"]>(Array);
     if (online === "Ban")
         return (<article className='containerChat'>You are banned from this chat</article>)
     else if (online === false)
@@ -242,7 +248,7 @@ const MainChat = (props: any) => {
             </div>
         </article>
         <article className='right'>
-            <ListUser id={props.id} jwt={props.jwt} />
+            <ListUserChat id={props.id} jwt={props.jwt} />
         </article>
     </>);
 }
