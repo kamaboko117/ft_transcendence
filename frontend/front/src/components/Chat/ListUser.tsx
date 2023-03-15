@@ -22,13 +22,14 @@ type PropsUserInfo = {
     listUser: Array<{
         list_user_user_id: number,
         list_user_role: string | null,
-        fl: number,
-        bl: number,
+        fl: number | null,
+        bl: number | null,
         User_username: string,
     }>,
     jwt: string,
     id: string,
-    setErrorCode: React.Dispatch<React.SetStateAction<number>>
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    setLstUser: React.Dispatch<React.SetStateAction<PropsUserInfo["listUser"]>>
 }
 
 type typeButtonsInfo = {
@@ -44,8 +45,6 @@ type typeButtonsInfo = {
     setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
 }
 
-
-
 const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
     userId: number,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
@@ -56,9 +55,12 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 
     function updateUserInfo(username: string, role: string | null, id: number,
         friend: number | null, block: number | null) {
-            setUserInfo({username: username, role: role,
-                id: id, friend: friend, block: block});
-        }
+        setUserInfo({
+            username: username, role: role,
+            id: id, friend: friend, block: block
+        });
+    }
+
     fetch("http://" + location.host + "/api/users/fr-bl-list", {
         method: 'post',
         headers: headerPost(jwt),
@@ -69,28 +71,28 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
         if (res.ok)
             return (res.json());
         setErrorCode(res.status)
-    }).then((res: {add: boolean, type: number}) => {
+    }).then((res: { add: boolean, type: number }) => {
         if (res) {
             if (res.add) {
                 if (res.type === 1) {
-                    updateUserInfo( userInfo.username, userInfo.role, userInfo.id,
+                    updateUserInfo(userInfo.username, userInfo.role, userInfo.id,
                         userInfo.friend, res.type);
-                } else if (res.type === 0) {
-                    updateUserInfo( userInfo.username, userInfo.role, userInfo.id,
+                } else if (res.type === 2) {
+                    updateUserInfo(userInfo.username, userInfo.role, userInfo.id,
                         res.type, userInfo.block);
                 }
             } else {
                 if (res.type === 1) {
-                    updateUserInfo( userInfo.username, userInfo.role, userInfo.id,
+                    updateUserInfo(userInfo.username, userInfo.role, userInfo.id,
                         userInfo.friend, null);
-                } else if (res.type === 0) {
-                    updateUserInfo( userInfo.username, userInfo.role, userInfo.id,
+                } else if (res.type === 2) {
+                    updateUserInfo(userInfo.username, userInfo.role, userInfo.id,
                         null, userInfo.block);
                 }
             }
-            
+
         }
-    }).catch(e=>console.log(e));
+    }).catch(e => console.log(e));
 }
 const inviteGame = (event: MouseEvent<HTMLButtonElement>): void => {
     event.preventDefault();
@@ -115,17 +117,16 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>,
     fetch('http://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
         id: String(userId),
     }), { headers: header(jwt) })
-    .then(res => {
-        if (res.ok)
-            return (res.text());
-        setErrorCode(res.status)
-    }).then((res: string | undefined) => {
-        if (res)
-        {
-            setDisplay(true);
-            setId(res);
-        }
-    }).catch(e=>console.log(e));
+        .then(res => {
+            if (res.ok)
+                return (res.text());
+            setErrorCode(res.status)
+        }).then((res: string | undefined) => {
+            if (res) {
+                setDisplay(true);
+                setId(res);
+            }
+        }).catch(e => console.log(e));
 }
 
 const handleClick = (event: React.MouseEvent<HTMLDivElement>,
@@ -135,9 +136,11 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     event.preventDefault();
     const e: HTMLElement = event.target as HTMLElement;
     const name: string = e.textContent as string;
+    //get attributes node
     const attributes: NamedNodeMap = e.attributes as NamedNodeMap;
     const parentNode: HTMLElement = e.parentNode as HTMLElement;
-        console.log(e);
+
+    /* update userInfo state on click, from the html tree */
     if (userInfo.username === "" || userInfo.username != name) {
         setUserId(Number(attributes[0].value));
         if (attributes.length === 4)
@@ -149,11 +152,11 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
                 block: Number(attributes[3].value)
             });
         else
-            setUserInfo({username: name, role: "", id: 0, block: null, friend: null});
+            setUserInfo({ username: name, role: "", id: 0, block: null, friend: null });
     }
     else {
         setUserId(0);
-        setUserInfo({username: "", role: "", id: 0, block: null, friend: null})
+        setUserInfo({ username: "", role: "", id: 0, block: null, friend: null })
     }
     setTop(parentNode.offsetTop);
 }
@@ -164,12 +167,12 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
             listHandle(e, props.jwt,
                 props.userInfo.id, props.setErrorCode,
                 1, props.userInfo, props.setUserInfo)}
-            className="userInfo">{(props.userInfo.block === 1 ? "Unblock": "Block")}</button>
+            className="userInfo">{(props.userInfo.block === 1 ? "Unblock" : "Block")}</button>
         <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
             listHandle(e, props.jwt,
                 props.userInfo.id, props.setErrorCode,
-                0, props.userInfo, props.setUserInfo)}
-            className="userInfo">{(props.userInfo.friend === 0 ? "Remove": "Add")} friend</button>
+                2, props.userInfo, props.setUserInfo)}
+            className="userInfo">{(props.userInfo.friend === 2 ? "Remove" : "Add")} friend</button>
         <button onClick={inviteGame} className="userInfo">Invite to a game</button>
         <button onClick={userProfile} className="userInfo">User Profile</button>
         <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
@@ -178,8 +181,9 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
                 props.userId, props.jwt)
         } className="userInfo">Direct message</button>
         <AdminComponent
-            id={props.id} userId={props.userId} jwt={props.jwt} chooseClassName={props.chooseClassName}
-                setErrorCode={props.setErrorCode} userInfo={props.userInfo} />
+            id={props.id} userId={props.userId} jwt={props.jwt}
+            chooseClassName={props.chooseClassName}
+            setErrorCode={props.setErrorCode} userInfo={props.userInfo} />
     </>)
 }
 
@@ -196,19 +200,40 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
     const found = object.find(elem => Number(elem.list_user_user_id) === userInfo.id);
     useEffect(() => {
         if (found) {
-            setUserInfo({username: userInfo.username,
+            setUserInfo({
+                username: userInfo.username,
                 role: found.list_user_role,
-                id: userInfo.id, friend: userInfo.friend, block: userInfo.block
+                id: Number(found.list_user_user_id),
+                friend: found.fl, block: found.bl
             });
         }
     }, [found, props.id]);
+    /* need to iterate listUser state, when user that has been updated is found
+        return new array from map
+    */
+    useEffect(() => {
+        const newArr: PropsUserInfo["listUser"] = props.listUser.map((value) => {
+            if (value && found
+                && (value.list_user_user_id === found.list_user_user_id)) {
+                value.User_username = userInfo.username;
+                value.list_user_role = userInfo.role;
+                value.bl = userInfo.block;
+                value.fl = userInfo.friend;
+                return (value);
+            }
+            return (value);
+        })
+        if (found)
+            props.setLstUser(newArr);
+    }, [userInfo]);
+
     const [offsetTop, setTop] = useState<number>(0);
     const chooseClassName: string = (userInfo.username != "" ? "userInfo userInfoClick" : "userInfo");
     let i: number = 0;
     const Element = scroll.Element;
 
     const handleListenerClick = () => {
-        setUserInfo({username: "", role: "", id: 0, friend: null, block: null});
+        setUserInfo({ username: "", role: "", id: 0, friend: null, block: null });
     }
     //Read React's reference doc
     const ref: any = useEventListenerUserInfo(handleListenerClick);
@@ -277,11 +302,11 @@ const ListUser = (props: { id: string, jwt: string }) => {
                 if (res.ok)
                     return (res.json());
                 setErrorCode(res.status);
-            }).catch(e=>console.log(e)));
+            }).catch(e => console.log(e)));
         }
         fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
             setLstUser(res);
-        }).catch(e=>console.log(e));
+        }).catch(e => console.log(e));
         usrSocket?.on("updateListChat", () => {
             fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
                 setLstUser(res);
@@ -300,7 +325,7 @@ const ListUser = (props: { id: string, jwt: string }) => {
         <React.Fragment>
             <h2>List users</h2>
             <UserInfo id={props.id} listUser={lstUser} jwt={props.jwt}
-                setErrorCode={setErrorCode} />
+                setErrorCode={setErrorCode} setLstUser={setLstUser} />
         </React.Fragment>
     );
 }
