@@ -197,12 +197,15 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
     const { renderDirectMessage, userId, setDisplay, setUserId, setId } = useContext(ContextDisplayChannel);
     const [userInfo, setUserInfo] = useState<typeUserInfo>({
         username: "", role: "", id: 0, friend: null, block: null
-    })
+    });
     //need to search in listUser, to update userInfo 
     //  variable content (like this AdminComponent get updated properly)
     const object = props.listUser;
-    const found = object.find(elem => Number(elem.list_user_user_id) === userInfo.id);
+    let found: any = undefined;
+    if (object)
+        found = object.find(elem => Number(elem.list_user_user_id) === userInfo.id);
     useEffect(() => {
+        console.log("userinfo mount");
         if (found) {
             setUserInfo({
                 username: userInfo.username,
@@ -298,7 +301,7 @@ const ListUserChat = (props: {
 }) => {
     const { usrSocket } = useContext(SocketContext);
     const [errorCode, setErrorCode] = useState<number>(200);
-    const { lstUserChat, setLstUserChat } = useContext(ContextDisplayChannel);
+    const { lstUserChat, lstUserPm, setLstUserChat } = useContext(ContextDisplayChannel);
 
     useEffect(() => {
         const fetchListUser = async (id: string, jwt: string, setErrorCode: any) => {
@@ -319,12 +322,13 @@ const ListUserChat = (props: {
             });
         });
         console.log("list user mount");
+        console.log(lstUserPm);
         return (() => {
             console.log("list user unmount");
             setLstUserChat([]);
             usrSocket?.off("updateListChat");
         });
-    }, [lstUserChat?.keys, props.id, usrSocket]);
+    }, [/*JSON.stringify(lstUserChat),*/ /*JSON.stringify(lstUserPm)*/, props.id, usrSocket]);
     if (errorCode >= 400) //catch errors code from async functions
         return (<FetchError code={errorCode} />);
     return (
@@ -332,6 +336,46 @@ const ListUserChat = (props: {
             <h2>List users</h2>
             <UserInfo id={props.id} listUser={lstUserChat} jwt={props.jwt}
                 setErrorCode={setErrorCode} setLstUser={setLstUserChat} />
+        </React.Fragment>
+    );
+}
+
+export const ListUserChatBox = (props: {
+    id: string, jwt: string
+}) => {
+    const { usrSocket } = useContext(SocketContext);
+    const [errorCode, setErrorCode] = useState<number>(200);
+    const { lstUserChat, lstUserPm, setLstUserPm } = useContext(ContextDisplayChannel);
+
+    useEffect(() => {
+        const fetchListUser = async (id: string, jwt: string, setErrorCode: any) => {
+            return (await fetch('http://' + location.host + '/api/chat/users?' + new URLSearchParams({
+                id: id,
+            }), { headers: header(jwt) }).then(res => {
+                if (res.ok)
+                    return (res.json());
+                setErrorCode(res.status);
+            }).catch(e => console.log(e)));
+        }
+        fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
+            setLstUserPm(res);
+        }).catch(e => console.log(e));
+        usrSocket?.on("updateListChat", () => {
+            fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
+                setLstUserPm(res);
+            });
+        });
+        console.log("list user mount");
+        return (() => {
+            console.log("list user unmount");
+            setLstUserPm([]);
+            usrSocket?.off("updateListChat");
+        });
+    }, /*[JSON.stringify(lstUserChat),*/[/*JSON.stringify(lstUserPm), */props.id, usrSocket]);
+    if (errorCode >= 400) //catch errors code from async functions
+        return (<FetchError code={errorCode} />);
+    return (
+        <React.Fragment>
         </React.Fragment>
     );
 }

@@ -610,7 +610,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const bearer = client.handshake.headers.authorization;
     if (bearer) {
       const user: any = await this.authService.verifyToken(bearer);
-      this.mapSocket.set(client.id, user.userID);
+      if (user)
+        this.mapSocket.set(client.id, user.userID);
     }
   }
   handleDisconnect(client: Socket) {
