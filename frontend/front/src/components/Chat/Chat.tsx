@@ -65,8 +65,8 @@ const handleLeave = async (e: React.MouseEvent<HTMLButtonElement>, contextUserLe
 const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
     usrSocket: any, obj: any,
     ref: any, setMsg: any,
-    setLstMsgChat:  React.Dispatch<React.SetStateAction<lstMsg[]>>,
-    setLstMsgPm:  React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
+    setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,
+    setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
     e.preventDefault();
     usrSocket.emit('sendMsg', obj, (res) => {
         console.log("res: ");
@@ -87,8 +87,8 @@ const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
 
 const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
     usrSocket: any, obj: any, ref: any, setMsg: any,
-    setLstMsgChat:  React.Dispatch<React.SetStateAction<lstMsg[]>>,
-    setLstMsgPm:  React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
+    setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,
+    setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
     if (e.key === "Enter" && e.shiftKey === false) {
         e.preventDefault();
         usrSocket.emit('sendMsg', obj, (res) => {
@@ -148,7 +148,6 @@ const MainChat = (props: any) => {
     const navigate = useNavigate();
     const contextUserLeave = useContext(ContextUserLeave);
     const { id, lstMsgChat, setLstMsgChat, setLstMsgPm } = useContext(ContextDisplayChannel);
-    //const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
     const [chatName, setChatName] = useState<string>("");
     useEffect(() => {
         const ft_lst = async () => {
@@ -160,11 +159,8 @@ const MainChat = (props: any) => {
                     if (res.ok)
                         return (res.json());
                     props.setErrorCode(res.status);
-                }).catch(e=>console.log(e));
+                }).catch(e => console.log(e));
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
-                console.log("load msg");
-                console.log(res);
-                //setLstMsg(res.lstMsg);
                 setLstMsgChat(res.lstMsg);
                 setChatName(res.name);
                 if (res.accesstype === "2" || res.accesstype === "3")
@@ -270,7 +266,7 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
             return (res.json())
         setErrorCode(res.status);
         return (false);
-    }).catch(e=>console.log(e)));
+    }).catch(e => console.log(e)));
 }
 
 /* Detect and return if a password for the channel is used
@@ -278,7 +274,6 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
 */
 const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>): Promise<boolean> => {
-    console.log("HAS PSWD");
     return (await fetch('http://' + location.host + '/api/chat/has-paswd?' + new URLSearchParams({
         id: id,
     }),
@@ -287,7 +282,7 @@ const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>,
             if (res.ok)
                 return (res.json());
             setErrorCode(res.status);
-        }).catch(e=>console.log(e)));
+        }).catch(e => console.log(e)));
 }
 
 const DisplayErrorPasswordBox = (props: { error: boolean }) => {
@@ -346,7 +341,7 @@ const BlockChat = (props: any) => {
     return (<></>);
 }
 
-const Chat = (props: {jwt: string}) => {
+const Chat = (props: { jwt: string }) => {
     //const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
     const getLocation = useLocation();
     const id = useParams().id as string;
@@ -358,7 +353,7 @@ const Chat = (props: {jwt: string}) => {
     const hasPass: Promise<boolean> = hasPassword(id, props.jwt, setErrorCode);
     hasPass.then(res => {
         setLoadPsw(res);
-    }).catch(e=>console.log(e));
+    }).catch(e => console.log(e));
     return (<BlockChat id={id} getLocation={getLocation}
         setErrorCode={setErrorCode} jwt={props.jwt}
         hasPsw={psw} />);

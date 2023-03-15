@@ -91,8 +91,6 @@ export class ChatController {
         const user: User | null = await this.userService.findUserByName(username);
         if (!user || tokenUser.userID === Number(user.userID))
             return (null);
-        console.log("user pm:")
-        console.log(user);
         const channel_id = await this.findPm(tokenUser.userID, String(user.userID));
         return ({
             channel_id: channel_id,
@@ -132,8 +130,6 @@ export class ChatController {
             const getUser = await this.chatGateway.getUserOnChannel(id, user.userID);
             if (typeof getUser !== "undefined" || getUser === null)
                 return (false);
-            //const getUser = channel.lstUsr.get(user.userID);
-            // console.log(getUser);
         }
         if (typeof channel === "undefined" || channel?.password == '' || channel === null)
             return (false);
@@ -169,8 +165,6 @@ export class ChatController {
             chat.accesstype = '1';
             chat.password = bcrypt.hashSync(chat.password, salt);
         }
-        console.log("getall")
-        console.log(getAll);
         const findUser = await this.userService.findUsersById(user.userID);
         return (this.chatGateway.createChat(chat, len, { idUser: user.userID, username: findUser?.username }));
     }
@@ -234,7 +228,6 @@ export class ChatController {
         if (typeof channel === "undefined" || channel === null)
             return ({});
         const getUser = await this.chatGateway.getUserOnChannel(id, user.userID);
-        console.log(getUser);
         if (getUser === "Ban")
             return ({ ban: true });
         if (typeof getUser === "undefined" || getUser === null
