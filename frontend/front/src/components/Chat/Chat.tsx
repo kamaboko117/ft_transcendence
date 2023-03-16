@@ -7,7 +7,7 @@ import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
 import UserContext from "../../contexts/UserContext";
-import ContextDisplayChannel from '../../contexts/displayChat';
+import ContextDisplayChannel from '../../contexts/DisplayChatContext';
 
 export type lstMsg = {
     lstMsg: Array<{
@@ -146,7 +146,7 @@ const MainChat = (props: any) => {
     }, [props.id, usrSocket]);
     const navigate = useNavigate();
     const contextUserLeave = useContext(ContextUserLeave);
-    const { id, lstMsgChat, lstUserChat, lstUserPm, setLstMsgChat, setLstMsgPm } = useContext(ContextDisplayChannel);
+    const { id, lstMsgChat, lstUserChat, lstUserGlobal, setLstMsgChat, setLstMsgPm } = useContext(ContextDisplayChannel);
     const [chatName, setChatName] = useState<string>("");
 
     useEffect(() => {
@@ -189,23 +189,22 @@ const MainChat = (props: any) => {
             setLstMsgChat([]);
             setChatName("");
         });
-    }, [lstMsgChat.keys, props.id, JSON.stringify(lstUserChat),
+    }, [lstMsgChat.keys, props.id, JSON.stringify(lstUserChat), JSON.stringify(lstUserGlobal),
         online, usrSocket]);
     /* Get message from backend, must reload properly when lstUser is updated */
     useEffect(() => {
         usrSocket?.on("sendBackMsg", (res: any) => {
-            lstUserChat.forEach((value) => {
-                if (Number(value.list_user_user_id) === res.user_id
-                    && !value.bl) {
-                    if (res.room === props.id)
-                        setLstMsgChat((lstMsg) => [...lstMsg, res]);
-                    if (res.room === props.id && props.id == id)
-                        setLstMsgPm((lstMsg) => [...lstMsg, res]);
-                }
-            })
+            //need to check if user is blocked
+            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id);
+            if (!found) {
+                if (res.room === props.id)
+                    setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                if (res.room === props.id && props.id == id)
+                    setLstMsgPm((lstMsg) => [...lstMsg, res]);
+            }
         });
         return (() => { usrSocket?.off("sendBackMsg"); });
-    }, [JSON.stringify(lstUserChat), JSON.stringify(lstUserPm)])
+    }, [JSON.stringify(lstUserGlobal)/*, JSON.stringify(lstUserPm)*/])
     const [msg, setMsg] = useState<null | string>(null);
     //const [lstUser, setLstUser] = useState<typeListUser["listUser"]>(Array);
     if (online === "Ban")

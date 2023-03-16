@@ -2,12 +2,11 @@ import React, { useState, MouseEvent, useContext, useEffect, useRef } from 'reac
 import { FetchError, header } from '../FetchError';
 import { lstMsg, ListMsg } from './Chat';
 import "../../css/directMessage.css";
-import ContextDisplayChannel from '../../contexts/displayChat';
+import ContextDisplayChannel from '../../contexts/DisplayChatContext';
 import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { useLocation } from 'react-router-dom';
 import UserContext from '../../contexts/UserContext';
-import { ListUserChatBox } from './ListUser';
 
 type settingChat = {
     render: boolean,
@@ -294,7 +293,7 @@ const DiscussionBox = (props: {
     }, [props.id, usrSocket]);
 
     //const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
-    const { setLstMsgChat, lstMsgChat, lstMsgPm, lstUserPm, lstUserChat, setLstMsgPm } = useContext(ContextDisplayChannel);
+    const { setLstMsgChat, lstMsgPm, lstUserGlobal, /*lstUserChat,*/ setLstMsgPm } = useContext(ContextDisplayChannel);
     useEffect(() => {
         const ft_lst = async () => {
             const res = await fetch('http://' + location.host + '/api/chat?' + new URLSearchParams({
@@ -332,22 +331,29 @@ const DiscussionBox = (props: {
             usrSocket?.off("actionOnUser2");
             setLstMsgPm([]);
         });
-    }, [lstMsgPm.keys, props.id, JSON.stringify(lstUserPm),
+    }, [lstMsgPm.keys, props.id, JSON.stringify(lstUserGlobal),
         online, usrSocket]);
     useEffect(() => {
         usrSocket?.on("sendBackMsg2", (res: any) => {
-            lstUserPm.forEach((value) => {
-                if (Number(value.list_user_user_id) === res.user_id
-                    && !value.bl) {
-                    if (res.room === props.id && getSecondPartRegex == props.id)
-                        setLstMsgChat((lstMsg) => [...lstMsg, res]);
-                    if (res.room === props.id)
-                        setLstMsgPm((lstMsg) => [...lstMsg, res]);
-                }
-            })
+            if (lstUserGlobal) {
+                lstUserGlobal.forEach((value) => {
+                    if (Number(value.id) === res.user_id
+                        && !value.bl) {
+                        if (res.room === props.id && getSecondPartRegex == props.id)
+                            setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                        if (res.room === props.id)
+                            setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                    }
+                })
+            } else {
+                if (res.room === props.id && getSecondPartRegex == props.id)
+                    setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                if (res.room === props.id)
+                    setLstMsgPm((lstMsg) => [...lstMsg, res]);
+            }
         });
         return (() => { usrSocket?.off("sendBackMsg2"); });
-    }, [JSON.stringify(lstUserChat), JSON.stringify(lstUserPm)]);
+    }, [/*JSON.stringify(lstUserChat),*/ JSON.stringify(lstUserGlobal)]);
     const [msg, setMsg] = useState<null | string>(null);
 
     if (online === "Ban" && props.id != "")
@@ -383,7 +389,6 @@ const DiscussionBox = (props: {
             >Go</button>
             <Button />
         </div>
-        <ListUserChatBox id={props.id} jwt={props.jwt} />
     </div>);
 }
 

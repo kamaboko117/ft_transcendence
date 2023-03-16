@@ -29,7 +29,7 @@ import PlayPage from "./pages/play";
 import MatchmakingPage from "./pages/matchmaking";
 //import ErrorBoundary from "./components/Chat/ErrorBoundary";
 import { SocketProvider } from './contexts/Socket';
-import ContextDisplayChannel, { typeListUser } from "./contexts/displayChat";
+import ContextDisplayChannel, { DisplayChatGlobalProvider, typeListUser, typeListUserGlobal } from "./contexts/DisplayChatContext";
 import UserContext from "./contexts/UserContext";
 import { useLocation } from 'react-router-dom';
 
@@ -52,13 +52,14 @@ const ErrorPage = () => {
 function App() {
   //const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
   const userCtx: any = useContext(UserContext);
-  const [renderDirectMessage, setDisplay] = useState<boolean>(false);
+  const { id, renderDirectMessage, setId } = useContext(ContextDisplayChannel);
+  /*const [renderDirectMessage, setDisplay] = useState<boolean>(false);
   const [userId, setUserId] = useState<number>(0);
   const [id, setId] = useState<string>("");
   const [lstMsgChat, setLstMsgChat] = useState<lstMsg[]>([] as lstMsg[]);
   const [lstMsgPm, setLstMsgPm] = useState<lstMsg[]>([] as lstMsg[]);
   const [lstUserChat, setLstUserChat] = useState<typeListUser["listUser"]>(Array);
-  const [lstUserGlobal, setLstUserGlobal] = useState<typeListUser["listUser"]>(Array);
+  const [lstUserGlobal, setLstUserGlobal] = useState<typeListUserGlobal["listUser"]>(Array);
   const providers = {
     renderDirectMessage: renderDirectMessage,
     userId: userId,
@@ -74,21 +75,13 @@ function App() {
     setLstMsgPm: setLstMsgPm,
     setLstUserChat: setLstUserChat,
     setLstUserGlobal: setLstUserGlobal
-  };
-
-  useEffect(() => {
-    lstUserChat.forEach(element => {
-      console.log(element);
-    });
-  }, [JSON.stringify(lstUserChat)]);
-  useEffect(() => {
-  }, [JSON.stringify(lstUserChat), JSON.stringify(lstUserGlobal)]);
+  };*/
   let jwt = userCtx.getJwt();
 
   return (
     <>
       <SocketProvider>
-        <ContextDisplayChannel.Provider value={providers}>
+        <DisplayChatGlobalProvider jwt={jwt}>
           <Routes>
             <Route path="/" element={
               <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
@@ -174,7 +167,7 @@ function App() {
             <Route path="*" element={<><ErrorPage /></>} />
           </Routes>
 
-        </ContextDisplayChannel.Provider>
+        </DisplayChatGlobalProvider>
       </SocketProvider>
     </>
   );

@@ -7,6 +7,8 @@ then
 	npm i -g npm@latest
 	npm install
 else
+	npm i -g @nestjs/cli@latest
+	npm i -g npm@latest
 	npm update
 	npm update -g
 fi

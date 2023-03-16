@@ -1,16 +1,16 @@
 import io, { Socket } from 'socket.io-client';
 import React, { createContext, Dispatch, useEffect, useState } from 'react';
-import { FetchError} from '../components/FetchError';
+import { FetchError } from '../components/FetchError';
 //const token: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");;
 
 //export let usrSocket: Socket<any, any> | undefined;
 
 type typeSocket = {
-    setToken: Dispatch<React.SetStateAction<string | null> >,
+    setToken: Dispatch<React.SetStateAction<string | null>>,
     usrSocket: Socket<any, any> | undefined,
 }
 
-const defaultValue: any = () => {}
+const defaultValue: any = () => { }
 
 const SocketContext = createContext<typeSocket>({
     setToken: defaultValue,
@@ -27,14 +27,6 @@ export const SocketProvider = (props: any) => {
     const [errorCode, setErrorCode] = useState<number>(200);
 
     useEffect(() => {
-        console.log("USE EFFECT")
-        console.log(token)
-        /*usrSocket = io("http://" + location.host, {
-            withCredentials: true,
-            extraHeaders: {
-                authorization: String(token)
-            }
-        });*/
         setUsrSocket(io("http://" + location.host, {
             withCredentials: true,
             extraHeaders: {
@@ -42,18 +34,17 @@ export const SocketProvider = (props: any) => {
             }
         }));
         usrSocket?.on('exception', (res) => {
-            if (res.status === "error" && res.message === "Token not valid"){
+            if (res.status === "error" && res.message === "Token not valid") {
                 setErrorCode(403)
                 console.log("Token not valid");
             }
-            else
-            {
+            else {
                 console.log("Fatal Error");
                 setErrorCode(500);
             }
         })
     }, [token]);
-    
+
     return (
         <SocketContext.Provider value={context}>
             {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}

@@ -84,11 +84,11 @@ export class UsersController {
         return (ret_user);
     }
 
-    /*@Get("validate/:code")
-    validateUser(@Param("code") code: string) {
-        console.log("CODE: " + code);
-        //return this.userService.validateUser(code);
-    }*/
+    @Get('fr-bl-list')
+    async getFriendBlackListUser(@Request() req: any) {
+        const user: TokenUser = req.user;
+        return (await this.userService.getBlackFriendListBy(user.userID));
+    }
 
     @Post('avatarfile')
     @UseInterceptors(FileInterceptor('fileset', { dest: './upload_avatar' }))
