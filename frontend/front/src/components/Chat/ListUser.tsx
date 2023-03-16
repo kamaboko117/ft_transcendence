@@ -349,9 +349,8 @@ export const ListUserChatBox = (props: {
 
     useEffect(() => {
         const fetchListUser = async (id: string, jwt: string, setErrorCode: any) => {
-            return (await fetch('http://' + location.host + '/api/chat/users?' + new URLSearchParams({
-                id: id,
-            }), { headers: header(jwt) }).then(res => {
+            return (await fetch('http://' + location.host + '/api/chat/get-bl-fl',
+                { headers: header(jwt) }).then(res => {
                 if (res.ok)
                     return (res.json());
                 setErrorCode(res.status);
