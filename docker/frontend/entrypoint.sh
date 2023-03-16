@@ -1,8 +1,10 @@
 #!/bin/sh
 
-#if [ ! -d ./node_modules ];
-#then
-	npm install 
+if [ ! -d ./node_modules ];
+then
+	npm install
+else
 	npm update
-#fi
+	npm update -g
+fi
 exec "$@"

@@ -3,7 +3,7 @@ USER root
 volume	/var/www/html
 COPY entrypoint.sh /usr/bin
 WORKDIR /var/www/html
-RUN npm i -g @nestjs/cli
+RUN npm i -g @nestjs/cli@latest
 WORKDIR /var/www/html/test
 ENV DOCKERIZE_VERSION v0.6.1
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
