@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import LoginPage from "./pages/login";
@@ -29,15 +29,15 @@ import PlayPage from "./pages/play";
 import MatchmakingPage from "./pages/matchmaking";
 //import ErrorBoundary from "./components/Chat/ErrorBoundary";
 import { SocketProvider } from './contexts/Socket';
-import ContextDisplayChannel from "./contexts/displayChat";
+import ContextDisplayChannel, { DisplayChatGlobalProvider, typeListUser, typeListUserGlobal } from "./contexts/DisplayChatContext";
 import UserContext from "./contexts/UserContext";
 import { useLocation } from 'react-router-dom';
 
 type lstMsg = {
   lstMsg: Array<{
-      idUser: string,
-      content: string,
-      img: string
+    idUser: string,
+    content: string,
+    img: string
   }>
 }
 
@@ -52,116 +52,124 @@ const ErrorPage = () => {
 function App() {
   //const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
   const userCtx: any = useContext(UserContext);
-  const [renderDirectMessage, setDisplay] = useState<boolean>(false);
+  const { id, renderDirectMessage, setId } = useContext(ContextDisplayChannel);
+  /*const [renderDirectMessage, setDisplay] = useState<boolean>(false);
   const [userId, setUserId] = useState<number>(0);
   const [id, setId] = useState<string>("");
   const [lstMsgChat, setLstMsgChat] = useState<lstMsg[]>([] as lstMsg[]);
   const [lstMsgPm, setLstMsgPm] = useState<lstMsg[]>([] as lstMsg[]);
+  const [lstUserChat, setLstUserChat] = useState<typeListUser["listUser"]>(Array);
+  const [lstUserGlobal, setLstUserGlobal] = useState<typeListUserGlobal["listUser"]>(Array);
   const providers = {
     renderDirectMessage: renderDirectMessage,
     userId: userId,
     id: id,
     lstMsgChat: lstMsgChat,
     lstMsgPm: lstMsgPm,
+    lstUserChat: lstUserChat,
+    lstUserGlobal: lstUserGlobal,
     setDisplay: setDisplay,
     setUserId: setUserId,
     setId: setId,
     setLstMsgChat: setLstMsgChat,
-    setLstMsgPm: setLstMsgPm
-  };
+    setLstMsgPm: setLstMsgPm,
+    setLstUserChat: setLstUserChat,
+    setLstUserGlobal: setLstUserGlobal
+  };*/
   let jwt = userCtx.getJwt();
+
   return (
-          <>
-          <SocketProvider>
-            <ContextDisplayChannel.Provider value={providers}>
-              <Routes>
-                <Route path="/" element={
-                  <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
-                  width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
-                  <NavBar /><MainPage jwt={jwt} /><PlayerApp />
-                </>} />
-                <Route path="/profile" element={
-                  <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
-                  width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
-                  <NavBar />
-                  <UserProfile jwt={jwt} /><PlayerApp />
-                  </>
-                } />
-                <Route path="/friendList" element={
-                  <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
-                  width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
-                  <NavBar />
-                  <FriendList /><PlayerApp />
-                  </>} />
-                <Route path="/blackList" element={
-                  <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
-                  width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
-                  <NavBar />
-                  <BlackList /><PlayerApp />
-                  </>
-                } />
-                <Route path="/setting" element={
-                  <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
-                  width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
-                  <NavBar />
-                  <Setting /><PlayerApp />
-                  </>
-                } />
-                <Route path="/login" element={
-                   <>
-                    <NavBar />
-                    <LoginPage /><PlayerApp />
-                  </>
-                } />
-                <Route path="/fake-login" element={
-                  <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
-                  width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
-                  <NavBar />
-                  <FakeLogin />
-                  <PlayerApp />
-                  </>
-                } />
-                <Route path="/logout" element={<Logout />} />
-                <Route path="/validate" element={
-                  <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
-                  width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
-                  <NavBar />
-                  <ValidatePage />
-                  <PlayerApp />
-                  </>
-                } />
-                <Route path="/register" element={<CreateNewUser />} />
-                <Route path="/counter" element={<Counter />} />
-                <Route path="/channels" element={
-                  <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
-                  width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
-                  <NavBar />
-                  <ListChannel jwt={jwt} /><PlayerApp />
-                  </>
-                }>
-                  <Route path=":id" element={<Chat jwt={jwt} />} />
-                </Route>
-                <Route path="/play" element={
-                  <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
-                  width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
-                  <NavBar />
-                  <PlayPage jwt={jwt} /><PlayerApp />
-                  </>
-                } />
-                <Route path="/matchmaking" element={
-                  <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
-                  width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
-                  <NavBar />
-                  <MatchmakingPage /><PlayerApp />
-                  </>
-                } />
-                <Route path="/error-page" element={<><NavBar /><ErrorPage /></>} />
-                <Route path="*" element={<><ErrorPage /></>} />
-              </Routes>
-              
-            </ContextDisplayChannel.Provider>
-          </SocketProvider>
-      </>
+    <>
+      <SocketProvider>
+        <DisplayChatGlobalProvider jwt={jwt}>
+          <Routes>
+            <Route path="/" element={
+              <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
+                width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
+                <NavBar /><MainPage jwt={jwt} /><PlayerApp />
+              </>} />
+            <Route path="/profile" element={
+              <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
+                width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
+                <NavBar />
+                <UserProfile jwt={jwt} /><PlayerApp />
+              </>
+            } />
+            <Route path="/friendList" element={
+              <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
+                width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
+                <NavBar />
+                <FriendList /><PlayerApp />
+              </>} />
+            <Route path="/blackList" element={
+              <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
+                width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
+                <NavBar />
+                <BlackList /><PlayerApp />
+              </>
+            } />
+            <Route path="/setting" element={
+              <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
+                width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
+                <NavBar />
+                <Setting /><PlayerApp />
+              </>
+            } />
+            <Route path="/login" element={
+              <>
+                <NavBar />
+                <LoginPage /><PlayerApp />
+              </>
+            } />
+            <Route path="/fake-login" element={
+              <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
+                width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
+                <NavBar />
+                <FakeLogin />
+                <PlayerApp />
+              </>
+            } />
+            <Route path="/logout" element={<Logout />} />
+            <Route path="/validate" element={
+              <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
+                width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
+                <NavBar />
+                <ValidatePage />
+                <PlayerApp />
+              </>
+            } />
+            <Route path="/register" element={<CreateNewUser />} />
+            <Route path="/counter" element={<Counter />} />
+            <Route path="/channels" element={
+              <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
+                width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
+                <NavBar />
+                <ListChannel jwt={jwt} /><PlayerApp />
+              </>
+            }>
+              <Route path=":id" element={<Chat jwt={jwt} />} />
+            </Route>
+            <Route path="/play" element={
+              <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
+                width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
+                <NavBar />
+                <PlayPage jwt={jwt} /><PlayerApp />
+              </>
+            } />
+            <Route path="/matchmaking" element={
+              <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
+                width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
+                <NavBar />
+                <MatchmakingPage /><PlayerApp />
+              </>
+            } />
+            <Route path="/error-page" element={<><NavBar /><ErrorPage /></>} />
+            <Route path="*" element={<><ErrorPage /></>} />
+          </Routes>
+
+        </DisplayChatGlobalProvider>
+      </SocketProvider>
+    </>
   );
 }
 

@@ -11,7 +11,7 @@ export class RoleGateway {
   @WebSocketServer() server: Server;
   afterInit(server: Server) { }
 
-  constructor(private chatGateway: ChatGateway) {}
+  constructor(private chatGateway: ChatGateway) { }
 
   /* emit action to room */
   emitToRoom(id: string, user_id: number,
@@ -46,13 +46,11 @@ export class RoleGateway {
     username: string, avatar_path: string, emit_name: string) {
     this.emitToRoom(id, user_id, username, avatar_path, emit_name);
     const map = this.chatGateway.getMap();
-  
+
     if (emit_name === "Ban" || emit_name === "Kick") {
       map.forEach((value, key) => {
-        if (value === username)
-        {
+        if (value === String(user_id)) {
           this.server.in(key).socketsLeave(id);
-          return ;
         }
       })
     }

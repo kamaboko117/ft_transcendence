@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, MutableRefObject, useState, useContext } from 'react';
-import ListUser from './ListUser';
+import ListUserChat from './ListUser';
 import { FetchError, header, headerPost } from '../FetchError';
 import "../../css/chat.css";
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
@@ -7,8 +7,7 @@ import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
 import UserContext from "../../contexts/UserContext";
-import ContextDisplayChannel from '../../contexts/displayChat';
-//import ContextDisplayChannel from '../../contexts/displayChat';
+import ContextDisplayChannel from '../../contexts/DisplayChatContext';
 
 export type lstMsg = {
     lstMsg: Array<{
@@ -65,8 +64,8 @@ const handleLeave = async (e: React.MouseEvent<HTMLButtonElement>, contextUserLe
 const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
     usrSocket: any, obj: any,
     ref: any, setMsg: any,
-    setLstMsgChat:  React.Dispatch<React.SetStateAction<lstMsg[]>>,
-    setLstMsgPm:  React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
+    setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,
+    setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
     e.preventDefault();
     usrSocket.emit('sendMsg', obj, (res) => {
         console.log("res: ");
@@ -87,8 +86,8 @@ const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
 
 const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
     usrSocket: any, obj: any, ref: any, setMsg: any,
-    setLstMsgChat:  React.Dispatch<React.SetStateAction<lstMsg[]>>,
-    setLstMsgPm:  React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
+    setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,
+    setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
     if (e.key === "Enter" && e.shiftKey === false) {
         e.preventDefault();
         usrSocket.emit('sendMsg', obj, (res) => {
@@ -147,9 +146,9 @@ const MainChat = (props: any) => {
     }, [props.id, usrSocket]);
     const navigate = useNavigate();
     const contextUserLeave = useContext(ContextUserLeave);
-    const { id, lstMsgChat, setLstMsgChat, setLstMsgPm } = useContext(ContextDisplayChannel);
-    //const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
+    const { id, lstMsgChat, lstUserChat, lstUserGlobal, setLstMsgChat, setLstMsgPm } = useContext(ContextDisplayChannel);
     const [chatName, setChatName] = useState<string>("");
+
     useEffect(() => {
         const ft_lst = async () => {
             const res = await fetch('http://' + location.host + '/api/chat?' + new URLSearchParams({
@@ -160,11 +159,8 @@ const MainChat = (props: any) => {
                     if (res.ok)
                         return (res.json());
                     props.setErrorCode(res.status);
-                });
+                }).catch(e => console.log(e));
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
-                console.log("load msg");
-                console.log(res);
-                //setLstMsg(res.lstMsg);
                 setLstMsgChat(res.lstMsg);
                 setChatName(res.name);
                 if (res.accesstype === "2" || res.accesstype === "3")
@@ -186,25 +182,31 @@ const MainChat = (props: any) => {
                 setLstMsgChat((lstMsg) => [...lstMsg, res]);
             if (res.room === props.id && props.id == id)
                 setLstMsgPm((lstMsg) => [...lstMsg, res]);
-        })
-        usrSocket?.on("sendBackMsg", (res: any) => {
-            console.log("msg");
-            console.log(res);
-            if (res.room === props.id)
-                setLstMsgChat((lstMsg) => [...lstMsg, res]);
-            if (res.room === props.id && props.id == id)
-                setLstMsgPm((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
             console.log("liste unmount");
             usrSocket?.off("actionOnUser");
-            usrSocket?.off("sendBackMsg");
             setLstMsgChat([]);
             setChatName("");
         });
-    }, [lstMsgChat.keys, props.id, online, usrSocket])
-
+    }, [lstMsgChat.keys, props.id, JSON.stringify(lstUserChat), JSON.stringify(lstUserGlobal),
+        online, usrSocket]);
+    /* Get message from backend, must reload properly when lstUser is updated */
+    useEffect(() => {
+        usrSocket?.on("sendBackMsg", (res: any) => {
+            //need to check if user is blocked
+            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id);
+            if (!found) {
+                if (res.room === props.id)
+                    setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                if (res.room === props.id && props.id == id)
+                    setLstMsgPm((lstMsg) => [...lstMsg, res]);
+            }
+        });
+        return (() => { usrSocket?.off("sendBackMsg"); });
+    }, [JSON.stringify(lstUserGlobal)/*, JSON.stringify(lstUserPm)*/])
     const [msg, setMsg] = useState<null | string>(null);
+    //const [lstUser, setLstUser] = useState<typeListUser["listUser"]>(Array);
     if (online === "Ban")
         return (<article className='containerChat'>You are banned from this chat</article>)
     else if (online === false)
@@ -246,7 +248,7 @@ const MainChat = (props: any) => {
             </div>
         </article>
         <article className='right'>
-            <ListUser id={props.id} jwt={props.jwt} />
+            <ListUserChat id={props.id} jwt={props.jwt} />
         </article>
     </>);
 }
@@ -270,7 +272,7 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
             return (res.json())
         setErrorCode(res.status);
         return (false);
-    }));
+    }).catch(e => console.log(e)));
 }
 
 /* Detect and return if a password for the channel is used
@@ -278,7 +280,6 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
 */
 const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>): Promise<boolean> => {
-    console.log("HAS PSWD");
     return (await fetch('http://' + location.host + '/api/chat/has-paswd?' + new URLSearchParams({
         id: id,
     }),
@@ -287,7 +288,7 @@ const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>,
             if (res.ok)
                 return (res.json());
             setErrorCode(res.status);
-        }));
+        }).catch(e => console.log(e)));
 }
 
 const DisplayErrorPasswordBox = (props: { error: boolean }) => {
@@ -346,7 +347,7 @@ const BlockChat = (props: any) => {
     return (<></>);
 }
 
-const Chat = (props: {jwt: string}) => {
+const Chat = (props: { jwt: string }) => {
     //const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
     const getLocation = useLocation();
     const id = useParams().id as string;
@@ -358,7 +359,7 @@ const Chat = (props: {jwt: string}) => {
     const hasPass: Promise<boolean> = hasPassword(id, props.jwt, setErrorCode);
     hasPass.then(res => {
         setLoadPsw(res);
-    });
+    }).catch(e => console.log(e));
     return (<BlockChat id={id} getLocation={getLocation}
         setErrorCode={setErrorCode} jwt={props.jwt}
         hasPsw={psw} />);

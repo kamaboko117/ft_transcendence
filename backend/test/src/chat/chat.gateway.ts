@@ -15,9 +15,10 @@ import { ListMsg } from './lstmsg.entity';
 import { ListMute } from './lstmute.entity';
 import { ListUser } from './lstuser.entity';
 import { JwtGuard } from 'src/auth/jwt.guard';
-import { ConsoleLogger, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { User } from 'src/typeorm';
 import { AuthService } from 'src/auth/auth.service';
+import { BlackFriendList } from 'src/typeorm/blackFriendList.entity';
 
 type Channel_ret = {
   Channel_id: string
@@ -38,6 +39,7 @@ class SendMsg {
   @IsString()
   content: string;
 }
+/*
 class SendMsgPm {
   @IsString()
   id: string;
@@ -45,7 +47,7 @@ class SendMsgPm {
   username: string;
   @IsString()
   content: string;
-}
+}*/
 
 /*
   middleware nestjs socket
@@ -74,6 +76,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private listBanRepository: Repository<ListBan>;
   @InjectRepository(ListMute)
   private listMuteRepository: Repository<ListMute>;
+  @InjectRepository(BlackFriendList)
+  private readonly blFrRepository: Repository<BlackFriendList>
 
   private readonly mapSocket: Map<string, string>;
 
@@ -236,7 +240,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return (channel);
   }
 
-  async getListMsgByChannelId(id: string) {
+  async getListMsgByChannelId(id: string, userId: number) {
+    const subQuery = this.blFrRepository.createQueryBuilder("bl")
+      .subQuery()
+      .from(BlackFriendList, "bl")
+      .select("bl.focus_id")
+      .where("bl.owner_id = :userId")
+      .andWhere("bl.type_list = :type")
+
     const listMsg: Array<{
       user_id: number,
       content: string
@@ -245,6 +256,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       .innerJoin("list_msg.user", "User")
       .where("list_msg.chatid = :id")
       .setParameters({ id: id })
+      .andWhere("list_msg.user_id NOT IN " + subQuery.getQuery())
+      .setParameters({ userId: userId, type: 1 })
       .orderBy("list_msg.id", 'ASC')
       .getMany();
     return (listMsg);
@@ -255,7 +268,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       .createQueryBuilder("channel")
       .select(["channel.id", "channel.name", "channel.accesstype",
         "channel.user_id", "channel.password"])
-      .where("channel.id = :id")// AND ListUser.user_id = :iduser")
+      .where("channel.id = :id")
       .setParameters({ id: id })
       .getOne();
     return (channel);
@@ -269,19 +282,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
     return (channel);
   }
-  
+
   /* check if user is not muted */
   getUserMuted(id: string, user_id: number) {
     const user: Promise<ListMute | null> = this.listMuteRepository
       .createQueryBuilder("list_mute")
       .where("list_mute.chatid = :id")
-      .setParameters({id: id})
+      .setParameters({ id: id })
       .andWhere("list_mute.user_id = :user_id")
-      .setParameters({user_id: user_id})
+      .setParameters({ user_id: user_id })
       .andWhere("list_mute.time > :time")
       .setParameters({ time: "NOW()" })
       .getOne()
-      return (user);
+    return (user);
   }
 
   /* check if user is on channel and not banned */
@@ -303,7 +316,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       .innerJoin("channel.lstUsr", "ListUser")
       .innerJoinAndSelect("ListUser.user", "User")
       .select(["channel.id", "channel.name", "channel.accesstype", "Channel.user_id", "User.username", "User.avatarPath"])
-      .where("channel.id = :id")// AND ListUser.user_id = :iduser")
+      .where("channel.id = :id")
       .setParameters({ id: id })
       .andWhere("User.userID = :user_id")
       .setParameters({ user_id: user_id })
@@ -311,16 +324,34 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return (user);
   }
 
-  async getAllUsersOnChannel(id: string) {
+  /* join and subquery seem to not work with getMany() */
+  async getAllUsersOnChannel(id: string, userId: number) {
+    const bl = this.blFrRepository.createQueryBuilder("t1").subQuery()
+      .from(BlackFriendList, "t1")
+      .select(["focus_id", "type_list"])
+      .where("owner_id = :ownerId"/*, { ownerId: userId }*/)
+      .andWhere("type_list = :type1"/*, { type1: 1 }*/)
+    const fl = this.blFrRepository.createQueryBuilder("t2").subQuery()
+      .from(BlackFriendList, "t2")
+      .select(["focus_id", "type_list"])
+      .where("owner_id = :ownerId"/*, { ownerId: userId }*/)
+      .andWhere("type_list = :type2"/*, { type2: 0 }*/)
+
     const arr: any = await this.listUserRepository
       .createQueryBuilder("list_user")
       .select(["list_user.user_id", "list_user.role"])
       .addSelect("User.username")
+      .addSelect("t1.type_list AS bl")
+      .addSelect("t2.type_list AS fl")
       .innerJoin("list_user.user", "User")
+      .leftJoin(bl.getQuery(), "t1", "t1.focus_id = User.user_id")
+      .setParameters({ type1: 1, ownerId: userId })
+      .leftJoin(fl.getQuery(), "t2", "t2.focus_id = User.user_id")
+      .setParameters({ type2: 2, ownerId: userId })
       .where("list_user.chatid = :id")
       .setParameters({ id: id })
       .orderBy("User.username", 'ASC')
-      .getMany();
+      .getRawMany();
     return (arr);
   }
 
@@ -488,7 +519,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return ({ ban: true });
     if (typeof getUser === "undefined" || getUser === null)
       return ("No user found");
-    console.log(getUser);
     const channel = await this.setNewOwner(user.userID, data.id, getUser.user_id);
     const [listUsr, count]: any = await this.listUserRepository.findAndCountBy({ chatid: data.id });
     //const getName = channel?.name;
@@ -508,8 +538,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       || !user || typeof user.userID != "number")
       return;
     const getChannel: any = await this.getUserOnChannel(data.id, user.userID);
-    if (getChannel === "Ban")
-    {
+    if (getChannel === "Ban") {
       socket.leave(data.id);
       return ({ ban: true });
     }
@@ -554,6 +583,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         chatid: data.id
       }])
       .execute();
+
     socket.to(data.id).emit("sendBackMsg", {
       room: data.id,
       user_id: user.userID,
@@ -567,21 +597,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       content: data.content
     });
     return ({
-        room: data.id,
-        user_id: user.userID,
-        user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
-        content: data.content
-      })
+      room: data.id,
+      user_id: user.userID,
+      user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
+      content: data.content
+    })
   }
 
   @UseGuards(JwtGuard)
   async handleConnection(client: Socket) {
     console.log("connect client id: " + client.id);
     const bearer = client.handshake.headers.authorization;
-    if (bearer)
-    {
+    if (bearer) {
       const user: any = await this.authService.verifyToken(bearer);
-      this.mapSocket.set(client.id, user.userID);
+      if (user)
+        this.mapSocket.set(client.id, user.userID);
     }
   }
   handleDisconnect(client: Socket) {

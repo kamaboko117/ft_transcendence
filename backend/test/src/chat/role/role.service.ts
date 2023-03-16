@@ -55,7 +55,7 @@ export class RoleService {
 
         async kickUser(id: Readonly<string>, user_id: Readonly<number>) {
                 const runner = this.dataSource.createQueryRunner();
-                
+
                 await runner.connect();
                 await runner.startTransaction();
                 try {
