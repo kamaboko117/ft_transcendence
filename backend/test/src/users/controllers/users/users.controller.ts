@@ -70,6 +70,21 @@ export class UsersController {
         return (access_token);
     }
 
+    @Post('firstlogin')
+    @UseInterceptors(FileInterceptor('fileset', {dest: './upload_avatar'}))
+    uploadFirstLogin(@Request() req: any, @UploadedFile(new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 1000000 }),
+          new FileTypeValidator({ fileType: 'image/png'}),
+        ],
+      }),
+    ) file: Express.Multer.File, @Body() body: any) {
+        const user = req.user;
+        console.log(body);
+        this.userService.updatePathAvatarUser(user.userID, file.path);
+        return ({path: file.path});
+    }
+
     @Post('avatarfile')
     @UseInterceptors(FileInterceptor('fileset', {dest: './upload_avatar'}))
     uploadFile(@Request() req: any, @UploadedFile(new ParseFilePipe({

@@ -12,6 +12,11 @@ export class CreateUserDto {
 
     @IsNotEmpty()
     token: string;
+
+    avatar_path: string;
+
+    @IsNotEmpty()
+    fa: boolean;
     // @IsNotEmpty()
     // @MinLength(8)
     // password: string;
