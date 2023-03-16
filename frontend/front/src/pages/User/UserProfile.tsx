@@ -1,5 +1,5 @@
 import React, {useEffect, useState, ChangeEvent, FormEvent } from "react";
-import { FetchError } from "../../components/FetchError";
+import { FetchError, header } from "../../components/FetchError";
 import '../../css/user.css';
 
 type statInfo = {
@@ -17,13 +17,13 @@ type userInfo = {
 	avatarPath: string,
 	sstat: statInfo
 }
-
+/*
 const header = (props: Readonly<{ jwt: string | null }>) => {
     const header = new Headers({
         Authorization: 'Bearer ' + props.jwt
     })
     return (header);
-};
+};*/
 
 export const headerPost = (jwt: Readonly<string | null>) => {
     const header = new Headers({
@@ -60,6 +60,7 @@ function UploadForm(event: FormEvent<HTMLFormElement>,
 	const formData = new FormData();
 
 	formData.append('fileset', fileSet);
+	//append en plus sur la page FirstCOnnection l username et 2FA activation
 	console.log(fileSet);
 	fetch('http://' + location.host + '/api/users/avatarfile',
 		{
@@ -74,7 +75,7 @@ function UploadForm(event: FormEvent<HTMLFormElement>,
 		setErrorCode(res.status);
 	}).then(res => {
 		setavatar_path(res.path);
-	});
+	}).catch(e => console.log(e));
 }
 
 function FormUpdateUser(props: {jwt: string,
@@ -108,7 +109,7 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [user, setSstat] = useState<userInfo>();
 	useEffect(() => {
-		fetch('http://' + location.host + '/api/users/profile/', { headers: header(props) })
+		fetch('http://' + location.host + '/api/users/profile/', { headers: header(props.jwt) })
             .then(res => {
                 if (res.ok)
                     return (res.json());
