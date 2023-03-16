@@ -58,7 +58,7 @@ function App() {
   const [lstMsgChat, setLstMsgChat] = useState<lstMsg[]>([] as lstMsg[]);
   const [lstMsgPm, setLstMsgPm] = useState<lstMsg[]>([] as lstMsg[]);
   const [lstUserChat, setLstUserChat] = useState<typeListUser["listUser"]>(Array);
-  const [lstUserPm, setLstUserPm] = useState<typeListUser["listUser"]>(Array);
+  const [lstUserGlobal, setLstUserGlobal] = useState<typeListUser["listUser"]>(Array);
   const providers = {
     renderDirectMessage: renderDirectMessage,
     userId: userId,
@@ -66,15 +66,23 @@ function App() {
     lstMsgChat: lstMsgChat,
     lstMsgPm: lstMsgPm,
     lstUserChat: lstUserChat,
-    lstUserPm: lstUserPm,
+    lstUserGlobal: lstUserGlobal,
     setDisplay: setDisplay,
     setUserId: setUserId,
     setId: setId,
     setLstMsgChat: setLstMsgChat,
     setLstMsgPm: setLstMsgPm,
     setLstUserChat: setLstUserChat,
-    setLstUserPm: setLstUserPm
+    setLstUserGlobal: setLstUserGlobal
   };
+
+  useEffect(() => {
+    lstUserChat.forEach(element => {
+      console.log(element);
+    });
+  }, [JSON.stringify(lstUserChat)]);
+  useEffect(() => {
+  }, [JSON.stringify(lstUserChat), JSON.stringify(lstUserGlobal)]);
   let jwt = userCtx.getJwt();
 
   return (

@@ -51,7 +51,6 @@ export class RoleGateway {
       map.forEach((value, key) => {
         if (value === String(user_id)) {
           this.server.in(key).socketsLeave(id);
-          return;
         }
       })
     }
