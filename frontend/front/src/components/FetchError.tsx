@@ -1,7 +1,7 @@
 import React, { useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserContext from "../contexts/UserContext";
-import ContextDisplayChannel from '../contexts/displayChat';
+import ContextDisplayChannel from '../contexts/DisplayChatContext';
 
 export const FetchError = (props: { code: number }) => {
     const navigate = useNavigate();
@@ -13,15 +13,14 @@ export const FetchError = (props: { code: number }) => {
             userCtx.logoutUser();
             navigate("/logout");
         }
-        else if (props.code >= 400)
-        {
+        else if (props.code >= 400) {
             try {
                 throw new Error('Error ' + props.code);
             } catch (e) {
-                navigate("/error-page", { state: {code: props.code} });
+                navigate("/error-page", { state: { code: props.code } });
             }
         }
-            
+
     }, [])
     return (<></>);
 }
@@ -35,7 +34,7 @@ export const header = (jwt: Readonly<string | null>) => {
 
 export const headerPost = (jwt: Readonly<string | null>) => {
     const header = new Headers({
-	'Content-Type': 'application/json',
+        'Content-Type': 'application/json',
         Authorization: 'Bearer ' + jwt
     })
     return (header);

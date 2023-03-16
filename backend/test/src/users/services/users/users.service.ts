@@ -87,6 +87,7 @@ export class UsersService {
             return (undefined);
         return (token);
     }
+
     async getInformationBearer(token: { access_token: string, refresh_token: string }): Promise<number> {
         const res = await fetch(infoURL, {
             headers: {
@@ -95,6 +96,7 @@ export class UsersService {
         }).then(res => res.json()).catch(e => console.log(e));
         return (res.resource_owner_id);
     }
+
     getUsers() {
         return this.userRepository.find();
     }
@@ -150,9 +152,8 @@ export class UsersService {
         return (user);
     }
 
-    async getListUserBlockedBy(user_id: number) {
+    async getBlackFriendListBy(user_id: number) {
         const list = this.blFrRepository.createQueryBuilder("bl")
-            .select(["bl.focus_id"])
             .where("bl.owner_id = :ownerId")
             .setParameters({ ownerId: user_id })
             .getMany();

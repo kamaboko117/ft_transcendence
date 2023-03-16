@@ -7,7 +7,7 @@ import "../../css/user.css"
 import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { debounce } from 'debounce';
-import ContextDisplayChannel from '../../contexts/displayChat';
+import ContextDisplayChannel, { UpdateBlackFriendList } from '../../contexts/DisplayChatContext';
 import AdminComponent from './Admin';
 
 type typeUserInfo = {
@@ -191,7 +191,7 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
     </>)
 }
 
-/* useCallback allow to cache functions between re-render */
+
 
 const UserInfo = (props: PropsUserInfo): JSX.Element => {
     const { renderDirectMessage, userId, setDisplay, setUserId, setId } = useContext(ContextDisplayChannel);
@@ -263,6 +263,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
     }, [userInfo.username, window.innerWidth, window.innerHeight]);
     return (
         <>
+            <UpdateBlackFriendList user={{ id: userInfo.id, fl: userInfo.friend, bl: userInfo.block }} />
             <Element name="container" className="element fullBoxListUser" ref={ref}
                 onClick={(e: React.MouseEvent<HTMLDivElement>) => handleClick(e, userInfo, setUserInfo,
                     setUserId, setTop)}>
@@ -301,7 +302,7 @@ const ListUserChat = (props: {
 }) => {
     const { usrSocket } = useContext(SocketContext);
     const [errorCode, setErrorCode] = useState<number>(200);
-    const { lstUserChat, lstUserPm, setLstUserChat } = useContext(ContextDisplayChannel);
+    const { lstUserChat, lstUserGlobal, setLstUserChat, setLstUserGlobal } = useContext(ContextDisplayChannel);
 
     useEffect(() => {
         const fetchListUser = async (id: string, jwt: string, setErrorCode: any) => {
@@ -322,7 +323,7 @@ const ListUserChat = (props: {
             });
         });
         console.log("list user mount");
-        console.log(lstUserPm);
+        //console.log(lstUserPm);
         return (() => {
             console.log("list user unmount");
             setLstUserChat([]);
@@ -340,43 +341,45 @@ const ListUserChat = (props: {
     );
 }
 
+export default ListUserChat;
+
+/*
 export const ListUserChatBox = (props: {
     id: string, jwt: string
 }) => {
     const { usrSocket } = useContext(SocketContext);
     const [errorCode, setErrorCode] = useState<number>(200);
-    const { lstUserChat, lstUserPm, setLstUserPm } = useContext(ContextDisplayChannel);
+    const { lstUserChat, lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
 
     useEffect(() => {
         const fetchListUser = async (id: string, jwt: string, setErrorCode: any) => {
             return (await fetch('http://' + location.host + '/api/chat/get-bl-fl',
                 { headers: header(jwt) }).then(res => {
-                if (res.ok)
-                    return (res.json());
-                setErrorCode(res.status);
-            }).catch(e => console.log(e)));
+                    if (res.ok)
+                        return (res.json());
+                    setErrorCode(res.status);
+                }).catch(e => console.log(e)));
         }
         fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
-            setLstUserPm(res);
+            setLstUserGlobal(res);
         }).catch(e => console.log(e));
         usrSocket?.on("updateListChat", () => {
             fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
-                setLstUserPm(res);
+                setLstUserGlobal(res);
             });
         });
         console.log("list user mount");
         return (() => {
             console.log("list user unmount");
-            setLstUserPm([]);
+            setLstUserGlobal([]);
             usrSocket?.off("updateListChat");
         });
-    }, /*[JSON.stringify(lstUserChat),*/[/*JSON.stringify(lstUserPm), */props.id, usrSocket]);
-    if (errorCode >= 400) //catch errors code from async functions
-        return (<FetchError code={errorCode} />);
-    return (
-        <React.Fragment>
-        </React.Fragment>
-    );
-}
+    },*/ /*[JSON.stringify(lstUserChat),[*//*JSON.stringify(lstUserPm), */ /*props.id, usrSocket]);
+if (errorCode >= 400) //catch errors code from async functions
+return (<FetchError code={errorCode} />);
+return (
+<React.Fragment>
+</React.Fragment>
+);
+}*/
 
-export default ListUserChat;
