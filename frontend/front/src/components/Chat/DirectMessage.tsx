@@ -9,13 +9,13 @@ import { useLocation } from 'react-router-dom';
 import UserContext from '../../contexts/UserContext';
 
 type settingChat = {
-    render: boolean,
-    id: string,
+    /*render: boolean,*/
+    /*id: string,*/
     width: number,
     height: number,
     opacity: number,
     jwt: string,
-    setId: React.Dispatch<React.SetStateAction<string>>
+    /*setId: React.Dispatch<React.SetStateAction<string>>*/
 }
 
 type settingBox = {
@@ -453,20 +453,20 @@ const FoldDirectMessage = (props: settingChat) => {
 }
 
 const UnfoldDirectMessage = (props: settingChat) => {
+    const { renderDirectMessage, id, setId } = useContext(ContextDisplayChannel);
     const [errorCode, setErrorCode] = useState<number>(200);
 
     if (errorCode >= 400) // a placer devant fonctions asynchrones semblerait t'il, le composant react se recharge
         return (<FetchError code={errorCode} />);
-    if (props.render === false || typeof props.id === "undefined")
-        return <FoldDirectMessage render={props.render} id={props.id}
+    if (renderDirectMessage === false || typeof id === "undefined")
+        return <FoldDirectMessage
             width={props.width} height={50}
             opacity={0.6} jwt={props.jwt}
-            setId={props.setId}
         />
-    return <Box render={props.render} id={props.id}
+    return <Box render={renderDirectMessage} id={id}
         width={props.width} height={props.height}
         opacity={0.9} jwt={props.jwt}
-        setErrorCode={setErrorCode} setId={props.setId}
+        setErrorCode={setErrorCode} setId={setId}
     />
 }
 
