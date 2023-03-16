@@ -17,7 +17,7 @@ function FakeLogin() {
         if (response.ok)
           return (response.json())
         setErrorCode(response.status);
-      }));
+      }).catch(e=>console.log(e)));
     };
     getUser().then(res => {
       console.log(res);

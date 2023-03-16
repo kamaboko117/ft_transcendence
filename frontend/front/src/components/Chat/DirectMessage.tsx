@@ -2,7 +2,7 @@ import React, { useState, MouseEvent, useContext, useEffect, useRef } from 'reac
 import { FetchError, header } from '../FetchError';
 import { lstMsg, ListMsg } from './Chat';
 import "../../css/directMessage.css";
-import ContextDisplayChannel from '../../contexts/displayChat';
+import ContextDisplayChannel from '../../contexts/DisplayChatContext';
 import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { useLocation } from 'react-router-dom';
@@ -72,8 +72,8 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>,
 const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
     usrSocket: any, obj: any,
     ref: any, setMsg: any,
-    setLstMsgChat:  React.Dispatch<React.SetStateAction<lstMsg[]>>,
-    setLstMsgPm:  React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
+    setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,
+    setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
     e.preventDefault();
     usrSocket.emit('sendMsg', obj, (res) => {
         console.log("res: ");
@@ -90,8 +90,8 @@ const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
 const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
     usrSocket: any, obj: any,
     ref: any, setMsg: any,
-    setLstMsgChat:  React.Dispatch<React.SetStateAction<lstMsg[]>>,
-    setLstMsgPm:  React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
+    setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,
+    setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
     if (e.key === "Enter" && e.shiftKey === false) {
         e.preventDefault();
         usrSocket.emit('sendMsg', obj, (res) => {
@@ -134,51 +134,54 @@ const handleSubmitPmUser = (e: React.FormEvent<HTMLFormElement>, user: string, j
             username: string
         },
     }>,*/) => {
-        e.preventDefault();
-        fetch('http://' + location.host + '/api/chat/find-pm-username?' + new URLSearchParams({
-                username: String(user)
-        }), { headers: header(jwt) })
+    e.preventDefault();
+    fetch('http://' + location.host + '/api/chat/find-pm-username?' + new URLSearchParams({
+        username: String(user)
+    }), { headers: header(jwt) })
         .then(res => {
             console.log(res);
             if (res.ok)
                 return (res.json());
             setErrorCode(res.status);
-        }).then((res: {channel_id: string, listPm:{
-            chatid: string,
-            user: {
-                username: string
-            },
-        }}) => {
-            if (res)
-            {
+        }).then((res: {
+            channel_id: string, listPm: {
+                chatid: string,
+                user: {
+                    username: string
+                },
+            }
+        }) => {
+            if (res) {
                 setId(res.channel_id);
                 setPm((listPm) => [...listPm, res.listPm]);
             }
-                
-        });
+
+        }).catch(e => console.log(e));
 }
 
-const BoxPmUser = (props: {setId: React.Dispatch<React.SetStateAction<string>>,
-        setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-        setPm: React.Dispatch<React.SetStateAction<listPm[]>>,
-        listPm: Array<{
-            chatid: string,
-            user: {
-                username: string
-            },
-        }>,
-    jwt: string}) => {
+const BoxPmUser = (props: {
+    setId: React.Dispatch<React.SetStateAction<string>>,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    setPm: React.Dispatch<React.SetStateAction<listPm[]>>,
+    listPm: Array<{
+        chatid: string,
+        user: {
+            username: string
+        },
+    }>,
+    jwt: string
+}) => {
     const [user, setUser] = useState<string>("");
 
     return (
-    <form className='formPm' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
-        handleSubmitPmUser(e, user, props.jwt,
-            props.setId, props.setErrorCode, props.setPm/*, props.listPm*/)}>
-        <input type="text" placeholder='Direct message a user' name="user"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setUser(e?.target?.value)} />
-        <input type="submit" value ="Search User" />
-    </form>
+        <form className='formPm' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
+            handleSubmitPmUser(e, user, props.jwt,
+                props.setId, props.setErrorCode, props.setPm/*, props.listPm*/)}>
+            <input type="text" placeholder='Direct message a user' name="user"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setUser(e?.target?.value)} />
+            <input type="submit" value="Search User" />
+        </form>
     );
 }
 
@@ -260,7 +263,7 @@ const DiscussionBox = (props: {
                         setOnline(true);
                     else
                         setOnline(false);
-            }
+                }
             });
         }
         //listen to exception sent by backend
@@ -290,7 +293,7 @@ const DiscussionBox = (props: {
     }, [props.id, usrSocket]);
 
     //const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
-    const { setLstMsgChat, lstMsgPm, setLstMsgPm } = useContext(ContextDisplayChannel);
+    const { setLstMsgChat, lstMsgPm, lstUserGlobal, /*lstUserChat,*/ setLstMsgPm } = useContext(ContextDisplayChannel);
     useEffect(() => {
         const ft_lst = async () => {
             const res = await fetch('http://' + location.host + '/api/chat?' + new URLSearchParams({
@@ -301,7 +304,7 @@ const DiscussionBox = (props: {
                     if (res.ok)
                         return (res.json());
                     props.setErrorCode(res.status);
-                });
+                }).catch(e => console.log(e));
             console.log(res);
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
                 setLstMsgPm(res.lstMsg);
@@ -321,20 +324,36 @@ const DiscussionBox = (props: {
                 setLstMsgChat((lstMsg) => [...lstMsg, res]);
             if (res.room === props.id)
                 setLstMsgPm((lstMsg) => [...lstMsg, res]);
-        })
-        usrSocket?.on("sendBackMsg2", (res: any) => {
-            if (res.room === props.id && getSecondPartRegex == props.id)
-                setLstMsgChat((lstMsg) => [...lstMsg, res]);
-            if (res.room === props.id)
-                setLstMsgPm((lstMsg) => [...lstMsg, res]);
         });
+
         return (() => {
             console.log("liste unmount");
             usrSocket?.off("actionOnUser2");
-            usrSocket?.off("sendBackMsg2");
             setLstMsgPm([]);
         });
-    }, [lstMsgPm.keys, props.id, online, usrSocket]);
+    }, [lstMsgPm.keys, props.id, JSON.stringify(lstUserGlobal),
+        online, usrSocket]);
+    useEffect(() => {
+        usrSocket?.on("sendBackMsg2", (res: any) => {
+            if (lstUserGlobal) {
+                lstUserGlobal.forEach((value) => {
+                    if (Number(value.id) === res.user_id
+                        && !value.bl) {
+                        if (res.room === props.id && getSecondPartRegex == props.id)
+                            setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                        if (res.room === props.id)
+                            setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                    }
+                })
+            } else {
+                if (res.room === props.id && getSecondPartRegex == props.id)
+                    setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                if (res.room === props.id)
+                    setLstMsgPm((lstMsg) => [...lstMsg, res]);
+            }
+        });
+        return (() => { usrSocket?.off("sendBackMsg2"); });
+    }, [/*JSON.stringify(lstUserChat),*/ JSON.stringify(lstUserGlobal)]);
     const [msg, setMsg] = useState<null | string>(null);
 
     if (online === "Ban" && props.id != "")
@@ -388,7 +407,7 @@ const Box = (props: settingBox) => {
             })
             .then(res => {
                 setPm(res);
-            });
+            }).catch(e => console.log(e));
         /* load all channels */
         fetch('http://' + location.host + '/api/chat/channel-registered',
             { headers: header(props.jwt) })
@@ -398,7 +417,7 @@ const Box = (props: settingBox) => {
                 props.setErrorCode(res.status);
             }).then(res => {
                 setChannel(res);
-            })
+            }).catch(e => console.log(e))
         return (() => {
             setPm([]);
             setChannel([]);
@@ -415,7 +434,7 @@ const Box = (props: settingBox) => {
                 setId={props.setId} setErrorCode={props.setErrorCode} setPm={setPm}
                 jwt={props.jwt} />
             <DiscussionBox id={props.id} jwt={props.jwt}
-                 setErrorCode={props.setErrorCode} setId={props.setId}
+                setErrorCode={props.setErrorCode} setId={props.setId}
                 isPrivate={isPrivate} />
         </article>
     );

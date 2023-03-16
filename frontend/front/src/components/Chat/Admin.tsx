@@ -39,7 +39,7 @@ const handleClick = (event: React.MouseEvent<HTMLButtonElement>, channelId: stri
         body: JSON.stringify({
             id: channelId, action: action, time: 0, userId: userId
         })
-    });
+    }).catch(e=>console.log(e));
 }
 
 const fetchToBackWithTimer = (elem: typeFetchToBack) => {
@@ -50,7 +50,7 @@ const fetchToBackWithTimer = (elem: typeFetchToBack) => {
             id: elem.channelId, action: elem.action,
             option: elem.option, userId: elem.userId
         })
-    });
+    }).catch(e=>console.log(e));
 }
 
 /*
@@ -198,7 +198,7 @@ const fetchKick = (event: React.MouseEvent<HTMLButtonElement>,
             id: object.channelId, action: object.action,
             option: object.option, userId: object.userId
         })
-    });
+    }).catch(e=>console.log(e));
     }
     
 }
@@ -294,7 +294,7 @@ const AdminComponent = (props: AdminCompType) => {
                         setUserId(0);
                         setRole("");
                     }
-                });
+                }).catch(e=>console.log(e));
         };
         //check if userInfo box is displayed on client
         if (props.chooseClassName === "userInfo userInfoClick")
