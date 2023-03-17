@@ -154,10 +154,12 @@ export class UsersService {
 
     async getBlackFriendListBy(user_id: number) {
         const list = this.blFrRepository.createQueryBuilder("bl")
+            .select()
             .where("bl.owner_id = :ownerId")
             .setParameters({ ownerId: user_id })
             .getMany();
         console.log(await list);
+        return (list);
     }
     /* add remove friend - block unblock user part */
 

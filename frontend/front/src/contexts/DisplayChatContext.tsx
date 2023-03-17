@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState } from 'react';
+import React, { useEffect, useContext, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { lstMsg } from '../components/Chat/Chat';
 import { FetchError, header } from '../components/FetchError';
@@ -57,6 +57,20 @@ const ContextDisplayChannel = React.createContext<contextDisplay>({
     setLstUserGlobal: defaultValue
 });
 
+export const LoadUserGlobal = (props: { jwt: string }) => {
+    const { setLstUserGlobal } = useContext(ContextDisplayChannel);
+
+    useEffect(() => {
+        fetch('http://' + location.host + '/api/users/fr-bl-list', { headers: header(props.jwt) })
+            .then(res => {
+                if (res.ok)
+                    return (res.json());
+            }).then(res => setLstUserGlobal(res));
+        return (() => { setLstUserGlobal([]) });
+    }, [props.jwt]);
+    return (<></>);
+}
+
 export const UpdateBlackFriendList = (props: {
     user: {
         id: number,
@@ -65,25 +79,48 @@ export const UpdateBlackFriendList = (props: {
     }
 }) => {
     const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
+
+    const isEqual = useCallback((elem: {
+        id: number,
+        fl: number | null,
+        bl: number | null,
+    }) => {
+        console.log(elem)
+        console.log(props)
+        if (Number(elem.id) === props.user.id) {
+            if (elem.bl !== props.user.bl || elem.fl !== props.user.fl) {
+                return (props.user);
+            }
+        }
+        return (undefined);
+    }, [JSON.stringify(props.user)]);
+
     useEffect(() => {
-        const search = (props) => {
-            const found = lstUserGlobal.find(elem => Number(elem.id) === props.user.id)
+        const search = () => {
+            console.log(lstUserGlobal.length)
+            const found = lstUserGlobal.find(isEqual);
+            console.log(found)
             return (found);
         }
-        if (search(props)) {
+        let didChange: boolean = false;
+        if (search()) {
             //update array
             const newArr = lstUserGlobal.map((value) => {
                 if (value && value.id === props.user.id) {
                     value.bl = props.user.bl;
                     value.fl = props.user.fl;
+                    didChange = true;
                 }
                 return (value);
             });
-            setLstUserGlobal(newArr);
-        } else {
+            if (didChange)
+                setLstUserGlobal(prev => [...prev, props.user]);
+            else
+                setLstUserGlobal(newArr);
+        }/* else {
             //add at end of array
-            setLstUserGlobal(prev => [...prev, props.user]);
-        }
+            
+        }*/
     }, [JSON.stringify(props.user)]);
     return (<>
     </>);
@@ -114,20 +151,10 @@ export const DisplayChatGlobalProvider = (props: any) => {
         setLstUserChat: setLstUserChat,
         setLstUserGlobal: setLstUserGlobal
     };
-    //const getLocation = useLocation()?.pathname;
-    /*useEffect(() => {
-        console.log(getLocation);
-        fetch('http://' + location.host + '/api/users/fr-bl-list', { headers: header(props.jwt) })
-            .then(res => {
-                if (res.ok)
-                    return (res.json());
-                setErrorCode(res.status);
-            }).then(res => console.log(res));
-        return (() => { setLstUserGlobal([]) });
-    }, [getLocation]);
-*/
+
     return (
         <ContextDisplayChannel.Provider value={providers}>
+            <LoadUserGlobal jwt={props.jwt} />
             {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}
             {props.children}
         </ContextDisplayChannel.Provider>
