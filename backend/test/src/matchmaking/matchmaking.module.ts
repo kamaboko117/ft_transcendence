@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { MatchmakingService } from './matchmaking.service';
-import { MatchmakingGateway } from './matchmaking.gateway';
+import { MatchMakingGateway } from './matchmaking.gateway';
+import { MatchMakingService } from './matchmaking.services';
 
 @Module({
-  providers: [MatchmakingGateway,],
-  exports: [MatchmakingGateway],
-  //controllers: [MatchmakingController]
+  controllers: [],
+  providers: [MatchMakingGateway, MatchMakingService],
+  exports: [],
 })
-export class MatchmakingModule {}
+export class MatchMakingModule {}

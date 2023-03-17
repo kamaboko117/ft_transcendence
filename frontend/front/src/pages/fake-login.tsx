@@ -7,6 +7,7 @@ import SocketContext from "../contexts/Socket";
 function FakeLogin() {
   const userCtx: any = useContext(UserContext);
   const [jwt, setJwt] = useState<null | string>(null);
+  const [userId, setUserId] = useState<number>(0);
   const [errorCode, setErrorCode] = useState<number>(200);
 
   useEffect(() => {
@@ -16,12 +17,14 @@ function FakeLogin() {
         if (response.ok)
           return (response.json())
         setErrorCode(response.status);
-      }));
+      }).catch(e=>console.log(e)));
     };
     getUser().then(res => {
       console.log(res);
-      if (typeof res != "undefined")
-        setJwt(res.access_token);
+      if (typeof res != "undefined") {
+        setJwt(res.token.access_token);
+        setUserId(res.user_id);
+      }
     })
   }, []);
   const { setToken } = useContext(SocketContext);
@@ -29,7 +32,8 @@ function FakeLogin() {
     const login = async () => {
       await userCtx.loginUser({
         jwt: jwt,
-        username: ""
+        username: "",
+        userId: String(userId)
       });
     }
     login();

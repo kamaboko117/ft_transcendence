@@ -5,8 +5,13 @@
     background-color: red;
 }
 
+.userInfo > button {
+    width: 100%;
+}
+
 label.userInfo {
     text-align: center;
+    width: 100%;
 }
 
 .userInfoClick {

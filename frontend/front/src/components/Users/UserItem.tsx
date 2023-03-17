@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { header } from '../FetchError';
 
 type ItemProps = {
     jwt: string | null
@@ -9,21 +10,21 @@ type ItemProps = {
 }
 
 function UserItem(props: ItemProps) {
-    console.log(props);
     const [username, setUsername] = useState<string>("");
-    let header = new Headers({
-        Authorization: 'Bearer ' + props.jwt
-    });
 
     useEffect(() => {
-        fetch('http://' + location.host + '/api/users/profile/', {
-            headers: header
-        })
-        .then(res => {
-            if (res.ok)
-                return (res.json());
-        })
-        .then(res => setUsername(res.userID));
+        if (props.jwt) {
+            fetch('http://' + location.host + '/api/users/profile/',
+                { headers: header(props.jwt) })
+                .then(res => {
+                    if (res.ok)
+                        return (res.json());
+                })
+                .then((res) => {
+                    if (res)
+                        setUsername(res.username);
+                }).catch(e=>console.log(e));
+        }
     }, [props.jwt])
     return (<div>
         <span>Hello USER ID: {username}</span>

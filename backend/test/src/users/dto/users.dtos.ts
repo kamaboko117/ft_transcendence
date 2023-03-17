@@ -1,7 +1,13 @@
 import { IsEmail, IsNotEmpty, IsNumber, MinLength } from "class-validator";
 
-export class CreateUserDto {
+export class BlockUnblock {
+    @IsNumber()
+    userId: number;
+    @IsNumber()
+    type: number;
+}
 
+export class CreateUserDto {
     @IsNotEmpty()
     @IsNumber()
     userID: number;
@@ -12,6 +18,7 @@ export class CreateUserDto {
 
     @IsNotEmpty()
     token: string;
+<<<<<<< HEAD
 
     avatar_path: string;
 
@@ -24,4 +31,6 @@ export class CreateUserDto {
     // @IsNotEmpty()
     // @IsEmail()
     // email: string;
+=======
+>>>>>>> master
 }

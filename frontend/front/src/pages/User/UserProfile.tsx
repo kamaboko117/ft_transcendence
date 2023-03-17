@@ -75,7 +75,11 @@ function UploadForm(event: FormEvent<HTMLFormElement>,
 		setErrorCode(res.status);
 	}).then(res => {
 		setavatar_path(res.path);
+<<<<<<< HEAD
 	}).catch(e => console.log(e));
+=======
+	}).catch(e=>console.log(e));
+>>>>>>> master
 }
 
 function FormUpdateUser(props: {jwt: string,
@@ -86,13 +90,17 @@ function FormUpdateUser(props: {jwt: string,
 	
 	return (
 		<>
-		{file && <><h2>Preview avatar</h2><img className="avatar" src={URL.createObjectURL(file)} /></>}
-		<form encType="multipart/form-data" onSubmit={(event: FormEvent<HTMLFormElement>) => UploadForm(event,
-			file, props.jwt,
-			props.setErrorCode, props.setavatar_path)}>
-			<input type="file" name="uploadAvatar" onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)} />
-			<input type="submit" value="Update avatar"/>
-		</form>
+		{file && <><h2>Preview avatar</h2>
+			<img alt="preview avatar"
+			className="avatar"src={URL.createObjectURL(file)} /></>}
+			<form encType="multipart/form-data" onSubmit={(event: FormEvent<HTMLFormElement>) =>
+				UploadForm(event,
+					file, props.jwt,
+					props.setErrorCode, props.setavatar_path)}>
+					<input type="file" name="uploadAvatar"
+						onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)} />
+					<input type="submit" value="Update avatar"/>
+			</form>
 		</>
 	);
 }
@@ -123,8 +131,8 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 				setDefeat(res?.sstat.defeat);
 				*/
 				setSstat(res);
-            })
-	}, [])
+            }).catch(e=>console.log(e));
+	}, []);
 	if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
 	return (
@@ -132,7 +140,7 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 		<FormUpdateUser jwt={props.jwt} setavatar_path={setavatar_path}
 			setErrorCode={setErrorCode} />
 		<h1>Username: {user?.username}</h1>
-		<img className="avatar" src={avatar_path} />
+		<img className="avatar" src={avatar_path} alt={"avatar " + user?.username} />
 		<ul>
 			<li>Victoire: {user?.sstat.victory}</li>
 			<li>Défaite: {user?.sstat.defeat}</li>	
