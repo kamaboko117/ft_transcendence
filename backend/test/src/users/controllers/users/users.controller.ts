@@ -108,8 +108,12 @@ export class UsersController {
         if (file)
             this.userService.updatePathAvatarUser(user.userID, file.path);
         this.userService.updateUsername(user.userID, body.username);
-        if (regexRet)
-            this.userService.update2FA(user.user_id, true);
+        console.log(regexRet?.length)
+        if (regexRet) {
+            console.log("IN")
+            this.userService.update2FA(user.userID, true);
+        }
+            
         // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
         return ({valid: true});
     }

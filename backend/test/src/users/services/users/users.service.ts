@@ -120,6 +120,8 @@ export class UsersService {
     }
 
     async update2FA(user_id: number, fa: boolean) {
+        console.log("in 2FA")
+        console.log(fa)
         this.userRepository.createQueryBuilder()
             .update(User)
             .set({fa: fa})
