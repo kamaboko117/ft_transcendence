@@ -158,10 +158,19 @@ export class UsersController {
         return (ret_user);
     }
 
+    @Get('get-fl')
+    async getFriendList(@Request() req: any) {
+        const user: TokenUser = req.user;
+        const getFl: BlackFriendList[] = await this.userService.getFriendList(user.userID);
+
+        return (getFl);
+    }
+
     @Get('fr-bl-list')
     async getFriendBlackListUser(@Request() req: any) {
         const user: TokenUser = req.user;
-        return (await this.userService.getBlackFriendListBy(user.userID));
+        const getBlFr: BlackFriendList[] = await this.userService.getBlackFriendListBy(user.userID)
+        return (getBlFr);
     }
 
     @Post('fr-bl-list')

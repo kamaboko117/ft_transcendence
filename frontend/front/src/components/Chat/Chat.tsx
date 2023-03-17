@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, MutableRefObject, useState, useContext } from 'react';
+import React, { useEffect, useRef, useState, useContext } from 'react';
 import ListUserChat from './ListUser';
 import { FetchError, header, headerPost } from '../FetchError';
 import "../../css/chat.css";
@@ -7,7 +7,7 @@ import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
 import UserContext from "../../contexts/UserContext";
-import ContextDisplayChannel from '../../contexts/DisplayChatContext';
+import ContextDisplayChannel, { LoadUserGlobal } from '../../contexts/DisplayChatContext';
 
 export type lstMsg = {
     lstMsg: Array<{
@@ -68,17 +68,10 @@ const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
     setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
     e.preventDefault();
     usrSocket.emit('sendMsg', obj, (res) => {
-        console.log("res: ");
-        console.log(res);
-        /*if (res.ban === true) { }
-        else if (res.mute === true) { }
-        else {*/
-        console.log("box: " + obj.idBox)
         if (res.room === obj.id)
             setLstMsgChat((lstMsg) => [...lstMsg, res]);
         if (res.room === obj.id && obj.id == obj.idBox)
             setLstMsgPm((lstMsg) => [...lstMsg, res]);
-        //}
     })
     setMsg("");
     ref.current.value = "";
@@ -91,9 +84,6 @@ const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
     if (e.key === "Enter" && e.shiftKey === false) {
         e.preventDefault();
         usrSocket.emit('sendMsg', obj, (res) => {
-            console.log("res: ");
-            console.log(res);
-            console.log("box: " + obj.idBox)
             if (res.room === obj.id)
                 setLstMsgChat((lstMsg) => [...lstMsg, res]);
             if (res.room === obj.id && obj.id == obj.idBox)
@@ -180,8 +170,8 @@ const MainChat = (props: any) => {
             }
             if (res.room === props.id)
                 setLstMsgChat((lstMsg) => [...lstMsg, res]);
-            if (res.room === props.id && props.id == id)
-                setLstMsgPm((lstMsg) => [...lstMsg, res]);
+            //if (res.room === props.id && props.id == id)
+            //    setLstMsgPm((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
             console.log("liste unmount");
@@ -189,7 +179,7 @@ const MainChat = (props: any) => {
             setLstMsgChat([]);
             setChatName("");
         });
-    }, [lstMsgChat.keys, props.id, JSON.stringify(lstUserChat), JSON.stringify(lstUserGlobal),
+    }, [lstMsgChat.keys, props.id, /*JSON.stringify(lstUserChat),*/ JSON.stringify(lstUserGlobal),
         online, usrSocket]);
     /* Get message from backend, must reload properly when lstUser is updated */
     useEffect(() => {
@@ -199,12 +189,12 @@ const MainChat = (props: any) => {
             if (!found) {
                 if (res.room === props.id)
                     setLstMsgChat((lstMsg) => [...lstMsg, res]);
-                if (res.room === props.id && props.id == id)
-                    setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                //if (res.room === props.id && props.id == id)
+                //    setLstMsgPm((lstMsg) => [...lstMsg, res]);
             }
         });
         return (() => { usrSocket?.off("sendBackMsg"); });
-    }, [JSON.stringify(lstUserGlobal)/*, JSON.stringify(lstUserPm)*/])
+    }, [JSON.stringify(lstUserGlobal)])
     const [msg, setMsg] = useState<null | string>(null);
     //const [lstUser, setLstUser] = useState<typeListUser["listUser"]>(Array);
     if (online === "Ban")
@@ -248,6 +238,7 @@ const MainChat = (props: any) => {
             </div>
         </article>
         <article className='right'>
+            <LoadUserGlobal jwt={props.jwt} />
             <ListUserChat id={props.id} jwt={props.jwt} />
         </article>
     </>);
@@ -348,14 +339,13 @@ const BlockChat = (props: any) => {
 }
 
 const Chat = (props: { jwt: string }) => {
-    //const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
     const getLocation = useLocation();
     const id = useParams().id as string;
     const [errorCode, setErrorCode] = useState<number>(200);
     const [psw, setLoadPsw] = useState<boolean | undefined>(undefined);
 
-    if (errorCode >= 400) // a placer devant fonctions asynchrones semblerait t'il, le composant react se recharge
-        return (<FetchError code={errorCode} />); //lorsqu'il se met a jour, semblerait t'il
+    if (errorCode >= 400)
+        return (<FetchError code={errorCode} />);
     const hasPass: Promise<boolean> = hasPassword(id, props.jwt, setErrorCode);
     hasPass.then(res => {
         setLoadPsw(res);

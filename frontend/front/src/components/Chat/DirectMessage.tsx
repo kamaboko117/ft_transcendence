@@ -2,7 +2,7 @@ import React, { useState, MouseEvent, useContext, useEffect, useRef } from 'reac
 import { FetchError, header } from '../FetchError';
 import { lstMsg, ListMsg } from './Chat';
 import "../../css/directMessage.css";
-import ContextDisplayChannel from '../../contexts/DisplayChatContext';
+import ContextDisplayChannel, { LoadUserGlobal } from '../../contexts/DisplayChatContext';
 import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { useLocation } from 'react-router-dom';
@@ -61,7 +61,7 @@ type propsListChannel = {
 const directMessage = (event: MouseEvent<HTMLButtonElement>,
     renderDirectMessage: boolean, setDisplay: any): void => {
     event.preventDefault();
-    console.log(renderDirectMessage);
+
     if (renderDirectMessage === true)
         setDisplay(false)
     else
@@ -76,8 +76,6 @@ const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
     setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
     e.preventDefault();
     usrSocket.emit('sendMsg', obj, (res) => {
-        console.log("res: ");
-        console.log(res);
         if (res.room === obj.id && obj.idBox === obj.id)
             setLstMsgChat((lstMsg) => [...lstMsg, res]);
         if (res.room === obj.id)
@@ -95,16 +93,10 @@ const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
     if (e.key === "Enter" && e.shiftKey === false) {
         e.preventDefault();
         usrSocket.emit('sendMsg', obj, (res) => {
-            console.log(res);
-            /*if (res.ban === true)
-                setLstMsgChat((lstMsg) => [...lstMsg, res]);
-            else if (res.mute === true) { }
-            else {*/
             if (res.room === obj.id && obj.idBox === obj.id)
                 setLstMsgChat((lstMsg) => [...lstMsg, res]);
             if (res.room === obj.id)
                 setLstMsgPm((lstMsg) => [...lstMsg, res]);
-            //}
         })
         setMsg("");
         ref.current.value = "";
@@ -127,19 +119,12 @@ const Button = () => {
 const handleSubmitPmUser = (e: React.FormEvent<HTMLFormElement>, user: string, jwt: string,
     setId: React.Dispatch<React.SetStateAction<string>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-    setPm: React.Dispatch<React.SetStateAction<listPm[]>>,
-    /*listPm: Array<{
-        chatid: string,
-        user: {
-            username: string
-        },
-    }>,*/) => {
+    setPm: React.Dispatch<React.SetStateAction<listPm[]>>) => {
     e.preventDefault();
     fetch('http://' + location.host + '/api/chat/find-pm-username?' + new URLSearchParams({
         username: String(user)
     }), { headers: header(jwt) })
         .then(res => {
-            console.log(res);
             if (res.ok)
                 return (res.json());
             setErrorCode(res.status);
@@ -293,7 +278,7 @@ const DiscussionBox = (props: {
     }, [props.id, usrSocket]);
 
     //const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
-    const { setLstMsgChat, lstMsgPm, lstUserGlobal, /*lstUserChat,*/ setLstMsgPm } = useContext(ContextDisplayChannel);
+    const { lstMsgPm, lstUserGlobal, /*lstUserChat,*/ setLstMsgPm, setLstMsgChat } = useContext(ContextDisplayChannel);
     useEffect(() => {
         const ft_lst = async () => {
             const res = await fetch('http://' + location.host + '/api/chat?' + new URLSearchParams({
@@ -305,7 +290,6 @@ const DiscussionBox = (props: {
                         return (res.json());
                     props.setErrorCode(res.status);
                 }).catch(e => console.log(e));
-            console.log(res);
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
                 setLstMsgPm(res.lstMsg);
             }
@@ -320,8 +304,8 @@ const DiscussionBox = (props: {
                 && res.room === props.id) {
                 props.setId("");
             }
-            if (res.room === props.id && getSecondPartRegex == props.id)
-                setLstMsgChat((lstMsg) => [...lstMsg, res]);
+            //if (res.room === props.id && getSecondPartRegex == props.id)
+            //    setLstMsgChat((lstMsg) => [...lstMsg, res]);
             if (res.room === props.id)
                 setLstMsgPm((lstMsg) => [...lstMsg, res]);
         });
@@ -335,25 +319,14 @@ const DiscussionBox = (props: {
         online, usrSocket]);
     useEffect(() => {
         usrSocket?.on("sendBackMsg2", (res: any) => {
-            if (lstUserGlobal) {
-                lstUserGlobal.forEach((value) => {
-                    if (Number(value.id) === res.user_id
-                        && !value.bl) {
-                        if (res.room === props.id && getSecondPartRegex == props.id)
-                            setLstMsgChat((lstMsg) => [...lstMsg, res]);
-                        if (res.room === props.id)
-                            setLstMsgPm((lstMsg) => [...lstMsg, res]);
-                    }
-                })
-            } else {
-                if (res.room === props.id && getSecondPartRegex == props.id)
-                    setLstMsgChat((lstMsg) => [...lstMsg, res]);
+            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id);
+            if (!found) {
                 if (res.room === props.id)
                     setLstMsgPm((lstMsg) => [...lstMsg, res]);
             }
         });
         return (() => { usrSocket?.off("sendBackMsg2"); });
-    }, [/*JSON.stringify(lstUserChat),*/ JSON.stringify(lstUserGlobal)]);
+    }, [JSON.stringify(lstUserGlobal), props.id]);
     const [msg, setMsg] = useState<null | string>(null);
 
     if (online === "Ban" && props.id != "")
@@ -389,6 +362,7 @@ const DiscussionBox = (props: {
             >Go</button>
             <Button />
         </div>
+        <LoadUserGlobal jwt={props.jwt} />
     </div>);
 }
 

@@ -104,7 +104,7 @@ function App() {
               <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
                 width={600} height={280} opacity={1} jwt={jwt} setId={setId} />}
                 <NavBar />
-                <FriendList /><PlayerApp />
+                <FriendList jwt={jwt} /><PlayerApp />
               </>} />
             <Route path="/blackList" element={
               <>{jwt && jwt != "" && <UnfoldDirectMessage render={renderDirectMessage} id={id}
