@@ -170,8 +170,8 @@ const MainChat = (props: any) => {
             }
             if (res.room === props.id)
                 setLstMsgChat((lstMsg) => [...lstMsg, res]);
-            if (res.room === props.id && props.id == id)
-                setLstMsgPm((lstMsg) => [...lstMsg, res]);
+            //if (res.room === props.id && props.id == id)
+            //    setLstMsgPm((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
             console.log("liste unmount");
@@ -189,8 +189,8 @@ const MainChat = (props: any) => {
             if (!found) {
                 if (res.room === props.id)
                     setLstMsgChat((lstMsg) => [...lstMsg, res]);
-                if (res.room === props.id && props.id == id)
-                    setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                //if (res.room === props.id && props.id == id)
+                //    setLstMsgPm((lstMsg) => [...lstMsg, res]);
             }
         });
         return (() => { usrSocket?.off("sendBackMsg"); });

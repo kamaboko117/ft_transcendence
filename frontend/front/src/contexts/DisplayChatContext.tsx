@@ -1,5 +1,4 @@
 import React, { useEffect, useContext, useState, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
 import { lstMsg } from '../components/Chat/Chat';
 import { FetchError, header } from '../components/FetchError';
 
@@ -71,59 +70,40 @@ export const LoadUserGlobal = (props: { jwt: string }) => {
     return (<></>);
 }
 
-export const UpdateBlackFriendList = (props: {
-    user: {
-        id: number,
-        fl: number | null,
-        bl: number | null,
+type typeFlBl = {
+    id: number,
+    fl: number | null,
+    bl: number | null
+}
+
+export const updateBlackFriendList = (
+    user: typeFlBl,
+    lstUserGlobal: Array<typeFlBl>,
+    setLstUserGlobal: React.Dispatch<React.SetStateAction<Array<typeFlBl>>>
+) => {
+    const search = () => {
+        console.log(lstUserGlobal.length)
+        const found = lstUserGlobal.find(elem => Number(elem.id) === user.id);
+        console.log(found)
+        return (found);
     }
-}) => {
-    const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
-
-    const isEqual = useCallback((elem: {
-        id: number,
-        fl: number | null,
-        bl: number | null,
-    }) => {
-        console.log(elem)
-        console.log(props)
-        if (Number(elem.id) === props.user.id) {
-            if (elem.bl !== props.user.bl || elem.fl !== props.user.fl) {
-                return (props.user);
+    let didChange: boolean = false;
+    if (search()) {
+        //update array
+        console.log(user);
+        const newArr = lstUserGlobal.map((value) => {
+            console.log(value)
+            if (value && Number(value.id) === user.id) {
+                value.bl = user.bl;
+                value.fl = user.fl;
+                didChange = true;
             }
-        }
-        return (undefined);
-    }, [JSON.stringify(props.user)]);
-
-    useEffect(() => {
-        const search = () => {
-            console.log(lstUserGlobal.length)
-            const found = lstUserGlobal.find(isEqual);
-            console.log(found)
-            return (found);
-        }
-        let didChange: boolean = false;
-        if (search()) {
-            //update array
-            const newArr = lstUserGlobal.map((value) => {
-                if (value && value.id === props.user.id) {
-                    value.bl = props.user.bl;
-                    value.fl = props.user.fl;
-                    didChange = true;
-                }
-                return (value);
-            });
-            if (didChange)
-                setLstUserGlobal(prev => [...prev, props.user]);
-            else
-                setLstUserGlobal(newArr);
-        }/* else {
-            //add at end of array
-            
-        }*/
-    }, [JSON.stringify(props.user)]);
-    return (<>
-    </>);
+            return (value);
+        });
+        setLstUserGlobal(newArr);
+    } else if (user.bl == 1 || user.fl == 2) {
+        setLstUserGlobal(prev => [...prev, user]);
+    }
 }
 
 export const DisplayChatGlobalProvider = (props: any) => {
@@ -154,7 +134,6 @@ export const DisplayChatGlobalProvider = (props: any) => {
 
     return (
         <ContextDisplayChannel.Provider value={providers}>
-            <LoadUserGlobal jwt={props.jwt} />
             {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}
             {props.children}
         </ContextDisplayChannel.Provider>

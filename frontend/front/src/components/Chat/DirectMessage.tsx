@@ -304,8 +304,8 @@ const DiscussionBox = (props: {
                 && res.room === props.id) {
                 props.setId("");
             }
-            if (res.room === props.id && getSecondPartRegex == props.id)
-                setLstMsgChat((lstMsg) => [...lstMsg, res]);
+            //if (res.room === props.id && getSecondPartRegex == props.id)
+            //    setLstMsgChat((lstMsg) => [...lstMsg, res]);
             if (res.room === props.id)
                 setLstMsgPm((lstMsg) => [...lstMsg, res]);
         });
@@ -321,14 +321,12 @@ const DiscussionBox = (props: {
         usrSocket?.on("sendBackMsg2", (res: any) => {
             let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id);
             if (!found) {
-                if (res.room === props.id && getSecondPartRegex == props.id)
-                    setLstMsgChat((lstMsg) => [...lstMsg, res]);
                 if (res.room === props.id)
                     setLstMsgPm((lstMsg) => [...lstMsg, res]);
             }
         });
         return (() => { usrSocket?.off("sendBackMsg2"); });
-    }, [JSON.stringify(lstUserGlobal)]);
+    }, [JSON.stringify(lstUserGlobal), props.id]);
     const [msg, setMsg] = useState<null | string>(null);
 
     if (online === "Ban" && props.id != "")

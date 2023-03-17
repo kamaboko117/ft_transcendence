@@ -7,7 +7,7 @@ import "../../css/user.css"
 import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { debounce } from 'debounce';
-import ContextDisplayChannel, { UpdateBlackFriendList } from '../../contexts/DisplayChatContext';
+import ContextDisplayChannel, { updateBlackFriendList } from '../../contexts/DisplayChatContext';
 import AdminComponent from './Admin';
 
 type typeUserInfo = {
@@ -17,6 +17,7 @@ type typeUserInfo = {
     friend: number | null,
     block: number | null,
 }
+
 type typeListUser = {
     listUser: Array<{
         list_user_user_id: number,
@@ -48,12 +49,17 @@ type typeButtonsInfo = {
     setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
 }
 
-const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
+export const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
     userId: number,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     type: number,
     userInfo: typeUserInfo,
-    setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,): void => {
+    setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
+    lstUserGlobal: { id: number, fl: number | null, bl: number | null }[],
+    setLstUserGlobal: React.Dispatch<React.SetStateAction<{
+        id: number, fl: number | null,
+        bl: number | null
+    }[]>>): void => {
     event.preventDefault();
 
     function updateUserInfo(username: string, role: string | null, id: number,
@@ -62,6 +68,10 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
             username: username, role: role,
             id: id, friend: friend, block: block
         });
+        updateBlackFriendList({
+            id: id,
+            fl: friend, bl: block
+        }, lstUserGlobal, setLstUserGlobal);
     }
 
     fetch("http://" + location.host + "/api/users/fr-bl-list", {
@@ -93,14 +103,15 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
                         null, userInfo.block);
                 }
             }
-
         }
     }).catch(e => console.log(e));
 }
-const inviteGame = (event: MouseEvent<HTMLButtonElement>): void => {
+
+export const inviteGame = (event: MouseEvent<HTMLButtonElement>): void => {
     event.preventDefault();
 }
-const userProfile = (event: MouseEvent<HTMLButtonElement>): void => {
+
+export const userProfile = (event: MouseEvent<HTMLButtonElement>): void => {
     event.preventDefault();
 }
 
@@ -112,7 +123,7 @@ const userProfile = (event: MouseEvent<HTMLButtonElement>): void => {
     DirectMessage component will load messages itself
 */
 
-const directMessage = (event: MouseEvent<HTMLButtonElement>,
+export const directMessage = (event: MouseEvent<HTMLButtonElement>,
     setDisplay: any, setId: React.Dispatch<React.SetStateAction<string>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     userId: number, jwt: string): void => {
@@ -166,16 +177,18 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
 }
 
 const ButtonsInfos = (props: typeButtonsInfo) => {
+    const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
+
     return (<>
         <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
             listHandle(e, props.jwt,
                 props.userInfo.id, props.setErrorCode,
-                1, props.userInfo, props.setUserInfo)}
+                1, props.userInfo, props.setUserInfo, lstUserGlobal, setLstUserGlobal)}
             className="userInfo">{(props.userInfo.block === 1 ? "Unblock" : "Block")}</button>
         <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
             listHandle(e, props.jwt,
                 props.userInfo.id, props.setErrorCode,
-                2, props.userInfo, props.setUserInfo)}
+                2, props.userInfo, props.setUserInfo, lstUserGlobal, setLstUserGlobal)}
             className="userInfo">{(props.userInfo.friend === 2 ? "Remove" : "Add")} friend</button>
         <button onClick={inviteGame} className="userInfo">Invite to a game</button>
         <button onClick={userProfile} className="userInfo">User Profile</button>
@@ -263,7 +276,6 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
     }, [userInfo.username, window.innerWidth, window.innerHeight]);
     return (
         <>
-            <UpdateBlackFriendList user={{ id: userInfo.id, fl: userInfo.friend, bl: userInfo.block }} />
             <Element name="container" className="element fullBoxListUser" ref={ref}
                 onClick={(e: React.MouseEvent<HTMLDivElement>) => handleClick(e, userInfo, setUserInfo,
                     setUserId, setTop)}>

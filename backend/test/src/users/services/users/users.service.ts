@@ -152,13 +152,42 @@ export class UsersService {
         return (user);
     }
 
-    async getBlackFriendListBy(user_id: number) {
-        const list = this.blFrRepository.createQueryBuilder("bl")
-            .select()
-            .where("bl.owner_id = :ownerId")
+    async getFriendList(user_id: number) {
+        const list = this.blFrRepository.createQueryBuilder("fl")
+            .select(["fl.focus_id AS id", "fl.type_list AS fl"])
+            .where("fl.owner_id = :ownerId")
             .setParameters({ ownerId: user_id })
-            .getMany();
-        console.log(await list);
+            .getRawMany();
+
+        return (list);
+    }
+
+    getBlackFriendListBy(user_id: number) {
+        const fl = this.blFrRepository.createQueryBuilder("fl").subQuery()
+            .from(BlackFriendList, "fl")
+            .select(["focus_id", "type_list"])
+            .where("owner_id = :ownerId")
+            .andWhere("type_list = :type1")
+        const bl = this.blFrRepository.createQueryBuilder("bl").subQuery()
+            .from(BlackFriendList, "bl")
+            .select(["focus_id", "type_list"])
+            .where("owner_id = :ownerId")
+            .andWhere("type_list = :type2")
+
+        const list = this.blFrRepository.createQueryBuilder("a")
+            .distinct(true)
+            .select("a.focus_id AS id")
+            .addSelect("bl.type_list AS bl")
+            .addSelect("fl.type_list AS fl")
+            .addSelect("User.username")
+            .leftJoin(fl.getQuery(), "fl", "fl.focus_id = a.focus_id")
+            .setParameters({ type1: 2 })
+            .leftJoin(bl.getQuery(), "bl", "bl.focus_id = a.focus_id")
+            .setParameters({ type2: 1 })
+            .innerJoin("a.userFocus", "User")
+            .where("a.owner_id = :ownerId")
+            .setParameters({ ownerId: user_id })
+            .getRawMany();
         return (list);
     }
     /* add remove friend - block unblock user part */
