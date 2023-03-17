@@ -302,7 +302,7 @@ const ListUserChat = (props: {
 }) => {
     const { usrSocket } = useContext(SocketContext);
     const [errorCode, setErrorCode] = useState<number>(200);
-    const { lstUserChat, lstUserGlobal, setLstUserChat, setLstUserGlobal } = useContext(ContextDisplayChannel);
+    const { lstUserChat, setLstUserChat } = useContext(ContextDisplayChannel);
 
     useEffect(() => {
         const fetchListUser = async (id: string, jwt: string, setErrorCode: any) => {
@@ -342,44 +342,3 @@ const ListUserChat = (props: {
 }
 
 export default ListUserChat;
-
-/*
-export const ListUserChatBox = (props: {
-    id: string, jwt: string
-}) => {
-    const { usrSocket } = useContext(SocketContext);
-    const [errorCode, setErrorCode] = useState<number>(200);
-    const { lstUserChat, lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
-
-    useEffect(() => {
-        const fetchListUser = async (id: string, jwt: string, setErrorCode: any) => {
-            return (await fetch('http://' + location.host + '/api/chat/get-bl-fl',
-                { headers: header(jwt) }).then(res => {
-                    if (res.ok)
-                        return (res.json());
-                    setErrorCode(res.status);
-                }).catch(e => console.log(e)));
-        }
-        fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
-            setLstUserGlobal(res);
-        }).catch(e => console.log(e));
-        usrSocket?.on("updateListChat", () => {
-            fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
-                setLstUserGlobal(res);
-            });
-        });
-        console.log("list user mount");
-        return (() => {
-            console.log("list user unmount");
-            setLstUserGlobal([]);
-            usrSocket?.off("updateListChat");
-        });
-    },*/ /*[JSON.stringify(lstUserChat),[*//*JSON.stringify(lstUserPm), */ /*props.id, usrSocket]);
-if (errorCode >= 400) //catch errors code from async functions
-return (<FetchError code={errorCode} />);
-return (
-<React.Fragment>
-</React.Fragment>
-);
-}*/
-

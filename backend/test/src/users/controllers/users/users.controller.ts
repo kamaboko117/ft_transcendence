@@ -87,7 +87,8 @@ export class UsersController {
     @Get('fr-bl-list')
     async getFriendBlackListUser(@Request() req: any) {
         const user: TokenUser = req.user;
-        return (await this.userService.getBlackFriendListBy(user.userID));
+        const getBlFr: BlackFriendList[] = await this.userService.getBlackFriendListBy(user.userID)
+        return (getBlFr);
     }
 
     @Post('avatarfile')
