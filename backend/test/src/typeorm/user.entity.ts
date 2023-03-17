@@ -39,6 +39,9 @@ export class User {
   })
   token: string;
 
+  @Column({ default: false })
+  fa: boolean;
+
   @OneToMany(() => Channel, (listchannel) => listchannel.user)
   lstChannel: Channel[];
 
