@@ -1,7 +1,7 @@
 import { Controller, Request, Query, Get, Post, Body, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
 import { ChatGateway } from './chat.gateway';
 import { InformationChat, TokenUser, DbChat } from './chat.interface';
-import { CreateChatDto } from './create-chat.dto';
+import { CreateChatDto } from './dto/create-chat.dto';
 import { PswChat } from './psw-chat.dto';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -36,12 +36,14 @@ export class ChatController {
     @Get('users')
     async getAllUsersOnChannel(@Request() req: any,
         @Query('id') id: Readonly<string>) {
-        //creer type listUser
-        const listUsers: any = await this.chatGateway.getAllUsersOnChannel(id);
+        const user: TokenUser = req.user;
+        const listUsers: any = await this.chatGateway.getAllUsersOnChannel(id, user.userID);
+
         if (typeof listUsers === "undefined" || listUsers === null)
             return (false);
         return (listUsers);
     }
+
     /* Start of fixed chatbox part */
     @Get('list-pm')
     async getDirectMessage(@Request() req: any) {
@@ -74,7 +76,14 @@ export class ChatController {
     /* Find user PM by username */
     @Get('find-pm-username')
     async openPrivateMessageByUsername(@Request() req: any,
-        @Query('username') username: Readonly<string>): Promise<string | null> {
+        @Query('username') username: Readonly<string>): Promise<{
+            channel_id: string, listPm: {
+                chatid: string,
+                user: {
+                    username: string
+                },
+            }
+        } | null> {
         const tokenUser: TokenUser = req.user;
 
         if (username === "" || typeof username === "undefined")
@@ -83,10 +92,13 @@ export class ChatController {
         if (!user || tokenUser.userID === Number(user.userID))
             return (null);
         const channel_id = await this.findPm(tokenUser.userID, String(user.userID));
-        return (channel_id);
+        return ({
+            channel_id: channel_id,
+            listPm: {
+                chatid: channel_id, user: { username: user.username }
+            }
+        });
     }
-
-    
 
     /*
         find PM from both user
@@ -118,8 +130,6 @@ export class ChatController {
             const getUser = await this.chatGateway.getUserOnChannel(id, user.userID);
             if (typeof getUser !== "undefined" || getUser === null)
                 return (false);
-            //const getUser = channel.lstUsr.get(user.userID);
-            // console.log(getUser);
         }
         if (typeof channel === "undefined" || channel?.password == '' || channel === null)
             return (false);
@@ -155,7 +165,8 @@ export class ChatController {
             chat.accesstype = '1';
             chat.password = bcrypt.hashSync(chat.password, salt);
         }
-        return (this.chatGateway.createChat(chat, len, { idUser: user.userID, username: user.username }));
+        const findUser = await this.userService.findUsersById(user.userID);
+        return (this.chatGateway.createChat(chat, len, { idUser: user.userID, username: findUser?.username }));
     }
 
     /* Create new private chat and return them by Name */
@@ -186,11 +197,12 @@ export class ChatController {
             chat.accesstype = '3';
             chat.password = bcrypt.hashSync(chat.password, salt);
         }
-        return (this.chatGateway.createChat(chat, id, { idUser: user.userID, username: user.username }));
+        const findUser = await this.userService.findUsersById(user.userID);
+        return (this.chatGateway.createChat(chat, id, { idUser: user.userID, username: findUser?.username }));
     }
 
     @Post('valid-paswd')
-    async passwordIsValid(@Body() psw: Readonly<PswChat>): Promise<boolean> {
+    async passwordIsValid(@Body() psw: PswChat): Promise<boolean> {
         const channel: undefined | DbChat = await this.chatGateway.getChannelByTest(psw.id);
         if (typeof channel == "undefined" || channel === null || channel.password == '')
             return (false);
@@ -203,7 +215,7 @@ export class ChatController {
         @Query('id') id: Readonly<string>) {
         const user: TokenUser = req.user;
         const chan = await this.chatGateway.getChannelByTest(id);
-        const listMsg = await this.chatGateway.getListMsgByChannelId(id);
+        const listMsg = await this.chatGateway.getListMsgByChannelId(id, user.userID);
 
         let channel = {
             id: chan?.id,
@@ -216,9 +228,11 @@ export class ChatController {
         if (typeof channel === "undefined" || channel === null)
             return ({});
         const getUser = await this.chatGateway.getUserOnChannel(id, user.userID);
-        if (typeof getUser === "undefined" || getUser === null)
+        if (getUser === "Ban")
+            return ({ ban: true });
+        if (typeof getUser === "undefined" || getUser === null
+            || getUser === "Ban")
             return ({});
-        console.log("userid ok");
         let arrayStart: number = channel.lstMsg.length - 5;
         let arrayEnd: number = channel.lstMsg.length;
         if (arrayStart < 0)

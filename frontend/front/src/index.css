@@ -1,3 +1,8 @@
+html {
+  background-color: #242424;
+  color: white;
+}
+
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
@@ -15,11 +20,16 @@
   -webkit-text-size-adjust: 100%;
 }
 
+input {
+  background-color: white;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -30,11 +40,17 @@ body {
   place-items: flex-start;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #2b2927;
 }
 
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+  color: white;
+}
+
+h2 {
+  color: white;
 }
 
 button {
@@ -45,27 +61,121 @@ button {
   font-weight: 500;
   font-family: inherit;
   background-color: #1a1a1a;
+  color: white;
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+.btn {
+  font: inherit;
+  padding: 0.5rem 1.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  background-color: #800040;
+  color: white;
+  border: 1px solid #800040;
+  margin: 0 1rem;
 }
 
+.btn:hover {
+  background-color: #9c1458;
+  border-color: #9c1458;
+}
+
+.btn--alt {
+  background-color: transparent;
+  color: #800040;
+}
+
+.btn--alt:hover {
+  background-color: #f8dae9;
+}
+
+.card {
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  width: 20rem;
+}
+
+.room_item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #333333;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  width: 20rem;
+  margin: 1rem;
+}
+
+.room_item:hover {
+  background-color: #2b2927;
+}
+
+.room_name {
+  color: #9c1458;
+  font-size: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+
+.room_list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #333333;
+}
+
+.actions {
+  text-align: right;
+}
+
+.modal {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  background-color: white;
+  padding: 1rem;
+  text-align: center;
+  width: 30rem;
+  z-index: 10;
+  position: fixed;
+  top: 20vh;
+  left: calc(50% - 15rem);
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.game_canvas {
+  background-color: #333333;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  width: 50rem;
+  margin: 1rem;
+}
+
+.backdrop {
+  position: fixed;
+  z-index: 1;
+  background-color: rgba(0, 0, 0, 0.75);
+  width: 100%;
+  height: 100vh;
+  top: 0;
+  left: 0;
+}

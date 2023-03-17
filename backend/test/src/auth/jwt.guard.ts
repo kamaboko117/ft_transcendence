@@ -37,6 +37,7 @@ export class JwtGuard extends AuthGuard('jwt') {
         const decoded = await this.authService.verifyToken(bearer);
         if ((decoded === null && typeof request.route == "undefined")
             || (decoded === false && typeof request.route == "undefined")) {
+                console.log("exception");
             throw new WsException('Token not valid');
         }
         else if (decoded === null || decoded === false)
@@ -45,9 +46,7 @@ export class JwtGuard extends AuthGuard('jwt') {
             request.headers = {};
             request.headers.authorization = "Bearer " + bearer;
         }
-        console.log("bearer :" + bearer);
         super.canActivate(context)
-        console.log("super.canActivate OK")
         return (true);
     }
 }

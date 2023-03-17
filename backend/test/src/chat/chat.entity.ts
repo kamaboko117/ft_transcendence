@@ -18,7 +18,7 @@ export class Channel {
 
     @Column({ nullable: true })
     password: string;
-
+    /* owner id */
     @ManyToOne(() => User, (user) => user.lstChannel, { nullable: true, cascade: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     user: User;
