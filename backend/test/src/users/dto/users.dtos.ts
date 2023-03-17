@@ -1,4 +1,7 @@
-import { IsEmail, IsNotEmpty, IsNumber, MinLength } from "class-validator";
+import { IsEmail, IsNotEmpty, IsNumber, MinLength,
+    IsString, IsBoolean, IsDefined,
+    IsObject, ValidateNested } from "class-validator";
+import { Type } from 'class-transformer';
 
 export class BlockUnblock {
     @IsNumber()
@@ -14,23 +17,25 @@ export class CreateUserDto {
 
     @IsNotEmpty()
     @MinLength(3)
+    @IsString()
     username: string;
 
     @IsNotEmpty()
     token: string;
-<<<<<<< HEAD
+}
 
-    avatar_path: string;
+/*class Fa {
+    @IsBoolean()
+    fa: boolean;
+}*/
+
+export class UpdateUser {
+    @IsNotEmpty()
+    @IsString()
+    username: string;
 
     @IsNotEmpty()
-    fa: boolean;
-    // @IsNotEmpty()
-    // @MinLength(8)
-    // password: string;
+    @IsString()
+    fa: string;
 
-    // @IsNotEmpty()
-    // @IsEmail()
-    // email: string;
-=======
->>>>>>> master
 }

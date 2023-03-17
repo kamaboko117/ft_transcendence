@@ -1,5 +1,5 @@
-import { type } from 'os';
 import React, { ChangeEvent, FormEvent, useState } from 'react';
+import { FetchError } from '../FetchError';
 
 /* dans ton handler submit, y mettre le feth vers backend  */
 
@@ -36,9 +36,9 @@ function update(event: FormEvent<HTMLFormElement>, username: string,
 	const formData = new FormData();
 	if (fileSet) {
 		formData.append('fileset', fileSet);
-		formData.append('username', username);
-		formData.append('object-fa', JSON.stringify({fa: FA}));
 	}
+	formData.append('fa', JSON.stringify({fa: FA}));
+	formData.append('username', username);
 	//pour ta dto
 	// tu recevras surement
 	//object-fa: {fa: boolean}
@@ -71,7 +71,7 @@ function update(event: FormEvent<HTMLFormElement>, username: string,
 			return (res.json());
 		setErrorCode(res.status);
 	}).then(res => {
-		//ici traiter si tu veux l objet json
+		console.log(res);
 	}).catch(e => console.log(e));
 }
 
@@ -81,7 +81,10 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 	const [FA, setFA] = useState<boolean>(false);
 	const [avatar, setavatar] = useState<string>("");
 	const [file, setFile] = useState<File | undefined>();
-	return(<section>
+	if (errorCode >= 401)
+		return (<FetchError code={errorCode} />);
+	return(
+	<section>
 		<article>
 			<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
 					update(event, username, setUsername, file, FA, props.jwt, errorCode, setErrorCode)}>
@@ -94,6 +97,7 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 				<input type="file" name="uploadAvatar" onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)} />
 				<input type="submit" value="Submit" />
 			</form>
+			{errorCode && errorCode === 400 && <span>Something is not valid</span>}
 		</article>
 	</section>);
 }

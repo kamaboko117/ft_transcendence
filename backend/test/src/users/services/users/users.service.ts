@@ -110,6 +110,24 @@ export class UsersService {
             .execute()
     }
 
+    async updateUsername(user_id: number, username: string) {
+        this.userRepository.createQueryBuilder()
+            .update(User)
+            .set({username: username})
+            .where("user_id = :id")
+            .setParameters({ id: user_id })
+            .execute()
+    }
+
+    async update2FA(user_id: number, fa: boolean) {
+        this.userRepository.createQueryBuilder()
+            .update(User)
+            .set({fa: fa})
+            .where("user_id = :id")
+            .setParameters({ id: user_id })
+            .execute()
+    }
+
     /*
         exemple requete sql avec un innerjoin facon typeorm
         createQueryBuilder("list_msg")

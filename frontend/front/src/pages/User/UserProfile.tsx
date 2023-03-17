@@ -75,11 +75,7 @@ function UploadForm(event: FormEvent<HTMLFormElement>,
 		setErrorCode(res.status);
 	}).then(res => {
 		setavatar_path(res.path);
-<<<<<<< HEAD
 	}).catch(e => console.log(e));
-=======
-	}).catch(e=>console.log(e));
->>>>>>> master
 }
 
 function FormUpdateUser(props: {jwt: string,
