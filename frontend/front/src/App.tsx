@@ -49,6 +49,7 @@ const ErrorPage = () => {
   return (<div>Error {location.state.code}</div>)
 }
 
+
 function App() {
   //const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
   const userCtx: any = useContext(UserContext);
