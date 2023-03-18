@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useContext } from "react";
 import UserItem from "../components/Users/UserItem";
 import UserContext from "../contexts/UserContext";
@@ -13,7 +13,9 @@ function ValidatePage() {
   const [jwt, setJwt] = useState<null | string>(null);
   const [userId, setUserId] = useState<number>(0);
   const [errorCode, setErrorCode] = useState<number>(200);
+  const [username, setUsername] = useState<string>("");
 
+  //ask load user
   useEffect(() => {
     const getUser = (code: string | null | false) => {
       return (fetch('http://' + location.host + '/api/users/login', {
@@ -28,24 +30,34 @@ function ValidatePage() {
         setErrorCode(response.status);
       }).catch(e=>console.log(e)));
     };
+    //set load user
     getUser(code).then(res => {
       console.log(res);
       if (typeof res != "undefined") {
         setJwt(res.token.access_token);
         setUserId(res.user_id);
+        setUsername(res.username);
       }
     })
   }, []);
+  const navigate = useNavigate();
   const { setToken } = useContext(SocketContext);
+  //log user to UserContext
   useEffect(() => {
     const login = async () => {
       await userCtx.loginUser({
         jwt: jwt,
-        username: "",
+        username: username,
         userId: String(userId)
       });
     }
     login();
+    //check if username is empty
+    //if empty, this is a first connection
+    if (username === null || username === "")
+    {
+      navigate("/first-connection");
+    }
     setToken(jwt);
   }, [jwt])
   if (errorCode >= 400)

@@ -138,8 +138,9 @@ export class UsersController {
     @Post('login')
     async login(@Request() req: any, @Res({ passthrough: true }) response: any) {
         console.log("LOGIN POST");
-        const access_token = await this.authService.login(req.user);
-        const refresh = await this.authService.refresh(req.user);
+        const user: TokenUser = req.user;
+        const access_token = await this.authService.login(user);
+        const refresh = await this.authService.refresh(user);
         console.log(access_token);
         console.log(refresh);
         response.cookie('refresh_token', refresh.refresh_token,
@@ -148,7 +149,7 @@ export class UsersController {
                 httpOnly: true,
                 sameSite: 'Strict'
             });
-        return ({ token: access_token, user_id: req.user.userID });
+        return ({ token: access_token, user_id: req.user.userID, username: user.username });
     }
 
     @Post("create")
