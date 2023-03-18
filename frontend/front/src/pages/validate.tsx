@@ -40,30 +40,25 @@ function ValidatePage() {
       }
     })
   }, []);
-  const navigate = useNavigate();
   const { setToken } = useContext(SocketContext);
   //log user to UserContext
   useEffect(() => {
     const login = async () => {
+      //set promise otherwise token is not set properly in context
       await userCtx.loginUser({
         jwt: jwt,
         username: username,
         userId: String(userId)
       });
+      setToken(jwt);
     }
     login();
-    //check if username is empty
-    //if empty, this is a first connection
-    if (username === null || username === "")
-    {
-      navigate("/first-connection");
-    }
-    setToken(jwt);
-  }, [jwt])
+  }, [jwt]);
   if (errorCode >= 400)
     return (<FetchError code={errorCode} />);
   //if (typeof jwt != "undefined" && jwt != null) {
   // console.log(userCtx);
+  
   return (
     <div>
       <h1>Logged as</h1>

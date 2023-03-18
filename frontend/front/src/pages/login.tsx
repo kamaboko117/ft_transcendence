@@ -15,6 +15,7 @@ function LoginPage(props: any) {
 	<>
     <div>
       <h1>Please Log In</h1>
+      <></>
       <LoginButton url={loginUrl} />
     </div>
         <FakeLoginButton />
