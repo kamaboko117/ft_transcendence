@@ -20,7 +20,6 @@ export const FetchError = (props: { code: number }) => {
                 navigate("/error-page", { state: { code: props.code } });
             }
         }
-
     }, [])
     return (<></>);
 }
