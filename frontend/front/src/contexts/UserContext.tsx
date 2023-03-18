@@ -25,6 +25,7 @@ export function UserProvider(props: any) {
       userId: localStorage.getItem("ft_transcendence_gdda_userid")
     });
   }, []);
+  
   function loginUser(props: User) {
     setUser(props);
     console.log(props);
@@ -41,9 +42,9 @@ export function UserProvider(props: any) {
   function logoutUser() {
     console.log("logout");
     setUser({
-      jwt: "",
-      username: "",
-      userId: ""
+      jwt: null,
+      username: null,
+      userId: null
     });
     localStorage.removeItem("ft_transcendence_gdda_jwt");
     localStorage.removeItem("ft_transcendence_gdda_username");
@@ -58,14 +59,28 @@ export function UserProvider(props: any) {
     return (user?.userId);
   }
 
+  const getUsername = () => {
+    return (user?.username);
+  }
+
+  const setUsername = (username: string) => {
+    setUser({
+      jwt: user.jwt,
+      username: username,
+      userId: user.userId
+    });
+  }
+
   const context = {
     user: user,
     loginUser: loginUser,
     logoutUser: logoutUser,
     getJwt: getJwt,
-    getUserId: getUserId
+    getUserId: getUserId,
+    getUsername: getUsername,
+    setUsername: setUsername
   };
-  
+
   return (
     <UserContext.Provider value={context}>
       {props.children}

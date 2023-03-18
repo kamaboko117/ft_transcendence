@@ -4,13 +4,28 @@ import "./mainPage.module.css";
 import { LoginButton, FakeLoginButton } from "../components/buttons/buttons";
 import UserContext, { User } from "../contexts/UserContext";
 import { FetchError, header } from "../components/FetchError";
-
+import { useNavigate } from "react-router-dom";
 
 const client_id = import.meta.env.VITE_APP_ID;
 const app_uri = import.meta.env.VITE_APP_URI;
 const redirect_uri = app_uri + "/validate";
 const state = "pouet2";
 const loginUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=${redirect_uri}&response_type=code&scope=public&state=${state}'`;
+
+  //check if username is empty
+  //if empty, this is a first connection
+  const UsernameSet = (props: {jwt: string, name: string}) => {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+      if (props.jwt
+        && (props.name === "" || props.name === null)) {
+          console.log("navigate");
+          navigate("/first-connection");
+      }
+    }, [props.jwt, props.name]);
+    return (<></>);
+  }
 
 function MainPage(props: {jwt: string}) {
   /* Verifier validite token */
@@ -39,6 +54,7 @@ function MainPage(props: {jwt: string}) {
     return (
       <div>
         <div>Hello {username}</div>
+        <UsernameSet jwt={props.jwt} name={userCtx.getUsername()} />
       </div>
     )
   }

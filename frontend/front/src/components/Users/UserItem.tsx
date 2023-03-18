@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { header } from '../FetchError';
 
 type ItemProps = {
@@ -25,7 +26,7 @@ function UserItem(props: ItemProps) {
                         setUsername(res.username);
                 }).catch(e=>console.log(e));
         }
-    }, [props.jwt])
+    }, [props.jwt]);
     return (<div>
         <span>Hello USER ID: {username}</span>
     </div>

@@ -1,9 +1,9 @@
 import React, {useEffect, useState, ChangeEvent, FormEvent } from "react";
-import { FetchError } from "../../components/FetchError";
+import { FetchError, header } from "../../components/FetchError";
 import '../../css/user.css';
 
 type statInfo = {
-	victory; number,
+	victory: number,
 	defeat: number,
 	nb_games: number,
 	level: number,
@@ -17,13 +17,13 @@ type userInfo = {
 	avatarPath: string,
 	sstat: statInfo
 }
-
+/*
 const header = (props: Readonly<{ jwt: string | null }>) => {
     const header = new Headers({
         Authorization: 'Bearer ' + props.jwt
     })
     return (header);
-};
+};*/
 
 export const headerPost = (jwt: Readonly<string | null>) => {
     const header = new Headers({
@@ -60,6 +60,7 @@ function UploadForm(event: FormEvent<HTMLFormElement>,
 	const formData = new FormData();
 
 	formData.append('fileset', fileSet);
+	//append en plus sur la page FirstCOnnection l username et 2FA activation
 	console.log(fileSet);
 	fetch('http://' + location.host + '/api/users/avatarfile',
 		{
@@ -74,7 +75,7 @@ function UploadForm(event: FormEvent<HTMLFormElement>,
 		setErrorCode(res.status);
 	}).then(res => {
 		setavatar_path(res.path);
-	}).catch(e=>console.log(e));
+	}).catch(e => console.log(e));
 }
 
 function FormUpdateUser(props: {jwt: string,
@@ -112,7 +113,7 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [user, setSstat] = useState<userInfo>();
 	useEffect(() => {
-		fetch('http://' + location.host + '/api/users/profile/', { headers: header(props) })
+		fetch('http://' + location.host + '/api/users/profile/', { headers: header(props.jwt) })
             .then(res => {
                 if (res.ok)
                     return (res.json());
@@ -130,7 +131,6 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	}, []);
 	if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
-	if (/*OwnUser*/ 1) {
 	return (
 		<>
 		<FormUpdateUser jwt={props.jwt} setavatar_path={setavatar_path}
@@ -145,21 +145,6 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 		</ul>
 		</>
 	);
-	} else {
-		return (
-			<>
-			<h1>Username: {user?.username}</h1>
-			<img className="avatar" src={avatar_path} />
-			<ul>
-				<li>Victoire: {user?.sstat.victory}</li>
-				<li>Défaite: {user?.sstat.defeat}</li>	
-				<li>Rank: {user?.sstat.rank}</li>		
-				<li>Level: {user?.sstat.level}</li>		
-			</ul>
-			</>
-	
-		);
-	 }
 }
 
 export default UserProfile;

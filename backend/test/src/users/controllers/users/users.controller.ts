@@ -10,7 +10,7 @@ import {
     ValidationPipe,
     Request, Res, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator
 } from "@nestjs/common";
-import { CreateUserDto, BlockUnblock } from "src/users/dto/users.dtos";
+import { CreateUserDto, BlockUnblock, UpdateUser } from "src/users/dto/users.dtos";
 import { UsersService } from "src/users/services/users/users.service";
 import { CustomAuthGuard } from 'src/auth/auth.guard';
 import { FakeAuthGuard } from 'src/auth/fake.guard';
@@ -56,7 +56,81 @@ export class UsersController {
         return ({ token: access_token, user_id: req.user.userID });
     }
 
+    @Post('update-user')
+    @UseInterceptors(FileInterceptor('fileset', {dest: './upload_avatar'}))
+    updateUser(@Request() req: any, @UploadedFile(new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 1000000 }),
+          new FileTypeValidator({ fileType: 'image/png'}),
+        ], fileIsRequired: false
+      }),
+    ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
+        const user = req.user;
+        console.log(body);
+        //body.fa must accept the regex
+        //if regex not ok, then return NULL so no FA accepted
+        const stringRegex = /^({"fa":true})$/g;
+        const regex = stringRegex;
+        const regexRet = body.fa.match(regex);
+        console.log(regexRet);
+        if (file)
+            this.userService.updatePathAvatarUser(user.userID, file.path);
+        if (body.username && body.username != "")
+            this.userService.updateUsername(user.userID, body.username);
+        if (regexRet)
+            this.userService.update2FA(user.user_id, true);
+        else
+            this.userService.update2FA(user.user_id, false);
+            // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
+        return ({valid: true});
+    }
 
+    @Post('firstlogin')
+    @UseInterceptors(FileInterceptor('fileset', {dest: './upload_avatar'}))
+    uploadFirstLogin(@Request() req: any, @UploadedFile(new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 1000000 }),
+          new FileTypeValidator({ fileType: 'image/png'}),
+        ], fileIsRequired: false
+      }),
+    ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
+        const user = req.user;
+        console.log(body);
+        if (body.username && body.username == "") {
+            return ({valid: false, username: ""});
+        }
+        //body.fa must accept the regex
+        //if regex not ok, then return NULL so no FA accepted
+        const stringRegex = /^({"fa":true})$/g;
+        const regex = stringRegex;
+        const regexRet = body.fa.match(regex);
+        console.log(regexRet);
+        if (file)
+            this.userService.updatePathAvatarUser(user.userID, file.path);
+        this.userService.updateUsername(user.userID, body.username);
+        console.log(regexRet?.length)
+        if (regexRet) {
+            console.log("IN")
+            this.userService.update2FA(user.userID, true);
+        }
+            
+        // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
+        return ({valid: true, username: body.username});
+    }
+
+    @Post('avatarfile')
+    @UseInterceptors(FileInterceptor('fileset', {dest: './upload_avatar'}))
+    uploadFile(@Request() req: any, @UploadedFile(new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 1000000 }),
+          new FileTypeValidator({ fileType: 'image/png'}),
+        ],
+      }),
+    ) file: Express.Multer.File) {
+        const user = req.user;
+        this.userService.updatePathAvatarUser(user.userID, file.path);
+        return ({path: file.path});
+    }
 
     /*
         useGuard est un middleware
@@ -97,20 +171,6 @@ export class UsersController {
         const user: TokenUser = req.user;
         const getBlFr: BlackFriendList[] = await this.userService.getBlackFriendListBy(user.userID)
         return (getBlFr);
-    }
-
-    @Post('avatarfile')
-    @UseInterceptors(FileInterceptor('fileset', { dest: './upload_avatar' }))
-    uploadFile(@Request() req: any, @UploadedFile(new ParseFilePipe({
-        validators: [
-            new MaxFileSizeValidator({ maxSize: 1000000 }),
-            new FileTypeValidator({ fileType: 'image/png' }),
-        ],
-    }),
-    ) file: Express.Multer.File) {
-        const user = req.user;
-        this.userService.updatePathAvatarUser(user.userID, file.path);
-        return ({ path: file.path });
     }
 
     @Post('fr-bl-list')
