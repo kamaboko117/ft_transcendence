@@ -51,6 +51,7 @@ const ErrorPage = () => {
 
 
 function App() {
+
   //const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
   const userCtx: any = useContext(UserContext);
   //const { id, renderDirectMessage, setId } = useContext(ContextDisplayChannel);
@@ -78,7 +79,7 @@ function App() {
     setLstUserGlobal: setLstUserGlobal
   };*/
   let jwt = userCtx.getJwt();
-
+  //
   return (
     <>
       <SocketProvider>
