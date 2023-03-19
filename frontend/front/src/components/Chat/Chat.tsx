@@ -1,17 +1,19 @@
-import React, { useEffect, useRef, MutableRefObject, useState, useContext } from 'react';
-import ListUser from './ListUser';
+import React, { useEffect, useRef, useState, useContext } from 'react';
+import ListUserChat from './ListUser';
 import { FetchError, header, headerPost } from '../FetchError';
 import "../../css/chat.css";
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import img from "../../assets/react.svg";//a remplacer avec user image
 import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
+import UserContext from "../../contexts/UserContext";
+import ContextDisplayChannel, { LoadUserGlobal } from '../../contexts/DisplayChatContext';
 
 export type lstMsg = {
     lstMsg: Array<{
         idUser: string,
-        content: string
+        content: string,
+        img: string
     }>
 }
 
@@ -34,7 +36,8 @@ export const ListMsg = (props: any) => {
                 props.lstMsg &&
                 props.lstMsg.slice(arrayLength, props.lstMsg.length).map((msg: any) => (
                     <React.Fragment key={++i}>
-                        <div><img src={img} className="chatBox" />
+                        <div><img src={"/" + msg.user.avatarPath} className="chatBox"
+                            alt={"avatar " + msg.user.username} />
                             <label className="chatBox">{msg.user.username}</label>
                         </div>
                         <span className="chatBox">{msg.content}</span>
@@ -59,23 +62,32 @@ const handleLeave = async (e: React.MouseEvent<HTMLButtonElement>, contextUserLe
 }
 /* Post msg */
 const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
-    usrSocket: any, obj: any, ref: any, setMsg: any) => {
+    usrSocket: any, obj: any,
+    ref: any, setMsg: any,
+    setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,
+    setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
     e.preventDefault();
     usrSocket.emit('sendMsg', obj, (res) => {
-        console.log("res: ");
-        console.log(res);
+        if (res.room === obj.id)
+            setLstMsgChat((lstMsg) => [...lstMsg, res]);
+        if (res.room === obj.id && obj.id == obj.idBox)
+            setLstMsgPm((lstMsg) => [...lstMsg, res]);
     })
     setMsg("");
     ref.current.value = "";
 }
 
 const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
-    usrSocket: any, obj: any, ref: any, setMsg: any) => {
+    usrSocket: any, obj: any, ref: any, setMsg: any,
+    setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,
+    setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
     if (e.key === "Enter" && e.shiftKey === false) {
         e.preventDefault();
         usrSocket.emit('sendMsg', obj, (res) => {
-            console.log("res: ");
-            console.log(res);
+            if (res.room === obj.id)
+                setLstMsgChat((lstMsg) => [...lstMsg, res]);
+            if (res.room === obj.id && obj.id == obj.idBox)
+                setLstMsgPm((lstMsg) => [...lstMsg, res]);
         })
         setMsg("");
         ref.current.value = "";
@@ -84,44 +96,49 @@ const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
 
 const MainChat = (props: any) => {
     const refElem = useRef(null);
-    const [online, setOnline] = useState<undefined | boolean>(undefined)
+    const [online, setOnline] = useState<undefined | boolean | string>(undefined)
+    const userCtx: any = useContext(UserContext);
     const { usrSocket } = useContext(SocketContext);
     useEffect(() => {
         //subscribeChat
-        usrSocket.emit("joinRoomChat", {
+        usrSocket?.emit("joinRoomChat", {
             id: props.id,
             psw: props.psw
-        }, (res: boolean) => {
-            console.log(res);
-            if (res === true)
-                setOnline(true);
-            else
-                setOnline(false);
+        }, (res: any) => {
+            if (res.ban === true)
+                setOnline("Ban");
+            else {
+                if (res === true)
+                    setOnline(true);
+                else
+                    setOnline(false);
+            }
         });
         //listen to excption sent by backend
-        usrSocket.on('exception', (res) => {
+        usrSocket?.on('exception', (res) => {
             console.log("err");
-            console.log(res);
             if (res.status === "error" && res.message === "Token not valid")
                 props.setErrorCode(403);
             else
                 props.setErrorCode(500);
-        })
+        });
         console.log("mount");
         console.log("START EMIT");
         return (() => {
             //unsubscribeChat
             console.log("STOP EMIT");
             console.log("unmount");
-            usrSocket.emit("stopEmit", { id: props.id }, () => {
+            usrSocket?.emit("stopEmit", { id: props.id }, () => {
                 setOnline(false);
             });
-            usrSocket.off("exception");
+            usrSocket?.off("exception");
         })
-    }, [props.id]);
+    }, [props.id, usrSocket]);
+    const navigate = useNavigate();
     const contextUserLeave = useContext(ContextUserLeave);
-    const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
+    const { id, lstMsgChat, lstUserChat, lstUserGlobal, setLstMsgChat, setLstMsgPm } = useContext(ContextDisplayChannel);
     const [chatName, setChatName] = useState<string>("");
+
     useEffect(() => {
         const ft_lst = async () => {
             const res = await fetch('http://' + location.host + '/api/chat?' + new URLSearchParams({
@@ -132,11 +149,9 @@ const MainChat = (props: any) => {
                     if (res.ok)
                         return (res.json());
                     props.setErrorCode(res.status);
-                });
+                }).catch(e => console.log(e));
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
-                console.log("load msg");
-                console.log(res);
-                setLstMsg(res.lstMsg);
+                setLstMsgChat(res.lstMsg);
                 setChatName(res.name);
                 if (res.accesstype === "2" || res.accesstype === "3")
                     contextUserLeave();
@@ -146,23 +161,45 @@ const MainChat = (props: any) => {
         if (online === true)
             ft_lst();
         console.log("liste mount");
-        usrSocket.on("sendBackMsg", (res: any) => {
-            console.log("msg");
-            console.log(res);
+        usrSocket?.on("actionOnUser", (res: any) => {
+            if ((res.type === "Ban" || res.type === "Kick")
+                && userCtx.getUserId() === res.user_id
+                && res.room === props.id) {
+                navigate("/channels");
+                contextUserLeave();
+            }
             if (res.room === props.id)
-                setLstMsg((lstMsg) => [...lstMsg, res]);
+                setLstMsgChat((lstMsg) => [...lstMsg, res]);
+            //if (res.room === props.id && props.id == id)
+            //    setLstMsgPm((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
             console.log("liste unmount");
-            usrSocket.off("sendBackMsg");
-            setLstMsg([]);
+            usrSocket?.off("actionOnUser");
+            setLstMsgChat([]);
             setChatName("");
         });
-    }, [lstMsg.keys, props.id, online])
-
+    }, [lstMsgChat.keys, props.id, /*JSON.stringify(lstUserChat),*/ JSON.stringify(lstUserGlobal),
+        online, usrSocket]);
+    /* Get message from backend, must reload properly when lstUser is updated */
+    useEffect(() => {
+        usrSocket?.on("sendBackMsg", (res: any) => {
+            //need to check if user is blocked
+            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id);
+            if (!found) {
+                if (res.room === props.id)
+                    setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                //if (res.room === props.id && props.id == id)
+                //    setLstMsgPm((lstMsg) => [...lstMsg, res]);
+            }
+        });
+        return (() => { usrSocket?.off("sendBackMsg"); });
+    }, [JSON.stringify(lstUserGlobal)])
     const [msg, setMsg] = useState<null | string>(null);
-    const navigate = useNavigate();
-    if (online === false)
+    //const [lstUser, setLstUser] = useState<typeListUser["listUser"]>(Array);
+    if (online === "Ban")
+        return (<article className='containerChat'>You are banned from this chat</article>)
+    else if (online === false)
         return (<article className='containerChat'>Unauthorized connection</article>)
     else if (typeof online == "undefined")
         return (<article className='containerChat'>Connecting to chat...</article>)
@@ -177,30 +214,32 @@ const MainChat = (props: any) => {
                 }, navigate)}
                     className='chatLeave'>Leave</button>
             </div>
-            <ListMsg lstMsg={lstMsg} />
+            <ListMsg lstMsg={lstMsgChat} />
             <div className="sendMsg">
-                <textarea ref={refElem} id="submitArea"
+                <textarea ref={refElem} id="submitArea" placeholder='Inclure commande deban dans chat'
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMsg(e.currentTarget.value)}
                     onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
                         handleSubmitArea(e,
                             usrSocket, {
                             id: props.id,
+                            idBox: id,
                             content: msg
                         },
                             refElem,
-                            setMsg)}
+                            setMsg, setLstMsgChat, setLstMsgPm)}
                     className="chatBox" name="msg"></textarea>
                 <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmitButton(e,
                     usrSocket, {
                     id: props.id,
-                    //idUser: window.navigator.userAgent,
+                    idBox: id,
                     content: msg
-                }, refElem, setMsg)}
+                }, refElem, setMsg, setLstMsgChat, setLstMsgPm)}
                     className="chatBox">Go</button>
             </div>
         </article>
         <article className='right'>
-            <ListUser id={props.id} jwt={props.jwt} />
+            <LoadUserGlobal jwt={props.jwt} />
+            <ListUserChat id={props.id} jwt={props.jwt} />
         </article>
     </>);
 }
@@ -209,7 +248,7 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
     , value: string | null, jwt: string | null, id: string,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>): Promise<boolean> => {
     e.preventDefault();
-    console.log("psw: " + value);
+
     if (value === "" || value === null)
         return (false);
     return (await fetch("http://" + location.host + "/api/chat/valid-paswd/", {
@@ -224,7 +263,7 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
             return (res.json())
         setErrorCode(res.status);
         return (false);
-    }));
+    }).catch(e => console.log(e)));
 }
 
 /* Detect and return if a password for the channel is used
@@ -232,7 +271,6 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
 */
 const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>): Promise<boolean> => {
-    console.log("HAS PSWD");
     return (await fetch('http://' + location.host + '/api/chat/has-paswd?' + new URLSearchParams({
         id: id,
     }),
@@ -241,7 +279,7 @@ const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>,
             if (res.ok)
                 return (res.json());
             setErrorCode(res.status);
-        }));
+        }).catch(e => console.log(e)));
 }
 
 const DisplayErrorPasswordBox = (props: { error: boolean }) => {
@@ -268,6 +306,7 @@ const PasswordBox = (props: Readonly<any>): JSX.Element => {
             <form onSubmit={async (e: React.FormEvent<HTMLFormElement>) => {
                 const result = await onSubmit(e, value, props.jwt, props.id, props.setErrorCode);
                 setValid(result);
+                console.log(result);
                 (valid === false) ? setError(true) : setError(false);
             }}>
                 <label>Password * :</label>
@@ -299,21 +338,20 @@ const BlockChat = (props: any) => {
     return (<></>);
 }
 
-const Chat = () => {
-    const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
+const Chat = (props: { jwt: string }) => {
     const getLocation = useLocation();
     const id = useParams().id as string;
     const [errorCode, setErrorCode] = useState<number>(200);
     const [psw, setLoadPsw] = useState<boolean | undefined>(undefined);
 
-    if (errorCode >= 400) // a placer devant fonctions asynchrones semblerait t'il, le composant react se recharge
-        return (<FetchError code={errorCode} />); //lorsqu'il se met a jour, semblerait t'il
-    const hasPass: Promise<boolean> = hasPassword(id, jwt, setErrorCode);
+    if (errorCode >= 400)
+        return (<FetchError code={errorCode} />);
+    const hasPass: Promise<boolean> = hasPassword(id, props.jwt, setErrorCode);
     hasPass.then(res => {
         setLoadPsw(res);
-    });
+    }).catch(e => console.log(e));
     return (<BlockChat id={id} getLocation={getLocation}
-        setErrorCode={setErrorCode} jwt={jwt}
+        setErrorCode={setErrorCode} jwt={props.jwt}
         hasPsw={psw} />);
 }
 

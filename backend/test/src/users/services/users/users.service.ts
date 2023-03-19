@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/typeorm";
-import { Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { CreateUserDto } from "src/users/dto/users.dtos";
-import { randomBytes } from "crypto";
 import { Stat } from "src/typeorm/stat.entity";
+import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
 
 const validateURL = "https://api.intra.42.fr/oauth/token"
 const infoURL = "https://api.intra.42.fr/oauth/token/info"
@@ -18,6 +18,9 @@ export class UsersService {
         private readonly userRepository: Repository<User>,
         @InjectRepository(Stat)
         private readonly statRepository: Repository<Stat>,
+        @InjectRepository(BlackFriendList)
+        private readonly blFrRepository: Repository<BlackFriendList>,
+        private dataSource: DataSource,
     ) { }
 
     /*
@@ -72,7 +75,7 @@ export class UsersService {
                 return (res.json());
             }
             return (undefined)
-        });
+        }).catch(e => console.log(e));
         if (typeof res === "undefined" || typeof res.access_token === "undefined")
             return (undefined);
         token = {
@@ -84,14 +87,16 @@ export class UsersService {
             return (undefined);
         return (token);
     }
+
     async getInformationBearer(token: { access_token: string, refresh_token: string }): Promise<number> {
         const res = await fetch(infoURL, {
             headers: {
                 authorization: `Bearer ${token.access_token}`
             }
-        }).then(res => res.json());
+        }).then(res => res.json()).catch(e => console.log(e));
         return (res.resource_owner_id);
-	}
+    }
+
     getUsers() {
         return this.userRepository.find();
     }
@@ -99,11 +104,32 @@ export class UsersService {
     async updatePathAvatarUser(user_id: number, path: string) {
         this.userRepository.createQueryBuilder()
             .update(User)
-            .set({avatarPath: path})
+            .set({ avatarPath: path })
             .where("user_id = :id")
-            .setParameters({id: user_id})
+            .setParameters({ id: user_id })
             .execute()
-        }
+    }
+
+    async updateUsername(user_id: number, username: string) {
+        this.userRepository.createQueryBuilder()
+            .update(User)
+            .set({username: username})
+            .where("user_id = :id")
+            .setParameters({ id: user_id })
+            .execute()
+    }
+
+    async update2FA(user_id: number, fa: boolean) {
+        console.log("in 2FA")
+        console.log(fa)
+        this.userRepository.createQueryBuilder()
+            .update(User)
+            .set({fa: fa})
+            .where("user_id = :id")
+            .setParameters({ id: user_id })
+            .execute()
+    }
+
     /*
         exemple requete sql avec un innerjoin facon typeorm
         createQueryBuilder("list_msg")
@@ -114,6 +140,7 @@ export class UsersService {
         .setParameters({ id: element.id })
         .getMany() OU getOne();
     */
+
     async getUserProfile(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath'])
@@ -123,11 +150,11 @@ export class UsersService {
             .where('user.user_id = :user') //:user = setParameters()
             .setParameters({ user: id })//anti hack
             .getOne();
-        console.log();
+        console.log(user);
         return (user);
     }
 
-    async findUsersById(id: number) { 
+    async findUsersById(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath'])
             .where('user.user_id = :user')
@@ -144,4 +171,102 @@ export class UsersService {
             .getOne();
         return (user);
     }
+
+    async getFriendList(user_id: number) {
+        const list = this.blFrRepository.createQueryBuilder("fl")
+            .select(["fl.focus_id AS id", "fl.type_list AS fl"])
+            .where("fl.owner_id = :ownerId")
+            .setParameters({ ownerId: user_id })
+            .getRawMany();
+
+        return (list);
+    }
+
+    getBlackFriendListBy(user_id: number) {
+        const fl = this.blFrRepository.createQueryBuilder("fl").subQuery()
+            .from(BlackFriendList, "fl")
+            .select(["focus_id", "type_list"])
+            .where("owner_id = :ownerId")
+            .andWhere("type_list = :type1")
+        const bl = this.blFrRepository.createQueryBuilder("bl").subQuery()
+            .from(BlackFriendList, "bl")
+            .select(["focus_id", "type_list"])
+            .where("owner_id = :ownerId")
+            .andWhere("type_list = :type2")
+
+        const list = this.blFrRepository.createQueryBuilder("a")
+            .distinct(true)
+            .select("a.focus_id AS id")
+            .addSelect("bl.type_list AS bl")
+            .addSelect("fl.type_list AS fl")
+            .addSelect("User.username")
+            .leftJoin(fl.getQuery(), "fl", "fl.focus_id = a.focus_id")
+            .setParameters({ type1: 2 })
+            .leftJoin(bl.getQuery(), "bl", "bl.focus_id = a.focus_id")
+            .setParameters({ type2: 1 })
+            .innerJoin("a.userFocus", "User")
+            .where("a.owner_id = :ownerId")
+            .setParameters({ ownerId: user_id })
+            .getRawMany();
+        return (list);
+    }
+    /* add remove friend - block unblock user part */
+
+    findBlFr(ownerId: number, focusUserId: number, type: number): Promise<BlackFriendList | null> {
+        const list: Promise<BlackFriendList | null> = this.blFrRepository.createQueryBuilder("bl_fr")
+            .where("bl_fr.owner_id = :ownerId")
+            .setParameters({ ownerId: ownerId })
+            .andWhere("bl_fr.focus_id = :focusUserId")
+            .setParameters({ focusUserId: focusUserId })
+            .andWhere("bl_fr.type_list = :type")
+            .setParameters({ type: type })
+            .getOne()
+        return (list)
+    }
+    /* insert blacklist or friendlist */
+    async insertBlFr(ownerId: number, focusUserId: number, type: number) {
+        const runner = this.dataSource.createQueryRunner();
+
+        await runner.connect();
+        await runner.startTransaction();
+        try {
+            await this.blFrRepository
+                .createQueryBuilder()
+                .insert()
+                .into(BlackFriendList)
+                .values([{
+                    type_list: type, owner_id: ownerId, focus_id: focusUserId
+                }])
+                .execute();
+            await runner.commitTransaction();
+        } catch (e) {
+            await runner.rollbackTransaction();
+        } finally {
+            //doc want it released
+            await runner.release();
+        }
+    }
+
+    async deleteBlFr(ownerId: number, focusUserId: number, type: number, findId: number) {
+        const runner = this.dataSource.createQueryRunner();
+
+        await runner.connect();
+        await runner.startTransaction();
+        try {
+            await this.blFrRepository
+                .createQueryBuilder()
+                .delete()
+                .from(BlackFriendList)
+                .where("id = :id")
+                .setParameters({ id: findId })
+                .execute();
+            await runner.commitTransaction();
+        } catch (e) {
+            await runner.rollbackTransaction();
+        } finally {
+            //doc want it released
+            await runner.release();
+        }
+    }
+    /* end add remove friend - block unblock user part  */
 }
