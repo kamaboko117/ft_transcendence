@@ -10,6 +10,7 @@ import { SocketModule } from "./socket/socket.module";
 import { MatchMakingModule } from './matchmaking/matchmaking.module';
 import { AuthModule } from './auth/auth.module';
 import { MulterModule } from '@nestjs/platform-express';
+import { RoomsModule } from './rooms/rooms.module';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { MulterModule } from '@nestjs/platform-express';
       }),
       inject: [ConfigService],
     }),
-    UsersModule, ChatModule, SocketModule, AuthModule, MatchMakingModule
+    UsersModule, ChatModule, SocketModule, AuthModule, MatchMakingModule, RoomsModule
   ],
   controllers: [AppController],
   providers: [AppService],

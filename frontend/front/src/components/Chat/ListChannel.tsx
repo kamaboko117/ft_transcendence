@@ -102,7 +102,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                 this.setState({
                     listChannel: res
                 })
-            });
+            }).catch(e=>console.log(e));
         fetch('http://' + location.host + '/api/chat/private',
             { headers: header(this.props.jwt) }).then(res => {
             if (res.ok)
@@ -114,7 +114,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             this.setState({
                 listChannelPrivate: res
             })
-        })
+        }).catch(e=>console.log(e));
     }
     
     componentWillUnmount(): void {
@@ -133,7 +133,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                 this.setState({
                     listChannel: res
                 })
-            })
+            }).catch(e=>console.log(e))
         fetch('http://' + location.host + '/api/chat/private', 
             { headers: header(this.props.jwt) }).then(res => {
             if (res.ok)
@@ -145,7 +145,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             this.setState({
                 listChannelPrivate: res
             })
-        })
+        }).catch(e=>console.log(e))
     }
     onChange = (e: ChangeEvent<HTMLInputElement>): void => {
         e.stopPropagation();
@@ -189,7 +189,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                         listChannel: [...this.state.listChannel, res],
                     });
                 }
-            });
+            }).catch(e=>console.log(e));
         }
         else {
             const res: any = fetch('http://' + location.host + '/api/chat/new-private/', {
@@ -223,7 +223,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                         privateIdChannel: res.id
                     });
                 }
-            });
+            }).catch(e=>console.log(e));
         }
     }
 
