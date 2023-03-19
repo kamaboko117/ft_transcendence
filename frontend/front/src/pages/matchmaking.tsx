@@ -22,7 +22,6 @@ import {
   Button,
 } from "@chakra-ui/react";
 //import {MMClass} from "../components/matchmaking/matchmakingsocket";
-import {findMatch, declineMatch, acceptMatch, stopFindingMatch} from "../components/matchmaking/matchmakingsocket"
 import { FetchError, header, headerPost } from '../components/FetchError';
 //location.host = "localhost:4000"
 
@@ -39,7 +38,7 @@ const startmatchmaking = async (
 ) => {
   e.preventDefault();
   console.log(obj);
-  usrSocket.emit("startmatchmaking", obj, (res: any) => {
+  usrSocket?.emit("startmatchmaking", obj, (res: any) => {
     console.log("startmatchmaking : " + res);
   });
 };
@@ -54,23 +53,23 @@ export default function MatchmakingPage() {
 
   const findMatch = () => {
     console.log("start queue in");
-    console.log(usrSocket.id);
-    usrSocket.emit("queuein",  (res) => {
+    console.log(usrSocket?.id);
+    usrSocket?.emit("queuein",  (res) => {
       console.log("res: ");
       console.log(res);
     });
   }
   
   const declineMatch = () => {
-    usrSocket.emit("declineMMmatch");
+    usrSocket?.emit("declineMMmatch");
   }
   
   const acceptMatch = () => {
-    usrSocket.emit("acceptMMmatch");
+    usrSocket?.emit("acceptMMmatch");
   }
   
   const stopFindingMatch = () => {
-    usrSocket.emit("queueout");
+    usrSocket?.emit("queueout");
   }
 
   type MMState = "ACCEPTED" | "DECLINED";
@@ -91,34 +90,34 @@ export default function MatchmakingPage() {
   };
   useEffect(() => {
     console.log("load exception listener");
-    usrSocket.on("matchmakingfailed", (res: any) => {
+    usrSocket?.on("matchmakingfailed", (res: any) => {
       console.log(res);
   })
   
-  usrSocket.on("queueoutfailed", (res: any) => {
+  usrSocket?.on("queueoutfailed", (res: any) => {
     console.log(res);
 })
 
-usrSocket.on("acceptMMmatchFailed", (res: any) => {
+usrSocket?.on("acceptMMmatchFailed", (res: any) => {
   console.log(res);
 })
 
-usrSocket.on("declineMMmatchFailed", (res: any) => {
+usrSocket?.on("declineMMmatchFailed", (res: any) => {
   console.log(res);
 })
 
-usrSocket.on("queueoutfailed", (res: any) => {
+usrSocket?.on("queueoutfailed", (res: any) => {
   console.log(res);
 })
   
   ;
   return (() => {
     console.log("unload exception listener");
-    usrSocket.off('matchmakingfailed');
-    usrSocket.off('acceptMMmatchFailed');
-    usrSocket.off('declineMMmatchFailed');
-    usrSocket.off('queueoutfailed');
-    usrSocket.off('queueoutfailed');
+    usrSocket?.off('matchmakingfailed');
+    usrSocket?.off('acceptMMmatchFailed');
+    usrSocket?.off('declineMMmatchFailed');
+    usrSocket?.off('queueoutfailed');
+    usrSocket?.off('queueoutfailed');
 
   })
   }, [usrSocket]);
