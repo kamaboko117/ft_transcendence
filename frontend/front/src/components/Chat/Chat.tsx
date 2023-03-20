@@ -17,6 +17,14 @@ export type lstMsg = {
     }>
 }
 
+const handleImgError = (e) => {
+    const target: HTMLImageElement = e.target as HTMLImageElement;
+
+    if (target) {
+        target.src =  "/upload_avatar/default.png"; 
+    }
+}
+
 /* return user state list */
 export const ListMsg = (props: any) => {
     const scrollBottom = useRef<any>();
@@ -36,8 +44,11 @@ export const ListMsg = (props: any) => {
                 props.lstMsg &&
                 props.lstMsg.slice(arrayLength, props.lstMsg.length).map((msg: any) => (
                     <React.Fragment key={++i}>
-                        <div><img src={"/" + msg.user.avatarPath} className="chatBox"
-                            alt={"avatar " + msg.user.username} />
+                        <div>
+                            <img src={"/" + msg.user.avatarPath} className="chatBox"
+                                alt={"avatar " + msg.user.username}
+                                onError={handleImgError}
+                                />
                             <label className="chatBox">{msg.user.username}</label>
                         </div>
                         <span className="chatBox">{msg.content}</span>
