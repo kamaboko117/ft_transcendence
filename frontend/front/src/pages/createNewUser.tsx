@@ -33,7 +33,7 @@ function CreateNewUser(props: any) {
     if (userCtx.user.username) {
 
         console.log(userCtx.user.username);
-        return <MainPage />;
+        //return <MainPage />;
     }
     return (
         <NewUserForm onAddUser={AddUserHandler} />

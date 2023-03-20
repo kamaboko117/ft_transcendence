@@ -33,17 +33,9 @@ import PlayPage from "./pages/play";
 import MatchmakingPage from "./pages/matchmaking";
 //import ErrorBoundary from "./components/Chat/ErrorBoundary";
 import { SocketProvider } from './contexts/Socket';
-import ContextDisplayChannel, { DisplayChatGlobalProvider, typeListUser, typeListUserGlobal } from "./contexts/DisplayChatContext";
-import UserContext from "./contexts/UserContext";
+import { DisplayChatGlobalProvider } from "./contexts/DisplayChatContext";
+import UserContext, { UsernameSet } from "./contexts/UserContext";
 import { useLocation } from 'react-router-dom';
-
-type lstMsg = {
-  lstMsg: Array<{
-    idUser: string,
-    content: string,
-    img: string
-  }>
-}
 
 const ErrorPage = () => {
   const location = useLocation();
@@ -53,51 +45,11 @@ const ErrorPage = () => {
   return (<div>Error {location.state.code}</div>)
 }
 
-//check if username is empty
-//if empty, this is a first connection
-const UsernameSet = (props: {jwt: string, name: string}) => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (props.jwt
-      && (props.name === "" || props.name === null)) {
-        console.log("navigate");
-        navigate("/first-connection");
-    }
-  }, [props.jwt, props.name]);
-  return (<></>);
-}
-
 function App() {
-
-  //const jwt: string | null = localStorage.getItem("ft_transcendence_gdda_jwt");
+  const [username, setUsername] = useState<string>("");
   const userCtx: any = useContext(UserContext);
-  //const { id, renderDirectMessage, setId } = useContext(ContextDisplayChannel);
-  /*const [renderDirectMessage, setDisplay] = useState<boolean>(false);
-  const [userId, setUserId] = useState<number>(0);
-  const [id, setId] = useState<string>("");
-  const [lstMsgChat, setLstMsgChat] = useState<lstMsg[]>([] as lstMsg[]);
-  const [lstMsgPm, setLstMsgPm] = useState<lstMsg[]>([] as lstMsg[]);
-  const [lstUserChat, setLstUserChat] = useState<typeListUser["listUser"]>(Array);
-  const [lstUserGlobal, setLstUserGlobal] = useState<typeListUserGlobal["listUser"]>(Array);
-  const providers = {
-    renderDirectMessage: renderDirectMessage,
-    userId: userId,
-    id: id,
-    lstMsgChat: lstMsgChat,
-    lstMsgPm: lstMsgPm,
-    lstUserChat: lstUserChat,
-    lstUserGlobal: lstUserGlobal,
-    setDisplay: setDisplay,
-    setUserId: setUserId,
-    setId: setId,
-    setLstMsgChat: setLstMsgChat,
-    setLstMsgPm: setLstMsgPm,
-    setLstUserChat: setLstUserChat,
-    setLstUserGlobal: setLstUserGlobal
-  };*/
   let jwt = userCtx.getJwt();
-  //
+
   return (
     <>
       <SocketProvider>
@@ -106,7 +58,7 @@ function App() {
             <Route path="/" element={
               <>{jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
-                <NavBar /><MainPage jwt={jwt} /><PlayerApp />
+                <NavBar /><MainPage jwt={jwt} username={username} setUsername={setUsername} /><PlayerApp />
               </>} />
             <Route path="/first-connection" element={
               <>
@@ -117,7 +69,7 @@ function App() {
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <UserProfile jwt={jwt} /><PlayerApp />
-                <UsernameSet jwt={jwt} name={userCtx.getUsername()} />
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             } />
             <Route path="/friendList" element={
@@ -125,14 +77,14 @@ function App() {
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <FriendList jwt={jwt} /><PlayerApp />
-                <UsernameSet jwt={jwt} name={userCtx.getUsername()} />
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>} />
             <Route path="/blackList" element={
               <>{jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <BlackList /><PlayerApp />
-                <UsernameSet jwt={jwt} name={userCtx.getUsername()} />
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             } />
             <Route path="/setting" element={
@@ -140,7 +92,7 @@ function App() {
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <Setting /><PlayerApp />
-                <UsernameSet jwt={jwt} name={userCtx.getUsername()} />
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             } />
             <Route path="/login" element={
@@ -153,7 +105,7 @@ function App() {
               <>
                 <NavBar />
                 <SettingFa jwt={jwt} /><PlayerApp />
-                <UsernameSet jwt={jwt} name={userCtx.getUsername()} />
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             } />
             <Route path="/fake-login" element={
@@ -171,7 +123,7 @@ function App() {
                 <NavBar />
                 <ValidatePage />
                 <PlayerApp />
-                <UsernameSet jwt={jwt} name={userCtx.getUsername()} />
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             } />
             <Route path="/register" element={<CreateNewUser />} />
@@ -181,7 +133,7 @@ function App() {
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <ListChannel jwt={jwt} /><PlayerApp />
-                <UsernameSet jwt={jwt} name={userCtx.getUsername()} />
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             }>
               <Route path=":id" element={<Chat jwt={jwt} />} />
@@ -191,7 +143,7 @@ function App() {
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <PlayPage jwt={jwt} /><PlayerApp />
-                <UsernameSet jwt={jwt} name={userCtx.getUsername()} />
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             } />
             <Route path="/matchmaking" element={
@@ -199,7 +151,7 @@ function App() {
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <MatchmakingPage /><PlayerApp />
-                <UsernameSet jwt={jwt} name={userCtx.getUsername()} />
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             } />
             <Route path="/error-page" element={<><NavBar /><ErrorPage /></>} />
