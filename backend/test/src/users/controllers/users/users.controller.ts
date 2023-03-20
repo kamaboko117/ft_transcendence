@@ -10,7 +10,7 @@ import {
     ValidationPipe,
     Request, Res, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator
 } from "@nestjs/common";
-import { CreateUserDto, BlockUnblock, UpdateUser } from "src/users/dto/users.dtos";
+import { CreateUserDto, BlockUnblock, UpdateUser, Username } from "src/users/dto/users.dtos";
 import { UsersService } from "src/users/services/users/users.service";
 import { CustomAuthGuard } from 'src/auth/auth.guard';
 import { FakeAuthGuard } from 'src/auth/fake.guard';
@@ -157,20 +157,56 @@ export class UsersController {
         console.log(ret_user);
         return (ret_user);
     }
-
+/*
     @Get('get-fl')
     async getFriendList(@Request() req: any) {
         const user: TokenUser = req.user;
         const getFl: BlackFriendList[] = await this.userService.getFriendList(user.userID);
+        const ret_user = await this.userService.getUserProfile(user.userID);
 
-        return (getFl);
-    }
+        if (!ret_user)
+            return ({valid: false})
+        return ({valid: true});
+    }*/
 
     @Get('fr-bl-list')
     async getFriendBlackListUser(@Request() req: any) {
         const user: TokenUser = req.user;
         const getBlFr: BlackFriendList[] = await this.userService.getBlackFriendListBy(user.userID)
         return (getBlFr);
+    }
+
+    /* 0 = user not found */
+    /* 1 = already added in friend list */
+    /* 2 = user is self */
+    /* 3 = ok */
+    @Post('add-friend')
+    async addFriend(@Request() req: any, @Body() body: Username) {
+        const user: TokenUser = req.user;
+
+        const ret_user = await this.userService.findUserByName(body.username);
+        console.log(ret_user)
+        if (!ret_user)
+            return ({code: 0});
+        else if (Number(ret_user.userID) == user.userID)
+            return ({code: 2});
+        const findInList = await this.userService.searchUserInList(user.userID, ret_user.userID, 2);
+        console.log(findInList);
+        if (findInList)
+            return ({code: 1});
+        this.userService.insertBlFr(user.userID, Number(ret_user.userID), 2);
+        //need to check if user is in BL, for updating global friend black list
+        const findInBlackList = await this.userService.searchUserInList(user.userID, ret_user.userID, 1);
+        console.log(findInBlackList)
+        if (findInBlackList)
+        {
+            return ({ code: 3, id: Number(ret_user.userID),
+                fl: 2, bl: 1,
+                User_username: ret_user.username});
+        }
+        return ({ code: 3, id: Number(ret_user.userID),
+            fl: 2, bl: 0,
+            User_username: ret_user.username});
     }
 
     @Post('fr-bl-list')
@@ -181,7 +217,7 @@ export class UsersController {
         if (user.userID === body.userId)
             return ({ add: false, type: null });
         if (find) {
-            //delete
+            //deletes
             this.userService.deleteBlFr(user.userID, body.userId, body.type, find.id);
             return ({ add: false, type: body.type });
         }

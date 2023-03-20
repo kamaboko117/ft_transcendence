@@ -171,6 +171,16 @@ export class UsersService {
             .getOne();
         return (user);
     }
+    /* friend black list part */
+    searchUserInList(ownerId: number, focusId: number, type: number) {
+        const user = this.blFrRepository.createQueryBuilder("fl")
+            .where("fl.owner_id = :ownerId")
+            .andWhere("fl.focus_id = :focusId")
+            .andWhere("fl.type_list = :type")
+            .setParameters({ownerId: ownerId, focusId: focusId, type: type})
+            .getOne();
+        return (user);
+    }
 
     async getFriendList(user_id: number) {
         const list = this.blFrRepository.createQueryBuilder("fl")
@@ -208,6 +218,7 @@ export class UsersService {
             .where("a.owner_id = :ownerId")
             .setParameters({ ownerId: user_id })
             .getRawMany();
+        console.log(list);
         return (list);
     }
     /* add remove friend - block unblock user part */
