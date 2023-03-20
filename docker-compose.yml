@@ -21,7 +21,7 @@ services:
       - AUTH_SECRET=${AUTH_SECRET}
     volumes:
       - ./backend:/var/www/html
-      - images-publics:/var/www/html/test/upload_avatar
+      - ./frontend/front/public/upload_avatar:/var/www/html/test/upload_avatar
     deploy:
       restart_policy:
         condition: on-failure
@@ -43,7 +43,7 @@ services:
       - "5174"
     volumes:
       - ./frontend:/var/www/html
-      - images-publics:/var/www/html/front/public/upload_avatar
+      - ./frontend/front/public/upload_avatar:/var/www/html/front/public/upload_avatar
     environment:
       - VITE_APP_ID=${APP_ID}
       - VITE_APP_SECRET=${APP_SECRET}
