@@ -9,13 +9,10 @@ import { useLocation } from 'react-router-dom';
 import UserContext from '../../contexts/UserContext';
 
 type settingChat = {
-    /*render: boolean,*/
-    /*id: string,*/
     width: number,
     height: number,
     opacity: number,
     jwt: string,
-    /*setId: React.Dispatch<React.SetStateAction<string>>*/
 }
 
 type settingBox = {
@@ -430,7 +427,7 @@ const UnfoldDirectMessage = (props: settingChat) => {
     const { renderDirectMessage, id, setId } = useContext(ContextDisplayChannel);
     const [errorCode, setErrorCode] = useState<number>(200);
 
-    if (errorCode >= 400) // a placer devant fonctions asynchrones semblerait t'il, le composant react se recharge
+    if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
     if (renderDirectMessage === false || typeof id === "undefined")
         return <FoldDirectMessage
