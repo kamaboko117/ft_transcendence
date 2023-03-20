@@ -3,6 +3,11 @@ import { IsEmail, IsNotEmpty, IsNumber, MinLength,
     IsObject, ValidateNested } from "class-validator";
 import { Type } from 'class-transformer';
 
+export class Username {
+    @IsString()
+    username: string
+}
+
 export class BlockUnblock {
     @IsNumber()
     userId: number;

@@ -49,16 +49,17 @@ type typeButtonsInfo = {
     setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
 }
 
-export const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
+const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
     userId: number,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     type: number,
     userInfo: typeUserInfo,
     setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
-    lstUserGlobal: { id: number, fl: number | null, bl: number | null }[],
+    lstUserGlobal: { id: number, fl: number | null,
+        bl: number | null, User_username: string }[],
     setLstUserGlobal: React.Dispatch<React.SetStateAction<{
         id: number, fl: number | null,
-        bl: number | null
+        bl: number | null, User_username: string
     }[]>>): void => {
     event.preventDefault();
 
@@ -70,7 +71,7 @@ export const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
         });
         updateBlackFriendList({
             id: id,
-            fl: friend, bl: block
+            fl: friend, bl: block, User_username: username
         }, lstUserGlobal, setLstUserGlobal);
     }
 

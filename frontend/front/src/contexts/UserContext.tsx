@@ -47,7 +47,7 @@ export const UsernameSet = (props: {jwt: string,
   //if first connection, redirect to /first-connection
   //also need to wait for username to be updated, so make a new function hook
   useEffect(() => {
-    if (props.jwt && load === true
+    if (props.jwt && props.jwt != "" && load === true
       && (props.username === "" || props.username === null)) {
         console.log("navigate");
         navigate("/first-connection");

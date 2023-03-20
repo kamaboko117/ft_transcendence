@@ -17,6 +17,7 @@ export type typeListUserGlobal = {
         id: number,
         fl: number | null,
         bl: number | null,
+        User_username: string,
     }>
 }
 
@@ -73,7 +74,8 @@ export const LoadUserGlobal = (props: { jwt: string }) => {
 type typeFlBl = {
     id: number,
     fl: number | null,
-    bl: number | null
+    bl: number | null,
+    User_username: string,
 }
 
 export const updateBlackFriendList = (
