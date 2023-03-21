@@ -83,7 +83,7 @@ function App() {
               <>{jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
-                <BlackList /><PlayerApp />
+                <BlackList jwt={jwt} /><PlayerApp />
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             } />
