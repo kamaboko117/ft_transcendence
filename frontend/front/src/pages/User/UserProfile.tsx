@@ -134,9 +134,7 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
         return (<FetchError code={errorCode} />);
 	return (
 		<>
-		<FormUpdateUser jwt={props.jwt} setavatar_path={setavatar_path}
-			setErrorCode={setErrorCode} />
-		<h1>Username: {user?.username}</h1>
+		<h1>Username: [{user?.username}]</h1>
 		<img className="avatar" src={avatar_path} alt={"avatar " + user?.username}
 			onError={handleImgError}
 		/>
