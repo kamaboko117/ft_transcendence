@@ -16,9 +16,9 @@ function MainPage(props: {jwt: string,
   if (typeof userCtx.user != "undefined" && userCtx.user.jwt) {
     return (
       <div>
-        <div>Hello</div>
         <UsernameSet jwt={props.jwt}
           username={props.username} setUsername={props.setUsername} />
+        <div>Hello</div>
       </div>
     )
   }

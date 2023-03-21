@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useContext } from "react";
 import UserItem from "../components/Users/UserItem";
-import UserContext from "../contexts/UserContext";
+import UserContext, { UsernameSet } from "../contexts/UserContext";
 import { FetchError } from "../components/FetchError";
 import SocketContext from "../contexts/Socket";
 
@@ -62,6 +62,7 @@ function ValidatePage() {
   return (
     <div>
       <h1>Logged as</h1>
+      {jwt && <UsernameSet jwt={String(jwt)} username={username} setUsername={setUsername} />}
       <UserItem jwt={jwt} /*userID={userCtx.user.userID} username={userCtx.user.username}*/ />
     </div>
   );

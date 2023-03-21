@@ -8,7 +8,7 @@ import * as crypto from 'crypto';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { Channel } from './chat.entity';
 import { ListUser } from './lstuser.entity';
-import { UsersService } from '../users/services/users/users.service';
+import { UsersService } from '../users/providers/users/users.service';
 import { User } from 'src/typeorm';
 
 type Channel_ret = {

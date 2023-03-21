@@ -3,7 +3,7 @@ import ContextDisplayChannel, { LoadUserGlobal, updateBlackFriendList } from "..
 import scroll from 'react-scroll';
 import { useEventListenerUserInfo } from "../../useHook/useEventListener";
 import { FetchError, headerPost } from "../../components/FetchError";
-import { directMessage } from "../../components/Chat/ListUser";
+import { directMessage, StatusUser } from "../../components/Chat/ListUser";
 
 type typeUserInfo = {
 	username: string,
@@ -126,6 +126,7 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
 		type = 2;
 
     return (<>
+		<StatusUser jwt={props.jwt} userId={props.userInfo.id} />
         {type && type === 2 && <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
             listHandle(e, props.jwt, props.setErrorCode,
                 type, props.userInfo, props.setUserInfo, lstUserGlobal, setLstUserGlobal)}
@@ -180,33 +181,6 @@ const PrintArray = (props: {type: string,  lstUserGlobal: Array<typeFlBl>}) => {
 	</>);
 }
 
-export const Display = (props: {jwt: string, lstUserGlobal: Array<typeFlBl>,
-	userInfo: typeUserInfo,
-	setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
-	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-	type: string}) => {
-	const handleListenerClick = () => {
-		props.setUserInfo({ username: "", id: 0, fl: null, bl: null });
-	}
-	const ref: any = useEventListenerUserInfo(handleListenerClick);
-	const Element = scroll.Element;
-	let i: number = 0;
-	const chooseClassName: string = (props.userInfo.username != "" ? "userInfo userInfoClick" : "userInfo");
-	return (<>
-		<Element name="container" className="element fullBoxListUser" ref={ref}
-			onClick={(e: React.MouseEvent<HTMLDivElement>) =>
-				handleClick(e, props.userInfo, props.setUserInfo)}>
-			<PrintArray lstUserGlobal={props.lstUserGlobal} type={props.type} />
-		</Element>
-		<div className={chooseClassName} style={{position: "relative"}}>
-			<label className="userInfo">{props.userInfo.username}</label>
-			<ButtonsInfos jwt={props.jwt} userInfo={props.userInfo} type={props.type}
-			setUserInfo={props.setUserInfo} setErrorCode={props.setErrorCode} />
-		</div>
-		</>
-	)
-}
-
 function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 	setLstUserGlobal: React.Dispatch<React.SetStateAction<Array<typeFlBl>>>,
 	jwt: string, value: string | null, errorCode: number,
@@ -233,6 +207,33 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 			}, lstUserGlobal, setLstUserGlobal);
 		}
 	})
+}
+
+export const Display = (props: {jwt: string, lstUserGlobal: Array<typeFlBl>,
+	userInfo: typeUserInfo,
+	setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
+	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+	type: string}) => {
+	const handleListenerClick = () => {
+		props.setUserInfo({ username: "", id: 0, fl: null, bl: null });
+	}
+	const ref: any = useEventListenerUserInfo(handleListenerClick);
+	const Element = scroll.Element;
+	let i: number = 0;
+	const chooseClassName: string = (props.userInfo.username != "" ? "userInfo userInfoClick" : "userInfo");
+	return (<>
+		<Element name="container" className="element fullBoxListUser" ref={ref}
+			onClick={(e: React.MouseEvent<HTMLDivElement>) =>
+				handleClick(e, props.userInfo, props.setUserInfo)}>
+			<PrintArray lstUserGlobal={props.lstUserGlobal} type={props.type} />
+		</Element>
+		<div className={chooseClassName} style={{position: "relative"}}>
+			<label className="userInfo">{props.userInfo.username}</label>
+			<ButtonsInfos jwt={props.jwt} userInfo={props.userInfo} type={props.type}
+			setUserInfo={props.setUserInfo} setErrorCode={props.setErrorCode} />
+		</div>
+		</>
+	)
 }
 
 export default function FriendList(props: { jwt: string }) {
