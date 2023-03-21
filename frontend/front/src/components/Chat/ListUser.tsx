@@ -343,7 +343,7 @@ const ListUserChat = (props: {
             usrSocket?.off("updateListChat");
         });
     }, [/*JSON.stringify(lstUserChat),*/ /*JSON.stringify(lstUserPm)*/, props.id, usrSocket]);
-    if (errorCode >= 400) //catch errors code from async functions
+    if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
     return (
         <React.Fragment>

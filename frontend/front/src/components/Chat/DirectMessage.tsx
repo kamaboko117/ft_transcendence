@@ -316,7 +316,7 @@ const DiscussionBox = (props: {
         online, usrSocket]);
     useEffect(() => {
         usrSocket?.on("sendBackMsg2", (res: any) => {
-            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id);
+            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id && elem.bl === 1);
             if (!found) {
                 if (res.room === props.id)
                     setLstMsgPm((lstMsg) => [...lstMsg, res]);

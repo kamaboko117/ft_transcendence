@@ -209,6 +209,35 @@ export class UsersController {
             User_username: ret_user.username});
     }
 
+    @Post('add-blacklist')
+    async addBlackList(@Request() req: any, @Body() body: Username) {
+        const user: TokenUser = req.user;
+
+        const ret_user = await this.userService.findUserByName(body.username);
+        console.log(ret_user)
+        if (!ret_user)
+            return ({code: 0});
+        else if (Number(ret_user.userID) == user.userID)
+            return ({code: 2});
+        const findInList = await this.userService.searchUserInList(user.userID, ret_user.userID, 1);
+        console.log(findInList);
+        if (findInList)
+            return ({code: 1});
+        this.userService.insertBlFr(user.userID, Number(ret_user.userID), 1);
+        //need to check if user is in BL, for updating global friend black list
+        const findInBlackList = await this.userService.searchUserInList(user.userID, ret_user.userID, 2);
+        console.log(findInBlackList)
+        if (findInBlackList)
+        {
+            return ({ code: 3, id: Number(ret_user.userID),
+                fl: 2, bl: 1,
+                User_username: ret_user.username});
+        }
+        return ({ code: 3, id: Number(ret_user.userID),
+            fl: 2, bl: 0,
+            User_username: ret_user.username});
+    }
+
     @Post('fr-bl-list')
     async useBlackFriendList(@Request() req: any, @Body() body: BlockUnblock) {
         const user: TokenUser = req.user;
