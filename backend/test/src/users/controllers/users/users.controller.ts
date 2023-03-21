@@ -11,7 +11,7 @@ import {
     Request, Res, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator
 } from "@nestjs/common";
 import { CreateUserDto, BlockUnblock, UpdateUser, Username } from "src/users/dto/users.dtos";
-import { UsersService } from "src/users/services/users/users.service";
+import { UsersService } from "src/users/providers/users/users.service";
 import { CustomAuthGuard } from 'src/auth/auth.guard';
 import { FakeAuthGuard } from 'src/auth/fake.guard';
 import { JwtGuard, Public } from 'src/auth/jwt.guard';

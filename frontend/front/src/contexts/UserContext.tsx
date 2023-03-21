@@ -1,6 +1,6 @@
 import React, { createContext, useEffect } from "react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { FetchError, header} from '../components/FetchError';
 
 const UserContext = createContext({});
@@ -21,12 +21,14 @@ export const UsernameSet = (props: {jwt: string,
   const [errorCode, setErrorCode] = useState<number>(200);
   const [load, setLoad] = useState<boolean>(false);
   const navigate = useNavigate();
-
+  const getLocation = useLocation()?.pathname;
   useEffect(() => {
     //check if user json web token is still valid
     //and need to check if username in db is set, to know if it's a first connection
     const login = async () => {
-      if (props.jwt) {
+
+      console.log("usernameSet load")
+      //if (props.jwt) {
         await fetch('http://' + location.host + '/api/users/profile/',
         { headers: header(props.jwt) })
         .then(res => {
@@ -40,10 +42,10 @@ export const UsernameSet = (props: {jwt: string,
           setLoad(true);
         })
         .catch(e=>console.log(e));
-      }
+      //}
     }
     login();
-  }, [props.jwt, props.username]);
+  }, [props.jwt, props.username, getLocation]);
   //if first connection, redirect to /first-connection
   //also need to wait for username to be updated, so make a new function hook
   useEffect(() => {

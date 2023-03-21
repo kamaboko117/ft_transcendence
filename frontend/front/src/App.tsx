@@ -65,34 +65,38 @@ function App() {
                 <NavBar /><FirstConnectionPage jwt={jwt} /><PlayerApp />
               </>} />
             <Route path="/profile" element={
-              <>{jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
+              <>
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <UserProfile jwt={jwt} /><PlayerApp />
-                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             } />
             <Route path="/friendList" element={
-              <>{jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
+              <>
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <FriendList jwt={jwt} /><PlayerApp />
-                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>} />
             <Route path="/blackList" element={
-              <>{jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
+              <>
+                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <BlackList jwt={jwt} /><PlayerApp />
-                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             } />
             <Route path="/setting" element={
-              <>{jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
+              <>
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <Setting /><PlayerApp />
-                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             } />
             <Route path="/login" element={
@@ -103,13 +107,15 @@ function App() {
             } />
             <Route path="/fa-activate" element={
               <>
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
                 <NavBar />
                 <SettingFa jwt={jwt} /><PlayerApp />
-                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             } />
             <Route path="/fake-login" element={
-              <>{jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
+              <>
+                {jwt  && <UsernameSet jwt={String(jwt)} username={username} setUsername={setUsername} />}
+                {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <FakeLogin />
@@ -123,35 +129,37 @@ function App() {
                 <NavBar />
                 <ValidatePage />
                 <PlayerApp />
-                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             } />
             <Route path="/register" element={<CreateNewUser />} />
             <Route path="/counter" element={<Counter />} />
             <Route path="/channels" element={
-              <>{jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
+              <>
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <ListChannel jwt={jwt} /><PlayerApp />
-                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             }>
               <Route path=":id" element={<Chat jwt={jwt} />} />
             </Route>
             <Route path="/play" element={
-              <>{jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
+              <>
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <PlayPage jwt={jwt} /><PlayerApp />
-                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             } />
             <Route path="/matchmaking" element={
-              <>{jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
+              <>
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <MatchmakingPage /><PlayerApp />
-                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
               </>
             } />
             <Route path="/error-page" element={<><NavBar /><ErrorPage /></>} />
