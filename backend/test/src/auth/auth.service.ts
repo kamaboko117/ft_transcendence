@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@n
 import { UsersService } from 'src/users/providers/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { WsException } from '@nestjs/websockets';
+import { TokenUser } from 'src/chat/chat.interface';
 
 type User = {
     userID: any,
@@ -35,11 +36,12 @@ export class AuthService {
 
 
     /* then log user, returning a Json web token */
-    async login(user: User) {
+    async login(user: TokenUser) {
         const payload = {
             sub: user.userID,
             token: user.token,
-            username: user.username
+            username: user.username,
+            fa: user.fa
         }
         console.log("payload");
         console.log(payload);
@@ -59,11 +61,12 @@ export class AuthService {
         }
     }
 
-    async refresh(user: User) {
+    async refresh(user: TokenUser) {
         const payload = {
             sub: user.userID,
             token: user.token,
-            username: user.username
+            username: user.username,
+            fa: user.fa
         }
         console.log("refresh payload");
         console.log(payload);

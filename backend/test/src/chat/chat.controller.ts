@@ -158,7 +158,7 @@ export class ChatController {
             return (err);
         const getAll = await this.chatGateway.getAllPublic()
         const len: string = getAll.length.toString();
-        let salt = 10; //DOIT ETRE UTILISE DEPUIS .env
+        let salt = Number(process.env.CHAT_SALT)
         if (chat.accesstype != '0' || typeof getAll == undefined)
             throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
         if (chat.password != '') {
@@ -192,7 +192,7 @@ export class ChatController {
         if (err.length > 0)
             return (err);
         const id: string = crypto.randomBytes(4).toString('hex');
-        let salt = 10;
+        let salt = Number(process.env.CHAT_SALT)
         if (chat.password != '') {
             chat.accesstype = '3';
             chat.password = bcrypt.hashSync(chat.password, salt);

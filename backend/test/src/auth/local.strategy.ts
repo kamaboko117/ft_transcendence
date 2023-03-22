@@ -3,10 +3,6 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
-type Code = {
-    code: string
-}
-
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy, "custom") {
     constructor(private authService: AuthService) {
@@ -21,6 +17,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, "custom") {
         const user = await this.authService.validateUser(code);
         if (!user || typeof user == "undefined")
             throw new UnauthorizedException();
+        console.log("validate")
         console.log(user);
         //must return User
         return (user);
