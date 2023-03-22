@@ -119,12 +119,13 @@ export class UsersService {
             .execute()
     }
 
-    async update2FA(user_id: number, fa: boolean) {
+    async update2FA(user_id: number, fa: boolean, secret: string | null) {
         console.log("in 2FA")
         console.log(fa)
+
         this.userRepository.createQueryBuilder()
             .update(User)
-            .set({fa: fa})
+            .set({fa: fa, secret_fa: secret!})
             .where("user_id = :id")
             .setParameters({ id: user_id })
             .execute()
@@ -156,7 +157,16 @@ export class UsersService {
 
     async findUsersById(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
-            .select(['user.username', 'user.userID', 'user.avatarPath'])
+            .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
+            .where('user.user_id = :user')
+            .setParameters({ user: id })
+            .getOne();
+        return (user);
+    }
+
+    async getUserFaSecret(id: number) {
+        const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
+            .select(['user.fa', 'user.secret_fa', 'user.username'])
             .where('user.user_id = :user')
             .setParameters({ user: id })
             .getOne();

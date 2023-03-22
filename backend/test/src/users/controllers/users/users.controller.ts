@@ -8,7 +8,7 @@ import {
     UseGuards,
     UsePipes,
     ValidationPipe,
-    Request, Res, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator
+    Request, Res, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, NotFoundException, UnauthorizedException
 } from "@nestjs/common";
 import { CreateUserDto, BlockUnblock, UpdateUser, Username } from "src/users/dto/users.dtos";
 import { UsersService } from "src/users/providers/users/users.service";
@@ -19,8 +19,8 @@ import { AuthService } from 'src/auth/auth.service';
 import { FileInterceptor } from "@nestjs/platform-express";
 import { TokenUser } from "src/chat/chat.interface";
 import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
-
-//import {AuthGuard} from '@nestjs/passport';
+import { authenticator } from 'otplib';
+import {toDataURL} from 'qrcode';
 
 @Controller("users")
 export class UsersController {
@@ -37,6 +37,20 @@ export class UsersController {
         return this.userService.findUsersById(id);
     }
 
+    @Get('set-fa')
+    async setFa(@Request() req: any) {
+        const user: TokenUser = req.user;
+        const userDb = await this.userService.getUserFaSecret(user.userID);
+
+        if (!userDb?.username) {
+            throw new NotFoundException("Username not found");
+        }
+        const otpAuth = authenticator.keyuri(userDb.username, "ft_transcendence", userDb.secret_fa);
+        const url = await toDataURL(otpAuth);
+        if (url)
+            return ({code: 2, url: url});
+        return ({code: 1, url: null});
+    }
 
     /* authguard(strategy name) */
     @Public()
@@ -65,7 +79,7 @@ export class UsersController {
         ], fileIsRequired: false
       }),
     ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
-        const user = req.user;
+        const user: TokenUser = req.user;
         console.log(body);
         //body.fa must accept the regex
         //if regex not ok, then return NULL so no FA accepted
@@ -78,9 +92,9 @@ export class UsersController {
         if (body.username && body.username != "")
             this.userService.updateUsername(user.userID, body.username);
         if (regexRet)
-            this.userService.update2FA(user.user_id, true);
+            this.userService.update2FA(user.userID, true, authenticator.generateSecret());
         else
-            this.userService.update2FA(user.user_id, false);
+            this.userService.update2FA(user.userID, false, null);
             // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
         return ({valid: true});
     }
@@ -94,7 +108,7 @@ export class UsersController {
         ], fileIsRequired: false
       }),
     ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
-        const user = req.user;
+        const user: TokenUser = req.user;
         console.log(body);
         if (body.username && body.username == "") {
             return ({valid: false, username: ""});
@@ -111,7 +125,7 @@ export class UsersController {
         console.log(regexRet?.length)
         if (regexRet) {
             console.log("IN")
-            this.userService.update2FA(user.userID, true);
+            this.userService.update2FA(user.userID, true, authenticator.generateSecret());
         }
             
         // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
@@ -127,7 +141,7 @@ export class UsersController {
         ],
       }),
     ) file: Express.Multer.File) {
-        const user = req.user;
+        const user: TokenUser = req.user;
         this.userService.updatePathAvatarUser(user.userID, file.path);
         return ({path: file.path});
     }
@@ -149,8 +163,6 @@ export class UsersController {
     @UseGuards(JwtGuard)
     @Get('profile')
     async getProfile(@Request() req: any) {
-        console.log("call profile");
-        console.log(req.user);
         const user: TokenUser = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
         console.log("profile");
@@ -264,6 +276,7 @@ export class UsersController {
     async login(@Request() req: any, @Res({ passthrough: true }) response: any) {
         console.log("LOGIN POST");
         const user: TokenUser = req.user;
+        
         const access_token = await this.authService.login(user);
         const refresh = await this.authService.refresh(user);
         console.log(access_token);
@@ -274,7 +287,7 @@ export class UsersController {
                 httpOnly: true,
                 sameSite: 'Strict'
             });
-        return ({ token: access_token, user_id: req.user.userID, username: user.username });
+        return ({ token: access_token, user_id: req.user.userID, username: user.username, fa: user.fa });
     }
 
     @Post("create")
