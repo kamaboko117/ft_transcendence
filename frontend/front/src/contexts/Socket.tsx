@@ -6,22 +6,22 @@ import { FetchError } from '../components/FetchError';
 //export let usrSocket: Socket<any, any> | undefined;
 
 type typeSocket = {
-    setToken: Dispatch<React.SetStateAction<string | null>>,
+   // setToken: Dispatch<React.SetStateAction<string | null>>,
     usrSocket: Socket<any, any> | undefined,
 }
 
 const defaultValue: any = () => { }
 
 const SocketContext = createContext<typeSocket>({
-    setToken: defaultValue,
+    //setToken: defaultValue,
     usrSocket: defaultValue,
 });
 
 export const SocketProvider = (props: any) => {
     const [usrSocket, setUsrSocket] = useState<Socket<any, any> | undefined>();
-    const [token, setToken] = useState<string | null>(localStorage.getItem("ft_transcendence_gdda_jwt"))
+    //const [token, setToken] = useState<string | null>(localStorage.getItem("ft_transcendence_gdda_jwt"))
     const context: typeSocket = {
-        setToken: setToken,
+        //setToken: setToken,
         usrSocket: usrSocket
     }
     const [errorCode, setErrorCode] = useState<number>(200);
@@ -30,7 +30,7 @@ export const SocketProvider = (props: any) => {
         setUsrSocket(io("http://" + location.host, {
             withCredentials: true,
             extraHeaders: {
-                authorization: String(token)
+                authorization: String(props.jwt)
             }
         }));
         usrSocket?.on('exception', (res) => {
@@ -43,7 +43,7 @@ export const SocketProvider = (props: any) => {
                 setErrorCode(500);
             }
         })
-    }, [token]);
+    }, [props.jwt]);
 
     return (
         <SocketContext.Provider value={context}>

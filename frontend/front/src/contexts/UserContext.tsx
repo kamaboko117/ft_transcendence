@@ -26,10 +26,9 @@ export const UsernameSet = (props: {jwt: string,
     //check if user json web token is still valid
     //and need to check if username in db is set, to know if it's a first connection
     const login = async () => {
-
       console.log("usernameSet load")
       //if (props.jwt) {
-        await fetch('http://' + location.host + '/api/users/profile/',
+        await fetch('http://' + location.host + '/api/users/first-profile/',
         { headers: header(props.jwt) })
         .then(res => {
             if (res && res.ok)
@@ -76,7 +75,7 @@ export function UserProvider(props: any) {
     });
   }, []);
   
-  function loginUser(props: User) {
+  async function loginUser(props: User) {
     setUser(props);
     console.log(props);
     console.log("set localStorage");
@@ -89,7 +88,7 @@ export function UserProvider(props: any) {
     }
   }
   /* Faire une vrai deconnexion */
-  function logoutUser() {
+  async function logoutUser() {
     console.log("logout");
     setUser({
       jwt: null,

@@ -16,16 +16,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: {sub: string, token: string,
-        username: string, fa: boolean}) {
-        console.log("payload jwt");
-        console.log(payload);
+        username: string, fa: boolean, fa_code: string}) {
         const ret: TokenUser = {
             userID: Number(payload.sub),
             token: payload.token,
             username: payload.username,
-            fa: payload.fa
+            fa: payload.fa,
+            fa_code: payload.fa_code
         };
-        console.log(ret);
         return (ret);
     }
 }

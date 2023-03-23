@@ -1,5 +1,5 @@
-import React, { useState, useContext, useEffect } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import React, { useState, useContext } from "react";
+import { Routes, Route } from "react-router-dom";
 
 import LoginPage from "./pages/login";
 import Logout from "./pages/Logout";
@@ -27,7 +27,7 @@ import BlackList from "./pages/User/BlackList";
 import FirstConnectionPage from "./components/Users/FirstConnectionPage";
 
 /* FA */
-import SettingFa from './components/Users/FA'
+import SettingFa from './components/Users/Fa'
 
 import PlayPage from "./pages/play";
 import MatchmakingPage from "./pages/matchmaking";
@@ -36,6 +36,7 @@ import { SocketProvider } from './contexts/Socket';
 import { DisplayChatGlobalProvider } from "./contexts/DisplayChatContext";
 import UserContext, { UsernameSet } from "./contexts/UserContext";
 import { useLocation } from 'react-router-dom';
+import FaCode from "./components/Users/FaCode";
 
 const ErrorPage = () => {
   const location = useLocation();
@@ -52,7 +53,7 @@ function App() {
 
   return (
     <>
-      <SocketProvider>
+      <SocketProvider jwt={jwt}>
         <DisplayChatGlobalProvider jwt={jwt}>
           <Routes>
             <Route path="/" element={
@@ -62,8 +63,19 @@ function App() {
               </>} />
             <Route path="/first-connection" element={
               <>
-                <NavBar /><FirstConnectionPage jwt={jwt} /><PlayerApp />
+                <FirstConnectionPage jwt={jwt} /><PlayerApp />
               </>} />
+            <Route path="/fa-activate" element={
+              <>
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                <SettingFa jwt={jwt} />
+              </>
+            } />
+            <Route path="/fa-code" element={
+              <>
+                <FaCode jwt={jwt} />
+              </>
+            } />
             <Route path="/profile" element={
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
@@ -103,13 +115,6 @@ function App() {
               <>
                 <NavBar />
                 <LoginPage /><PlayerApp />
-              </>
-            } />
-            <Route path="/fa-activate" element={
-              <>
-                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
-                <NavBar />
-                <SettingFa jwt={jwt} /><PlayerApp />
               </>
             } />
             <Route path="/fake-login" element={

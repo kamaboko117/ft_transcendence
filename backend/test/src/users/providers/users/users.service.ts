@@ -163,6 +163,14 @@ export class UsersService {
             .getOne();
         return (user);
     }
+    
+    async findUserByIdForGuard(id: number) {
+        const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
+            .where('user.user_id = :user')
+            .setParameters({ user: id })
+            .getOne();
+        return (user);
+    }
 
     async getUserFaSecret(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")

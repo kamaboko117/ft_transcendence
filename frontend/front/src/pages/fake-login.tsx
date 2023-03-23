@@ -27,7 +27,7 @@ function FakeLogin() {
       }
     })
   }, []);
-  const { setToken } = useContext(SocketContext);
+  //const { setToken } = useContext(SocketContext);
   useEffect(() => {
     const login = async () => {
       await userCtx.loginUser({
@@ -37,7 +37,7 @@ function FakeLogin() {
       });
     }
     login();
-    setToken(jwt);
+    //setToken(jwt);
   }, [jwt])
   if (errorCode >= 400)
     return (<FetchError code={errorCode} />);

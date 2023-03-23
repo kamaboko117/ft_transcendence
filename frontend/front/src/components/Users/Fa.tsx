@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { header } from '../FetchError';
+import { FetchError, header } from '../FetchError';
 
 const handleButton = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
     navigate) => {
     if (event && event.target)
-        navigate("/");
+        navigate("/fa-code");
 }
 
 /* 0 == wait
@@ -16,12 +16,15 @@ function SettingFa(props: {jwt: string}) {
     const navigate = useNavigate();
     const [waitForFa, setWaitForFa] = useState<number>(0);
     const [url, setUrl] = useState<string | null>(null);
+    const [errorCode, setErrorCode] = useState<number>(200);
+
     useEffect(() => {
         fetch('http://' + location.host + '/api/users/set-fa/',
             { headers: header(props.jwt) })
             .then(res => {
                 if (res.ok)
                     return (res.json());
+                setErrorCode(res.status);
             })
             .then((res) => {
                 if (res) {
@@ -30,6 +33,8 @@ function SettingFa(props: {jwt: string}) {
                 }
             }).catch(e=>console.log(e));
     }, []);
+    if (errorCode >= 401)
+		return (<FetchError code={errorCode} />);
     return (
         <section>
             <h1>Double Authentification</h1>
