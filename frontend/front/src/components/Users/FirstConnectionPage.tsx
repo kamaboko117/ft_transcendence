@@ -1,15 +1,15 @@
 import React, { ChangeEvent, FormEvent, useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserContext from '../../contexts/UserContext';
-import { FetchError } from '../FetchError';
+import { FetchError, header } from '../FetchError';
 
 /* dans ton handler submit, y mettre le feth vers backend  */
-
+/*
 type userInput = {
 	username: string,
 	FA: boolean,
 	avatar: string,
-}
+}*/
 
 function ChangeHandler(event: ChangeEvent<HTMLInputElement>
 	, setFile: React.Dispatch<React.SetStateAction<File | undefined> >) {
@@ -32,7 +32,8 @@ const headerPost = (jwt: Readonly<string | null>) => {
 function update(event: FormEvent<HTMLFormElement>, username: string,
 	setPushUsername: React.Dispatch<React.SetStateAction<string | null> >,
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
-	setErrorCode: React.Dispatch<React.SetStateAction<number> >) {
+	setErrorCode: React.Dispatch<React.SetStateAction<number> >,
+	setJwt: React.Dispatch<React.SetStateAction<null | string> >) {
 	event.preventDefault();
 
 	const formData = new FormData();
@@ -48,7 +49,7 @@ function update(event: FormEvent<HTMLFormElement>, username: string,
 
 	//ici reste du append dans body
 	//append en plus sur la page FirstCOnnection l username et 2FA activation
-	console.log(fileSet);
+
 	//
 	//je crois t as des trucs pour t aider sur ce lien https://orkhan.gitbook.io/typeorm/docs/select-query-builder
 	/*cq dans backend, a mettre dans le provider user.service tu dois modifier cq pour mettre a jour l userthis.userRepository.createQueryBuilder()
@@ -72,31 +73,77 @@ function update(event: FormEvent<HTMLFormElement>, username: string,
 			return (res.json());
 		setErrorCode(res.status);
 	}).then(res => {
-		if (res && res.valid === true)
-			setPushUsername(res.username)
+		console.log(res)
+		if (res && res.valid === true) {
+			setPushUsername(res.username);
+			setJwt(res.token.access_token);
+		} else {
+			setErrorCode(400);
+		}
 	}).catch(e => console.log(e));
 }
 
 function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 	const [errorCode, setErrorCode] = useState<number>(200);
+	const [jwt, setJwt] = useState<null | string>(null);
 	const [username, setUsername] = useState<string>("");
 	const [pushUsername, setPushUsername] = useState<string | null>(null);
 	const [FA, setFA] = useState<boolean>(false);
-	//const [avatar, setavatar] = useState<string>("");
 	const [file, setFile] = useState<File | undefined>();
 	const userCtx: any = useContext(UserContext);
 	const navigate = useNavigate();
-	//check if username is not empty, if not
-	//redirect to main page
+	const [load, setLoad] = useState<boolean>(false);
+	const [userId, setUserId] = useState<number>(userCtx.getUserId());
+
+	//check if user already have username
 	useEffect(() => {
-		userCtx.setUsername(pushUsername);
-		if (pushUsername && pushUsername != ""
-			|| props.jwt === "" || props.jwt == null)
+		fetch('http://' + location.host + '/api/users/first-profile/',
+            { headers: header(props.jwt) })
+            .then(res => {
+                if (res.ok)
+                    return (res.json());
+                setErrorCode(res.status);
+            })
+            .then((res) => {
+                if (res
+					&& res.username != "" && res.username != null) {
+					navigate('/');
+                }
+            }).catch(e=>console.log(e));
+	}, []);
+
+	//useEffect(() => {
+		//userCtx.setUsername(pushUsername);
+	//}, [pushUsername]);
+	useEffect(() => {
+		const logout = async () => {
+			await userCtx.logoutUser();
+		}
+		if (jwt
+			&& pushUsername && pushUsername != "")
+			logout();
+	}, [pushUsername]);
+	useEffect(() => {
+		const login = async () => {
+			await userCtx.loginUser({
+				jwt: jwt,
+				username: username,
+				userId: userId
+			});
+			setLoad(true);
+		}
+		if (jwt)
+			login();
+	}, [userCtx.getJwt()]);
+	useEffect(() => {
+		if (jwt && jwt === userCtx.getJwt() && load === true) {
 			if (FA === true)
 				navigate("/fa-activate");
-			else
+			else {
 				navigate("/");
-	}, [props.jwt, pushUsername]);
+			}
+		}
+	}, [load])
 
 	if (errorCode >= 401)
 		return (<FetchError code={errorCode} />);
@@ -106,10 +153,10 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 			<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
 					update(event, username,
 					setPushUsername, file, FA, props.jwt,
-					setErrorCode)}>
+					setErrorCode, setJwt)}>
 				<label htmlFor="username">Username</label><br />
 				<input type="text" id="username" name="username" placeholder="ex: Charly"
-					onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.currentTarget.value)} /><br/><br/>
+					onChange={(e: React.ChangeEvent<HTMLInputElement>) => {e.preventDefault();setUsername(e.currentTarget.value)}} /><br/><br/>
 				<input type="checkbox" id="twofactor"
 					onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFA(prevCheck => !prevCheck)} />
 				<label htmlFor="twofactor">Enable Two Factor Authentication: 2FA</label><br/><br/>
