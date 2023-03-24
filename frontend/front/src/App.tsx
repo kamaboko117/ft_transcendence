@@ -67,7 +67,6 @@ function App() {
               </>} />
             <Route path="/fa-activate" element={
               <>
-                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
                 <SettingFa jwt={jwt} />
               </>
             } />

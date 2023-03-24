@@ -76,8 +76,6 @@ export class UsersController {
                 if (isValid) {
                     user.fa_code = String(body.code);
                     access_token = await this.authService.login(user);
-                    console.log("ALLLOOPOOO))=$PO$OK")
-                    console.log(access_token)
                     return ({valid: isValid, username: userDb.username, token: access_token});
                 }   
             }
