@@ -210,6 +210,38 @@ export class UsersService {
         return (list);
     }
 
+    focusUserBlFr(ownerId: number, focusId: number) {
+        const fl = this.blFrRepository.createQueryBuilder("fl").subQuery()
+            .from(BlackFriendList, "fl")
+            .select(["focus_id", "type_list"])
+            .where("owner_id = :ownerId")
+            .andWhere("focus_id = :focusId")
+            .andWhere("type_list = :type1")
+        const bl = this.blFrRepository.createQueryBuilder("bl").subQuery()
+            .from(BlackFriendList, "bl")
+            .select(["focus_id", "type_list"])
+            .where("owner_id = :ownerId")
+            .andWhere("focus_id = :focusId")
+            .andWhere("type_list = :type2")
+        const list = this.blFrRepository.createQueryBuilder("a")
+            .distinct(true)
+            .select("a.focus_id AS id")
+            .addSelect("bl.type_list AS bl")
+            .addSelect("fl.type_list AS fl")
+            .addSelect("User.username")
+            .leftJoin(fl.getQuery(), "fl", "fl.focus_id = a.focus_id")
+            .setParameters({ type1: 2 })
+            .leftJoin(bl.getQuery(), "bl", "bl.focus_id = a.focus_id")
+            .setParameters({ type2: 1 })
+            .innerJoin("a.userFocus", "User")
+            .where("a.owner_id = :ownerId")
+            .setParameters({ ownerId: ownerId })
+            .andWhere("a.focus_id = :focusId")
+            .setParameters({ focusId: focusId })
+            .getRawOne();
+        return (list);
+    }    
+
     getBlackFriendListBy(user_id: number) {
         const fl = this.blFrRepository.createQueryBuilder("fl").subQuery()
             .from(BlackFriendList, "fl")
@@ -239,6 +271,7 @@ export class UsersService {
         console.log(list);
         return (list);
     }
+
     /* add remove friend - block unblock user part */
 
     findBlFr(ownerId: number, focusUserId: number, type: number): Promise<BlackFriendList | null> {
