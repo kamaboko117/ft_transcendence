@@ -5,8 +5,10 @@ export default function Setting() {
 	return <h1>Setting</h1>
 }
 */
-import React, {useEffect, useState, ChangeEvent, FormEvent } from "react";
+import React, {useEffect, useState, ChangeEvent, FormEvent, useContext } from "react";
 import { FetchError, header } from "../../components/FetchError";
+import { useNavigate } from "react-router-dom";
+import UserContext from "../../contexts/UserContext";
 import '../../css/user.css';
 
 
@@ -47,6 +49,7 @@ function ChangeHandler(event: ChangeEvent<HTMLInputElement>
 	}
 }
 
+/*
 function UploadForm(event: FormEvent<HTMLFormElement>,
 	fileSet: File | undefined, jwt: string,
 	setErrorCode: React.Dispatch<React.SetStateAction<number> >,
@@ -77,7 +80,9 @@ function UploadForm(event: FormEvent<HTMLFormElement>,
 		setavatar_path(res.path);
 	}).catch(e => console.log(e));
 }
+*/
 
+/*
 function FormUpdateUser(props: {jwt: string,
 	setErrorCode: React.Dispatch<React.SetStateAction<number> >,
 	setavatar_path: React.Dispatch<React.SetStateAction<string> >,
@@ -110,6 +115,7 @@ const Setting = (props: Readonly<{ jwt: string | null }>) => {
 	const [victory, setVictory] = useState<number>();
 	const [defeat, setDefeat] = useState<number>();
 	*/
+	/*
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [user, setSstat] = useState<userInfo>();
 	useEffect(() => {
@@ -126,6 +132,7 @@ const Setting = (props: Readonly<{ jwt: string | null }>) => {
 				setVictory(res?.sstat.victory);
 				setDefeat(res?.sstat.defeat);
 				*/
+				/*
 				setSstat(res);
             }).catch(e=>console.log(e));
 	}, []);
@@ -141,6 +148,93 @@ const Setting = (props: Readonly<{ jwt: string | null }>) => {
 		/>
 		</>
 	);
+}
+
+export default Setting;
+*/
+function update(event: FormEvent<HTMLFormElement>, username: string,
+	setPushUsername: React.Dispatch<React.SetStateAction<string | null> >,
+	fileSet: File | undefined, FA: boolean, jwt: string | null,
+	setErrorCode: React.Dispatch<React.SetStateAction<number> >) {
+	event.preventDefault();
+
+	const formData = new FormData();
+	if (fileSet) {
+		formData.append('fileset', fileSet);
+	}
+	formData.append('fa', JSON.stringify({fa: FA}));
+	formData.append('username', username);
+	console.log(fileSet);
+	fetch('http://' + location.host + '/api/users/update-user',
+		{
+			method: 'POST',
+			headers: headerPost(jwt),
+			body: formData,
+		}
+	).then(res => {
+		if (res.ok)
+			return (res.json());
+		setErrorCode(res.status);
+	}).then(res => {
+		if (res && res.valid === true)
+			setPushUsername(res.username)
+	}).catch(e => console.log(e));
+}
+
+function Setting(props: Readonly<{ jwt: string | null }>) {
+	const [errorCode, setErrorCode] = useState<number>(200);
+	const [username, setUsername] = useState<string>("");
+	const [pushUsername, setPushUsername] = useState<string | null>(null);
+	const [FA, setFA] = useState<boolean>(false);
+	//const [avatar, setavatar] = useState<string>("");
+	const [file, setFile] = useState<File | undefined>();
+	const userCtx: any = useContext(UserContext);
+	const navigate = useNavigate();
+	//check if username is not empty, if not
+	//redirect to main page
+	useEffect(() => {
+		userCtx.setUsername(pushUsername);
+		if (pushUsername && pushUsername != ""
+			|| props.jwt === "" || props.jwt == null)
+			navigate("/");
+	}, [props.jwt, pushUsername]);
+
+	if (errorCode >= 401)
+		return (<FetchError code={errorCode} />);
+	return(
+	<section>
+		<article>
+			<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
+					update(event, username,
+					setPushUsername, file, FA, props.jwt,
+					setErrorCode)}>
+				<label htmlFor="username">
+					Username
+				</label><br />
+				<input
+					type="text"
+					id="username"
+					name="username"
+					placeholder="ex: Charly"
+					onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.currentTarget.value)}
+				/><br/><br/>
+				<input
+					type="file"
+					name="uploadAvatar"
+					onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)}
+				/>
+				<input
+					type="checkbox"
+					id="twofactor"
+					onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFA(prevCheck => !prevCheck)}
+				/>
+				<label htmlFor="twofactor">
+					Enable Two Factor Authentication: 2FA
+				</label><br/><br/>
+				<input type="submit" value="Submit" />
+			</form>
+		</article>
+	</section>);
 }
 
 export default Setting;
