@@ -6,16 +6,22 @@ import UserContext, { UsernameSet } from "../contexts/UserContext";
 import { FetchError } from "../components/FetchError";
 import SocketContext from "../contexts/Socket";
 
-const CheckFa = (props: {fa: boolean, username: string}) => {
+const CheckFa = (props: {fa: boolean | undefined, username: string}) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (props.fa === true && props.username == "")
+    if (props.fa === false && props.username == "") {
+      console.log("fi")
       navigate('/first-connection');
-    else if (props.fa === true)
+    }
+    else if (props.fa === true) {
+      console.log("fa")
       navigate('/fa-code');
-    else
+    }
+    else if (props.fa === false) {
+      console.log("home")
       navigate('/');
+    }
   }, [props.fa, props.username]);
   return (
     <></>
@@ -30,7 +36,7 @@ function ValidatePage() {
   const [userId, setUserId] = useState<number>(0);
   const [errorCode, setErrorCode] = useState<number>(200);
   const [username, setUsername] = useState<string>("");
-  const [fa, setFa] = useState<boolean>(false);
+  const [fa, setFa] = useState<boolean | undefined>(undefined);
   //ask load user
   useEffect(() => {
     const getUser = (code: string | null | false) => {
@@ -80,7 +86,7 @@ function ValidatePage() {
   return (
     <div>
       <h1>Logged as</h1>
-      {jwt && <UsernameSet jwt={String(jwt)} username={username} setUsername={setUsername} />}
+      {/*jwt && <UsernameSet jwt={String(jwt)} username={username} setUsername={setUsername} />*/}
       {jwt && <CheckFa fa={fa} username={username} />}
     </div>
   );

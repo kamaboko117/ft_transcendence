@@ -79,10 +79,15 @@ export class AuthService {
               //  && (decoded.fa_code === null || decoded.fa_code === ""))
                 //return (false);
             if (userExistInDb.fa === true || userExistInDb.secret_fa) {
-                const isValid = authenticator
+                if (!decoded.fa_code || decoded.fa_code === "")
+                    return (false);
+                /*const isValid = authenticator
                     .verify({token: String(decoded.fa_code), secret: userExistInDb.secret_fa});
                 if (!isValid)
+                {
+                    console.log("FA not valid")
                     return (false);
+                }*/
             }
             
             return (userExistInDb);
