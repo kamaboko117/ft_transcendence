@@ -5,7 +5,8 @@ export class PostActionDto {
     id: string;
 
     @IsString()
-    @IsIn(["Grant", "Remove", "Ban", "Mute", "Kick"])
+    @IsIn(["Grant", "Remove", "Ban", "Mute", "Kick",
+        "grant", "remove", "ban", "mute", "kick"])
     action: string
 
     @IsOptional()

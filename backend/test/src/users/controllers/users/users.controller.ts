@@ -309,8 +309,8 @@ export class UsersController {
     @Post('fr-bl-list')
     async useBlackFriendList(@Request() req: any, @Body() body: BlockUnblock) {
         const user: TokenUser = req.user;
-        const find: BlackFriendList | null = await this.userService.findBlFr(user.userID, body.userId, body.type);
-        console.log("aaaaAAA")
+        const find: BlackFriendList | null
+            = await this.userService.findBlFr(user.userID, body.userId, body.type);
         if (user.userID === body.userId)
             return ({ add: false, type: null });
         if (find) {

@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post, Query, Request } from '@nestjs/common';
+import { strict } from 'assert';
 import { Channel } from '../chat.entity';
 import { TokenUser } from '../chat.interface';
 import { PostActionDto } from '../dto/role-action-dto';
@@ -38,6 +39,7 @@ export class RoleController {
 
         return (role);
     }
+
     /*  grant user to administrator */
     async grantUser(idFromRequest: number, getRoleRequest: typeGetRole,
         userId: Readonly<number>, id: Readonly<string>, newRole: string) {
@@ -53,6 +55,15 @@ export class RoleController {
             return ;
         if (role === "Administrator" || role === "Owner")
             this.roleService.banUser(id, userId, time);
+    }
+
+    unbanUser(id: Readonly<string>, userId: number,
+        time: number, role: Readonly<string>) {
+        if (time < 0)
+            return ;
+        if (role === "Administrator" || role === "Owner"){
+            //this.roleService.banUser(id, userId, time);
+        }
     }
 
     muteUser(id: Readonly<string>, userId: number,
@@ -73,11 +84,17 @@ export class RoleController {
     @Post('role-action')
     async runActionAdmin(@Request() req: any,
         @Body() body: PostActionDto): Promise<boolean> {
+            console.log(body)
         const user: TokenUser = req.user;
-        const action: string = body.action;
+        let action: string = body.action;
         const getRole = await this.getRole(user.userID, body.id);
         const getRoleUserFocus = await this.getRole(body.userId, body.id);
-        
+
+        //need to Uppercase first character
+        action = action.charAt(0).toUpperCase() + action.slice(1);
+        console.log(action)
+        console.log(getRole)
+        console.log(getRoleUserFocus)
         if (!getRoleUserFocus || getRoleUserFocus.role === "Owner")
             return (false);
         if (!getRole || user.userID === body.userId
@@ -94,6 +111,9 @@ export class RoleController {
                 break;
             case "Ban":
                 this.banUser(body.id, body.userId, Number(body.option), getRole.role);
+                break;
+            case "Ban":
+                this.unbanUser(body.id, body.userId, Number(body.option), getRole.role);
                 break;
             case "Mute":
                 this.muteUser(body.id, body.userId, Number(body.option), getRole.role);

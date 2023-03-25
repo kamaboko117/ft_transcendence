@@ -96,7 +96,7 @@ const PostMsg = (props: typePostMsg) => {
         e.preventDefault();
 
         if (obj.content && obj.content[0] === '/')
-            commandChat(jwt, obj.content, props.setErrorCode,
+            commandChat(jwt, obj, props.setErrorCode,
                 lstUserGlobal, lstUserChat, setLstUserGlobal, setLstUserChat);
         else {
             props.usrSocket.emit('sendMsg', obj, (res) => {
@@ -115,7 +115,7 @@ const PostMsg = (props: typePostMsg) => {
         if (e.key === "Enter" && e.shiftKey === false) {
             e.preventDefault();
             if (obj.content && obj.content[0] === '/') {
-                commandChat(jwt, obj.content, props.setErrorCode,
+                commandChat(jwt, obj, props.setErrorCode,
                     lstUserGlobal, lstUserChat, setLstUserGlobal, setLstUserChat);
             } else {
                 props.usrSocket.emit('sendMsg', obj, (res) => {
