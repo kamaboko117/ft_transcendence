@@ -8,13 +8,57 @@ type typeUserInfo = {
     bl: number | null,
 }
 
+type typeFetchToBack = {
+    channelId: string,
+    action: string,
+    jwt: string,
+    userId: number,
+    option: number | boolean
+}
+
+const fetchToBackWithTimer = (elem: typeFetchToBack) => {
+    fetch('http://' + location.host + '/api/chat-role/role-action', {
+        method: 'post',
+        headers: headerPost(elem.jwt),
+        body: JSON.stringify({
+            id: elem.channelId, action: elem.action,
+            option: elem.option, userId: elem.userId
+        })
+    })
+    .then(res => {
+        console.log(res)
+        if (res.ok)
+            return (res)
+    })
+    .catch(e=>console.log(e));
+}
+
+const getUserInfoByName = (jwt: string, username: string,
+    setErrorCode, id: string, firstPartCmd: string, thirdPart: string) => {
+    fetch('http://' + location.host + '/api/users/info-fr-bl?' + new URLSearchParams({
+            name: username
+        }), { headers: header(jwt) })
+    .then(res => {
+        if (res.ok)
+            return (res.json());
+        setErrorCode(res.status)
+    }).then(res => {
+        console.log(res)
+        if (res && res.valid === true) {
+            fetchToBackWithTimer({channelId: id,
+                action: firstPartCmd, jwt: jwt,
+                userId: Number(res.id), option: Number(thirdPart)});
+        }
+    })
+}
+
 const isCmdValid = (cmd: string, length: number) => {
     const arrBasicUser = [
         "block", "unblock", "friend", "unfriend", "invite",
         "profile", "pm"
     ]
     const arrAdminUser = [
-        "grant", "ban", "unban", "mute", "unmute", "kick"
+        "grant", "ungrant", "ban", "unban", "mute", "unmute", "kick"
     ]
 
     for (let i = 0; i < arrBasicUser.length; ++i) {
@@ -24,6 +68,7 @@ const isCmdValid = (cmd: string, length: number) => {
             return ({valid: true, type: "user"});
         }
     }
+    console.log(length)
     for (let i = 0; i < arrAdminUser.length; ++i) {
         if (arrAdminUser[i] === cmd) {
             if ((cmd === "grant" || cmd === "kick" || cmd === "unban" || cmd === "unmute")
@@ -41,15 +86,15 @@ const isCmdValid = (cmd: string, length: number) => {
     we also import lstuserglobal, because we can't use react hook in non componant react function
 */
 
-export const commandChat = (jwt:string, cmd: string, setErrorCode,
+export const commandChat = (jwt:string, obj: any, setErrorCode,
     lstUserGlobal, lstUserChat, setLstUserGlobal, setLstUserChat) => {
     console.log("cmd")
-    console.log(cmd)
+    const cmd = obj.content;
 
     const listHandle = (jwt: string,
         setErrorCode: React.Dispatch<React.SetStateAction<number>>,
         type: number, userInfo: typeUserInfo): void => {
-        console.log("liss")
+
         function updateUserInfo(username: string, id: number,
             friend: number | null, block: number | null) {
             updateBlackFriendList({
@@ -130,16 +175,39 @@ export const commandChat = (jwt:string, cmd: string, setErrorCode,
     }
 
     function runAdminCmd(jwt: string, firstPartCmd: string, secondPartCmd: string, thirdPart: string) {
-        if (isNaN(Number(thirdPart)))
-            return (false)
+        console.log("run adm")
+        fetch('http://' + location.host + '/api/chat-role/getRole?' + new URLSearchParams({
+            id: obj.id,
+        }), { headers: header(jwt) })
+        .then(res => {
+            if (res.ok)
+                return (res.json());
+            setErrorCode(res.status)
+        })
+        .then((res) => {
+            console.log(res)
+            if (res && res.role) {
+                console.log("res with role")
+                console.log(res)
+                getUserInfoByName(jwt, secondPartCmd, setErrorCode,
+                    obj.id, firstPartCmd, thirdPart);
+                //fetchToBackWithTimer({channelId: obj.id,
+                 //   action: firstPartCmd, jwt: jwt,
+                   // userId: 0, option: Number(thirdPart)});
+            }
+            else {
+                console.log("res without role")
+                console.log(res)
+            }
+        }).catch(e=>console.log(e));
         return(true);
     }
 
     if (cmd && cmd[0] != '/')
         return (false);
     const split = cmd.split(" ");
-    if (split.length != 2)
-        return (false);
+    //if (split.length != 2)
+    //    return (false);
     //parse cmd
     const firstPartCmd = split[0].replace('/', '');
     const secondPartCmd = split[1];
@@ -147,10 +215,11 @@ export const commandChat = (jwt:string, cmd: string, setErrorCode,
     const result = isCmdValid(firstPartCmd, split.length);
     if (result.valid === false)
         return (false);
+    console.log(result)
     if (result.type === "user") {
         runUserCmd(jwt, firstPartCmd, secondPartCmd);
     } else if (result.type === "admin") {
-        runAdminCmd(jwt, firstPartCmd, secondPartCmd, split[3]);
+        runAdminCmd(jwt, firstPartCmd, secondPartCmd, split[2]);
     }
     return (true);
 }
