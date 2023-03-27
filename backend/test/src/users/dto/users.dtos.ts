@@ -35,6 +35,15 @@ export class CreateUserDto {
 }*/
 
 export class UpdateUser {
+    @IsString()
+    username: string;
+
+    @IsNotEmpty()
+    @IsString()
+    fa: string;
+}
+
+export class FirstConnection {
     @IsNotEmpty()
     @IsString()
     username: string;
@@ -42,5 +51,4 @@ export class UpdateUser {
     @IsNotEmpty()
     @IsString()
     fa: string;
-
 }

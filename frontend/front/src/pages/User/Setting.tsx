@@ -16,7 +16,8 @@ type userInfo = {
 	username: string,
 	token: string,
 	userID: number,
-	avatarPath: string
+	avatarPath: string,
+	fa: boolean
 }
 
 const handleImgError = (e) => {
@@ -182,6 +183,7 @@ function update(event: FormEvent<HTMLFormElement>, username: string,
 }
 
 function Setting(props: Readonly<{ jwt: string | null }>) {
+	const [user, setUser] = useState<userInfo>();
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [username, setUsername] = useState<string>("");
 	const [pushUsername, setPushUsername] = useState<string | null>(null);
@@ -199,6 +201,19 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 			navigate("/");
 	}, [props.jwt, pushUsername]);
 
+	useEffect(() => {
+		fetch('http://' + location.host + '/api/users/profile/', { headers: header(props.jwt) })
+            .then(res => {
+                if (res.ok)
+                    return (res.json());
+                setErrorCode(res.status);
+            }).then((res: userInfo) => {
+				console.log(res);
+				setUser(res);
+            }).catch(e=>console.log(e));
+	}, []);
+
+
 	if (errorCode >= 401)
 		return (<FetchError code={errorCode} />);
 	return(
@@ -209,7 +224,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 					setPushUsername, file, FA, props.jwt,
 					setErrorCode)}>
 				<label htmlFor="username">
-					Username
+					Username: {user?.username}
 				</label><br />
 				<input
 					type="text"
@@ -227,6 +242,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 					type="checkbox"
 					id="twofactor"
 					onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFA(prevCheck => !prevCheck)}
+					defaultChecked={user?.fa}
 				/>
 				<label htmlFor="twofactor">
 					Enable Two Factor Authentication: 2FA
