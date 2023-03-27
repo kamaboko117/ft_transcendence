@@ -78,9 +78,9 @@ export class UsersController {
         if (body.username && body.username != "")
             this.userService.updateUsername(user.userID, body.username);
         if (regexRet)
-            this.userService.update2FA(user.user_id, true);
+            this.userService.update2FA(user.userID, true);
         else
-            this.userService.update2FA(user.user_id, false);
+            this.userService.update2FA(user.userID, false);
             // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
         return ({valid: true});
     }
