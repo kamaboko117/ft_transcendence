@@ -13,7 +13,14 @@ type typeFetchToBack = {
     action: string,
     jwt: string,
     userId: number,
-    option: number | boolean
+    option: string
+}
+
+type typeFetchToBackPsw = {
+    channelId: string,
+    action: string,
+    jwt: string,
+    psw: string
 }
 
 const fetchToBackWithTimer = (elem: typeFetchToBack) => {
@@ -25,70 +32,117 @@ const fetchToBackWithTimer = (elem: typeFetchToBack) => {
             option: elem.option, userId: elem.userId
         })
     })
-    .then(res => {
-        console.log(res)
-        if (res.ok)
-            return (res)
+        .then(res => {
+            console.log(res)
+            if (res.ok)
+                return (res)
+        })
+        .catch(e => console.log(e));
+}
+
+const fetchToBackSpecial = (elem: typeFetchToBack) => {
+    fetch('http://' + location.host + '/api/chat-role/role-action-spe', {
+        method: 'post',
+        headers: headerPost(elem.jwt),
+        body: JSON.stringify({
+            id: elem.channelId, action: elem.action,
+            option: elem.option, userId: elem.userId
+        })
     })
-    .catch(e=>console.log(e));
+        .then(res => {
+            console.log(res)
+            if (res.ok)
+                return (res)
+        })
+        .catch(e => console.log(e));
+}
+
+const fetchToBackPsw = (elem: typeFetchToBackPsw) => {
+    fetch('http://' + location.host + '/api/chat-role/role-action-psw', {
+        method: 'post',
+        headers: headerPost(elem.jwt),
+        body: JSON.stringify({
+            id: elem.channelId, action: elem.action,
+            psw: elem.psw
+        })
+    })
+        .then(res => {
+            console.log(res)
+            if (res.ok)
+                return (res)
+        })
+        .catch(e => console.log(e));
 }
 
 const getUserInfoByName = (jwt: string, username: string,
     setErrorCode, id: string, firstPartCmd: string, thirdPart: string) => {
     fetch('http://' + location.host + '/api/users/info-fr-bl?' + new URLSearchParams({
-            name: username
-        }), { headers: header(jwt) })
-    .then(res => {
-        if (res.ok)
-            return (res.json());
-        setErrorCode(res.status)
-    }).then(res => {
-        console.log(res)
-        if (res && res.valid === true) {
-            fetchToBackWithTimer({channelId: id,
-                action: firstPartCmd, jwt: jwt,
-                userId: Number(res.id), option: Number(thirdPart)});
-        }
-    })
+        name: username
+    }), { headers: header(jwt) })
+        .then(res => {
+            if (res.ok)
+                return (res.json());
+            setErrorCode(res.status)
+        }).then(res => {
+            console.log(res)
+            if (res && res.valid === true &&
+                (firstPartCmd === "unban" || firstPartCmd === "unmute")) {
+                fetchToBackSpecial({
+                    channelId: id,
+                    action: firstPartCmd, jwt: jwt,
+                    userId: Number(res.id), option: thirdPart
+                });
+            }
+            else if (res && res.valid === true) {
+                fetchToBackWithTimer({
+                    channelId: id,
+                    action: firstPartCmd, jwt: jwt,
+                    userId: Number(res.id), option: thirdPart
+                });
+            }
+        })
 }
 
 const isCmdValid = (cmd: string, length: number) => {
     const arrBasicUser = [
         "block", "unblock", "friend", "unfriend", "invite",
-        "profile", "pm"
+        "profile"
     ]
+    /* setpsw = updatepsw */
     const arrAdminUser = [
-        "grant", "ungrant", "ban", "unban", "mute", "unmute", "kick"
+        "grant", "ungrant", "ban",
+        "unban", "mute", "unmute", "kick",
+        "setpsw"
     ]
 
     for (let i = 0; i < arrBasicUser.length; ++i) {
         if (arrBasicUser[i] === cmd) {
             if (length != 2)
-                return ({valid: false, type: ""});
-            return ({valid: true, type: "user"});
+                return ({ valid: false, type: "" });
+            return ({ valid: true, type: "user" });
         }
     }
-    console.log(length)
     for (let i = 0; i < arrAdminUser.length; ++i) {
         if (arrAdminUser[i] === cmd) {
-            if ((cmd === "grant" || cmd === "kick" || cmd === "unban" || cmd === "unmute")
+            if ((cmd === "grant" || cmd === "kick"
+                || cmd === "unban" || cmd === "unmute"
+                || cmd === "setpsw")
                 && length != 2)
-                return ({valid: false, type: ""});
+                return ({ valid: false, type: "" });
             else if ((cmd === "ban" || cmd === "mute") && length != 3)
-                return ({valid: false, type: ""});
-            return ({valid: true, type: "admin"});
+                return ({ valid: false, type: "" });
+            return ({ valid: true, type: "admin" });
         }
     }
-    return ({valid: false, type: ""});
+    return ({ valid: false, type: "" });
 }
 
 /* we take lstuserchat because we might need to update channel page part
     we also import lstuserglobal, because we can't use react hook in non componant react function
 */
 
-export const commandChat = (jwt:string, obj: any, setErrorCode,
+export const commandChat = (jwt: string, obj: any, setErrorCode,
     lstUserGlobal, lstUserChat, setLstUserGlobal, setLstUserChat) => {
-    console.log("cmd")
     const cmd = obj.content;
 
     const listHandle = (jwt: string,
@@ -149,25 +203,26 @@ export const commandChat = (jwt:string, obj: any, setErrorCode,
     }
 
     function runUserCmd(jwt: string, firstPartCmd: string, secondPartCmd: string) {
-    
         function getInfoUser(jwt: string, firstPartCmd: string, secondPartCmd: string,
             setErrorCode) {
             fetch('http://' + location.host + '/api/users/info-fr-bl?' + new URLSearchParams({
-                    name: secondPartCmd
-                }), { headers: header(jwt) })
-            .then(res => {
-                if (res.ok)
-                    return (res.json());
-                setErrorCode(res.status)
-            })
-            .then((res: any) => {
-                if (res.valid && (firstPartCmd === "block" || firstPartCmd === "unblock")) {
-                    listHandle(jwt, setErrorCode, 1, res);
-                }
-                if (res.valid && (firstPartCmd === "friend" || firstPartCmd === "unfriend")) {
-                    listHandle(jwt, setErrorCode, 2, res);
-                }
-            }).catch(e=>console.log(e));
+                name: secondPartCmd
+            }), { headers: header(jwt) })
+                .then(res => {
+                    if (res.ok)
+                        return (res.json());
+                    setErrorCode(res.status)
+                })
+                .then((res: any) => {
+                    if (res.valid && ((firstPartCmd === "block" && res.bl === null)
+                        || (firstPartCmd === "unblock" && res.bl === 1))) {
+                        listHandle(jwt, setErrorCode, 1, res);
+                    }
+                    else if (res.valid && ((firstPartCmd === "friend" && res.fl === null)
+                        || (firstPartCmd === "unfriend" && res.fl === 2))) {
+                        listHandle(jwt, setErrorCode, 2, res);
+                    }
+                }).catch(e => console.log(e));
         }
         //get user info from db
         getInfoUser(jwt, firstPartCmd, secondPartCmd,
@@ -179,47 +234,48 @@ export const commandChat = (jwt:string, obj: any, setErrorCode,
         fetch('http://' + location.host + '/api/chat-role/getRole?' + new URLSearchParams({
             id: obj.id,
         }), { headers: header(jwt) })
-        .then(res => {
-            if (res.ok)
-                return (res.json());
-            setErrorCode(res.status)
-        })
-        .then((res) => {
-            console.log(res)
-            if (res && res.role) {
-                console.log("res with role")
-                console.log(res)
-                getUserInfoByName(jwt, secondPartCmd, setErrorCode,
-                    obj.id, firstPartCmd, thirdPart);
-                //fetchToBackWithTimer({channelId: obj.id,
-                 //   action: firstPartCmd, jwt: jwt,
-                   // userId: 0, option: Number(thirdPart)});
-            }
-            else {
-                console.log("res without role")
-                console.log(res)
-            }
-        }).catch(e=>console.log(e));
-        return(true);
+            .then(res => {
+                if (res.ok)
+                    return (res.json());
+                setErrorCode(res.status)
+            })
+            .then((res) => {
+                if (res && res.role) {
+                    if (firstPartCmd !== "setpsw" && firstPartCmd !== "unsetpsw")
+                        getUserInfoByName(jwt, secondPartCmd, setErrorCode,
+                            obj.id, firstPartCmd, thirdPart);
+                    else {
+                        fetchToBackPsw({
+                            channelId: obj.id,
+                            action: firstPartCmd, jwt: jwt,
+                            psw: secondPartCmd
+                        })
+                    }
+                }
+            }).catch(e => console.log(e));
+        return (true);
     }
 
     if (cmd && cmd[0] != '/')
         return (false);
     const split = cmd.split(" ");
-    //if (split.length != 2)
-    //    return (false);
     //parse cmd
     const firstPartCmd = split[0].replace('/', '');
     const secondPartCmd = split[1];
     //check command validation
-    const result = isCmdValid(firstPartCmd, split.length);
-    if (result.valid === false)
-        return (false);
-    console.log(result)
-    if (result.type === "user") {
-        runUserCmd(jwt, firstPartCmd, secondPartCmd);
-    } else if (result.type === "admin") {
-        runAdminCmd(jwt, firstPartCmd, secondPartCmd, split[2]);
+    if (firstPartCmd === "unsetpsw") {
+        runAdminCmd(jwt, firstPartCmd, firstPartCmd, "");
+    } else {
+        const result = isCmdValid(firstPartCmd, split.length);
+        if (result.valid === false)
+            return (false);
+        if (result.type === "user") {
+            //run user commands
+            runUserCmd(jwt, firstPartCmd, secondPartCmd);
+        } else if (result.type === "admin") {
+            //run administator commands
+            runAdminCmd(jwt, firstPartCmd, secondPartCmd, split[2]);
+        }
     }
     return (true);
 }

@@ -56,6 +56,22 @@ type propsListChannel = {
     setPm: React.Dispatch<React.SetStateAction<listPm[]>>
 }
 
+const content_helper = "/cmd + username + option\n"
+    + "/block username\n"
+    + "/unblock username\n"
+    + "/friend username\n"
+    + "/unfriend username\n"
+    + "/invite username\n"
+    + "/profile username\n"
+
+const helper: any = {
+    user: {
+        avatarPath: null,
+        username: "Only visible by you",
+    },
+    content: content_helper,
+}
+
 const directMessage = (event: MouseEvent<HTMLButtonElement>,
     renderDirectMessage: boolean, setDisplay: any): void => {
     event.preventDefault();
@@ -201,7 +217,7 @@ type typePostMsg = {
 
 const PostMsg = (props: typePostMsg) => {
     const refElem = useRef(null);
-    const { id, lstUserGlobal, lstUserChat, setLstMsgChat,
+    const { lstUserGlobal, lstUserChat, setLstMsgChat,
         setLstMsgPm, setLstUserGlobal,
         setLstUserChat } = useContext(ContextDisplayChannel);
     const userCtx: any = useContext(UserContext);
@@ -211,15 +227,20 @@ const PostMsg = (props: typePostMsg) => {
         obj: any, ref: any) => {
         e.preventDefault();
 
-        if (obj.content && obj.content[0] === '/')
+        if (obj.content && obj.content === "/help") {
+            console.log("hh")
+            setLstMsgPm((lstMsg) => [...lstMsg, helper]);
+        }
+        else if (obj.content && obj.content[0] === '/')
             commandChat(jwt, obj, props.setErrorCode,
-                lstUserGlobal, lstUserChat, setLstUserGlobal, setLstUserChat);
+                lstUserGlobal, lstUserChat, setLstUserGlobal,
+                setLstUserChat);
         else {
             props.usrSocket.emit('sendMsg', obj, (res) => {
-            if (res.room === obj.id && obj.idBox === obj.id)
-                setLstMsgChat((lstMsg) => [...lstMsg, res]);
-            if (res.room === obj.id)
-                setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                if (res.room === obj.id && obj.idBox === obj.id)
+                    setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                if (res.room === obj.id)
+                    setLstMsgPm((lstMsg) => [...lstMsg, res]);
             })
         }
         props.setMsg("");
@@ -230,15 +251,20 @@ const PostMsg = (props: typePostMsg) => {
         obj: any, ref: any) => {
         if (e.key === "Enter" && e.shiftKey === false) {
             e.preventDefault();
-            if (obj.content && obj.content[0] === '/') {
+            if (obj.content && obj.content === "/help") {
+                console.log("hh")
+                setLstMsgPm((lstMsg) => [...lstMsg, helper]);
+            }
+            else if (obj.content && obj.content[0] === '/') {
                 commandChat(jwt, obj, props.setErrorCode,
-                    lstUserGlobal, lstUserChat, setLstUserGlobal, setLstUserChat);
+                    lstUserGlobal, lstUserChat, setLstUserGlobal,
+                    setLstUserChat);
             } else {
                 props.usrSocket.emit('sendMsg', obj, (res) => {
-                if (res.room === obj.id && obj.idBox === obj.id)
-                    setLstMsgChat((lstMsg) => [...lstMsg, res]);
-                if (res.room === obj.id)
-                    setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                    if (res.room === obj.id && obj.idBox === obj.id)
+                        setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                    if (res.room === obj.id)
+                        setLstMsgPm((lstMsg) => [...lstMsg, res]);
                 })
             }
             props.setMsg("");
@@ -252,20 +278,20 @@ const PostMsg = (props: typePostMsg) => {
                 onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
                     handleSubmitArea(e,
                         {
-                        id: props.id,
-                        idBox: props.idBox,
-                        content: props.msg,
-                        isPm: props.isPrivate,
-                    }, refElem
+                            id: props.id,
+                            idBox: props.idBox,
+                            content: props.msg,
+                            isPm: props.isPrivate,
+                        }, refElem
                     )}
                 className="chatBox" name="msg"></textarea>
             <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmitButton(e,
                 {
-                id: props.id,
-                idBox: props.idBox,
-                content: props.msg,
-                isPm: props.isPrivate,
-            }, refElem)}
+                    id: props.id,
+                    idBox: props.idBox,
+                    content: props.msg,
+                    isPm: props.isPrivate,
+                }, refElem)}
             >Go</button>
             <Button />
         </div>
@@ -400,31 +426,6 @@ const DiscussionBox = (props: {
             isPrivate={props.isPrivate} setMsg={setMsg}
             setErrorCode={props.setErrorCode}
             setLstMsgChat={setLstMsgChat} setLstMsgPm={setLstMsgPm} />
-        {/*<div className='containerPost'>
-            <textarea ref={refElem} id="submitArea"
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMsg(e.currentTarget.value)}
-                onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
-                    handleSubmitArea(e,
-                        usrSocket, {
-                        id: props.id,
-                        idBox: getSecondPartRegex,
-                        content: msg,
-                        isPm: props.isPrivate,
-                    },
-                        refElem,
-                        setMsg, setLstMsgChat, setLstMsgPm
-                    )}
-                className="chatBox" name="msg"></textarea>
-            <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmitButton(e,
-                usrSocket, {
-                id: props.id,
-                idBox: getSecondPartRegex,
-                content: msg,
-                isPm: props.isPrivate,
-            }, refElem, setMsg, setLstMsgChat, setLstMsgPm)}
-            >Go</button>
-            <Button />
-        </div>*/}
         <LoadUserGlobal jwt={props.jwt} />
     </div>);
 }

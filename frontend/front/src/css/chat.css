@@ -83,7 +83,7 @@ img.chatBox {
 textarea.chatBox {
     width: 85%;
     resize: initial;
-    font: 2em;
+    /*font: 2em;*/
     margin-left: 10px;
     margin-bottom: 10px;
     margin-right: 10px;

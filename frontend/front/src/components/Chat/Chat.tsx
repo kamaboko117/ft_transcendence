@@ -12,17 +12,40 @@ import { commandChat } from './CommandChat';
 
 export type lstMsg = {
     lstMsg: Array<{
-        idUser: string,
+        //idUser: string,
+        user: { avatarPath: string, username: string }
         content: string,
         img: string
     }>
+}
+
+const content_helper = "/cmd + username + option\n"
+    + "/block username\n"
+    + "/unblock username\n"
+    + "/friend username\n"
+    + "/unfriend username\n"
+    + "/invite username\n"
+    + "/profile username\n"
+
+const helper: any = {
+    user: {
+        avatarPath: null,
+        username: "Only visible by you",
+    },
+    content: content_helper,
+}
+
+type msg = {
+    user: { avatarPath: string, username: string }
+    content: string,
+    img: string
 }
 
 const handleImgError = (e) => {
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
     if (target) {
-        target.src =  "/upload_avatar/default.png"; 
+        target.src = "/upload_avatar/default.png";
     }
 }
 
@@ -43,16 +66,16 @@ export const ListMsg = (props: any) => {
         <Element name="container" className="element fullBox" id="containerElement" ref={scrollBottom}>
             {
                 props.lstMsg &&
-                props.lstMsg.slice(arrayLength, props.lstMsg.length).map((msg: any) => (
+                props.lstMsg.slice(arrayLength, props.lstMsg.length).map((msg: msg) => (
                     <React.Fragment key={++i}>
                         <div>
                             <img src={"/" + msg.user.avatarPath} className="chatBox"
                                 alt={"avatar " + msg.user.username}
                                 onError={handleImgError}
-                                />
+                            />
                             <label className="chatBox">{msg.user.username}</label>
                         </div>
-                        <span className="chatBox">{msg.content}</span>
+                        <span className="chatBox" style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</span>
                     </React.Fragment>
                 ))
             }
@@ -72,7 +95,6 @@ const handleLeave = async (e: React.MouseEvent<HTMLButtonElement>, contextUserLe
         contextUserLeave();
     });
 }
-
 
 type typePostMsg = {
     id: string, msg: any,
@@ -95,7 +117,10 @@ const PostMsg = (props: typePostMsg) => {
         obj: any, ref: any) => {
         e.preventDefault();
 
-        if (obj.content && obj.content[0] === '/')
+        if (obj.content && obj.content === "/help") {
+            setLstMsgChat((lstMsg) => [...lstMsg, helper]);
+        }
+        else if (obj.content && obj.content[0] === '/')
             commandChat(jwt, obj, props.setErrorCode,
                 lstUserGlobal, lstUserChat, setLstUserGlobal, setLstUserChat);
         else {
@@ -114,9 +139,13 @@ const PostMsg = (props: typePostMsg) => {
         obj: any, ref: any) => {
         if (e.key === "Enter" && e.shiftKey === false) {
             e.preventDefault();
-            if (obj.content && obj.content[0] === '/') {
+            if (obj.content && obj.content === "/help") {
+                setLstMsgChat((lstMsg) => [...lstMsg, helper]);
+            }
+            else if (obj.content && obj.content[0] === '/') {
                 commandChat(jwt, obj, props.setErrorCode,
-                    lstUserGlobal, lstUserChat, setLstUserGlobal, setLstUserChat);
+                    lstUserGlobal, lstUserChat, setLstUserGlobal,
+                    setLstUserChat);
             } else {
                 props.usrSocket.emit('sendMsg', obj, (res) => {
                     if (res.room === obj.id)
@@ -132,24 +161,24 @@ const PostMsg = (props: typePostMsg) => {
 
     return (
         <div className="sendMsg">
-                <textarea ref={refElem} id="submitArea" placeholder='Inclure commande deban dans chat'
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => props.setMsg(e.currentTarget.value)}
-                    onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
-                        handleSubmitArea(e,
+            <textarea ref={refElem} id="submitArea" placeholder='Inclure commande deban dans chat'
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => props.setMsg(e.currentTarget.value)}
+                onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
+                    handleSubmitArea(e,
                         {
                             id: props.id,
                             idBox: id,
                             content: props.msg
                         }, refElem)}
-                    className="chatBox" name="msg"></textarea>
-                <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmitButton(e,
+                className="chatBox" name="msg"></textarea>
+            <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmitButton(e,
                 {
                     id: props.id,
                     idBox: id,
                     content: props.msg
                 }, refElem)}
-                    className="chatBox">Go</button>
-            </div>
+                className="chatBox">Go</button>
+        </div>
     );
 }
 
@@ -265,7 +294,7 @@ const MainChat = (props: any) => {
     return (<>
         <article className='containerChat'>
             <div className="chatName">
-                <span style={{ flex: 1 }}>{chatName}</span>
+                <span style={{ flex: 1, wordBreak: "break-word" }}>{chatName}</span>
                 <span style={{ flex: 0 }}>CHANNEL ID: {props.id}</span>
                 <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleLeave(e,
                     contextUserLeave, usrSocket, {

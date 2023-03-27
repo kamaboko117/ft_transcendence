@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Query, Request } from '@nestjs/common';
 import { strict } from 'assert';
 import { Channel } from '../chat.entity';
 import { TokenUser } from '../chat.interface';
-import { PostActionDto } from '../dto/role-action-dto';
+import { PostActionDto, PostActionDtoPsw } from '../dto/role-action-dto';
 import { ListUser } from '../lstuser.entity';
 import { RoleService } from './role.service';
 
@@ -15,11 +15,12 @@ type typeGetRole = {
 export class RoleController {
     constructor(private roleService: RoleService) { }
 
-    async getRole(userId: Readonly<number>, channelId: Readonly<string>): Promise<typeGetRole> {
+    async getRole(userId: Readonly<number>,
+        channelId: Readonly<string>): Promise<typeGetRole> {
         //is owner from channel?
         if (!channelId || !userId)
             return ({ role: "", userId: undefined });
-        const channel: Channel | null = await this.roleService.getOwner(channelId);
+        //const channel: Channel | null = await this.roleService.getOwner(channelId);
         //mute because try multiple owner
         //if (channel && channel.user_id === userId)
         //    return ({role: "Owner", userId: userId})
@@ -33,7 +34,6 @@ export class RoleController {
     @Get('getRole')
     async getQueryRole(@Request() req: Readonly<any>,
         @Query('id') id: string): Promise<typeGetRole> {
-        console.log(id)
         const user: TokenUser = req.user;
         const role: typeGetRole = await this.getRole(user.userID, id);
 
@@ -52,24 +52,29 @@ export class RoleController {
     banUser(id: Readonly<string>, userId: number,
         time: number, role: Readonly<string>) {
         if (time < 0)
-            return ;
+            return;
         if (role === "Administrator" || role === "Owner")
             this.roleService.banUser(id, userId, time);
     }
 
-    unbanUser(id: Readonly<string>, userId: number,
-        time: number, role: Readonly<string>) {
-        if (time < 0)
-            return ;
-        if (role === "Administrator" || role === "Owner"){
-            //this.roleService.banUser(id, userId, time);
+    unBanUser(id: Readonly<string>, userId: number,
+        role: Readonly<string>) {
+        if (role === "Administrator" || role === "Owner") {
+            this.roleService.unBanUser(id, userId);
+        }
+    }
+
+    unMuteUser(id: Readonly<string>, userId: number,
+        role: Readonly<string>) {
+        if (role === "Administrator" || role === "Owner") {
+            this.roleService.unMuteUser(id, userId);
         }
     }
 
     muteUser(id: Readonly<string>, userId: number,
         time: number, role: Readonly<string>) {
         if (time < 0)
-            return ;
+            return;
         if (role === "Administrator" || role === "Owner")
             this.roleService.muteUser(id, userId, time);
     }
@@ -77,24 +82,32 @@ export class RoleController {
     kickUser(id: Readonly<string>, userId: number,
         role: Readonly<string>) {
         if (role === "Administrator" || role === "Owner")
-            this.roleService.kickUser(id, userId, );
+            this.roleService.kickUser(id, userId);
+    }
+
+    setPsw(id: Readonly<string>,
+        role: Readonly<string>, psw: Readonly<string>) {
+        if (role === "Owner")
+            this.roleService.setPsw(id, psw);
+    }
+
+    unSetPsw(id: Readonly<string>,
+        role: Readonly<string>) {
+        if (role === "Owner")
+            this.roleService.unSetPsw(id);
     }
 
     /* POST */
     @Post('role-action')
     async runActionAdmin(@Request() req: any,
         @Body() body: PostActionDto): Promise<boolean> {
-            console.log(body)
         const user: TokenUser = req.user;
-        let action: string = body.action;
         const getRole = await this.getRole(user.userID, body.id);
         const getRoleUserFocus = await this.getRole(body.userId, body.id);
+        let action: string = body.action;
 
         //need to Uppercase first character
         action = action.charAt(0).toUpperCase() + action.slice(1);
-        console.log(action)
-        console.log(getRole)
-        console.log(getRoleUserFocus)
         if (!getRoleUserFocus || getRoleUserFocus.role === "Owner")
             return (false);
         if (!getRole || user.userID === body.userId
@@ -112,14 +125,58 @@ export class RoleController {
             case "Ban":
                 this.banUser(body.id, body.userId, Number(body.option), getRole.role);
                 break;
-            case "Ban":
-                this.unbanUser(body.id, body.userId, Number(body.option), getRole.role);
-                break;
             case "Mute":
                 this.muteUser(body.id, body.userId, Number(body.option), getRole.role);
-                break ;
+                break;
             case "Kick":
                 this.kickUser(body.id, body.userId, getRole.role);
+                break;
+            default:
+                break;
+        }
+        return (true);
+    }
+
+    @Post('role-action-spe')
+    async runActionAdminSpecial(@Request() req: any,
+        @Body() body: PostActionDto): Promise<boolean> {
+        console.log(body)
+        const user: TokenUser = req.user;
+        let action: string = body.action;
+        const getRole = await this.getRole(user.userID, body.id);
+        if (!getRole || user.userID === body.userId
+            || (getRole.role !== "Owner" && getRole.role !== "Administrator"))
+            return (false);
+        switch (action) {
+            case "unban":
+                this.unBanUser(body.id, body.userId, getRole.role);
+                break;
+            case "unmute":
+                this.unMuteUser(body.id, body.userId, getRole.role);
+                break;
+            default:
+                break;
+        }
+        return (true);
+    }
+
+    @Post('role-action-psw')
+    async runActionAdminPsw(@Request() req: any,
+        @Body() body: PostActionDtoPsw): Promise<boolean> {
+
+        const user: TokenUser = req.user;
+        let action: string = body.action;
+        const getRole = await this.getRole(user.userID, body.id);
+        if (!getRole || getRole.role !== "Owner")
+            return (false);
+        if (action === "setpsw" && (!body.psw || body.psw === ""))
+            return (false);
+        switch (action) {
+            case "setpsw":
+                this.setPsw(body.id, getRole.role, body.psw);
+                break;
+            case "unsetpsw":
+                this.unSetPsw(body.id, getRole.role);
                 break;
             default:
                 break;
