@@ -102,21 +102,21 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                 this.setState({
                     listChannel: res
                 })
-            }).catch(e=>console.log(e));
+            }).catch(e => console.log(e));
         fetch('http://' + location.host + '/api/chat/private',
             { headers: header(this.props.jwt) }).then(res => {
-            if (res.ok)
-                return (res.json());
-            this.setState({
-                errorCode: res.status
-            });
-        }).then(res => {
-            this.setState({
-                listChannelPrivate: res
-            })
-        }).catch(e=>console.log(e));
+                if (res.ok)
+                    return (res.json());
+                this.setState({
+                    errorCode: res.status
+                });
+            }).then(res => {
+                this.setState({
+                    listChannelPrivate: res
+                })
+            }).catch(e => console.log(e));
     }
-    
+
     componentWillUnmount(): void {
         this.setState({
             listChannel: [],
@@ -124,7 +124,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         })
     }
     onClick = (): void => {
-        fetch('http://' + location.host + '/api/chat/public/', 
+        fetch('http://' + location.host + '/api/chat/public/',
             { headers: header(this.props.jwt) })
             .then(res => {
                 if (res.ok)
@@ -133,19 +133,19 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                 this.setState({
                     listChannel: res
                 })
-            }).catch(e=>console.log(e))
-        fetch('http://' + location.host + '/api/chat/private', 
+            }).catch(e => console.log(e))
+        fetch('http://' + location.host + '/api/chat/private',
             { headers: header(this.props.jwt) }).then(res => {
-            if (res.ok)
-                return (res.json());
-            this.setState({
-                errorCode: res.status
-            });
-        }).then(res => {
-            this.setState({
-                listChannelPrivate: res
-            })
-        }).catch(e=>console.log(e))
+                if (res.ok)
+                    return (res.json());
+                this.setState({
+                    errorCode: res.status
+                });
+            }).then(res => {
+                this.setState({
+                    listChannelPrivate: res
+                })
+            }).catch(e => console.log(e))
     }
     onChange = (e: ChangeEvent<HTMLInputElement>): void => {
         e.stopPropagation();
@@ -189,7 +189,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                         listChannel: [...this.state.listChannel, res],
                     });
                 }
-            }).catch(e=>console.log(e));
+            }).catch(e => console.log(e));
         }
         else {
             const res: any = fetch('http://' + location.host + '/api/chat/new-private/', {
@@ -223,7 +223,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                         privateIdChannel: res.id
                     });
                 }
-            }).catch(e=>console.log(e));
+            }).catch(e => console.log(e));
         }
     }
 
@@ -275,18 +275,22 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         return (<section className='containerChannel'>
             <h1>List channels + (affichage liste privée à faire + persist dtb)</h1>
             <article className='left'>
-                <table>
+                <table className='left'>
                     <thead>
                         <tr>
-                            <th>Public Channel name</th><th>Owner</th><th>Access type</th>
+                            <th style={{ width: "60%" }}>Public Channel name</th>
+                            <th style={{ width: "20%" }}>Owner</th>
+                            <th style={{ width: "20%" }}>Access type</th>
                         </tr>
                     </thead>
                     <this.PrintListPublic />
                 </table>
-                <table style={{ margin: "auto auto auto 20px" }}>
+                <table className='right'>
                     <thead>
                         <tr>
-                            <th>Private Channel name</th><th>Owner</th><th>Access type</th>
+                            <th style={{ width: "60%" }}>Private Channel name</th>
+                            <th style={{ width: "20%" }}>Owner</th>
+                            <th style={{ width: "20%" }}>Access type</th>
                         </tr>
                     </thead>
                     <this.PrintListPrivate />
