@@ -35,6 +35,7 @@ export class CreateUserDto {
 }*/
 
 export class UpdateUser {
+	@MaxLength(24)
     @IsString()
     username: string;
 
@@ -44,6 +45,7 @@ export class UpdateUser {
 }
 
 export class FirstConnection {
+	@MaxLength(24)
     @IsNotEmpty()
     @IsString()
     username: string;
