@@ -10,7 +10,7 @@ import {
     ValidationPipe,
     Request, Res, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator
 } from "@nestjs/common";
-import { CreateUserDto, BlockUnblock, UpdateUser, Username } from "src/users/dto/users.dtos";
+import { CreateUserDto, BlockUnblock, UpdateUser, Username, FirstConnection } from "src/users/dto/users.dtos";
 import { UsersService } from "src/users/services/users/users.service";
 import { CustomAuthGuard } from 'src/auth/auth.guard';
 import { FakeAuthGuard } from 'src/auth/fake.guard';
@@ -93,7 +93,7 @@ export class UsersController {
           new FileTypeValidator({ fileType: 'image/png'}),
         ], fileIsRequired: false
       }),
-    ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
+    ) file: Express.Multer.File | undefined, @Body() body: FirstConnection) {
         const user = req.user;
         console.log(body);
         if (body.username && body.username == "") {
