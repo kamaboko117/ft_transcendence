@@ -16,7 +16,6 @@ import { ListMute } from './lstmute.entity';
 import { ListUser } from './lstuser.entity';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { UseGuards } from '@nestjs/common';
-import { User } from 'src/typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { BlackFriendList } from 'src/typeorm/blackFriendList.entity';
 
@@ -412,7 +411,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @UseGuards(JwtGuard)
   @SubscribeMessage('joinRoomChat')
   async joinRoomChat(@ConnectedSocket() socket: Readonly<any>,
-    @MessageBody() data: Readonly<Room>): Promise<boolean | { ban: boolean }> {
+    @MessageBody() data: Room): Promise<boolean | { ban: boolean }> {
     const user = socket.user;
 
     if (typeof user.userID != "number")
@@ -509,7 +508,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @UseGuards(JwtGuard)
   @SubscribeMessage('leaveRoomChat')
   async leaveRoomChat(@ConnectedSocket() socket: Readonly<any>,
-    @MessageBody() data: Readonly<Room>): Promise<string | undefined | { ban: boolean }> {
+    @MessageBody() data: Room): Promise<string | undefined | { ban: boolean }> {
     const user: TokenUser = socket.user;
 
     if (typeof user.userID != "number")
@@ -532,7 +531,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @UseGuards(JwtGuard)
   @SubscribeMessage('stopEmit')
   async stopEmit(@ConnectedSocket() socket: Readonly<any>,
-    @MessageBody() data: Readonly<any>) {
+    @MessageBody() data: any) {
     const user = socket.user;
     if (typeof data === "undefined"
       || !user || typeof user.userID != "number")
@@ -549,8 +548,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('sendMsg')
-  async newPostChat(@ConnectedSocket() socket: Readonly<any>,
-    @MessageBody() data: Readonly<SendMsg>) {
+  async newPostChat(@ConnectedSocket() socket: any,
+    @MessageBody() data: SendMsg) {
     const user = socket.user;
 
     if (typeof user.userID != "number")

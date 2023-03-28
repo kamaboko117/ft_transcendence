@@ -33,5 +33,7 @@ export interface Chat {
 export interface TokenUser {
     userID: number,
     token: string,
-    username: string
+    username: string,
+    fa: boolean,
+    fa_code: string
 }

@@ -17,7 +17,6 @@ export class FakeStrategy extends PassportStrategy(Strategy, "fake-custom") {
 	const user = await this.authService.fakeUser();
 	if (!user || typeof user == "undefined")
             throw new UnauthorizedException();
-        console.log(user);
         //must return User
         return (user);
     }

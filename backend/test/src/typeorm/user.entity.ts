@@ -42,6 +42,11 @@ export class User {
   @Column({ default: false })
   fa: boolean;
 
+  @Column({
+    nullable: true,
+  })
+  secret_fa!: string;
+
   @OneToMany(() => Channel, (listchannel) => listchannel.user)
   lstChannel: Channel[];
 

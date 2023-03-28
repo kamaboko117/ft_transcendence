@@ -177,10 +177,56 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     setTop(parentNode.offsetTop);
 }
 
+
+/* 0 === offline
+    1 === online
+    2 === in game
+*/
+export const StatusUser = (props: {userId: number, jwt: string}) => {
+    const { usrSocket } = useContext(SocketContext);
+    const [status, setStatus] = useState<number>(0);
+    useEffect(() => {
+        //emit ask user connecté/ig sur map, puis return reponse
+        //.on les deconnexions, co, in 
+        usrSocket?.emit("status", { userId: props.userId }, (res: {code: number}) => {
+            if (res)
+                setStatus(res.code);
+        });
+        usrSocket?.on('currentStatus', (res: {code: number}) => {
+            if (res)
+                setStatus(res.code);
+        })
+        return (() => {
+            setStatus(0);
+        })
+    }, [props.userId, props.jwt]);
+    return (<>
+    {
+        status === 0 && <div>
+            <div style={{width: "20px", backgroundColor: "grey"}}>
+                </div><span style={{flex: "1"}}>Offline</span>
+            </div>
+    }
+    {
+        status === 1 && <div>
+            <div style={{width: "20px", backgroundColor: "green"}}>
+                </div><span style={{flex: "1"}}>Online</span>
+            </div>
+    }
+    {
+        status === 2 && <div>
+            <div style={{width: "20px", backgroundColor: "crimson"}}>
+                </div><span style={{flex: "1"}}>In game</span>
+            </div>
+    }
+    </>);
+}
+
 const ButtonsInfos = (props: typeButtonsInfo) => {
     const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
 
     return (<>
+        <StatusUser userId={props.userInfo.id} jwt={props.jwt} />
         <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
             listHandle(e, props.jwt,
                 props.userInfo.id, props.setErrorCode,
@@ -204,8 +250,6 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
             setErrorCode={props.setErrorCode} userInfo={props.userInfo} />
     </>)
 }
-
-
 
 const UserInfo = (props: PropsUserInfo): JSX.Element => {
     const { renderDirectMessage, userId, setDisplay, setUserId, setId } = useContext(ContextDisplayChannel);

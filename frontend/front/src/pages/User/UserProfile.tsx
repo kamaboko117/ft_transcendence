@@ -121,7 +121,8 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
                 setErrorCode(res.status);
             }).then((res: userInfo) => {
 				console.log(res);
-                setavatar_path(res?.avatarPath);
+				if (res && res.avatarPath)
+                	setavatar_path(res.avatarPath);
 				/*
 				setUsername(res?.username);
 				setVictory(res?.sstat.victory);
