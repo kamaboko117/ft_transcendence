@@ -10,8 +10,9 @@ import {
     ValidationPipe,
     Request, Res, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, NotFoundException, UnauthorizedException, HttpException, HttpStatus
 } from "@nestjs/common";
-import { CreateUserDto, BlockUnblock, UpdateUser, Username, FirstConnection } from "src/users/dto/users.dtos";
-import { UsersService } from "src/users/services/users/users.service";
+import { CreateUserDto, BlockUnblock, UpdateUser, Username, FirstConnection, Code } from "src/users/dto/users.dtos";
+//import { UsersService } from "src/users/services/users/users.service";
+import { UsersService } from "src/users/providers/users/users.service";
 import { CustomAuthGuard } from 'src/auth/auth.guard';
 import { FakeAuthGuard } from 'src/auth/fake.guard';
 import { JwtGuard, Public } from 'src/auth/jwt.guard';
@@ -241,6 +242,14 @@ export class UsersController {
         return (getBlFr);
     }
 
+    @Get('get-username')
+    async getUsername(@Request() req: any) {
+        const user: TokenUser = req.user;
+        const ret_user = await this.userService.findUserByName(user.username);
+        return (ret_user);
+    }
+
+
     /* 0 = user not found */
     /* 1 = already added in friend list */
     /* 2 = user is self */
@@ -347,4 +356,6 @@ export class UsersController {
     createUsers(@Body() createUserDto: CreateUserDto) {
         return this.userService.createUser(createUserDto);
     }
+
+    
 }
