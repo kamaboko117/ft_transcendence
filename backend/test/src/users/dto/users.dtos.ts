@@ -29,6 +29,11 @@ export class CreateUserDto {
     token: string;
 }
 
+export class Code {
+    @IsNumber()
+    code: number;
+}
+
 /*class Fa {
     @IsBoolean()
     fa: boolean;
