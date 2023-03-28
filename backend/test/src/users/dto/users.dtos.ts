@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty, IsNumber, MinLength,
     IsString, IsBoolean, IsDefined,
-    IsObject, ValidateNested } from "class-validator";
+    IsObject, ValidateNested, MaxLength } from "class-validator";
 import { Type } from 'class-transformer';
 
 export class Username {
