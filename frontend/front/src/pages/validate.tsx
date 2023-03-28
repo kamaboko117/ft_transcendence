@@ -4,25 +4,26 @@ import { useContext } from "react";
 import UserItem from "../components/Users/UserItem";
 import UserContext, { UsernameSet } from "../contexts/UserContext";
 import { FetchError } from "../components/FetchError";
-import SocketContext from "../contexts/Socket";
 
-const CheckFa = (props: {fa: boolean | undefined, username: string}) => {
+const CheckFa = (props: { fa: boolean | undefined, username: string, userCtx }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (props.fa === false && props.username == "") {
-      console.log("fi")
-      navigate('/first-connection');
+    if (props.userCtx.getJwt() != null && props.userCtx.getJwt() !== "") {
+      if (props.fa === false && props.username == "") {
+        console.log("fi")
+        navigate('/first-connection');
+      }
+      else if (props.fa === true) {
+        console.log("fa")
+        navigate('/fa-code');
+      }
+      else if (props.fa === false) {
+        console.log("home")
+        navigate('/');
+      }
     }
-    else if (props.fa === true) {
-      console.log("fa")
-      navigate('/fa-code');
-    }
-    else if (props.fa === false) {
-      console.log("home")
-      navigate('/');
-    }
-  }, [props.fa, props.username]);
+  }, [props.fa, props.username, props.userCtx.getJwt()]);
   return (
     <></>
   );
@@ -51,7 +52,7 @@ function ValidatePage() {
         if (response.ok)
           return (response.json())
         setErrorCode(response.status);
-      }).catch(e=>console.log(e)));
+      }).catch(e => console.log(e)));
     };
     //set load user
     getUser(code).then(res => {
@@ -82,12 +83,12 @@ function ValidatePage() {
     return (<FetchError code={errorCode} />);
   //if (typeof jwt != "undefined" && jwt != null) {
   // console.log(userCtx);
-  
+
   return (
     <div>
       <h1>Logged as</h1>
       {/*jwt && <UsernameSet jwt={String(jwt)} username={username} setUsername={setUsername} />*/}
-      {jwt && <CheckFa fa={fa} username={username} />}
+      {jwt && <CheckFa fa={fa} username={username} userCtx={userCtx} />}
     </div>
   );
   // }

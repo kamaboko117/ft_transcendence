@@ -79,7 +79,7 @@ function App() {
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
                 {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
-                width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
+                  width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <UserProfile jwt={jwt} /><PlayerApp />
               </>
@@ -88,15 +88,15 @@ function App() {
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
                 {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
-                width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
+                  width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <FriendList jwt={jwt} /><PlayerApp />
               </>} />
             <Route path="/blackList" element={
               <>
-                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
                 {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
-                width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
+                  width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <BlackList jwt={jwt} /><PlayerApp />
               </>
@@ -105,7 +105,7 @@ function App() {
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
                 {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
-                width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
+                  width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <Setting /><PlayerApp />
               </>
@@ -118,9 +118,9 @@ function App() {
             } />
             <Route path="/fake-login" element={
               <>
-                {jwt  && <UsernameSet jwt={String(jwt)} username={username} setUsername={setUsername} />}
+                {jwt && <UsernameSet jwt={String(jwt)} username={username} setUsername={setUsername} />}
                 {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
-                width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
+                  width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <FakeLogin />
                 <PlayerApp />
@@ -141,7 +141,7 @@ function App() {
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
                 {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
-                width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
+                  width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <ListChannel jwt={jwt} /><PlayerApp />
               </>
@@ -152,7 +152,7 @@ function App() {
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
                 {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
-                width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
+                  width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <PlayPage jwt={jwt} /><PlayerApp />
               </>
@@ -161,7 +161,7 @@ function App() {
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
                 {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
-                width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
+                  width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <MatchmakingPage /><PlayerApp />
               </>

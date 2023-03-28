@@ -115,7 +115,7 @@ const handleSubmitBanMute = (event: React.FormEvent<HTMLFormElement>,
         channelId: object.channelId,
         action: object.action,
         jwt: object.jwt,
-        userId: object.userId,
+        userId: Number(object.userId),
         option: time
     });
     if (ref && ref.current)
@@ -196,7 +196,7 @@ const fetchKick = (event: React.MouseEvent<HTMLButtonElement>,
             headers: headerPost(object.jwt),
             body: JSON.stringify({
                 id: object.channelId, action: object.action,
-                option: object.option, userId: object.userId
+                option: object.option, userId: Number(object.userId)
             })
         }).catch(e => console.log(e));
     }

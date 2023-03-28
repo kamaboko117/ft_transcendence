@@ -150,7 +150,7 @@ export class ChatController {
 
     /* Post part */
     /* Create new public chat and return them by Name */
-    /* admin pas fait */
+    /* (?: mean non-group (optionnal)*/
     @UseGuards(JwtGuard)
     @Post('new-public')
     async postNewPublicChat(@Request() req: any,
@@ -158,14 +158,23 @@ export class ChatController {
         const user: TokenUser = req.user;
         const channel: undefined | DbChat = await this.chatGateway.getChannelByName(chat.name);
         let err: string[] = [];
+        const regex = /^[\wàâéêèäÉÊÈÇç]+(?: [\wàâéêèäÉÊÈÇç]+)*$/;
+        const resultRegex = regex.exec(chat.name);
+
         if ((chat.accesstype != '0' && chat.accesstype != '1'))
             err.push("Illegal access type");
         if (chat.name.length === 0)
             err.push("Chat name must not be empty.");
         else if (chat.name == chat.password)
             err.push("Password and chat name can't be the same.");
-        if (channel != null)//   || typeof channel === "undefined")
+        if (channel != null)
             err.push("Channel already exist.");
+        if (chat.name.length > 0 && chat.name.length < 5)
+            err.push("Channel name too short.");
+        if (chat.name.length > 0 && 100 < chat.name.length)
+            err.push("Channel name too long.");
+        if (chat.name.length > 0 && !resultRegex)
+            err.push("Channel name format is wrong.");
         if (err.length > 0)
             return (err);
         const getAll = await this.chatGateway.getAllPublic()
@@ -181,9 +190,8 @@ export class ChatController {
         return (this.chatGateway.createChat(chat, len, { idUser: user.userID, username: findUser?.username }));
     }
 
-    /* Create new private chat and return them by Name */
-    /* admin pas fait */
-    /*
+    /* Create new private chat and return them by Name
+      (?: mean non-group (optionnal)
         https://nodejs.org/api/crypto.html#cryptorandombytessize-callback
     */
     @UseGuards(JwtGuard)
@@ -193,14 +201,23 @@ export class ChatController {
         const user: TokenUser = req.user;
         const channel: undefined | DbChat = await this.chatGateway.getChannelByName(chat.name);
         let err: string[] = [];
+        const regex = /^[\wàâéêèäÉÊÈÇç]+(?: [\wàâéêèäÉÊÈÇç]+)*$/;
+        const resultRegex = regex.exec(chat.name);
+
         if ((chat.accesstype != '2' && chat.accesstype != '3'))
             err.push("Illegal access type");
         if (chat.name.length === 0)
             err.push("Chat name must not be empty.");
         else if (chat.name == chat.password)
             err.push("Password and chat name can't be the same.");
-        if (channel != null || typeof channel === "undefined")
+        if (chat.name.length > 0 && chat.name.length < 5)
+            err.push("Channel name too short.");
+        if (chat.name.length > 0 && 100 < chat.name.length)
+            err.push("Channel name too long.");
+        if (channel != null)
             err.push("Channel already exist.");
+        if (chat.name.length > 0 && !resultRegex)
+            err.push("Channel name format is wrong.");
         if (err.length > 0)
             return (err);
         const id: string = crypto.randomBytes(4).toString('hex');
