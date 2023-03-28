@@ -30,8 +30,10 @@ export class User {
     default: '',
   })
   username: string;
+
   @Column({ nullable: true })
   avatarPath!: string;
+  
   /* Refresh token */
   @Column({
     nullable: false,
