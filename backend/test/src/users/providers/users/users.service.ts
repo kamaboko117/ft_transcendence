@@ -94,7 +94,9 @@ export class UsersService {
                 authorization: `Bearer ${token.access_token}`
             }
         }).then(res => res.json()).catch(e => console.log(e));
-        return (res.resource_owner_id);
+        if (res)
+            return (res.resource_owner_id);
+        return (0);
     }
 
     getUsers() {
@@ -113,7 +115,7 @@ export class UsersService {
     async updateUsername(user_id: number, username: string) {
         this.userRepository.createQueryBuilder()
             .update(User)
-            .set({username: username})
+            .set({ username: username })
             .where("user_id = :id")
             .setParameters({ id: user_id })
             .execute()
@@ -125,7 +127,7 @@ export class UsersService {
 
         this.userRepository.createQueryBuilder()
             .update(User)
-            .set({fa: fa, secret_fa: secret!})
+            .set({ fa: fa, secret_fa: secret! })
             .where("user_id = :id")
             .setParameters({ id: user_id })
             .execute()
@@ -163,7 +165,7 @@ export class UsersService {
             .getOne();
         return (user);
     }
-    
+
     async findUserByIdForGuard(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
             .where('user.user_id = :user')
@@ -195,7 +197,7 @@ export class UsersService {
             .where("fl.owner_id = :ownerId")
             .andWhere("fl.focus_id = :focusId")
             .andWhere("fl.type_list = :type")
-            .setParameters({ownerId: ownerId, focusId: focusId, type: type})
+            .setParameters({ ownerId: ownerId, focusId: focusId, type: type })
             .getOne();
         return (user);
     }
@@ -240,7 +242,7 @@ export class UsersService {
             .setParameters({ focusId: focusId })
             .getRawOne();
         return (list);
-    }    
+    }
 
     getBlackFriendListBy(user_id: number) {
         const fl = this.blFrRepository.createQueryBuilder("fl").subQuery()
