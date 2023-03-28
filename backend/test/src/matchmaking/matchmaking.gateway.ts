@@ -29,6 +29,13 @@ import {
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { TokenUser } from '../chat/chat.interface';
 import { MatchMakingService } from './matchmaking.services';
+const { FifoMatchmaker } = require('matchmaking');
+
+type Match = {
+  player1id: string;
+  player2id: string;
+  status : number;
+};
 
 @WebSocketGateway({
   cors: {
@@ -44,7 +51,41 @@ export class MatchMakingGateway
     console.log('Matchmaking Gateway initialized');
   }
 
-  constructor(private readonly MMService: MatchMakingService) {}
+  private readonly MMSocket: Map<string, string>;
+  private mmQueue: { [key: string]: TokenUser[] } = {};
+  private mm = new FifoMatchmaker(this.runGame, { checkInterval: 2000 });
+  
+  runGame(players : any) {
+    console.log("Game started with:");
+    console.log(players);
+  }
+
+    /*
+  //Partie matchmaking queue in
+    @UseGuards(JwtGuard)
+  async handleConnection(client: Socket) {
+    console.log("connect client id: " + client.id);
+    const bearer = client.handshake.headers.authorization;
+    if (bearer) {
+      const user: any = await this.authService.verifyToken(bearer);
+      if (user)
+        this.mapSocket.set(client.id, user.userID);
+    }
+  }
+
+  //Partie matchmaking queue out
+  handleDisconnect(client: Socket) {
+    console.log("disconnect client id: " + client.id);
+    this.mapSocket.delete(client.id);
+  }
+}
+
+*/
+
+
+  constructor(private readonly MMService: MatchMakingService) {
+    this.MMSocket = new Map();
+  }
 
   async handleConnection(client: Socket) {
     console.log(
