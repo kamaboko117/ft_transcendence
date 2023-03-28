@@ -50,6 +50,24 @@ function ChangeHandler(event: ChangeEvent<HTMLInputElement>
 	}
 }
 
+function checkUsername(event: FormEvent<HTMLFormElement>, username: string,
+	setPushUsername: React.Dispatch<React.SetStateAction<string | null> >,
+	fileSet: File | undefined, FA: boolean, jwt: string | null,
+	setErrorCode: React.Dispatch<React.SetStateAction<number> >) {
+		const formData = new FormData();
+		formData.append('username', username);
+		console.log(fileSet);
+		fetch('http://' + location.host + '/api/users/get-username',
+		{ headers: header(jwt) }
+		).then(res => {
+			if (res.ok) {
+				console.log("Username find");
+			} else {
+				update(event, username, setPushUsername, fileSet, FA, jwt, setErrorCode);
+			}
+		})
+}
+
 function update(event: FormEvent<HTMLFormElement>, username: string,
 	setPushUsername: React.Dispatch<React.SetStateAction<string | null> >,
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
@@ -117,7 +135,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 	<section>
 		<article>
 			<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
-					update(event, username,
+					checkUsername(event, username,
 					setPushUsername, file, FA, props.jwt,
 					setErrorCode)}>
 				<label htmlFor="username">
