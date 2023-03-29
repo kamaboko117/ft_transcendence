@@ -46,12 +46,16 @@ export class UsersController {
         const user: TokenUser = req.user;
         const userDb = await this.userService.getUserFaSecret(user.userID);
 
-        if (!userDb?.username) {
+        if (!userDb || !userDb?.username) {
             throw new NotFoundException("Username not found");
         }
         if (userDb.fa === false
             || userDb.secret_fa === null || userDb.secret_fa === "")
             throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+        console.log("SET FA")
+        console.log(userDb);
+        if (userDb.fa_first_entry === true)
+            return ({ code: 3, url: null });
         const otpAuth = authenticator.keyuri(userDb.username, "ft_transcendence", userDb.secret_fa);
         const url = await toDataURL(otpAuth);
         if (url)
@@ -131,28 +135,48 @@ export class UsersController {
         ], fileIsRequired: false
     }),
     ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
-        const user: TokenUser = req.user;
+        let user: TokenUser = req.user;
         console.log(body);
         //body.fa must accept the regex
         //if regex not ok, then return NULL so no FA accepted
-        const stringRegex = /^({"fa":true})$/g;
+        const stringRegex = /^({"fa":true})$/;
         const regex = stringRegex;
         const regexRet = body.fa.match(regex);
         console.log(regexRet);
         const ret_user = await this.userService.findUserByName(body.username);
-        console.log(ret_user)
+        const ret_user2 = await this.userService.findUsersById(user.userID);
+        console.log(ret_user2)
+
         if (ret_user && ret_user.username === body.username)
-            return ({ valid: false });
+            return ({ valid: false, code: 1 });
+        if (body.username === "" && ret_user2?.fa === true && body.fa === '{"fa":true}')
+            return ({ valid: false, code: 2 });
+        if (body.username === "" && ret_user2?.fa === false && body.fa === '{"fa":false}')
+            return ({ valid: false, code: 2 });
         if (file)
             this.userService.updatePathAvatarUser(user.userID, file.path);
         if (body.username && body.username != "")
             this.userService.updateUsername(user.userID, body.username);
-        if (regexRet)
+        if (regexRet && ret_user2?.fa === false) {
+            //generate new auth secret
             this.userService.update2FA(user.userID, true, authenticator.generateSecret());
-        else
+            user.fa = true;
+            user.fa_code = "";
+        }
+        else if (!regexRet)
             this.userService.update2FA(user.userID, false, null);
+        if ((!body.username || body.username === "") && ret_user2)
+            user.username = ret_user2.username;
+        else
+            user.username = body.username;
+        console.log("decoded")
+        const access_token = await this.authService.login(user);
+        console.log("USERRR")
+        console.log(user)
+        if ((!body.username || body.username === "") && ret_user2)
+            return ({ valid: true, username: ret_user2.username, token: access_token });
         // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
-        return ({ valid: true });
+        return ({ valid: true, username: body.username, token: access_token });
     }
 
     @Public()
@@ -166,22 +190,19 @@ export class UsersController {
         ], fileIsRequired: false
     }),
     ) file: Express.Multer.File | undefined, @Body() body: FirstConnection) {
-        const user = req.user;
-        console.log(body);
+        let user = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
         if (body.username && body.username == "" || (ret_user && ret_user.username != "")) {
             return ({ valid: false, username: "" });
         }
         //body.fa must accept the regex
         //if regex not ok, then return NULL so no FA accepted
-        const stringRegex = /^({"fa":true})$/g;
+        const stringRegex = /^({"fa":true})$/;
         const regex = stringRegex;
         const regexRet = body.fa.match(regex);
-        console.log(regexRet);
         if (file)
             this.userService.updatePathAvatarUser(user.userID, file.path);
         this.userService.updateUsername(user.userID, body.username);
-        console.log(regexRet?.length)
         if (regexRet) {
             //generate new auth secret
             this.userService.update2FA(user.userID, true, authenticator.generateSecret());
