@@ -285,6 +285,7 @@ const AdminComponent = (props: AdminCompType) => {
                     props.setErrorCode(res.status)
                 })
                 .then((res) => {
+                    console.log(res)
                     if (res && res.role) {
                         setUserId(res.userId);
                         setRole(res.role);
@@ -299,7 +300,7 @@ const AdminComponent = (props: AdminCompType) => {
         if (props.chooseClassName === "userInfo userInfoClick")
             getRole();
         return (() => { })
-    }, [props.chooseClassName])
+    }, [props.chooseClassName]);
     return (
         <>
             {role && (role === "Owner" || role === "Administrator")

@@ -159,9 +159,9 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     const parentNode: HTMLElement = e.parentNode as HTMLElement;
 
     /* update userInfo state on click, from the html tree */
-    if (userInfo.username === "" || userInfo.username != name) {
+    if (e.nodeName === "SPAN"
+        && (userInfo.username === "" || userInfo.username != name)) {
         setUserId(Number(attributes[1].value));
-        console.log(attributes)
         if (attributes.length === 5)
             setUserInfo({
                 username: name,
@@ -265,7 +265,6 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
     let found: any = undefined;
     if (object)
         found = object.find(elem => Number(elem.list_user_user_id) === userInfo.id);
-    console.log(found)
     useEffect(() => {
         console.log("userinfo mount");
         if (found) {
@@ -298,8 +297,16 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
 
     const [offsetTop, setTop] = useState<number>(0);
     const chooseClassName: string = (userInfo.username != "" ? "userInfo userInfoClick" : "userInfo");
+    //const [chooseClassName, setChooseClassName] = useState<string>("userInfo");
     let i: number = 0;
     const Element = scroll.Element;
+
+    /*useEffect(() => {
+        console.log(userInfo.username)
+        //chooseClassName = (userInfo.username != "" ? "userInfo userInfoClick" : "userInfo");
+        if (userInfo.username != "")
+            setChooseClassName("userInfo userInfoClick");
+    }, [userInfo.username])*/
 
     const handleListenerClick = () => {
         setUserInfo({ username: "", role: "", id: 0, friend: null, block: null });

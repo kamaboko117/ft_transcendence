@@ -399,7 +399,6 @@ const PasswordBox = (props: Readonly<any>): JSX.Element => {
             <form onSubmit={async (e: React.FormEvent<HTMLFormElement>) => {
                 const result = await onSubmit(e, value, props.jwt, props.id, props.setErrorCode);
                 setValid(result);
-                console.log(result);
                 (valid === false) ? setError(true) : setError(false);
             }}>
                 <label>Password * :</label>
