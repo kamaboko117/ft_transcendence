@@ -80,7 +80,7 @@ async function update(event: FormEvent<HTMLFormElement>, username: string,
 	setPushUsername: React.Dispatch<React.SetStateAction<string | null>>,
 	setJwt: React.Dispatch<React.SetStateAction<string | null>>,
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
-	setErrorCode: React.Dispatch<React.SetStateAction<number>>) {
+	setErrorCode: React.Dispatch<React.SetStateAction<number>>, userCtx) {
 	event.preventDefault();
 
 	const formData = new FormData();
@@ -108,13 +108,13 @@ async function update(event: FormEvent<HTMLFormElement>, username: string,
 				setPushUsername(res.username);
 				setJwt(res.token.access_token);
 				setErrorCode(200);
+				userCtx.logoutUser();
 			}
 			else if (res.valid === false && res.code === 1)
 				setErrorCode(1);
 			else if (res.valid === false && res.code === 2)
 				setErrorCode(2);
 		}
-
 	}).catch(e => console.log(e));
 }
 
@@ -124,21 +124,13 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 	const [username, setUsername] = useState<string>("");
 	const [pushUsername, setPushUsername] = useState<string | null>(null);
 	const [FA, setFA] = useState<boolean>(false);
-	//const [avatar, setavatar] = useState<string>("");
+	const [oldFa, setOldFa] = useState<boolean>(false);
 	const [file, setFile] = useState<File | undefined>();
 	const userCtx: any = useContext(UserContext);
 	const [jwt, setJwt] = useState<null | string>(null);
-	const [load, setLoad] = useState<boolean>(false);
+	const [finish, setFinish] = useState<boolean>(false);
 	const navigate = useNavigate();
-	//check if username is not empty, if not
-	//redirect to main page
-	/*useEffect(() => {
-		userCtx.setUsername(pushUsername);
-		if (pushUsername && pushUsername != ""
-			|| props.jwt === "" || props.jwt == null)
-			navigate("/");
-	}, [props.jwt, pushUsername]);
-*/
+
 	useEffect(() => {
 		fetch('http://' + location.host + '/api/users/profile/', { headers: header(props.jwt) })
 			.then(res => {
@@ -147,19 +139,22 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 				setErrorCode(res.status);
 			}).then((res: userInfo) => {
 				console.log(res);
-				setUser(res);
-				setFA(res.fa);
+				if (res) {
+					setUser(res);
+					setFA(res.fa);
+					setOldFa(res.fa);
+				}
 			}).catch(e => console.log(e));
 	}, []);
 
-	useEffect(() => {
+	/*useEffect(() => {
 		const logout = async () => {
 			await userCtx.logoutUser();
 		}
 		if (jwt
 			&& pushUsername && pushUsername != "")
 			logout();
-	}, [jwt, pushUsername]);
+	}, [jwt]);*/
 
 	useEffect(() => {
 		const login = async () => {
@@ -169,18 +164,21 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 				username: pushUsername,
 				userId: user?.userID
 			});
-			setLoad(true);
+			setFinish(true);
 		}
 		if (!userCtx.getJwt() && jwt)
 			login();
-	}, [userCtx.getJwt()]);
+	}, [userCtx.getJwt(), jwt]);
 
 	useEffect(() => {
-		if (jwt && jwt === userCtx.getJwt() && load === true) {
-			if (FA === true && user?.fa === false)
+		if (finish === true) {
+			if (FA === true && oldFa === false)
 				navigate("/fa-activate");
+			else
+				setFinish(false);
+			setOldFa(FA);
 		}
-	}, [load]);
+	}, [finish]);
 
 	if (errorCode >= 401)
 		return (<FetchError code={errorCode} />);
@@ -190,7 +188,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 				<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
 					update(event, username,
 						setPushUsername, setJwt, file, FA, props.jwt,
-						setErrorCode)}>
+						setErrorCode, userCtx)}>
 					<label htmlFor="username">
 						Username: {(pushUsername === null ? user?.username : pushUsername)}
 					</label><br />
@@ -209,8 +207,8 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 					<input
 						type="checkbox"
 						id="twofactor"
-						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFA(prevCheck => !prevCheck)}
-						defaultChecked={user?.fa}
+						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFA(prev => !prev)}
+						checked={FA}
 					/>
 					<label htmlFor="twofactor">
 						Enable Two Factor Authentication: 2FA
