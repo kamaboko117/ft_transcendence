@@ -52,12 +52,7 @@ export class MatchMakingGateway
 
   private readonly MMSocket: Map<string, string>;
   private mmQueue: { [key: string]: TokenUser[] } = {};
-  private mm = new FifoMatchmaker(this.runGame, { checkInterval: 2000 });
-  
-  runGame(players : any) {
-    console.log("Game started with:");
-    console.log(players);
-  }
+  private mm : typeof FifoMatchmaker;
 
     /*
   //Partie matchmaking queue in
@@ -81,9 +76,16 @@ export class MatchMakingGateway
 
 */
 
-
+runGame(players : any) {
+  console.log("Game started with:");
+  console.log(players);
+}
+getKey(player: any) {
+  return player.id;
+}
   constructor() {
     this.MMSocket = new Map();
+    this.mm = new FifoMatchmaker(this.runGame, this.getKey, { checkInterval: 2000 });
   }
 
   async handleConnection(client: Socket) {
@@ -99,11 +101,16 @@ export class MatchMakingGateway
     try {
       console.log('queue in');
       const user = socket.user;
+      console.log("test");
+      let player1 = { id:20 }
+      let player2 = { id:21 }
+      this.mm.push(player1);
+      this.mm.push(player2);
 
-      if (typeof user.userID != 'number') return false;
-
+     // if (typeof user.userID != 'number') return false;
      
     } catch (error) {
+      console.log(error);
       console.log('matchmaking failed');
       this.server.to(socket.id).emit('matchmakingfailed', {
         message: socket.id,
