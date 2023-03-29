@@ -94,7 +94,9 @@ export class UsersService {
                 authorization: `Bearer ${token.access_token}`
             }
         }).then(res => res.json()).catch(e => console.log(e));
-        return (res.resource_owner_id);
+        if (res)
+            return (res.resource_owner_id);
+        return (0);
     }
 
     getUsers() {
@@ -113,18 +115,19 @@ export class UsersService {
     async updateUsername(user_id: number, username: string) {
         this.userRepository.createQueryBuilder()
             .update(User)
-            .set({username: username})
+            .set({ username: username })
             .where("user_id = :id")
             .setParameters({ id: user_id })
             .execute()
     }
 
-    async update2FA(user_id: number, fa: boolean) {
+    async update2FA(user_id: number, fa: boolean, secret: string | null) {
         console.log("in 2FA")
         console.log(fa)
+
         this.userRepository.createQueryBuilder()
             .update(User)
-            .set({fa: fa})
+            .set({ fa: fa, secret_fa: secret! })
             .where("user_id = :id")
             .setParameters({ id: user_id })
             .execute()
@@ -143,7 +146,7 @@ export class UsersService {
 
     async getUserProfile(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
-            .select(['user.username', 'user.userID', 'user.avatarPath'])
+            .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
             .addSelect(["Stat.victory", "Stat.defeat",
                 "Stat.nb_games", "Stat.level", "Stat.rank"])//ici ajout les column des inner joins
             .innerJoin('user.sstat', 'Stat')// utiliser l''alias a droite, obligatoire je crois
@@ -156,7 +159,24 @@ export class UsersService {
 
     async findUsersById(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
-            .select(['user.username', 'user.userID', 'user.avatarPath'])
+            .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
+            .where('user.user_id = :user')
+            .setParameters({ user: id })
+            .getOne();
+        return (user);
+    }
+
+    async findUserByIdForGuard(id: number) {
+        const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
+            .where('user.user_id = :user')
+            .setParameters({ user: id })
+            .getOne();
+        return (user);
+    }
+
+    async getUserFaSecret(id: number) {
+        const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
+            .select(['user.fa', 'user.secret_fa', 'user.username', 'user.fa_first_entry'])
             .where('user.user_id = :user')
             .setParameters({ user: id })
             .getOne();
@@ -165,9 +185,19 @@ export class UsersService {
 
     async findUserByName(username: string) {
         const user: User | null = await this.userRepository.createQueryBuilder("user")
-            .select(["user.userID", "user.username"])
+            .select(["user.userID", "user.username", "user.fa"])
             .where('user.username = :name')
             .setParameters({ name: username })
+            .getOne();
+        return (user);
+    }
+    /* friend black list part */
+    searchUserInList(ownerId: number, focusId: number, type: number) {
+        const user = this.blFrRepository.createQueryBuilder("fl")
+            .where("fl.owner_id = :ownerId")
+            .andWhere("fl.focus_id = :focusId")
+            .andWhere("fl.type_list = :type")
+            .setParameters({ ownerId: ownerId, focusId: focusId, type: type })
             .getOne();
         return (user);
     }
@@ -179,6 +209,38 @@ export class UsersService {
             .setParameters({ ownerId: user_id })
             .getRawMany();
 
+        return (list);
+    }
+
+    focusUserBlFr(ownerId: number, focusId: number) {
+        const fl = this.blFrRepository.createQueryBuilder("fl").subQuery()
+            .from(BlackFriendList, "fl")
+            .select(["focus_id", "type_list"])
+            .where("owner_id = :ownerId")
+            .andWhere("focus_id = :focusId")
+            .andWhere("type_list = :type1")
+        const bl = this.blFrRepository.createQueryBuilder("bl").subQuery()
+            .from(BlackFriendList, "bl")
+            .select(["focus_id", "type_list"])
+            .where("owner_id = :ownerId")
+            .andWhere("focus_id = :focusId")
+            .andWhere("type_list = :type2")
+        const list = this.blFrRepository.createQueryBuilder("a")
+            .distinct(true)
+            .select("a.focus_id AS id")
+            .addSelect("bl.type_list AS bl")
+            .addSelect("fl.type_list AS fl")
+            .addSelect("User.username")
+            .leftJoin(fl.getQuery(), "fl", "fl.focus_id = a.focus_id")
+            .setParameters({ type1: 2 })
+            .leftJoin(bl.getQuery(), "bl", "bl.focus_id = a.focus_id")
+            .setParameters({ type2: 1 })
+            .innerJoin("a.userFocus", "User")
+            .where("a.owner_id = :ownerId")
+            .setParameters({ ownerId: ownerId })
+            .andWhere("a.focus_id = :focusId")
+            .setParameters({ focusId: focusId })
+            .getRawOne();
         return (list);
     }
 
@@ -208,8 +270,10 @@ export class UsersService {
             .where("a.owner_id = :ownerId")
             .setParameters({ ownerId: user_id })
             .getRawMany();
+        console.log(list);
         return (list);
     }
+
     /* add remove friend - block unblock user part */
 
     findBlFr(ownerId: number, focusUserId: number, type: number): Promise<BlackFriendList | null> {

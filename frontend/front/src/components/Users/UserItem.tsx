@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { header } from '../FetchError';
 
 type ItemProps = {
@@ -16,15 +15,15 @@ function UserItem(props: ItemProps) {
     useEffect(() => {
         if (props.jwt) {
             fetch('http://' + location.host + '/api/users/profile/',
-                { headers: header(props.jwt) })
-                .then(res => {
-                    if (res.ok)
-                        return (res.json());
-                })
-                .then((res) => {
-                    if (res)
-                        setUsername(res.username);
-                }).catch(e=>console.log(e));
+            { headers: header(props.jwt) })
+            .then(res => {
+                if (res.ok)
+                    return (res.json());
+            })
+            .then((res) => {
+                if (res)
+                    setUsername(res.username);
+            }).catch(e=>console.log(e));
         }
     }, [props.jwt]);
     return (<div>

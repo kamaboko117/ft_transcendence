@@ -7,15 +7,13 @@ import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { useLocation } from 'react-router-dom';
 import UserContext from '../../contexts/UserContext';
+import { commandChat } from './CommandChat';
 
 type settingChat = {
-    /*render: boolean,*/
-    /*id: string,*/
     width: number,
     height: number,
     opacity: number,
     jwt: string,
-    /*setId: React.Dispatch<React.SetStateAction<string>>*/
 }
 
 type settingBox = {
@@ -58,6 +56,22 @@ type propsListChannel = {
     setPm: React.Dispatch<React.SetStateAction<listPm[]>>
 }
 
+const content_helper = "/cmd + username + option\n"
+    + "/block username\n"
+    + "/unblock username\n"
+    + "/friend username\n"
+    + "/unfriend username\n"
+    + "/invite username\n"
+    + "/profile username\n"
+
+const helper: any = {
+    user: {
+        avatarPath: null,
+        username: "Only visible by you",
+    },
+    content: content_helper,
+}
+
 const directMessage = (event: MouseEvent<HTMLButtonElement>,
     renderDirectMessage: boolean, setDisplay: any): void => {
     event.preventDefault();
@@ -66,41 +80,6 @@ const directMessage = (event: MouseEvent<HTMLButtonElement>,
         setDisplay(false)
     else
         setDisplay(true);
-}
-
-/* Post msg */
-const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
-    usrSocket: any, obj: any,
-    ref: any, setMsg: any,
-    setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,
-    setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
-    e.preventDefault();
-    usrSocket.emit('sendMsg', obj, (res) => {
-        if (res.room === obj.id && obj.idBox === obj.id)
-            setLstMsgChat((lstMsg) => [...lstMsg, res]);
-        if (res.room === obj.id)
-            setLstMsgPm((lstMsg) => [...lstMsg, res]);
-    })
-    setMsg("");
-    ref.current.value = "";
-}
-
-const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
-    usrSocket: any, obj: any,
-    ref: any, setMsg: any,
-    setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,
-    setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>) => {
-    if (e.key === "Enter" && e.shiftKey === false) {
-        e.preventDefault();
-        usrSocket.emit('sendMsg', obj, (res) => {
-            if (res.room === obj.id && obj.idBox === obj.id)
-                setLstMsgChat((lstMsg) => [...lstMsg, res]);
-            if (res.room === obj.id)
-                setLstMsgPm((lstMsg) => [...lstMsg, res]);
-        })
-        setMsg("");
-        ref.current.value = "";
-    }
 }
 
 const Button = () => {
@@ -117,6 +96,12 @@ const Button = () => {
 }
 
 const handleSubmitPmUser = (e: React.FormEvent<HTMLFormElement>, user: string, jwt: string,
+    listPm: Array<{
+        chatid: string,
+        user: {
+            username: string
+        },
+    }>,
     setId: React.Dispatch<React.SetStateAction<string>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     setPm: React.Dispatch<React.SetStateAction<listPm[]>>) => {
@@ -129,6 +114,7 @@ const handleSubmitPmUser = (e: React.FormEvent<HTMLFormElement>, user: string, j
                 return (res.json());
             setErrorCode(res.status);
         }).then((res: {
+            valid: boolean,
             channel_id: string, listPm: {
                 chatid: string,
                 user: {
@@ -136,9 +122,15 @@ const handleSubmitPmUser = (e: React.FormEvent<HTMLFormElement>, user: string, j
                 },
             }
         }) => {
-            if (res) {
+            if (res && res.valid === true) {
                 setId(res.channel_id);
-                setPm((listPm) => [...listPm, res.listPm]);
+                let found: any = undefined;
+                if (listPm) {
+                    found = listPm.find(elem =>
+                        elem.chatid === res.channel_id);
+                }
+                if (typeof found == "undefined")
+                    setPm((listPm) => [...listPm, res.listPm]);
             }
 
         }).catch(e => console.log(e));
@@ -160,7 +152,7 @@ const BoxPmUser = (props: {
 
     return (
         <form className='formPm' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
-            handleSubmitPmUser(e, user, props.jwt,
+            handleSubmitPmUser(e, user, props.jwt, props.listPm,
                 props.setId, props.setErrorCode, props.setPm/*, props.listPm*/)}>
             <input type="text" placeholder='Direct message a user' name="user"
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -213,6 +205,99 @@ const ListDiscussion = (props: propsListChannel) => {
     </div>
     );
 }
+
+type typePostMsg = {
+    id, msg,
+    usrSocket, idBox, isPrivate,
+    setMsg,
+    setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,
+    setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+}
+
+const PostMsg = (props: typePostMsg) => {
+    const refElem = useRef(null);
+    const { lstUserGlobal, lstUserChat, setLstMsgChat,
+        setLstMsgPm, setLstUserGlobal,
+        setLstUserChat } = useContext(ContextDisplayChannel);
+    const userCtx: any = useContext(UserContext);
+    let jwt = userCtx.getJwt();
+    /* Post msg */
+    const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
+        obj: any, ref: any) => {
+        e.preventDefault();
+
+        if (obj.content && obj.content === "/help") {
+            console.log("hh")
+            setLstMsgPm((lstMsg) => [...lstMsg, helper]);
+        }
+        else if (obj.content && obj.content[0] === '/')
+            commandChat(jwt, obj, props.setErrorCode,
+                lstUserGlobal, lstUserChat, setLstUserGlobal,
+                setLstUserChat);
+        else {
+            props.usrSocket.emit('sendMsg', obj, (res) => {
+                if (res.room === obj.id && obj.idBox === obj.id)
+                    setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                if (res.room === obj.id)
+                    setLstMsgPm((lstMsg) => [...lstMsg, res]);
+            })
+        }
+        props.setMsg("");
+        ref.current.value = "";
+    }
+
+    const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
+        obj: any, ref: any) => {
+        if (e.key === "Enter" && e.shiftKey === false) {
+            e.preventDefault();
+            if (obj.content && obj.content === "/help") {
+                console.log("hh")
+                setLstMsgPm((lstMsg) => [...lstMsg, helper]);
+            }
+            else if (obj.content && obj.content[0] === '/') {
+                commandChat(jwt, obj, props.setErrorCode,
+                    lstUserGlobal, lstUserChat, setLstUserGlobal,
+                    setLstUserChat);
+            } else {
+                props.usrSocket.emit('sendMsg', obj, (res) => {
+                    if (res.room === obj.id && obj.idBox === obj.id)
+                        setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                    if (res.room === obj.id)
+                        setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                })
+            }
+            props.setMsg("");
+            ref.current.value = "";
+        }
+    }
+    return (
+        <div className='containerPost'>
+            <textarea ref={refElem} id="submitArea"
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => props.setMsg(e.currentTarget.value)}
+                onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
+                    handleSubmitArea(e,
+                        {
+                            id: props.id,
+                            idBox: props.idBox,
+                            content: props.msg,
+                            isPm: props.isPrivate,
+                        }, refElem
+                    )}
+                className="chatBox" name="msg"></textarea>
+            <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmitButton(e,
+                {
+                    id: props.id,
+                    idBox: props.idBox,
+                    content: props.msg,
+                    isPm: props.isPrivate,
+                }, refElem)}
+            >Go</button>
+            <Button />
+        </div>
+    );
+}
+
 /* getSecondPartRegex is url id */
 const DiscussionBox = (props: {
     id: string,
@@ -231,7 +316,7 @@ const DiscussionBox = (props: {
         getSecondPartRegex = getLocation.replace(stringRegex, "");
     }
     const userCtx: any = useContext(UserContext);
-    const refElem = useRef(null);
+    //const refElem = useRef(null);
     const { usrSocket } = useContext(SocketContext);
     const [online, setOnline] = useState<undefined | boolean | string>(undefined)
     useEffect(() => {
@@ -319,7 +404,7 @@ const DiscussionBox = (props: {
         online, usrSocket]);
     useEffect(() => {
         usrSocket?.on("sendBackMsg2", (res: any) => {
-            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id);
+            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id && elem.bl === 1);
             if (!found) {
                 if (res.room === props.id)
                     setLstMsgPm((lstMsg) => [...lstMsg, res]);
@@ -337,31 +422,10 @@ const DiscussionBox = (props: {
         return (<article className='containerDiscussionBox'><span className='fullBox'>Connecting to chat...</span><Button /></article>)
     return (<div className='containerDiscussionBox'>
         <ListMsg lstMsg={lstMsgPm} />
-        <div className='containerPost'>
-            <textarea ref={refElem} id="submitArea"
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMsg(e.currentTarget.value)}
-                onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
-                    handleSubmitArea(e,
-                        usrSocket, {
-                        id: props.id,
-                        idBox: getSecondPartRegex,
-                        content: msg,
-                        isPm: props.isPrivate,
-                    },
-                        refElem,
-                        setMsg, setLstMsgChat, setLstMsgPm
-                    )}
-                className="chatBox" name="msg"></textarea>
-            <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmitButton(e,
-                usrSocket, {
-                id: props.id,
-                idBox: getSecondPartRegex,
-                content: msg,
-                isPm: props.isPrivate,
-            }, refElem, setMsg, setLstMsgChat, setLstMsgPm)}
-            >Go</button>
-            <Button />
-        </div>
+        <PostMsg id={props.id} usrSocket={usrSocket} idBox={getSecondPartRegex} msg={msg}
+            isPrivate={props.isPrivate} setMsg={setMsg}
+            setErrorCode={props.setErrorCode}
+            setLstMsgChat={setLstMsgChat} setLstMsgPm={setLstMsgPm} />
         <LoadUserGlobal jwt={props.jwt} />
     </div>);
 }
@@ -430,7 +494,7 @@ const UnfoldDirectMessage = (props: settingChat) => {
     const { renderDirectMessage, id, setId } = useContext(ContextDisplayChannel);
     const [errorCode, setErrorCode] = useState<number>(200);
 
-    if (errorCode >= 400) // a placer devant fonctions asynchrones semblerait t'il, le composant react se recharge
+    if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
     if (renderDirectMessage === false || typeof id === "undefined")
         return <FoldDirectMessage

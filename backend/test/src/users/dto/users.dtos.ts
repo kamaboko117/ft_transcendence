@@ -1,7 +1,12 @@
 import { IsEmail, IsNotEmpty, IsNumber, MinLength,
     IsString, IsBoolean, IsDefined,
-    IsObject, ValidateNested } from "class-validator";
+    IsObject, ValidateNested, MaxLength } from "class-validator";
 import { Type } from 'class-transformer';
+
+export class Username {
+    @IsString()
+    username: string
+}
 
 export class BlockUnblock {
     @IsNumber()
@@ -24,12 +29,28 @@ export class CreateUserDto {
     token: string;
 }
 
+export class Code {
+    @IsNumber()
+    code: number;
+}
+
 /*class Fa {
     @IsBoolean()
     fa: boolean;
 }*/
 
 export class UpdateUser {
+	@MaxLength(24)
+    @IsString()
+    username: string;
+
+    @IsNotEmpty()
+    @IsString()
+    fa: string;
+}
+
+export class FirstConnection {
+	@MaxLength(24)
     @IsNotEmpty()
     @IsString()
     username: string;
@@ -37,5 +58,4 @@ export class UpdateUser {
     @IsNotEmpty()
     @IsString()
     fa: string;
-
 }

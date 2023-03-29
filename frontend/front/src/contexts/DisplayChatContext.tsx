@@ -17,6 +17,7 @@ export type typeListUserGlobal = {
         id: number,
         fl: number | null,
         bl: number | null,
+        User_username: string,
     }>
 }
 
@@ -58,22 +59,25 @@ const ContextDisplayChannel = React.createContext<contextDisplay>({
 
 export const LoadUserGlobal = (props: { jwt: string }) => {
     const { setLstUserGlobal } = useContext(ContextDisplayChannel);
+    const [errorCode, setErrorCode] = useState<number>(200);
 
     useEffect(() => {
         fetch('http://' + location.host + '/api/users/fr-bl-list', { headers: header(props.jwt) })
             .then(res => {
                 if (res.ok)
                     return (res.json());
+                setErrorCode(res.status);
             }).then(res => setLstUserGlobal(res));
-        return (() => { setLstUserGlobal([]) });
+        return (() => { });
     }, [props.jwt]);
-    return (<></>);
+    return (<>{errorCode && errorCode >= 400 && <FetchError code={errorCode} />}</>);
 }
 
 type typeFlBl = {
     id: number,
     fl: number | null,
-    bl: number | null
+    bl: number | null,
+    User_username: string,
 }
 
 export const updateBlackFriendList = (
