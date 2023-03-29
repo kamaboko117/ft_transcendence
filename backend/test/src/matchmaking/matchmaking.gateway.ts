@@ -28,7 +28,6 @@ import {
 } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { TokenUser } from '../chat/chat.interface';
-import { MatchMakingService } from './matchmaking.services';
 const { FifoMatchmaker } = require('matchmaking');
 
 type Match = {
@@ -83,7 +82,7 @@ export class MatchMakingGateway
 */
 
 
-  constructor(private readonly MMService: MatchMakingService) {
+  constructor() {
     this.MMSocket = new Map();
   }
 
@@ -103,7 +102,7 @@ export class MatchMakingGateway
 
       if (typeof user.userID != 'number') return false;
 
-      this.MMService.queuein(user, socket, this.server);
+     
     } catch (error) {
       console.log('matchmaking failed');
       this.server.to(socket.id).emit('matchmakingfailed', {
@@ -122,7 +121,6 @@ export class MatchMakingGateway
 
       if (typeof user.userID != 'number') return false;
 
-      this.MMService.queueout(user);
     } catch (error) {
       console.log('leaving queue failed');
       this.server.to(socket.id).emit('queueoutfailed', {
@@ -139,6 +137,7 @@ export class MatchMakingGateway
       console.log('accept match');
       const user = socket.user;
       // accepting matchmaking match after queue found a match
+
     } catch (error) {
       console.log('accept match failed');
       this.server.to(socket.id).emit('acceptMMmatchFailed', {
@@ -155,6 +154,7 @@ export class MatchMakingGateway
       console.log('decline match');
       const user = socket.user;
       // refusing matchmaking match after queue found a match
+
     } catch (error) {
       console.log('decline match failed');
       this.server.to(socket.id).emit('declineMMmatchFailed', {

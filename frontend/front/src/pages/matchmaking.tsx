@@ -69,6 +69,7 @@ export default function MatchmakingPage() {
   }
   
   const stopFindingMatch = () => {
+    console.log("stop finding match");
     usrSocket?.emit("queueout");
   }
 
@@ -98,6 +99,11 @@ export default function MatchmakingPage() {
     console.log(res);
 })
 
+usrSocket?.on("foundmatch", (res: any) => {
+  openAlert();
+  console.log(res);
+})
+
 usrSocket?.on("acceptMMmatchFailed", (res: any) => {
   console.log(res);
 })
@@ -118,13 +124,24 @@ usrSocket?.on("queueoutfailed", (res: any) => {
     usrSocket?.off('declineMMmatchFailed');
     usrSocket?.off('queueoutfailed');
     usrSocket?.off('queueoutfailed');
+    usrSocket?.off('foundmatch');
 
   })
   }, [usrSocket]);
 
-  const startMatching = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const startMatching = e => {
+    if (e.detail > 1) //prevent double click to mess with events, only allows single proper clicks
+      return;
     e.preventDefault();
+
+    if (Queue) 
+    {
+      stopFindingMatch();
+      enterQueue(false); //resets button&spinner
+      return;
+    }
     enterQueue(true);
+  
     try {
       findMatch();
     } catch (e) {
@@ -137,6 +154,8 @@ usrSocket?.on("queueoutfailed", (res: any) => {
         duration: 10000,
       });
       enterQueue(false);
+      console.log("end startmaztching");
+
     }
   };
   //In both cases, an alert is supposed to show up and it's dismissed
@@ -159,7 +178,7 @@ usrSocket?.on("queueoutfailed", (res: any) => {
     <div className="matchmakingPage">
       <Button onClick={startMatching}>
         <Flex alignItems={"center"}>
-          <Box>{Queue ? "Finding a worthy challenger..." : "Play Pong!"}</Box>
+          <Box>{Queue ? "Finding a worthy challenger... Click again to cancel" : "Play Pong!"}</Box>
           {Queue && (
             <Box>
               <Spinner
