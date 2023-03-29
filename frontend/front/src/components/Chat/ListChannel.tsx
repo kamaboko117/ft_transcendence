@@ -88,7 +88,7 @@ const OpenPrivateChat = (props: { jwt: string }) => {
             </label>
             <input type="submit" value="Join channel" />
         </form>
-        {err === true && <p>No channel found with this identifier.</p>}
+        {err === true && <p className="channel">No channel found with this identifier.</p>}
     </>);
 }
 
@@ -241,10 +241,11 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     this.setState({ hasError: true, listError: res });
                 }
                 else {
+                    console.log(res)
                     this.setState({
                         hasError: false, listError: [],
                         listChannelPrivate: [...this.state.listChannelPrivate, res],
-                        privateIdChannel: res.id
+                        privateIdChannel: res.channel_id
                     });
                 }
             }).catch(e => console.log(e));
@@ -327,6 +328,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             </article>
             <article className='bottom'>
                 <form onSubmit={this.onSubmit} className="channel">
+                    <label>Create private or public channel</label>
                     <input type="text" onChange={this.onChange}
                         placeholder='Enter channel name' name="channelName" />
                     <label><input type="radio"
@@ -340,7 +342,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     <input type="submit" onChange={this.onChange} value="Add Channel" />
                 </form>
                 {this.props.jwt && <OpenPrivateChat jwt={this.props.jwt} />}
-                {<div className='channel-id'><label>New private channel ID</label>
+                {this.state.privateIdChannel && <div className='channel-id'><label>New private channel ID : </label>
                     <span style={{ color: "#FA6405" }}>
                         {this.state.privateIdChannel}
                     </span>
