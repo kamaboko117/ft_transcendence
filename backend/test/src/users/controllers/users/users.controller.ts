@@ -35,7 +35,8 @@ export class UsersController {
     }
 
     @Get("id/:id")
-    findUsersById(@Param("id", ParseIntPipe) id: number) {
+    findUsersById(@Param(":id", ParseIntPipe) id: number) {
+        console.log("id/id");
         return this.userService.findUsersById(id);
     }
 
