@@ -50,23 +50,32 @@ function ChangeHandler(event: ChangeEvent<HTMLInputElement>
 	}
 }
 
-function checkUsername(event: FormEvent<HTMLFormElement>, username: string,
+/*function checkUsername(event: FormEvent<HTMLFormElement>, username: string,
 	setPushUsername: React.Dispatch<React.SetStateAction<string | null> >,
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number> >) {
+		event.preventDefault();
 		const formData = new FormData();
 		formData.append('username', username);
 		console.log(fileSet);
 		fetch('http://' + location.host + '/api/users/get-username',
 		{ headers: header(jwt) }
-		).then(res => {
-			if (res.ok) {
+		)
+		.then(res => {
+			console.log(res);
+			if (res.ok)
+				return (res.json());
+		})
+		.then(res => {
+			console.log(res)
+			if ()
+			*//*if (res.ok) {
 				console.log("Username find");
 			} else {
 				update(event, username, setPushUsername, fileSet, FA, jwt, setErrorCode);
-			}
-		})
-}
+			}*/
+		/*})
+}*/
 
 function update(event: FormEvent<HTMLFormElement>, username: string,
 	setPushUsername: React.Dispatch<React.SetStateAction<string | null> >,
@@ -92,8 +101,15 @@ function update(event: FormEvent<HTMLFormElement>, username: string,
 			return (res.json());
 		setErrorCode(res.status);
 	}).then(res => {
-		if (res && res.valid === true)
-			setPushUsername(res.username)
+		if (res) {
+			if (res.valid === true) {
+				setPushUsername(res.username);
+				setErrorCode(200);
+			}
+			else
+				setErrorCode(1);
+		}
+		
 	}).catch(e => console.log(e));
 }
 
@@ -135,7 +151,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 	<section>
 		<article>
 			<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
-					checkUsername(event, username,
+					update(event, username,
 					setPushUsername, file, FA, props.jwt,
 					setErrorCode)}>
 				<label htmlFor="username">
@@ -164,6 +180,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 				</label><br/><br/>
 				<input type="submit" value="Submit" />
 			</form>
+			{errorCode === 1 && <p style={{color: "red"}}>Username is already used.</p>}
 		</article>
 	</section>);
 }

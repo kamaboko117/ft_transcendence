@@ -60,6 +60,7 @@ export class ChatController {
         return (channel);
     }
 
+    /* find and create if needed a private message */
     async findPm(user_id: number, id: string): Promise<string> {
         await this.chatGateway.findDuplicateAndDelete(String(user_id));
         await this.chatGateway.findDuplicateAndDelete(id);
@@ -77,22 +78,33 @@ export class ChatController {
     @Get('find-pm-username')
     async openPrivateMessageByUsername(@Request() req: any,
         @Query('username') username: Readonly<string>): Promise<{
+            valid: boolean,
             channel_id: string, listPm: {
                 chatid: string,
                 user: {
                     username: string
                 },
             }
-        } | null> {
+        }> {
         const tokenUser: TokenUser = req.user;
+        const error = {
+            valid: false,
+            channel_id: "",
+            listPm: {
+                chatid: "", user: { username: "" }
+            }
+        }
 
         if (username === "" || typeof username === "undefined")
-            return (null);
+            return (error);
         const user: User | null = await this.userService.findUserByName(username);
         if (!user || tokenUser.userID === Number(user.userID))
-            return (null);
+            return (error);
         const channel_id = await this.findPm(tokenUser.userID, String(user.userID));
+        console.log("CHANNEL FIND ID")
+        console.log(channel_id);
         return ({
+            valid: true,
             channel_id: channel_id,
             listPm: {
                 chatid: channel_id, user: { username: user.username }
@@ -158,7 +170,7 @@ export class ChatController {
             return (err);
         const getAll = await this.chatGateway.getAllPublic()
         const len: string = getAll.length.toString();
-        let salt = Number(process.env.CHAT_SALT)
+        const salt = Number(process.env.CHAT_SALT);
         if (chat.accesstype != '0' || typeof getAll == undefined)
             throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
         if (chat.password != '') {
@@ -192,7 +204,7 @@ export class ChatController {
         if (err.length > 0)
             return (err);
         const id: string = crypto.randomBytes(4).toString('hex');
-        let salt = Number(process.env.CHAT_SALT)
+        const salt = Number(process.env.CHAT_SALT);
         if (chat.password != '') {
             chat.accesstype = '3';
             chat.password = bcrypt.hashSync(chat.password, salt);

@@ -36,6 +36,14 @@ table {
     border-collapse: collapse;
 }
 
+table.left>tbody {
+    word-break: break-word;
+}
+
+table.right>tbody {
+    word-break: break-word;
+}
+
 tr {
     background-color: firebrick;
 }
@@ -50,8 +58,16 @@ td {
 }
 
 tr:hover {
-    cursor: pointer;
+
     opacity: 0.9;
+}
+
+table.left>thead {
+    width: 100%;
+}
+
+table.right>thead {
+    width: 100%;
 }
 
 input[type="submit"] {
@@ -63,12 +79,11 @@ input[type="submit"] {
     padding: 1em;
     padding-top: 0.6em;
     padding-bottom: 0.6em;
-    margin-left: 10px;
+    /*margin-left: 10px;*/
 }
 
 input[type="radio"] {
-    margin-left: 10px;
-    margin-right: 12px;
+    margin: 0;
 }
 
 /* TABLET VIEW */
@@ -119,6 +134,10 @@ input[type="radio"] {
         display: flex;
         flex-flow: row wrap;
         justify-content: space-around;
+    }
+
+    table.right {
+        margin-top: 15px;
     }
 
     input {
