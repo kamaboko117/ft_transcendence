@@ -55,8 +55,10 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
     type: number,
     userInfo: typeUserInfo,
     setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
-    lstUserGlobal: { id: number, fl: number | null,
-        bl: number | null, User_username: string }[],
+    lstUserGlobal: {
+        id: number, fl: number | null,
+        bl: number | null, User_username: string
+    }[],
     setLstUserGlobal: React.Dispatch<React.SetStateAction<{
         id: number, fl: number | null,
         bl: number | null, User_username: string
@@ -157,15 +159,16 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     const parentNode: HTMLElement = e.parentNode as HTMLElement;
 
     /* update userInfo state on click, from the html tree */
-    if (userInfo.username === "" || userInfo.username != name) {
-        setUserId(Number(attributes[0].value));
-        if (attributes.length === 4)
+    if (e.nodeName === "SPAN"
+        && (userInfo.username === "" || userInfo.username != name)) {
+        setUserId(Number(attributes[1].value));
+        if (attributes.length === 5)
             setUserInfo({
                 username: name,
-                role: attributes[1].value,
-                id: Number(attributes[0].value),
-                friend: Number(attributes[2].value),
-                block: Number(attributes[3].value)
+                role: attributes[2].value,
+                id: Number(attributes[1].value),
+                friend: Number(attributes[3].value),
+                block: Number(attributes[4].value)
             });
         else
             setUserInfo({ username: name, role: "", id: 0, block: null, friend: null });
@@ -182,17 +185,17 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     1 === online
     2 === in game
 */
-export const StatusUser = (props: {userId: number, jwt: string}) => {
+export const StatusUser = (props: { userId: number, jwt: string }) => {
     const { usrSocket } = useContext(SocketContext);
     const [status, setStatus] = useState<number>(0);
     useEffect(() => {
         //emit ask user connecté/ig sur map, puis return reponse
         //.on les deconnexions, co, in 
-        usrSocket?.emit("status", { userId: props.userId }, (res: {code: number}) => {
+        usrSocket?.emit("status", { userId: props.userId }, (res: { code: number }) => {
             if (res)
                 setStatus(res.code);
         });
-        usrSocket?.on('currentStatus', (res: {code: number}) => {
+        usrSocket?.on('currentStatus', (res: { code: number }) => {
             if (res)
                 setStatus(res.code);
         })
@@ -201,24 +204,24 @@ export const StatusUser = (props: {userId: number, jwt: string}) => {
         })
     }, [props.userId, props.jwt]);
     return (<>
-    {
-        status === 0 && <div>
-            <div style={{width: "20px", backgroundColor: "grey"}}>
-                </div><span style={{flex: "1"}}>Offline</span>
+        {
+            status === 0 && <div>
+                <div style={{ width: "20px", backgroundColor: "grey" }}>
+                </div><span style={{ flex: "1" }}>Offline</span>
             </div>
-    }
-    {
-        status === 1 && <div>
-            <div style={{width: "20px", backgroundColor: "green"}}>
-                </div><span style={{flex: "1"}}>Online</span>
+        }
+        {
+            status === 1 && <div>
+                <div style={{ width: "20px", backgroundColor: "green" }}>
+                </div><span style={{ flex: "1" }}>Online</span>
             </div>
-    }
-    {
-        status === 2 && <div>
-            <div style={{width: "20px", backgroundColor: "crimson"}}>
-                </div><span style={{flex: "1"}}>In game</span>
+        }
+        {
+            status === 2 && <div>
+                <div style={{ width: "20px", backgroundColor: "crimson" }}>
+                </div><span style={{ flex: "1" }}>In game</span>
             </div>
-    }
+        }
     </>);
 }
 
@@ -226,7 +229,7 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
     const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
 
     return (<>
-        <StatusUser userId={props.userInfo.id} jwt={props.jwt} />
+        <StatusUser jwt={props.jwt} userId={props.userInfo.id} />
         <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
             listHandle(e, props.jwt,
                 props.userInfo.id, props.setErrorCode,
@@ -294,8 +297,16 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
 
     const [offsetTop, setTop] = useState<number>(0);
     const chooseClassName: string = (userInfo.username != "" ? "userInfo userInfoClick" : "userInfo");
+    //const [chooseClassName, setChooseClassName] = useState<string>("userInfo");
     let i: number = 0;
     const Element = scroll.Element;
+
+    /*useEffect(() => {
+        console.log(userInfo.username)
+        //chooseClassName = (userInfo.username != "" ? "userInfo userInfoClick" : "userInfo");
+        if (userInfo.username != "")
+            setChooseClassName("userInfo userInfoClick");
+    }, [userInfo.username])*/
 
     const handleListenerClick = () => {
         setUserInfo({ username: "", role: "", id: 0, friend: null, block: null });
@@ -326,7 +337,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
                     setUserId, setTop)}>
                 {props.listUser &&
                     props.listUser.map((usr) => (
-                        <span data-user-id={usr.list_user_user_id}
+                        <span className='user' data-user-id={usr.list_user_user_id}
                             data-role={(usr.list_user_role == null ? "" : usr.list_user_role)}
                             data-friend={(usr.fl == null ? "" : usr.fl)}
                             data-block={(usr.bl == null ? "" : usr.bl)}
@@ -387,7 +398,7 @@ const ListUserChat = (props: {
             usrSocket?.off("updateListChat");
         });
     }, [/*JSON.stringify(lstUserChat),*/ /*JSON.stringify(lstUserPm)*/, props.id, usrSocket]);
-    
+
     if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
     return (

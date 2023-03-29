@@ -6,17 +6,19 @@
     justify-content: center;
 }
 
-.left {
+article.left {
     display: inline-flex;
     order: 2;
     align-content: center;
     align-items: flex-start;
+    justify-content: space-evenly;
     flex-grow: 1;
     width: 80%;
 }
 
 .bottom {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: baseline;
     order: 3;
@@ -33,15 +35,42 @@ h1 {
 }
 
 table {
+    display: table;
     border-collapse: collapse;
 }
 
+table.left {
+    display: table;
+    max-width: 640px;
+}
+
+table.right {
+    display: table;
+    max-width: 640px;
+}
+
+table.left>thead {
+    width: 100%;
+}
+
+table.right>thead {
+    width: 100%;
+}
+
 table.left>tbody {
-    word-break: break-word;
+    word-break: break-all;
 }
 
 table.right>tbody {
-    word-break: break-word;
+    word-break: break-all;
+}
+
+.f-case {
+    width: 60%;
+}
+
+.s-case {
+    width: 20%;
 }
 
 tr {
@@ -52,22 +81,15 @@ th {
     background-color: crimson;
 }
 
+/*
 th,
 td {
     padding-left: 10px;
-}
+}*/
 
 tr:hover {
 
     opacity: 0.9;
-}
-
-table.left>thead {
-    width: 100%;
-}
-
-table.right>thead {
-    width: 100%;
 }
 
 input[type="submit"] {
@@ -86,11 +108,25 @@ input[type="radio"] {
     margin: 0;
 }
 
-/* TABLET VIEW */
+.update-channel {
+    align-self: center;
+    background-color: #337ab7;
+    border-radius: 4px;
+}
 
-/*
-    MOBILE VIEW
-*/
+form.channel {
+    flex: 1;
+}
+
+div.channel-id {
+    width: 100%;
+}
+
+p.channel {
+    width: 100%;
+}
+
+/* TABLET VIEW */
 
 @media screen and (max-width: 1200px) {
     h1 {
@@ -101,14 +137,15 @@ input[type="radio"] {
         display: block;
     }
 
-    .left {
+    article.left {
         display: block;
         margin: auto;
         width: 100%;
     }
 
-    .right {
+    article.right {
         display: block;
+        margin: auto;
         margin: auto;
         margin-top: 20px;
         width: 100%;
@@ -127,7 +164,47 @@ input[type="radio"] {
         margin: auto;
         display: table;
     }
+
+    table.left {
+        max-width: 600px;
+        width: 100%;
+        min-width: 100px;
+        margin: auto;
+        display: table;
+    }
+
+    table.right {
+        max-width: 600px;
+        width: 100%;
+        min-width: 100px;
+        margin: auto;
+        margin-top: 15px;
+        display: table;
+    }
+
+    form.channel {
+        margin-top: 15px;
+        flex: auto;
+    }
+
+    div.channel-id {
+        margin-top: 15px;
+        width: 100%;
+    }
+
+    .update-channel {
+        position: relative;
+        background-color: #337ab7;
+        border-radius: 4px;
+        margin-top: 15px;
+        margin-bottom: 15px;
+    }
+
 }
+
+/*
+    MOBILE VIEW
+*/
 
 @media screen and (max-width: 600px) {
     .bottom {
@@ -151,12 +228,7 @@ input[type="radio"] {
 
     input[type="text"] {
         margin-top: 20px;
-        width: 80%;
-    }
-
-    input[type="radio"] {
-        width: 15%;
-        margin-left: 50px;
+        /*width: 80%;*/
     }
 
     label {

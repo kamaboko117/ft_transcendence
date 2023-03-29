@@ -115,7 +115,7 @@ const handleSubmitBanMute = (event: React.FormEvent<HTMLFormElement>,
         channelId: object.channelId,
         action: object.action,
         jwt: object.jwt,
-        userId: object.userId,
+        userId: Number(object.userId),
         option: time
     });
     if (ref && ref.current)
@@ -196,7 +196,7 @@ const fetchKick = (event: React.MouseEvent<HTMLButtonElement>,
             headers: headerPost(object.jwt),
             body: JSON.stringify({
                 id: object.channelId, action: object.action,
-                option: object.option, userId: object.userId
+                option: object.option, userId: Number(object.userId)
             })
         }).catch(e => console.log(e));
     }
@@ -285,6 +285,7 @@ const AdminComponent = (props: AdminCompType) => {
                     props.setErrorCode(res.status)
                 })
                 .then((res) => {
+                    console.log(res)
                     if (res && res.role) {
                         setUserId(res.userId);
                         setRole(res.role);
@@ -299,7 +300,7 @@ const AdminComponent = (props: AdminCompType) => {
         if (props.chooseClassName === "userInfo userInfoClick")
             getRole();
         return (() => { })
-    }, [props.chooseClassName])
+    }, [props.chooseClassName]);
     return (
         <>
             {role && (role === "Owner" || role === "Administrator")
