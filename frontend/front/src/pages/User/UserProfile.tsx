@@ -37,6 +37,7 @@ export const headerPost = (jwt: Readonly<string | null>) => {
 	Owner profile
 */
 
+/*
 function ChangeHandler(event: ChangeEvent<HTMLInputElement>
 	, setFile: React.Dispatch<React.SetStateAction<File | undefined> >) {
 	event.preventDefault();
@@ -47,7 +48,9 @@ function ChangeHandler(event: ChangeEvent<HTMLInputElement>
 		setFile(target.files[0]);
 	}
 }
+*/
 
+/*
 function UploadForm(event: FormEvent<HTMLFormElement>,
 	fileSet: File | undefined, jwt: string,
 	setErrorCode: React.Dispatch<React.SetStateAction<number> >,
@@ -78,7 +81,9 @@ function UploadForm(event: FormEvent<HTMLFormElement>,
 		setavatar_path(res.path);
 	}).catch(e => console.log(e));
 }
+*/
 
+/*
 function FormUpdateUser(props: {jwt: string,
 	setErrorCode: React.Dispatch<React.SetStateAction<number> >,
 	setavatar_path: React.Dispatch<React.SetStateAction<string> >,
@@ -101,16 +106,12 @@ function FormUpdateUser(props: {jwt: string,
 		</>
 	);
 }
+*/
 
 const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	if (props.jwt === null)
 		return (<div>Must be logged</div>);
 	const [avatar_path, setavatar_path] = useState<string>("");
-	/*
-	const [username, setUsername] = useState<string | null>(null);
-	const [victory, setVictory] = useState<number>();
-	const [defeat, setDefeat] = useState<number>();
-	*/
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [user, setSstat] = useState<userInfo>();
 	useEffect(() => {
@@ -123,11 +124,6 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 				console.log(res);
 				if (res && res.avatarPath)
                 	setavatar_path(res.avatarPath);
-				/*
-				setUsername(res?.username);
-				setVictory(res?.sstat.victory);
-				setDefeat(res?.sstat.defeat);
-				*/
 				setSstat(res);
             }).catch(e=>console.log(e));
 	}, []);
