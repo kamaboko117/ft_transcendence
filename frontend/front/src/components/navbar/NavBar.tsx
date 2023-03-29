@@ -28,6 +28,7 @@ export default function NavBar() {
 				<CustomLink to="/Setting">Setting</CustomLink>
 				<CustomLink to="/channels">Channels</CustomLink>
 				<CustomLink to="/logout">Log Out</CustomLink>
+				<CustomLink to="/matchmaking">Matchmaking</CustomLink>
 			</ul>
 		</nav>
 	)

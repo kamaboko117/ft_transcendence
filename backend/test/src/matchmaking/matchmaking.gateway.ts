@@ -102,10 +102,8 @@ getKey(player: any) {
       console.log('queue in');
       const user = socket.user;
       console.log("test");
-      let player1 = { id:20 }
-      let player2 = { id:21 }
+      let player1 = { id:user.userID }
       this.mm.push(player1);
-      this.mm.push(player2);
 
      // if (typeof user.userID != 'number') return false;
      
