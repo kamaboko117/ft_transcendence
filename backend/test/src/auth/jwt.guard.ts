@@ -26,9 +26,13 @@ export class JwtGuard extends AuthGuard('jwt') {
         let bearer: string = "";
         if (isPublic)
             return (true);
+        console.log("guard jwt")
         if (typeof request.route != "undefined"
-            && typeof request.headers.authorization != "undefined")
+            && typeof request.headers.authorization != "undefined"){
             bearer = request.headers.authorization.split('Bearer ')[1];
+            console.log("jwt route")
+            console.log(request.route.path);
+        }
         else if (typeof request.route == "undefined") {
             bearer = request.handshake.headers.authorization;
         }

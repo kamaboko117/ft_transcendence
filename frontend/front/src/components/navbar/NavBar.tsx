@@ -4,23 +4,21 @@ import UserContext from "../../contexts/UserContext";
 
 export default function NavBar() {
 	const userCtx: any = useContext(UserContext);
-	const path = window.location.pathname
 	let jwt = userCtx.getJwt();
 
-	if (!jwt || jwt === "")
-	{
+	if (!jwt || jwt === "") {
 		return (
-			<nav className="nav">
+			<nav>
 				<ul>
-					<CustomLink to="/">Home</CustomLink>
-					<CustomLink to="/login">Log In</CustomLink>
+					<NavBarLink to="/">Home</NavBarLink>
+					<NavBarLink to="/login">Log In</NavBarLink>
 				</ul>
 			</nav>
 		)
 	}
 	return (
-		<nav className="nav">
-			<Link to="/profile" className="site-title">User Profile</Link>
+		<nav>
+			<Link to="/profile">User Profile</Link>
 			<ul>
 				<CustomLink to="/">Home</CustomLink>
 				<CustomLink to="/FriendList">FriendList</CustomLink>
@@ -34,12 +32,12 @@ export default function NavBar() {
 	)
 }
 
-function CustomLink({ to, children, ...props }) {
-	const resolvedPath = useResolvedPath(to)
-	const isActive = useMatch({ path: resolvedPath.pathname, end: true })
+function NavBarLink({ to, children, ...props }) {
+	//const resolvedPath = useResolvedPath(to);
+	//const isActive = useMatch({ path: resolvedPath.pathname, end: true });
 
 	return (
-		<li className={isActive ? "active" : ""}>
+		<li /*className={isActive ? "active" : ""}*/>
 			<Link to={to} {...props}>
 				{children}
 			</Link>

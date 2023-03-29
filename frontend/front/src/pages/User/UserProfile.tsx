@@ -17,13 +17,14 @@ type userInfo = {
 	avatarPath: string,
 	sstat: statInfo
 }
-/*
-const header = (props: Readonly<{ jwt: string | null }>) => {
-    const header = new Headers({
-        Authorization: 'Bearer ' + props.jwt
-    })
-    return (header);
-};*/
+
+const handleImgError = (e) => {
+    const target: HTMLImageElement = e.target as HTMLImageElement;
+
+    if (target) {
+        target.src =  "/upload_avatar/default.png"; 
+    }
+}
 
 export const headerPost = (jwt: Readonly<string | null>) => {
     const header = new Headers({
@@ -120,7 +121,8 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
                 setErrorCode(res.status);
             }).then((res: userInfo) => {
 				console.log(res);
-                setavatar_path(res?.avatarPath);
+				if (res && res.avatarPath)
+                	setavatar_path(res.avatarPath);
 				/*
 				setUsername(res?.username);
 				setVictory(res?.sstat.victory);
@@ -133,10 +135,10 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
         return (<FetchError code={errorCode} />);
 	return (
 		<>
-		<FormUpdateUser jwt={props.jwt} setavatar_path={setavatar_path}
-			setErrorCode={setErrorCode} />
-		<h1>Username: {user?.username}</h1>
-		<img className="avatar" src={avatar_path} alt={"avatar " + user?.username} />
+		<h1>Username: [{user?.username}]</h1>
+		<img className="avatar" src={avatar_path} alt={"avatar " + user?.username}
+			onError={handleImgError}
+		/>
 		<ul>
 			<li>Victoire: {user?.sstat.victory}</li>
 			<li>Défaite: {user?.sstat.defeat}</li>	

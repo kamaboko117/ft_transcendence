@@ -12,9 +12,10 @@ import { UsersModule } from 'src/users/users.module';
 import { RoleController } from './role/role.controller';
 import { RoleGateway } from './role/role.gateway';
 import { BlackFriendList } from 'src/typeorm/blackFriendList.entity';
+import { ChatService } from './chat.service';
 
 @Module({
-    providers: [ChatGateway, RoleService, RoleGateway],
+    providers: [ChatService, ChatGateway, RoleService, RoleGateway],
     imports: [TypeOrmModule.forFeature([Channel, ListMsg,
         ListUser, ListMute, ListBan, BlackFriendList]), UsersModule],
     exports: [ChatGateway],

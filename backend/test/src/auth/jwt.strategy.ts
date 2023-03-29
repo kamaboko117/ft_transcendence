@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
+import { TokenUser } from 'src/chat/chat.interface';
 //https://www.passportjs.org/packages/passport-jwt/
 
 @Injectable()
@@ -14,15 +15,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         });
     }
 
-    async validate(payload: any) {
-        console.log("payload jwt");
-        console.log(payload);
-        const ret: {userID: number, token: string, username: string} = {
+    async validate(payload: {sub: string, token: string,
+        username: string, fa: boolean, fa_code: string}) {
+        const ret: TokenUser = {
             userID: Number(payload.sub),
             token: payload.token,
-            username: payload.username
+            username: payload.username,
+            fa: payload.fa,
+            fa_code: payload.fa_code
         };
-        console.log(ret);
         return (ret);
     }
 }

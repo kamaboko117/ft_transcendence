@@ -34,37 +34,62 @@ type Props = {
 
 const ErrorSubmit = (props: any) => {
     let i: number = 0;
-    return (<div>
+    return (<>
         {props.listError &&
             props.listError.map((err) => (
                 <p style={{ color: "red" }} key={++i}>{err}</p>
             ))
         }
-    </div>)
+    </>);
 }
 
-
-
-const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, name: string | null, navigate: any) => {
+const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, setErr,
+    name: string | null, navigate: any, jwt) => {
     e.preventDefault();
-    navigate({ pathname: "/channels/" + name }, { state: { name: name, username: "" } });
+
+    if (name) {
+        await fetch('http://' + location.host + '/api/chat?' + new URLSearchParams({
+            id: name,
+        }),
+            { headers: header(jwt) })
+            .then(res => {
+                if (res.ok)
+                    return (res.json());
+            })
+            .then(res => {
+                console.log("rrr")
+                console.log(res)
+                if (Object.keys(res).length !== 0) {
+                    setErr(false);
+                    navigate({ pathname: "/channels/" + name }, { state: { name: name, username: "" } });
+                }
+                else
+                    setErr(true);
+            })
+            .catch(e => console.log(e));
+    }
 }
 
-const OpenPrivateChat = () => {
+const OpenPrivateChat = (props: { jwt: string }) => {
     const navigate = useNavigate();
     const [name, setName] = useState<string | null>(null);
-
-    return (<form onSubmit={(e: FormEvent<HTMLFormElement>) => onSubmitJoin(e, name, navigate)}>
-        <label>Enter a channel ID to join a channel
-            <input type="text"
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setName(e.currentTarget.value)}
-                placeholder='Enter channel name'
-                name="privateChannelName"
-            />
-        </label>
-        <input type="submit" value="Join channel" />
-    </form>);
+    const [err, setErr] = useState<boolean>(false);
+    return (<>
+        <form className="channel"
+            onSubmit={(e: FormEvent<HTMLFormElement>) =>
+                onSubmitJoin(e, setErr, name, navigate, props.jwt)}>
+            <label>Enter a channel ID to join a channel
+                <input type="text"
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        setName(e.currentTarget.value)}
+                    placeholder='Enter channel name'
+                    name="privateChannelName"
+                />
+            </label>
+            <input type="submit" value="Join channel" />
+        </form>
+        {err === true && <p className="channel">No channel found with this identifier.</p>}
+    </>);
 }
 
 class ListChannel extends React.Component<{ jwt: string | null }, State> {
@@ -102,21 +127,21 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                 this.setState({
                     listChannel: res
                 })
-            }).catch(e=>console.log(e));
+            }).catch(e => console.log(e));
         fetch('http://' + location.host + '/api/chat/private',
             { headers: header(this.props.jwt) }).then(res => {
-            if (res.ok)
-                return (res.json());
-            this.setState({
-                errorCode: res.status
-            });
-        }).then(res => {
-            this.setState({
-                listChannelPrivate: res
-            })
-        }).catch(e=>console.log(e));
+                if (res.ok)
+                    return (res.json());
+                this.setState({
+                    errorCode: res.status
+                });
+            }).then(res => {
+                this.setState({
+                    listChannelPrivate: res
+                })
+            }).catch(e => console.log(e));
     }
-    
+
     componentWillUnmount(): void {
         this.setState({
             listChannel: [],
@@ -124,7 +149,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         })
     }
     onClick = (): void => {
-        fetch('http://' + location.host + '/api/chat/public/', 
+        fetch('http://' + location.host + '/api/chat/public/',
             { headers: header(this.props.jwt) })
             .then(res => {
                 if (res.ok)
@@ -133,19 +158,19 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                 this.setState({
                     listChannel: res
                 })
-            }).catch(e=>console.log(e))
-        fetch('http://' + location.host + '/api/chat/private', 
+            }).catch(e => console.log(e))
+        fetch('http://' + location.host + '/api/chat/private',
             { headers: header(this.props.jwt) }).then(res => {
-            if (res.ok)
-                return (res.json());
-            this.setState({
-                errorCode: res.status
-            });
-        }).then(res => {
-            this.setState({
-                listChannelPrivate: res
-            })
-        }).catch(e=>console.log(e))
+                if (res.ok)
+                    return (res.json());
+                this.setState({
+                    errorCode: res.status
+                });
+            }).then(res => {
+                this.setState({
+                    listChannelPrivate: res
+                })
+            }).catch(e => console.log(e))
     }
     onChange = (e: ChangeEvent<HTMLInputElement>): void => {
         e.stopPropagation();
@@ -160,11 +185,11 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         e.preventDefault();
 
         if (this.state.rad == "0") {
-            const res: any = fetch('http://' + location.host + '/api/chat/new-public/', {
+            fetch('http://' + location.host + '/api/chat/new-public/', {
                 method: 'post',
                 headers: headerPost(this.props.jwt),
                 body: JSON.stringify({
-                    id: '0', //à supprimer
+                    id: '0', //keeping this for backend part
                     name: this.state.channelName,
                     accesstype: this.state.rad,
                     password: this.state.password,
@@ -189,14 +214,14 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                         listChannel: [...this.state.listChannel, res],
                     });
                 }
-            }).catch(e=>console.log(e));
+            }).catch(e => console.log(e));
         }
         else {
-            const res: any = fetch('http://' + location.host + '/api/chat/new-private/', {
+            fetch('http://' + location.host + '/api/chat/new-private/', {
                 method: 'post',
                 headers: headerPost(this.props.jwt),
                 body: JSON.stringify({
-                    id: '0',
+                    id: '0', //keeping this for backend part
                     name: this.state.channelName,
                     accesstype: this.state.rad,
                     password: this.state.password,
@@ -212,18 +237,18 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     errorCode: res.status
                 });
             }).then(res => {
-                console.log(res);
                 if (Array.isArray(res) === true) {
                     this.setState({ hasError: true, listError: res });
                 }
                 else {
+                    console.log(res)
                     this.setState({
                         hasError: false, listError: [],
                         listChannelPrivate: [...this.state.listChannelPrivate, res],
-                        privateIdChannel: res.id
+                        privateIdChannel: res.channel_id
                     });
                 }
-            }).catch(e=>console.log(e));
+            }).catch(e => console.log(e));
         }
     }
 
@@ -232,15 +257,19 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         const TypeAccess = (props: Props): JSX.Element => {
             const access: Readonly<number> = props.access;
             if (access == 0)
-                return (<>Public</>)
-            return (<>Password required</>)
+                return (<>Public</>);
+            return (<>Password required</>);
         };
 
         return (<tbody>
             {this.state.listChannel &&
                 this.state.listChannel.map((chan) => (
                     <tr key={++i}>
-                        <td><Link to={{ pathname: "/channels/" + chan.channel_id }} state={{ name: chan.channel_name, username: "" }}>{chan.channel_name}</Link></td><td>{chan.User_username}</td><td><TypeAccess access={chan.channel_accesstype} /></td>
+                        <td><Link to={{ pathname: "/channels/" + chan.channel_id }}
+                            state={{ name: chan.channel_name, username: "" }}>{chan.channel_name}</Link>
+                        </td>
+                        <td>{chan.User_username}</td>
+                        <td><TypeAccess access={chan.channel_accesstype} /></td>
                     </tr>
                 ))
             }
@@ -275,34 +304,49 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         return (<section className='containerChannel'>
             <h1>List channels + (affichage liste privée à faire + persist dtb)</h1>
             <article className='left'>
-                <table>
+                <table className='left'>
                     <thead>
                         <tr>
-                            <th>Public Channel name</th><th>Owner</th><th>Access type</th>
+                            <th className='f-case'>Public Channel name</th>
+                            <th className='s-case'>Owner</th>
+                            <th className='s-case'>Access type</th>
                         </tr>
                     </thead>
                     <this.PrintListPublic />
                 </table>
-                <table style={{ margin: "auto auto auto 20px" }}>
+                <table className='right'>
                     <thead>
                         <tr>
-                            <th>Private Channel name</th><th>Owner</th><th>Access type</th>
+                            <th className='f-case'>Private Channel name</th>
+                            <th className='s-case'>Owner</th>
+                            <th className='s-case'>Access type</th>
                         </tr>
                     </thead>
                     <this.PrintListPrivate />
                 </table>
+                <button className='update-channel' onClick={this.onClick}>Update</button>
             </article>
             <article className='bottom'>
-                <button onClick={this.onClick}>Update</button>
-                <form onSubmit={this.onSubmit}>
-                    <input type="text" onChange={this.onChange} placeholder='Enter channel name' name="channelName" />
-                    <label><input type="radio" onChange={this.onChange} name="rad" value="0" checked={this.state.rad === "0"} />Public</label>
-                    <label><input type="radio" onChange={this.onChange} name="rad" value="2" checked={this.state.rad === "2"} />Private</label>
-                    <input type="text" onChange={this.onChange} placeholder='Password' name="password" />
+                <form onSubmit={this.onSubmit} className="channel">
+                    <label>Create private or public channel</label>
+                    <input type="text" onChange={this.onChange}
+                        placeholder='Enter channel name' name="channelName" />
+                    <label><input type="radio"
+                        onChange={this.onChange} name="rad" value="0"
+                        checked={this.state.rad === "0"} />Public</label>
+                    <label><input type="radio"
+                        onChange={this.onChange} name="rad" value="2"
+                        checked={this.state.rad === "2"} />Private</label>
+                    <input type="text" onChange={this.onChange}
+                        placeholder='Password' name="password" />
                     <input type="submit" onChange={this.onChange} value="Add Channel" />
                 </form>
-                <OpenPrivateChat />
-                <div><label>New private channel ID</label><span style={{ color: "#FA6405" }}>{this.state.privateIdChannel}</span></div>
+                {this.props.jwt && <OpenPrivateChat jwt={this.props.jwt} />}
+                {this.state.privateIdChannel && <div className='channel-id'><label>New private channel ID : </label>
+                    <span style={{ color: "#FA6405" }}>
+                        {this.state.privateIdChannel}
+                    </span>
+                </div>}
                 <ErrorSubmit hasError={this.state.hasError} listError={this.state.listError} />
             </article>
             <ContextUserLeave.Provider value={this.onClick}>

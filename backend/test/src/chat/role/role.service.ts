@@ -6,7 +6,7 @@ import { ListUser } from '../lstuser.entity';
 import { RoleGateway } from './role.gateway';
 import { ListBan } from '../lstban.entity';
 import { ListMute } from '../lstmute.entity';
-
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class RoleService {
@@ -163,6 +163,51 @@ export class RoleService {
                         await runner.release();
                 }
         }
+
+        async unBanUser(id: Readonly<string>, userId: Readonly<number>) {
+                const runner = this.dataSource.createQueryRunner();
+
+                await runner.connect();
+                await runner.startTransaction();
+                try {
+                        const arr = await this.listBanRepository.createQueryBuilder("bl")
+                                .where("user_id = :userId")
+                                .setParameters({ userId: userId })
+                                .andWhere("chatid = :id")
+                                .setParameters({ id: id })
+                                .getMany();
+                        await this.listBanRepository.remove(arr);
+                        await runner.commitTransaction();
+                } catch (e) {
+                        await runner.rollbackTransaction();
+                } finally {
+                        //doc want it released
+                        await runner.release();
+                }
+        }
+
+        async unMuteUser(id: Readonly<string>, userId: Readonly<number>) {
+                const runner = this.dataSource.createQueryRunner();
+
+                await runner.connect();
+                await runner.startTransaction();
+                try {
+                        const arr = await this.listMuteRepository.createQueryBuilder("mt")
+                                .where("user_id = :userId")
+                                .setParameters({ userId: userId })
+                                .andWhere("chatid = :id")
+                                .setParameters({ id: id })
+                                .getMany();
+                        await this.listMuteRepository.remove(arr);
+                        await runner.commitTransaction();
+                } catch (e) {
+                        await runner.rollbackTransaction();
+                } finally {
+                        //doc want it released
+                        await runner.release();
+                }
+        }
+
         /* run transaction
                 find the future user granted
                 grant the user
@@ -185,6 +230,48 @@ export class RoleService {
                                 .execute();
                         await runner.commitTransaction();
                         this.roleGateway.updateListChat(id);
+                } catch (e) {
+                        await runner.rollbackTransaction();
+                } finally {
+                        //doc want it released
+                        await runner.release();
+                }
+        }
+
+        async setPsw(id: Readonly<string>, psw: Readonly<string>) {
+                const runner = this.dataSource.createQueryRunner();
+
+                await runner.connect();
+                await runner.startTransaction();
+                try {
+                        const salt = Number(process.env.CHAT_SALT);
+                        const password = bcrypt.hashSync(psw, salt);
+                        await this.listUserRepository.createQueryBuilder().update(Channel)
+                                .set({ password: password, accesstype: '1' })
+                                .where("id = :id")
+                                .setParameters({ id: id })
+                                .execute();
+                        await runner.commitTransaction();
+                } catch (e) {
+                        await runner.rollbackTransaction();
+                } finally {
+                        //doc want it released
+                        await runner.release();
+                }
+        }
+
+        async unSetPsw(id: Readonly<string>) {
+                const runner = this.dataSource.createQueryRunner();
+
+                await runner.connect();
+                await runner.startTransaction();
+                try {
+                        await this.listUserRepository.createQueryBuilder().update(Channel)
+                                .set({ password: "", accesstype: '0' })
+                                .where("id = :id")
+                                .setParameters({ id: id })
+                                .execute();
+                        await runner.commitTransaction();
                 } catch (e) {
                         await runner.rollbackTransaction();
                 } finally {

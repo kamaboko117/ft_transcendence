@@ -2,10 +2,10 @@
     display: none;
     flex-direction: column;
     width: 200px;
-    background-color: red;
+    background-color: crimson;
 }
 
-.userInfo > button {
+.userInfo>button {
     width: 100%;
 }
 
@@ -26,4 +26,8 @@ label.userInfo {
 img.avatar {
     height: 50%;
     max-width: 200px;
+}
+
+.element>.user {
+    background-color: coral;
 }
