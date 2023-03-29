@@ -55,8 +55,25 @@ export class UsersController {
         const otpAuth = authenticator.keyuri(userDb.username, "ft_transcendence", userDb.secret_fa);
         const url = await toDataURL(otpAuth);
         if (url)
-            return ({code: 2, url: url});
-        return ({code: 1, url: null});
+            return ({ code: 2, url: url });
+        return ({ code: 1, url: null });
+    }
+
+    @Public()
+    @UseGuards(JwtFirstGuard)
+    @Get('check-fa')
+    async checkFa(@Request() req: any) {
+        const user: TokenUser = req.user;
+        const userDb = await this.userService.getUserFaSecret(user.userID);
+
+        if (!userDb?.username) {
+            throw new NotFoundException("Username not found");
+        }
+        if (userDb.fa === false
+            || userDb.secret_fa === null || userDb.secret_fa === "")
+            throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+        if (user.fa_code != "")
+            throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }
 
     /* get fa code and set it to new jwt token */
@@ -67,24 +84,24 @@ export class UsersController {
         let user: TokenUser = req.user;
         const userDb = await this.userService.getUserFaSecret(user.userID);
         let isValid = false;
-        let access_token = {access_token: ""}
+        let access_token = { access_token: "" }
         if (!userDb?.username) {
             throw new NotFoundException("Username not found");
         }
         try {
             if (!isNaN(body.code)) {
-                isValid = authenticator.verify({token: String(body.code), secret: userDb.secret_fa});
+                isValid = authenticator.verify({ token: String(body.code), secret: userDb.secret_fa });
                 if (isValid) {
                     user.fa_code = String(body.code);
                     access_token = await this.authService.login(user);
-                    return ({valid: isValid, username: userDb.username, token: access_token});
-                }   
+                    return ({ valid: isValid, username: userDb.username, token: access_token });
+                }
             }
         } catch (e) {
             throw new NotFoundException("Authenticator code verification failed");
         }
         // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
-        return ({valid: isValid, username: userDb.username, token: null});
+        return ({ valid: isValid, username: userDb.username, token: null });
     }
 
     /* authguard(strategy name) */
@@ -106,13 +123,13 @@ export class UsersController {
     }
 
     @Post('update-user')
-    @UseInterceptors(FileInterceptor('fileset', {dest: './upload_avatar'}))
+    @UseInterceptors(FileInterceptor('fileset', { dest: './upload_avatar' }))
     async updateUser(@Request() req: any, @UploadedFile(new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 1000000 }),
-          new FileTypeValidator({ fileType: 'image/png'}),
+            new MaxFileSizeValidator({ maxSize: 1000000 }),
+            new FileTypeValidator({ fileType: 'image/png' }),
         ], fileIsRequired: false
-      }),
+    }),
     ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
         const user: TokenUser = req.user;
         console.log(body);
@@ -124,7 +141,7 @@ export class UsersController {
         console.log(regexRet);
         const ret_user = await this.userService.findUserByName(user.username);
         if (ret_user?.username === body.username)
-            return ({valid: false});
+            return ({ valid: false });
         if (file)
             this.userService.updatePathAvatarUser(user.userID, file.path);
         if (body.username && body.username != "")
@@ -133,26 +150,26 @@ export class UsersController {
             this.userService.update2FA(user.userID, true, authenticator.generateSecret());
         else
             this.userService.update2FA(user.userID, false, null);
-            // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
-        return ({valid: true});
+        // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
+        return ({ valid: true });
     }
 
     @Public()
     @UseGuards(JwtFirstGuard)
     @Post('firstlogin')
-    @UseInterceptors(FileInterceptor('fileset', {dest: './upload_avatar'}))
+    @UseInterceptors(FileInterceptor('fileset', { dest: './upload_avatar' }))
     async uploadFirstLogin(@Request() req: any, @UploadedFile(new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 1000000 }),
-          new FileTypeValidator({ fileType: 'image/png'}),
+            new MaxFileSizeValidator({ maxSize: 1000000 }),
+            new FileTypeValidator({ fileType: 'image/png' }),
         ], fileIsRequired: false
-      }),
+    }),
     ) file: Express.Multer.File | undefined, @Body() body: FirstConnection) {
         const user = req.user;
         console.log(body);
         const ret_user = await this.userService.getUserProfile(user.userID);
         if (body.username && body.username == "" || (ret_user && ret_user.username != "")) {
-            return ({valid: false, username: ""});
+            return ({ valid: false, username: "" });
         }
         //body.fa must accept the regex
         //if regex not ok, then return NULL so no FA accepted
@@ -173,21 +190,21 @@ export class UsersController {
         user.username = body.username;
         const access_token = await this.authService.login(user);
         // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
-        return ({valid: true, username: body.username, token: access_token});
+        return ({ valid: true, username: body.username, token: access_token });
     }
 
     @Post('avatarfile')
-    @UseInterceptors(FileInterceptor('fileset', {dest: './upload_avatar'}))
+    @UseInterceptors(FileInterceptor('fileset', { dest: './upload_avatar' }))
     uploadFile(@Request() req: any, @UploadedFile(new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 1000000 }),
-          new FileTypeValidator({ fileType: 'image/png'}),
+            new MaxFileSizeValidator({ maxSize: 1000000 }),
+            new FileTypeValidator({ fileType: 'image/png' }),
         ],
-      }),
+    }),
     ) file: Express.Multer.File) {
         const user: TokenUser = req.user;
         this.userService.updatePathAvatarUser(user.userID, file.path);
-        return ({path: file.path});
+        return ({ path: file.path });
     }
 
     /*
@@ -213,7 +230,7 @@ export class UsersController {
         console.log(ret_user);
         return (ret_user);
     }
-    
+
     /* special function, to check username and 2FA for first connection */
     @Public()
     @UseGuards(JwtFirstGuard)
@@ -234,12 +251,14 @@ export class UsersController {
         const ret_user = await this.userService.findUserByName(name);
 
         if (!ret_user)
-            return ({valid: false});
+            return ({ valid: false });
         let info = await this.userService.focusUserBlFr(user.userID, Number(ret_user?.userID));
         if (!info) {
-            return ({valid: true, id: ret_user.userID,
+            return ({
+                valid: true, id: ret_user.userID,
                 User_username: ret_user.username, fl: null,
-                bl: null})
+                bl: null
+            })
         }
         info.valid = true;
         return (info);
@@ -270,25 +289,28 @@ export class UsersController {
 
         const ret_user = await this.userService.findUserByName(body.username);
         if (!ret_user)
-            return ({code: 0});
+            return ({ code: 0 });
         else if (Number(ret_user.userID) == user.userID)
-            return ({code: 2});
+            return ({ code: 2 });
         const findInList = await this.userService.searchUserInList(user.userID, ret_user.userID, 2);
         console.log(findInList);
         if (findInList)
-            return ({code: 1});
+            return ({ code: 1 });
         this.userService.insertBlFr(user.userID, Number(ret_user.userID), 2);
         //need to check if user is in BL, for updating global friend black list
         const findInBlackList = await this.userService.searchUserInList(user.userID, ret_user.userID, 1);
-        if (findInBlackList)
-        {
-            return ({ code: 3, id: Number(ret_user.userID),
+        if (findInBlackList) {
+            return ({
+                code: 3, id: Number(ret_user.userID),
                 fl: 2, bl: 1,
-                User_username: ret_user.username});
+                User_username: ret_user.username
+            });
         }
-        return ({ code: 3, id: Number(ret_user.userID),
+        return ({
+            code: 3, id: Number(ret_user.userID),
             fl: 2, bl: 0,
-            User_username: ret_user.username});
+            User_username: ret_user.username
+        });
     }
 
     @Post('add-blacklist')
@@ -297,25 +319,28 @@ export class UsersController {
 
         const ret_user = await this.userService.findUserByName(body.username);
         if (!ret_user)
-            return ({code: 0});
+            return ({ code: 0 });
         else if (Number(ret_user.userID) == user.userID)
-            return ({code: 2});
+            return ({ code: 2 });
         const findInList = await this.userService.searchUserInList(user.userID, ret_user.userID, 1);
         console.log(findInList);
         if (findInList)
-            return ({code: 1});
+            return ({ code: 1 });
         this.userService.insertBlFr(user.userID, Number(ret_user.userID), 1);
         //need to check if user is in BL, for updating global friend black list
         const findInBlackList = await this.userService.searchUserInList(user.userID, ret_user.userID, 2);
-        if (findInBlackList)
-        {
-            return ({ code: 3, id: Number(ret_user.userID),
+        if (findInBlackList) {
+            return ({
+                code: 3, id: Number(ret_user.userID),
                 fl: 2, bl: 1,
-                User_username: ret_user.username});
+                User_username: ret_user.username
+            });
         }
-        return ({ code: 3, id: Number(ret_user.userID),
+        return ({
+            code: 3, id: Number(ret_user.userID),
             fl: 2, bl: 0,
-            User_username: ret_user.username});
+            User_username: ret_user.username
+        });
     }
 
     @Post('fr-bl-list')
@@ -347,15 +372,17 @@ export class UsersController {
         user.fa_code = "";
         const access_token = await this.authService.login(user);
         const refresh = await this.authService.refresh(user);
-       
+
         response.cookie('refresh_token', refresh.refresh_token,
             {
                 maxAge: 300000,
                 httpOnly: true,
                 sameSite: 'Strict'
             });
-        return ({ token: access_token, user_id: req.user.userID,
-            username: user.username, fa: user.fa});
+        return ({
+            token: access_token, user_id: req.user.userID,
+            username: user.username, fa: user.fa
+        });
     }
 
     @Post("create")
@@ -364,5 +391,5 @@ export class UsersController {
         return this.userService.createUser(createUserDto);
     }
 
-    
+
 }

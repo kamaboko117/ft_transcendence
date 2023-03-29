@@ -68,7 +68,7 @@ export const ListMsg = (props: any) => {
                 props.lstMsg &&
                 props.lstMsg.slice(arrayLength, props.lstMsg.length).map((msg: msg) => (
                     <React.Fragment key={++i}>
-                        <div>
+                        <div style={{ border: "1px solid yellow" }}>
                             <img src={"/" + msg.user.avatarPath} className="chatBox"
                                 alt={"avatar " + msg.user.username}
                                 onError={handleImgError}
@@ -183,7 +183,7 @@ const PostMsg = (props: typePostMsg) => {
 }
 
 const MainChat = (props: any) => {
-    const refElem = useRef(null);
+    //const refElem = useRef(null);
     const [online, setOnline] = useState<undefined | boolean | string>(undefined)
     const userCtx: any = useContext(UserContext);
     const { usrSocket } = useContext(SocketContext);
@@ -238,11 +238,14 @@ const MainChat = (props: any) => {
                         return (res.json());
                     props.setErrorCode(res.status);
                 }).catch(e => console.log(e));
+
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
                 setLstMsgChat(res.lstMsg);
                 setChatName(res.name);
                 if (res.accesstype === "2" || res.accesstype === "3")
                     contextUserLeave();
+            } else {
+                navigate("/channels");
             }
             console.log("load...");
         }
@@ -396,7 +399,6 @@ const PasswordBox = (props: Readonly<any>): JSX.Element => {
             <form onSubmit={async (e: React.FormEvent<HTMLFormElement>) => {
                 const result = await onSubmit(e, value, props.jwt, props.id, props.setErrorCode);
                 setValid(result);
-                console.log(result);
                 (valid === false) ? setError(true) : setError(false);
             }}>
                 <label>Password * :</label>

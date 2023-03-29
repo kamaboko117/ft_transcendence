@@ -6,7 +6,7 @@ import { FetchError } from '../components/FetchError';
 //export let usrSocket: Socket<any, any> | undefined;
 
 type typeSocket = {
-   // setToken: Dispatch<React.SetStateAction<string | null>>,
+    // setToken: Dispatch<React.SetStateAction<string | null>>,
     usrSocket: Socket<any, any> | undefined,
 }
 
@@ -27,6 +27,7 @@ export const SocketProvider = (props: any) => {
     const [errorCode, setErrorCode] = useState<number>(200);
 
     useEffect(() => {
+        console.log("socket mount");
         setUsrSocket(io("http://" + location.host, {
             withCredentials: true,
             extraHeaders: {
@@ -42,7 +43,13 @@ export const SocketProvider = (props: any) => {
                 console.log("Fatal Error");
                 setErrorCode(500);
             }
-        })
+        }
+
+        )
+        return (() => {
+            console.log("socket unmount");
+            usrSocket?.disconnect();
+        });
     }, [props.jwt]);
 
     return (
