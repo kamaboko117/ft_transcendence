@@ -37,6 +37,7 @@ import { DisplayChatGlobalProvider } from "./contexts/DisplayChatContext";
 import UserContext, { UsernameSet } from "./contexts/UserContext";
 import { useLocation } from 'react-router-dom';
 import FaCode from "./components/Users/FaCode";
+import UserProfileOther from "./pages/User/UserProfileOther";
 
 const ErrorPage = () => {
   const location = useLocation();
@@ -82,8 +83,10 @@ function App() {
                   width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <UserProfile jwt={jwt} /><PlayerApp />
-              </>
-            } />
+                </>
+              } >
+            </Route>
+            <Route path="/profile/:id" element={<UserProfileOther jwt={jwt} />} />
             <Route path="/friendList" element={
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
@@ -146,7 +149,7 @@ function App() {
                 <ListChannel jwt={jwt} /><PlayerApp />
               </>
             }>
-              <Route path=":id" element={<Chat jwt={jwt} />} />
+            <Route path=":id" element={<Chat jwt={jwt} />} />
             </Route>
             <Route path="/play" element={
               <>
