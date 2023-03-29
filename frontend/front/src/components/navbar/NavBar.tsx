@@ -20,13 +20,13 @@ export default function NavBar() {
 		<nav>
 			<Link to="/profile">User Profile</Link>
 			<ul>
-				<CustomLink to="/">Home</CustomLink>
-				<CustomLink to="/FriendList">FriendList</CustomLink>
-				<CustomLink to="/BlackList">BlackList</CustomLink>
-				<CustomLink to="/Setting">Setting</CustomLink>
-				<CustomLink to="/channels">Channels</CustomLink>
-				<CustomLink to="/logout">Log Out</CustomLink>
-				<CustomLink to="/matchmaking">Matchmaking</CustomLink>
+				<NavBarLink to="/">Home</NavBarLink>
+				<NavBarLink to="/FriendList">FriendList</NavBarLink>
+				<NavBarLink to="/BlackList">BlackList</NavBarLink>
+				<NavBarLink to="/Setting">Setting</NavBarLink>
+				<NavBarLink to="/channels">Channels</NavBarLink>
+				<NavBarLink to="/matchmaking">Matchmaking</NavBarLink>
+				<NavBarLink to="/logout">Log Out</NavBarLink>
 			</ul>
 		</nav>
 	)
