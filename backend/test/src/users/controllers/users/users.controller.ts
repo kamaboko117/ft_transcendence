@@ -139,8 +139,9 @@ export class UsersController {
         const regex = stringRegex;
         const regexRet = body.fa.match(regex);
         console.log(regexRet);
-        const ret_user = await this.userService.findUserByName(user.username);
-        if (ret_user?.username === body.username)
+        const ret_user = await this.userService.findUserByName(body.username);
+        console.log(ret_user)
+        if (ret_user && ret_user.username === body.username)
             return ({ valid: false });
         if (file)
             this.userService.updatePathAvatarUser(user.userID, file.path);
