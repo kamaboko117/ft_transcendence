@@ -26,7 +26,7 @@ type typeFetchToBack = {
     action: string,
     jwt: string,
     userId: number,
-    option: number | boolean
+    option: string
 }
 
 const handleClick = (event: React.MouseEvent<HTMLButtonElement>, channelId: string,
@@ -37,9 +37,9 @@ const handleClick = (event: React.MouseEvent<HTMLButtonElement>, channelId: stri
         method: 'post',
         headers: headerPost(jwt),
         body: JSON.stringify({
-            id: channelId, action: action, time: 0, userId: userId
+            id: channelId, action: action, time: "", userId: userId
         })
-    }).catch(e=>console.log(e));
+    }).catch(e => console.log(e));
 }
 
 const fetchToBackWithTimer = (elem: typeFetchToBack) => {
@@ -50,7 +50,7 @@ const fetchToBackWithTimer = (elem: typeFetchToBack) => {
             id: elem.channelId, action: elem.action,
             option: elem.option, userId: elem.userId
         })
-    }).catch(e=>console.log(e));
+    }).catch(e => console.log(e));
 }
 
 /*
@@ -94,16 +94,16 @@ const handleBanMute = (event: React.MouseEvent<HTMLButtonElement>,
 }
 
 const handleSubmitBanMute = (event: React.FormEvent<HTMLFormElement>,
-    time: number,
+    time: string,
     setTime: React.Dispatch<React.SetStateAction<string | null>>,
     ref: React.RefObject<HTMLInputElement>,
     object: typeFetchToBack) => {
     event.preventDefault();
     const target: HTMLElement = event.target as HTMLElement;
-    
+
     if (!target)
-        return ;
-    if (isNaN(time) || typeof time != "number") {
+        return;
+    if (isNaN(Number(time))) {
         setTime("Not a number");
         if (ref && ref.current)
             ref.current.value = "Not a number";
@@ -130,7 +130,7 @@ const BanUser = (props: { shortPropsVariable: typeShortProps }) => {
         action: "Ban",
         jwt: props.shortPropsVariable.jwt,
         userId: props.shortPropsVariable.focusUserId,
-        option: 0
+        option: ""
     }
 
     useEffect(() => {
@@ -141,7 +141,7 @@ const BanUser = (props: { shortPropsVariable: typeShortProps }) => {
             <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
                 handleBanMute(e, setTime, refElem, time)} className="adminInfoUser">Ban user</button>
             <form className='adminBox' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
-                handleSubmitBanMute(e, Number(time), setTime, refElem, object)}>
+                handleSubmitBanMute(e, time, setTime, refElem, object)}>
                 <input ref={refElem} type="text"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setTime(e.currentTarget.value)} />
@@ -161,7 +161,7 @@ const MuteUser = (props: { shortPropsVariable: typeShortProps }) => {
         action: "Mute",
         jwt: props.shortPropsVariable.jwt,
         userId: props.shortPropsVariable.focusUserId,
-        option: 0
+        option: ""
     }
 
     useEffect(() => {
@@ -172,7 +172,7 @@ const MuteUser = (props: { shortPropsVariable: typeShortProps }) => {
             <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
                 handleBanMute(e, setTime, refElem, time)} className="adminInfoUser">Mute user</button>
             <form className='adminBox' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
-                handleSubmitBanMute(e, Number(time), setTime, refElem, object)}>
+                handleSubmitBanMute(e, time, setTime, refElem, object)}>
                 <input ref={refElem} type="text"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setTime(e.currentTarget.value)} />
@@ -189,18 +189,18 @@ const fetchKick = (event: React.MouseEvent<HTMLButtonElement>,
     const target: HTMLElement = event.target as HTMLElement;
 
     if (!target)
-        return ;
+        return;
     if (askKick === true) {
         fetch('http://' + location.host + '/api/chat-role/role-action', {
-        method: 'post',
-        headers: headerPost(object.jwt),
-        body: JSON.stringify({
-            id: object.channelId, action: object.action,
-            option: object.option, userId: object.userId
-        })
-    }).catch(e=>console.log(e));
+            method: 'post',
+            headers: headerPost(object.jwt),
+            body: JSON.stringify({
+                id: object.channelId, action: object.action,
+                option: object.option, userId: object.userId
+            })
+        }).catch(e => console.log(e));
     }
-    
+
 }
 
 const handleKick = (event: React.MouseEvent<HTMLButtonElement>,
@@ -215,7 +215,7 @@ const handleKick = (event: React.MouseEvent<HTMLButtonElement>,
         setAskKick(false);
 }
 
-const AskKick = (props: {askKick: boolean, object: typeFetchToBack}) => {
+const AskKick = (props: { askKick: boolean, object: typeFetchToBack }) => {
     return (<button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
         fetchKick(e, props.object, props.askKick)}>Confirm kick</button>);
 }
@@ -227,17 +227,16 @@ const KickUser = (props: { shortPropsVariable: typeShortProps }) => {
         action: "Kick",
         jwt: props.shortPropsVariable.jwt,
         userId: props.shortPropsVariable.focusUserId,
-        option: 0
+        option: ""
     }
 
     useEffect(() => {
         setAskKick(false);
     }, [props.shortPropsVariable.focusUserId])
-    if (askKick === true)
-    {
+    if (askKick === true) {
         return (<><button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
             handleKick(e, setAskKick, askKick)} className="adminInfoUser">Kick user</button>
-        <AskKick askKick={askKick} object={object} /></>);
+            <AskKick askKick={askKick} object={object} /></>);
     }
     return (<button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
         handleKick(e, setAskKick, askKick)} className="adminInfoUser">Kick user</button>);
@@ -294,7 +293,7 @@ const AdminComponent = (props: AdminCompType) => {
                         setUserId(0);
                         setRole("");
                     }
-                }).catch(e=>console.log(e));
+                }).catch(e => console.log(e));
         };
         //check if userInfo box is displayed on client
         if (props.chooseClassName === "userInfo userInfoClick")

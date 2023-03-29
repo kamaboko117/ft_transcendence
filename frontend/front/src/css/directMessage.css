@@ -30,6 +30,7 @@ ul.listDiscussion {
 .listDiscussion>li {
     overflow: hidden;
     cursor: pointer;
+    word-break: break-word;
 }
 
 div.listDiscussion>input[type="text"] {
@@ -83,7 +84,8 @@ form.formPm {
     display: flex;
     flex-direction: column;
 }
-form.formPm > * {
+
+form.formPm>* {
     width: 100%;
     margin: 0;
 }

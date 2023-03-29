@@ -99,25 +99,9 @@ function FaCode(props: { jwt: string }) {
             navigate("/");
 	}, [finish]);
 
-    useEffect(() => {
-        fetch('http://' + location.host + '/api/users/set-fa/',
-            { headers: header(props.jwt) })
-            .then(res => {
-                if (res.ok)
-                    return (res.json());
-                setErrorCode(res.status);
-            })
-            .then((res) => {
-                if (res) {
-                    setUrl(res.url);
-                }
-            }).catch(e=>console.log(e));
-    }, []);
-
     if (errorCode >= 401)
 		return (<FetchError code={errorCode} />);
     return (<>
-        <img src={url} atl="qrcode"/>
         <span>Please enter the code from your authenticator</span>
         <form onSubmit={(e) => handleSubmit(e, code, props.jwt, user.userId,
                 setErrorCode, setValid, setUser)}>

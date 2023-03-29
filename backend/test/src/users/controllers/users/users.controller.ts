@@ -8,7 +8,7 @@ import {
     UseGuards,
     UsePipes,
     ValidationPipe,
-    Request, Res, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, NotFoundException, UnauthorizedException, HttpException, HttpStatus
+    Request, Res, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, NotFoundException, UnauthorizedException, HttpException, HttpStatus, Query
 } from "@nestjs/common";
 import { CreateUserDto, BlockUnblock, UpdateUser, Username, FirstConnection, Code } from "src/users/dto/users.dtos";
 //import { UsersService } from "src/users/services/users/users.service";
@@ -107,7 +107,7 @@ export class UsersController {
 
     @Post('update-user')
     @UseInterceptors(FileInterceptor('fileset', {dest: './upload_avatar'}))
-    updateUser(@Request() req: any, @UploadedFile(new ParseFilePipe({
+    async updateUser(@Request() req: any, @UploadedFile(new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 1000000 }),
           new FileTypeValidator({ fileType: 'image/png'}),
@@ -122,6 +122,9 @@ export class UsersController {
         const regex = stringRegex;
         const regexRet = body.fa.match(regex);
         console.log(regexRet);
+        const ret_user = await this.userService.findUserByName(user.username);
+        if (ret_user?.username === body.username)
+            return ({valid: false});
         if (file)
             this.userService.updatePathAvatarUser(user.userID, file.path);
         if (body.username && body.username != "")
@@ -223,17 +226,24 @@ export class UsersController {
         return (ret_user);
     }
 
-/*
-    @Get('get-fl')
-    async getFriendList(@Request() req: any) {
+    /* get info focus user with friend and block list from requested user*/
+    @Get('info-fr-bl')
+    async getUserInfo(@Request() req: any,
+        @Query('name') name: Readonly<string>) {
         const user: TokenUser = req.user;
-        const getFl: BlackFriendList[] = await this.userService.getFriendList(user.userID);
-        const ret_user = await this.userService.getUserProfile(user.userID);
+        const ret_user = await this.userService.findUserByName(name);
 
         if (!ret_user)
-            return ({valid: false})
-        return ({valid: true});
-    }*/
+            return ({valid: false});
+        let info = await this.userService.focusUserBlFr(user.userID, Number(ret_user?.userID));
+        if (!info) {
+            return ({valid: true, id: ret_user.userID,
+                User_username: ret_user.username, fl: null,
+                bl: null})
+        }
+        info.valid = true;
+        return (info);
+    }
 
     @Get('fr-bl-list')
     async getFriendBlackListUser(@Request() req: any) {
@@ -259,7 +269,6 @@ export class UsersController {
         const user: TokenUser = req.user;
 
         const ret_user = await this.userService.findUserByName(body.username);
-        console.log(ret_user)
         if (!ret_user)
             return ({code: 0});
         else if (Number(ret_user.userID) == user.userID)
@@ -271,7 +280,6 @@ export class UsersController {
         this.userService.insertBlFr(user.userID, Number(ret_user.userID), 2);
         //need to check if user is in BL, for updating global friend black list
         const findInBlackList = await this.userService.searchUserInList(user.userID, ret_user.userID, 1);
-        console.log(findInBlackList)
         if (findInBlackList)
         {
             return ({ code: 3, id: Number(ret_user.userID),
@@ -288,7 +296,6 @@ export class UsersController {
         const user: TokenUser = req.user;
 
         const ret_user = await this.userService.findUserByName(body.username);
-        console.log(ret_user)
         if (!ret_user)
             return ({code: 0});
         else if (Number(ret_user.userID) == user.userID)
@@ -300,7 +307,6 @@ export class UsersController {
         this.userService.insertBlFr(user.userID, Number(ret_user.userID), 1);
         //need to check if user is in BL, for updating global friend black list
         const findInBlackList = await this.userService.searchUserInList(user.userID, ret_user.userID, 2);
-        console.log(findInBlackList)
         if (findInBlackList)
         {
             return ({ code: 3, id: Number(ret_user.userID),
@@ -315,8 +321,8 @@ export class UsersController {
     @Post('fr-bl-list')
     async useBlackFriendList(@Request() req: any, @Body() body: BlockUnblock) {
         const user: TokenUser = req.user;
-        const find: BlackFriendList | null = await this.userService.findBlFr(user.userID, body.userId, body.type);
-
+        const find: BlackFriendList | null
+            = await this.userService.findBlFr(user.userID, body.userId, body.type);
         if (user.userID === body.userId)
             return ({ add: false, type: null });
         if (find) {
@@ -326,6 +332,7 @@ export class UsersController {
         }
         else {
             //insert
+            console.log("insert")
             this.userService.insertBlFr(user.userID, body.userId, body.type);
         }
         return ({ add: true, type: body.type });
