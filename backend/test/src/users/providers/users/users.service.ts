@@ -176,7 +176,7 @@ export class UsersService {
 
     async getUserFaSecret(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
-            .select(['user.fa', 'user.secret_fa', 'user.username'])
+            .select(['user.fa', 'user.secret_fa', 'user.username', 'user.fa_first_entry'])
             .where('user.user_id = :user')
             .setParameters({ user: id })
             .getOne();
@@ -185,7 +185,7 @@ export class UsersService {
 
     async findUserByName(username: string) {
         const user: User | null = await this.userRepository.createQueryBuilder("user")
-            .select(["user.userID", "user.username"])
+            .select(["user.userID", "user.username", "user.fa"])
             .where('user.username = :name')
             .setParameters({ name: username })
             .getOne();

@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserContext from '../../contexts/UserContext';
-import { userProfile } from '../Chat/ListUser';
 import { FetchError, headerPost, header } from '../FetchError';
 
 const handleChange = (event, setCode) => {
