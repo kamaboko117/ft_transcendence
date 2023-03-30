@@ -28,17 +28,13 @@ import { toDataURL } from 'qrcode';
 export class UsersController {
     constructor(private readonly userService: UsersService,
         private authService: AuthService) { }
-
+/*
     @Get()
     getUsers() {
         return this.userService.getUsers();
-    }
+    }*/
 
-    @Get("id/:id")
-    findUsersById(@Param(":id", ParseIntPipe) id: number) {
-        console.log("id/id");
-        return this.userService.findUsersById(id);
-    }
+    
 
     @Public()
     @UseGuards(JwtFirstGuard)
@@ -387,11 +383,20 @@ export class UsersController {
         });
     }
 
-    @Post("create")
+    @Post('create')
     @UsePipes(ValidationPipe)
     createUsers(@Body() createUserDto: CreateUserDto) {
         return this.userService.createUser(createUserDto);
     }
 
-
+    @Get(':id')
+    async findUsersById(@Param('id', ParseIntPipe) id: number) {
+        console.log("id/id");
+        console.log(id)
+        const user = await this.userService.findUsersById(id);
+        console.log(user);
+        if (!user)
+            return ({userID: 0,username:"", avatarPath: null,fa: false});
+        return (user)
+    }
 }

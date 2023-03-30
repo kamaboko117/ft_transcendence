@@ -160,6 +160,9 @@ export class UsersService {
     async findUsersById(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
+            .addSelect(["Stat.victory", "Stat.defeat",
+                "Stat.nb_games", "Stat.level", "Stat.rank"])
+            .innerJoin('user.sstat', 'Stat')
             .where('user.user_id = :user')
             .setParameters({ user: id })
             .getOne();

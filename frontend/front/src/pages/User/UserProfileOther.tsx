@@ -23,21 +23,34 @@ type userInfo = {
 	sstat: statInfo
 }
 
-const UserProfileOther = (props: {jwt: string}) => {
+const handleImgError = (e) => {
+    const target: HTMLImageElement = e.target as HTMLImageElement;
+
+    if (target) {
+        target.src =  "/upload_avatar/default.png"; 
+    }
+}
+
+const UserProfileOther = (props: { jwt: string }) => {
 	const getLocation = useLocation();
-    const id = useParams().id as string;
+	const id = useParams().id as string;
 	const [errorCode, setErrorCode] = useState<number>(200);
-	const [avatar_path, setavatar_path] = useState<string>("");
 	const [otherUser, setOtheruser] = useState<userInfo>();
-	const id_res = Number(id);
+	const id_res = id;
 	console.log(id_res);
 	if (isNaN(Number(id)))
 		return (<span>Wrong type id</span>)
 	useEffect(() => {
-		fetch('http://' + location.host + `/api/users/id/${id_res}/`)
+		fetch(`http://` + location.host + `/api/users/${id_res}`, { headers: header(props.jwt) })
 			.then(res => {
+				console.log(res)
 				if (res.ok)
-					return(res.json());
+					return (res.json());
+			}).then(res => {
+				console.log(res);
+				if (res) {
+					setOtheruser(res)
+				}
 			})
 	}, []);
 	/*
@@ -56,10 +69,22 @@ const UserProfileOther = (props: {jwt: string}) => {
 	}, []);
 	*/
 	if (errorCode >= 400)
-		return (< FetchError code={errorCode}/>);
+		return (< FetchError code={errorCode} />);
 	return (
 		<>
 			<h1>Username: {otherUser?.username}</h1>
+			< img
+				className="avatar"
+				src={"../" + otherUser?.avatarPath}
+				alt={"avatar " + otherUser?.username}
+				onError={handleImgError}
+			/>
+			<ul>
+				<li>Victoire: {otherUser?.sstat.victory}</li>
+				<li>Défaite: {otherUser?.sstat.defeat}</li>
+				<li>Rang: {otherUser?.sstat.rank}</li>
+				<li>Niveau: {otherUser?.sstat.level}</li>
+			</ul>
 		</>
 	);
 }
