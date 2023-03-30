@@ -86,7 +86,15 @@ function App() {
                 </>
               } >
             </Route>
-            <Route path="/profile/:id" element={<UserProfileOther jwt={jwt} />} />
+            <Route path="/profile/:id" element={
+              <>
+              <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
+                  width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
+                <NavBar />
+              <UserProfileOther jwt={jwt} />
+              </>
+            } />
             <Route path="/friendList" element={
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />

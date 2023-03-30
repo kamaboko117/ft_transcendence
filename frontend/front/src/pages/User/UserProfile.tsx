@@ -132,14 +132,17 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	return (
 		<>
 		<h1>Username: [{user?.username}]</h1>
-		<img className="avatar" src={avatar_path} alt={"avatar " + user?.username}
+		< img
+			className="avatar"
+			src={avatar_path}
+			alt={"avatar " + user?.username}
 			onError={handleImgError}
 		/>
 		<ul>
 			<li>Victoire: {user?.sstat.victory}</li>
 			<li>Défaite: {user?.sstat.defeat}</li>	
-			<li>Rank: {user?.sstat.rank}</li>		
-			<li>Level: {user?.sstat.level}</li>		
+			<li>Rang: {user?.sstat.rank}</li>		
+			<li>Niveau: {user?.sstat.level}</li>		
 		</ul>
 		</>
 	);
