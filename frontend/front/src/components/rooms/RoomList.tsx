@@ -8,8 +8,8 @@ interface IRoomProps {
 
 export default function RoomList(props: IRoomProps) {
   return (
-    <div>
-      Room List
+    <div className="room_list_container">
+      <h2>Room List</h2>
       <ul className="room_list">
         {props.rooms.map((item: any) => (
           <RoomItem

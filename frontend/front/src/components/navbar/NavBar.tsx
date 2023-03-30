@@ -26,6 +26,7 @@ export default function NavBar() {
 				<NavBarLink to="/Setting">Setting</NavBarLink>
 				<NavBarLink to="/channels">Channels</NavBarLink>
 				<NavBarLink to="/logout">Log Out</NavBarLink>
+				<NavBarLink to="/play">Play</NavBarLink>
 			</ul>
 		</nav>
 	)
@@ -33,13 +34,13 @@ export default function NavBar() {
 
 function NavBarLink({ to, children, ...props }) {
 	//const resolvedPath = useResolvedPath(to);
-	//const isActive = useMatch({ path: resolvedPath.pathname, end: true });
+	const isActive = useMatch({ path: resolvedPath.pathname, end: true });
 
 	return (
-		<li /*className={isActive ? "active" : ""}*/>
-			<Link to={to} {...props}>
+		<div className={isActive ? "navbar_item navbar_item_active" : "navbar_item"}>
+			<Link className="navbar_link" to={to} {...props}>
 				{children}
 			</Link>
-		</li>
+		</div>
 	)
 }
