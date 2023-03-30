@@ -33,7 +33,7 @@ export class User {
 
   @Column({ nullable: true })
   avatarPath!: string;
-  
+
   /* Refresh token */
   @Column({
     nullable: false,
@@ -49,18 +49,22 @@ export class User {
   })
   secret_fa!: string;
 
+  /* Want to know if user has connected with a code for the first time */
+  @Column({ default: false })
+  fa_first_entry: boolean;
+
   @OneToMany(() => Channel, (listchannel) => listchannel.user)
   lstChannel: Channel[];
 
   @OneToMany(() => ListMsg, (listMsg) => listMsg.user)
   lstMsg: User[];
-  
+
   @OneToMany(() => ListUser, (listUsr) => listUsr.user)
   lstUsr: User[];
-  
+
   @OneToMany(() => ListBan, (listBan) => listBan.user)
   lstBan: User[];
-  
+
   @OneToMany(() => ListMute, (listMute) => listMute.user)
   lstMute: User[];
 
@@ -71,5 +75,5 @@ export class User {
   lstBlackFriendFocus: BlackFriendList[];
   @OneToOne(() => Stat, (stat) => stat.user)
   sstat: Stat[]
-  
+
 }

@@ -263,22 +263,33 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(JwtGuard)
   async handleConnection(client: Socket) {
-    console.log("connect client id: " + client.id);
+    console.log("USER GATEWAY connect client id: " + client.id);
     const bearer = client.handshake.headers.authorization;
     if (bearer) {
       const user: any = await this.authService.verifyToken(bearer);
+      /*this.mapSocket.forEach((value, key) => {
+        this.server.to(key).emit("currentStatus", {
+          code: 1, userId: user.userID
+        });
+      })*/
       if (user)
         this.mapSocket.set(client.id, user.userID);
     }
   }
 
-  handleDisconnect(client: Socket) {
-    console.log("disconnect client id: " + client.id);
-    this.mapSocket.delete(client.id);
-    this.mapSocket.forEach((value, key) => {
-      this.server.to(key).emit("currentStatus", {
-        code: 0
-      });
-    })
+  @UseGuards(JwtGuard)
+  async handleDisconnect(client: Socket) {
+    console.log("USER GATEWAY disconnect client id: " + client.id);
+    const bearer = client.handshake.headers.authorization;
+    if (bearer) {
+      const user: any = await this.authService.verifyToken(bearer);
+      /*this.mapSocket.forEach((value, key) => {
+        this.server.to(key).emit("currentStatus", {
+          code: 0, userId: user.userID
+        });
+      })*/
+      if (user)
+        this.mapSocket.delete(client.id);
+    }
   }
 }

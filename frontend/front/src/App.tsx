@@ -83,8 +83,8 @@ function App() {
                   width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <UserProfile jwt={jwt} /><PlayerApp />
-                </>
-              } >
+              </>
+            } >
             </Route>
             <Route path="/profile/:id" element={
               <>
@@ -114,11 +114,11 @@ function App() {
             } />
             <Route path="/setting" element={
               <>
-                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
-                {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
-                  width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
+                {/*<UsernameSet jwt={jwt} username={username} setUsername={setUsername} />*/}
+                {/*jwt && jwt != "" && <UnfoldDirectMessage*/ /*render={renderDirectMessage} id={id}*/
+                  /*width={600} height={280} opacity={1} jwt={jwt} *//*setId={setId}*//* />*/}
                 <NavBar />
-                <Setting jwt={jwt}/><PlayerApp />
+                <Setting jwt={jwt} /><PlayerApp />
               </>
             } />
             <Route path="/login" element={
@@ -157,7 +157,7 @@ function App() {
                 <ListChannel jwt={jwt} /><PlayerApp />
               </>
             }>
-            <Route path=":id" element={<Chat jwt={jwt} />} />
+              <Route path=":id" element={<Chat jwt={jwt} />} />
             </Route>
             <Route path="/play" element={
               <>
