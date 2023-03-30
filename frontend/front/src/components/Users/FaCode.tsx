@@ -70,8 +70,6 @@ const CleanerCode = (props: { userCtx, user, valid }) => {
                 username: props.user.username,
                 userId: props.user.userId
             });
-            console.log("DSADASD")
-            console.log(props.userCtx.getJwt())
             //if (props.userCtx.getJwt() != null && props.userCtx.getJwt() !== "")
             setFinish(true);
         }
@@ -116,7 +114,6 @@ function FaCode(props: { jwt: string }) {
         }
         if (user.jwt && valid === true) {
             logout();
-            console.log("wwwwwwww")
         }
 
     }, [valid, user]);

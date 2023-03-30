@@ -97,6 +97,7 @@ export class UsersController {
                 isValid = authenticator.verify({ token: String(body.code), secret: userDb.secret_fa });
                 if (isValid) {
                     user.fa_code = String(body.code);
+                    this.userService.updateFaFirstEntry(user.userID);
                     access_token = await this.authService.login(user);
                     return ({ valid: isValid, username: userDb.username, token: access_token });
                 }
@@ -126,6 +127,19 @@ export class UsersController {
         return ({ token: access_token, user_id: req.user.userID });
     }
 
+    checkUpdateUserError(ret_user: any, ret_user2: any,
+        body: any, regexRet: any) {
+        if (ret_user && ret_user.username === body.username)
+            return ({ valid: false, code: 1 });
+        if (ret_user2?.fa === true && regexRet
+            && (body.username === ""))
+            return ({ valid: false, code: 2 });
+        if (ret_user2?.fa === false && !regexRet
+            && (body.username === ""))
+            return ({ valid: false, code: 2 });
+        return (false);
+    }
+
     @Post('update-user')
     @UseInterceptors(FileInterceptor('fileset', { dest: './upload_avatar' }))
     async updateUser(@Request() req: any, @UploadedFile(new ParseFilePipe({
@@ -141,17 +155,12 @@ export class UsersController {
         const regexRet = body.fa.match(regex);
         const ret_user = await this.userService.findUserByName(body.username);
         const ret_user2 = await this.userService.findUsersById(user.userID);
-
+        console.log(user)
         console.log(regexRet);
         console.log(body)
-        if (ret_user && ret_user.username === body.username)
-            return ({ valid: false, code: 1 });
-        /*if (body.fa === '{"fa":true}' && ret_user2?.fa === true)
-            return ({ valid: false, code: 2 });
-        if (body.fa === '{"fa":false}' && ret_user2?.fa === false)
-            return ({ valid: false, code: 2 });*/
-
-        user.fa_code = "";
+        const retErr = this.checkUpdateUserError(ret_user, ret_user2, body, regexRet)
+        if (!(retErr === false))
+            return (retErr);
         if (body.username !== "")
             user.username = body.username;
         else if (ret_user2)
@@ -160,21 +169,20 @@ export class UsersController {
             this.userService.updatePathAvatarUser(user.userID, file.path);
         if (body.username && body.username != "")
             this.userService.updateUsername(user.userID, body.username);
-        if (regexRet)
-            user.fa = true;
-        else
-            user.fa = false;
         if (regexRet && ret_user2?.fa === false) {
             //generate new auth secret
             console.log("NEW SEC")
+            user.fa = true;
+            user.fa_code = "";
             this.userService.update2FA(user.userID, true, authenticator.generateSecret());
         }
         else if (!regexRet) {
+            user.fa = false;
+            user.fa_code = "";
             this.userService.update2FA(user.userID, false, null);
         }
         const access_token = await this.authService.login(user);
-        //if ((!body.username || body.username === "") && ret_user2)
-        //     return ({ valid: true, username: ret_user2.username, token: access_token });
+        console.log(user)
         return ({ valid: true, username: user.username, token: access_token });
     }
 
@@ -247,8 +255,6 @@ export class UsersController {
     async getProfile(@Request() req: any) {
         const user: TokenUser = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
-        console.log("profile");
-        console.log(ret_user);
         return (ret_user);
     }
 
@@ -259,8 +265,6 @@ export class UsersController {
     async firstConnectionProfile(@Request() req: any) {
         const user: TokenUser = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
-        console.log("profile");
-        console.log(ret_user);
         return (ret_user);
     }
 
