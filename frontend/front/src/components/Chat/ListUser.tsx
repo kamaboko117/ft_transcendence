@@ -16,6 +16,7 @@ type typeUserInfo = {
     id: number,
     friend: number | null,
     block: number | null,
+    avatarPath: string | null
 }
 
 type typeListUser = {
@@ -25,6 +26,7 @@ type typeListUser = {
         fl: number | null,
         bl: number | null,
         User_username: string,
+        User_avatarPath: string | null
     }>
 }
 
@@ -57,23 +59,23 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
     setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
     lstUserGlobal: {
         id: number, fl: number | null,
-        bl: number | null, User_username: string
+        bl: number | null, User_username: string, User_avatarPath: string | null
     }[],
     setLstUserGlobal: React.Dispatch<React.SetStateAction<{
         id: number, fl: number | null,
-        bl: number | null, User_username: string
+        bl: number | null, User_username: string, User_avatarPath: string | null
     }[]>>): void => {
     event.preventDefault();
 
     function updateUserInfo(username: string, role: string | null, id: number,
-        friend: number | null, block: number | null) {
+        friend: number | null, block: number | null, avatarPath: string | null) {
         setUserInfo({
             username: username, role: role,
-            id: id, friend: friend, block: block
+            id: id, friend: friend, block: block, avatarPath: avatarPath
         });
         updateBlackFriendList({
             id: id,
-            fl: friend, bl: block, User_username: username
+            fl: friend, bl: block, User_username: username, User_avatarPath: avatarPath
         }, lstUserGlobal, setLstUserGlobal);
     }
 
@@ -92,18 +94,18 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
             if (res.add) {
                 if (res.type === 1) {
                     updateUserInfo(userInfo.username, userInfo.role, userInfo.id,
-                        userInfo.friend, res.type);
+                        userInfo.friend, res.type, userInfo.avatarPath);
                 } else if (res.type === 2) {
                     updateUserInfo(userInfo.username, userInfo.role, userInfo.id,
-                        res.type, userInfo.block);
+                        res.type, userInfo.block, userInfo.avatarPath);
                 }
             } else {
                 if (res.type === 1) {
                     updateUserInfo(userInfo.username, userInfo.role, userInfo.id,
-                        userInfo.friend, null);
+                        userInfo.friend, null, userInfo.avatarPath);
                 } else if (res.type === 2) {
                     updateUserInfo(userInfo.username, userInfo.role, userInfo.id,
-                        null, userInfo.block);
+                        null, userInfo.block, userInfo.avatarPath);
                 }
             }
         }
@@ -162,20 +164,21 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     if (e.nodeName === "SPAN"
         && (userInfo.username === "" || userInfo.username != name)) {
         setUserId(Number(attributes[1].value));
-        if (attributes.length === 5)
+        if (attributes.length === 6)
             setUserInfo({
                 username: name,
                 role: attributes[2].value,
                 id: Number(attributes[1].value),
                 friend: Number(attributes[3].value),
-                block: Number(attributes[4].value)
+                block: Number(attributes[4].value),
+                avatarPath: attributes[5].value
             });
         else
-            setUserInfo({ username: name, role: "", id: 0, block: null, friend: null });
+            setUserInfo({ username: name, role: "", id: 0, block: null, friend: null, avatarPath: null });
     }
     else {
         setUserId(0);
-        setUserInfo({ username: "", role: "", id: 0, block: null, friend: null })
+        setUserInfo({ username: "", role: "", id: 0, block: null, friend: null, avatarPath: null })
     }
     setTop(parentNode.offsetTop);
 }
@@ -259,10 +262,18 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
     </>)
 }
 
+export const handleImgError = (e) => {
+    const target: HTMLImageElement = e.target as HTMLImageElement;
+
+    if (target) {
+        target.src = "/upload_avatar/default.png";
+    }
+}
+
 const UserInfo = (props: PropsUserInfo): JSX.Element => {
     const { renderDirectMessage, userId, setDisplay, setUserId, setId } = useContext(ContextDisplayChannel);
     const [userInfo, setUserInfo] = useState<typeUserInfo>({
-        username: "", role: "", id: 0, friend: null, block: null
+        username: "", role: "", id: 0, friend: null, block: null, avatarPath: null
     });
     //need to search in listUser, to update userInfo 
     //  variable content (like this AdminComponent get updated properly)
@@ -277,7 +288,8 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
                 username: userInfo.username,
                 role: found.list_user_role,
                 id: Number(found.list_user_user_id),
-                friend: found.fl, block: found.bl
+                friend: found.fl, block: found.bl,
+                avatarPath: found.User_avatarPath
             });
         }
     }, [found, props.id]);
@@ -314,7 +326,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
     }, [userInfo.username])*/
 
     const handleListenerClick = () => {
-        setUserInfo({ username: "", role: "", id: 0, friend: null, block: null });
+        setUserInfo({ username: "", role: "", id: 0, friend: null, block: null, avatarPath: null });
     }
     //Read React's reference doc
     const ref: any = useEventListenerUserInfo(handleListenerClick);
@@ -346,12 +358,17 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
                             data-role={(usr.list_user_role == null ? "" : usr.list_user_role)}
                             data-friend={(usr.fl == null ? "" : usr.fl)}
                             data-block={(usr.bl == null ? "" : usr.bl)}
+                            data-img={(usr.User_avatarPath == null ? "" : usr.User_avatarPath)}
                             key={++i}>{usr.User_username}</span>
                     ))
                 }
             </Element >
             <div className={chooseClassName} style={{ top: offsetTop }}>
                 <label className="userInfo">{userInfo.username}</label>
+                <img src={"/" + userInfo.avatarPath} className="chatBox"
+                    alt={"avatar " + userInfo.username}
+                    onError={handleImgError}
+                />
                 <ButtonsInfos id={props.id} chooseClassName={chooseClassName}
                     renderDirectMessage={renderDirectMessage} setDisplay={setDisplay}
                     setId={setId} setErrorCode={props.setErrorCode}
@@ -388,6 +405,7 @@ const ListUserChat = (props: {
             }).catch(e => console.log(e)));
         }
         fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
+            console.log(res)
             setLstUserChat(res);
         }).catch(e => console.log(e));
         usrSocket?.on("updateListChat", () => {

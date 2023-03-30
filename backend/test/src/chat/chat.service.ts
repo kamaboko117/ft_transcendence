@@ -289,7 +289,7 @@ export class ChatService {
         const arr: any = await this.listUserRepository
             .createQueryBuilder("list_user")
             .select(["list_user.user_id", "list_user.role"])
-            .addSelect("User.username")
+            .addSelect(["User.username", "User.avatarPath"])
             .addSelect("t1.type_list AS bl")
             .addSelect("t2.type_list AS fl")
             .innerJoin("list_user.user", "User")

@@ -52,10 +52,12 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client: Socket) {
     console.log("USER GATEWAY connect client id: " + client.id);
     const bearer = client.handshake.headers.authorization;
+    console.log(bearer)
     if (bearer) {
       const user: any = await this.authService.verifyToken(bearer);
       if (!user)
         return;
+      console.log(user)
       this.mapSocket.forEach((value, key) => {
         this.server.to(key).emit("currentStatus", {
           code: 1, userId: user.userID

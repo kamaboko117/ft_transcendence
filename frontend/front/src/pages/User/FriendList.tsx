@@ -3,13 +3,14 @@ import ContextDisplayChannel, { LoadUserGlobal, updateBlackFriendList } from "..
 import scroll from 'react-scroll';
 import { useEventListenerUserInfo } from "../../useHook/useEventListener";
 import { FetchError, headerPost } from "../../components/FetchError";
-import { directMessage, StatusUser } from "../../components/Chat/ListUser";
+import { directMessage, handleImgError, StatusUser } from "../../components/Chat/ListUser";
 
 type typeUserInfo = {
 	username: string,
 	id: number,
 	fl: number | null,
 	bl: number | null,
+	avatarPath: string | null
 }
 
 type typeFlBl = {
@@ -17,6 +18,7 @@ type typeFlBl = {
 	fl: number | null,
 	bl: number | null,
 	User_username: string,
+	User_avatarPath: string | null
 }
 
 export const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
@@ -26,23 +28,23 @@ export const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 	setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
 	lstUserGlobal: {
 		id: number, fl: number | null,
-		bl: number | null, User_username: string
+		bl: number | null, User_username: string, User_avatarPath: string | null
 	}[],
 	setLstUserGlobal: React.Dispatch<React.SetStateAction<{
 		id: number, fl: number | null,
-		bl: number | null, User_username: string
+		bl: number | null, User_username: string, User_avatarPath: string | null
 	}[]>>): void => {
 	event.preventDefault();
 
 	function updateUserInfo(username: string, id: number,
-		friend: number | null, block: number | null) {
+		friend: number | null, block: number | null, avatarPath: string | null) {
 		setUserInfo({
 			username: username,
-			id: id, fl: friend, bl: block
+			id: id, fl: friend, bl: block, avatarPath: avatarPath
 		});
 		updateBlackFriendList({
 			id: id,
-			fl: friend, bl: block, User_username: username
+			fl: friend, bl: block, User_username: username, User_avatarPath: avatarPath
 		}, lstUserGlobal, setLstUserGlobal);
 	}
 
@@ -61,18 +63,18 @@ export const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 			if (res.add) {
 				if (res.type === 1) {
 					updateUserInfo(userInfo.username, Number(userInfo.id),
-						userInfo.fl, res.type);
+						userInfo.fl, res.type, userInfo.avatarPath);
 				} else if (res.type === 2) {
 					updateUserInfo(userInfo.username, Number(userInfo.id),
-						res.type, userInfo.bl);
+						res.type, userInfo.bl, userInfo.avatarPath);
 				}
 			} else {
 				if (res.type === 1) {
 					updateUserInfo(userInfo.username, Number(userInfo.id),
-						userInfo.fl, null);
+						userInfo.fl, null, userInfo.avatarPath);
 				} else if (res.type === 2) {
 					updateUserInfo(userInfo.username, Number(userInfo.id),
-						null, userInfo.bl);
+						null, userInfo.bl, userInfo.avatarPath);
 				}
 			}
 		}
@@ -87,25 +89,25 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
 	const name: string = e.textContent as string;
 	//get attributes node
 	const attributes: NamedNodeMap = e.attributes as NamedNodeMap;
-	const parentNode: HTMLElement = e.parentNode as HTMLElement;
 	console.log(e)
 	/* update userInfo state on click, from the html tree */
 	if (userInfo.username === "" || userInfo.username != name) {
 		//setUserId(Number(attributes[0].value));
-		if (attributes.length === 3) {
+		if (attributes.length === 4) {
 			setUserInfo({
 				username: name,
 				id: Number(attributes[0].value),
 				fl: Number(attributes[1].value),
-				bl: Number(attributes[2].value)
+				bl: Number(attributes[2].value),
+				avatarPath: attributes[3].value
 			});
 		}
 		else
-			setUserInfo({ username: name, id: 0, bl: null, fl: null });
+			setUserInfo({ username: name, id: 0, bl: null, fl: null, avatarPath: null });
 	}
 	else {
 		//setUserId(0);
-		setUserInfo({ username: "", id: 0, bl: null, fl: null })
+		setUserInfo({ username: "", id: 0, bl: null, fl: null, avatarPath: null })
 	}
 	//setTop(parentNode.offsetTop);
 }
@@ -161,6 +163,7 @@ const PrintArray = (props: { type: string, lstUserGlobal: Array<typeFlBl> }) => 
 						<span data-user-id={usr.id}
 							data-friend={(usr.fl == null ? "" : usr.fl)}
 							data-block={(usr.bl == null ? "" : usr.bl)}
+							data-img={(usr.User_avatarPath == null ? "" : usr.User_avatarPath)}
 							key={++i}>{usr.User_username}</span>
 					)
 				}
@@ -174,6 +177,7 @@ const PrintArray = (props: { type: string, lstUserGlobal: Array<typeFlBl> }) => 
 						<span data-user-id={usr.id}
 							data-friend={(usr.fl == null ? "" : usr.fl)}
 							data-block={(usr.bl == null ? "" : usr.bl)}
+							data-img={(usr.User_avatarPath == null ? "" : usr.User_avatarPath)}
 							key={++i}>{usr.User_username}</span>
 					)
 				}
@@ -208,7 +212,7 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 		if (res && res.code === 3) {
 			updateBlackFriendList({
 				id: res.id,
-				fl: res.fl, bl: res.bl, User_username: res.User_username
+				fl: res.fl, bl: res.bl, User_username: res.User_username, User_avatarPath: res.User_avatarPath
 			}, lstUserGlobal, setLstUserGlobal);
 		}
 	})
@@ -222,7 +226,7 @@ export const Display = (props: {
 	type: string
 }) => {
 	const handleListenerClick = () => {
-		props.setUserInfo({ username: "", id: 0, fl: null, bl: null });
+		props.setUserInfo({ username: "", id: 0, fl: null, bl: null, avatarPath: null });
 	}
 	const ref: any = useEventListenerUserInfo(handleListenerClick);
 	const Element = scroll.Element;
@@ -236,6 +240,10 @@ export const Display = (props: {
 		</Element>
 		<div className={chooseClassName} style={{ position: "relative" }}>
 			<label className="userInfo">{props.userInfo.username}</label>
+			<img src={"/" + props.userInfo.avatarPath} className="chatBox"
+				alt={"avatar " + props.userInfo.username}
+				onError={handleImgError}
+			/>
 			<ButtonsInfos jwt={props.jwt} userInfo={props.userInfo} type={props.type}
 				setUserInfo={props.setUserInfo} setErrorCode={props.setErrorCode} />
 		</div>
@@ -246,7 +254,7 @@ export const Display = (props: {
 export default function FriendList(props: { jwt: string }) {
 	const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
 	const [userInfo, setUserInfo] = useState<typeUserInfo>({
-		username: "", id: 0, fl: null, bl: null
+		username: "", id: 0, fl: null, bl: null, avatarPath: null
 	});
 	const [value, setValue] = useState<null | string>(null);
 	const [errorCode, setErrorCode] = useState<number>(200);

@@ -28,13 +28,13 @@ import { toDataURL } from 'qrcode';
 export class UsersController {
     constructor(private readonly userService: UsersService,
         private authService: AuthService) { }
-/*
-    @Get()
-    getUsers() {
-        return this.userService.getUsers();
-    }*/
+    /*
+        @Get()
+        getUsers() {
+            return this.userService.getUsers();
+        }*/
 
-    
+
 
     @Public()
     @UseGuards(JwtFirstGuard)
@@ -126,7 +126,8 @@ export class UsersController {
 
     checkUpdateUserError(ret_user: any, ret_user2: any,
         body: any, regexRet: any) {
-        if (ret_user && ret_user.username === body.username)
+        if (ret_user && ret_user.username === body.username
+            && body.username != "")
             return ({ valid: false, code: 1 });
         if (ret_user2?.fa === true && regexRet
             && (body.username === ""))
@@ -155,15 +156,17 @@ export class UsersController {
         console.log(user)
         console.log(regexRet);
         console.log(body)
-        const retErr = this.checkUpdateUserError(ret_user, ret_user2, body, regexRet)
+        if (file)
+            this.userService.updatePathAvatarUser(user.userID, file.path);
+        const retErr = this.checkUpdateUserError(ret_user,
+            ret_user2, body,
+            regexRet);
         if (!(retErr === false))
             return (retErr);
         if (body.username !== "")
             user.username = body.username;
         else if (ret_user2)
             user.username = ret_user2.username;
-        if (file)
-            this.userService.updatePathAvatarUser(user.userID, file.path);
         if (body.username && body.username != "")
             this.userService.updateUsername(user.userID, body.username);
         if (regexRet && ret_user2?.fa === false) {
@@ -325,13 +328,13 @@ export class UsersController {
             return ({
                 code: 3, id: Number(ret_user.userID),
                 fl: 2, bl: 1,
-                User_username: ret_user.username
+                User_username: ret_user.username, User_avatarPath: ret_user.avatarPath
             });
         }
         return ({
             code: 3, id: Number(ret_user.userID),
             fl: 2, bl: 0,
-            User_username: ret_user.username
+            User_username: ret_user.username, User_avatarPath: ret_user.avatarPath
         });
     }
 
@@ -355,13 +358,13 @@ export class UsersController {
             return ({
                 code: 3, id: Number(ret_user.userID),
                 fl: 2, bl: 1,
-                User_username: ret_user.username
+                User_username: ret_user.username, User_avatarPath: ret_user.avatarPath
             });
         }
         return ({
             code: 3, id: Number(ret_user.userID),
             fl: 2, bl: 0,
-            User_username: ret_user.username
+            User_username: ret_user.username, User_avatarPath: ret_user.avatarPath
         });
     }
 
@@ -422,7 +425,7 @@ export class UsersController {
         const user = await this.userService.findUsersById(id);
         console.log(user);
         if (!user)
-            return ({userID: 0,username:"", avatarPath: null,fa: false});
+            return ({ userID: 0, username: "", avatarPath: null, fa: false });
         return (user)
     }
 }
