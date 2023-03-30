@@ -127,7 +127,17 @@ export class UsersService {
 
         this.userRepository.createQueryBuilder()
             .update(User)
-            .set({ fa: fa, secret_fa: secret! })
+            .set({ fa: fa, secret_fa: secret!, fa_first_entry: false })
+            .where("user_id = :id")
+            .setParameters({ id: user_id })
+            .execute()
+    }
+    /* Will set to true fa_first_entry,
+    this is needed to check if user has set his fa code for the first time */
+    async updateFaFirstEntry(user_id: number) {
+        this.userRepository.createQueryBuilder()
+            .update(User)
+            .set({ fa_first_entry: true })
             .where("user_id = :id")
             .setParameters({ id: user_id })
             .execute()
@@ -179,7 +189,7 @@ export class UsersService {
 
     async getUserFaSecret(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
-            .select(['user.fa', 'user.secret_fa', 'user.username'])
+            .select(['user.fa', 'user.secret_fa', 'user.username', 'user.fa_first_entry'])
             .where('user.user_id = :user')
             .setParameters({ user: id })
             .getOne();
@@ -188,7 +198,7 @@ export class UsersService {
 
     async findUserByName(username: string) {
         const user: User | null = await this.userRepository.createQueryBuilder("user")
-            .select(["user.userID", "user.username"])
+            .select(["user.userID", "user.username", "user.fa"])
             .where('user.username = :name')
             .setParameters({ name: username })
             .getOne();

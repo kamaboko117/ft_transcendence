@@ -192,14 +192,19 @@ export const StatusUser = (props: { userId: number, jwt: string }) => {
         //emit ask user connecté/ig sur map, puis return reponse
         //.on les deconnexions, co, in 
         usrSocket?.emit("status", { userId: props.userId }, (res: { code: number }) => {
+            console.log("Sta")
+            console.log(res)
             if (res)
                 setStatus(res.code);
         });
-        usrSocket?.on('currentStatus', (res: { code: number }) => {
-            if (res)
+        usrSocket?.on('currentStatus', (res: { code: number, userId: string }) => {
+            console.log(res)
+            console.log(props.userId)
+            if (res && props.userId === Number(res.userId))
                 setStatus(res.code);
         })
         return (() => {
+            usrSocket?.off("currentStatus");
             setStatus(0);
         })
     }, [props.userId, props.jwt]);
