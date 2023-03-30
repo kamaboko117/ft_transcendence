@@ -1,4 +1,4 @@
-import React, {useContext, useState} from "react";
+import React, { useContext, useState } from "react";
 import { FetchError, headerPost } from "../../components/FetchError";
 import ContextDisplayChannel, { LoadUserGlobal, updateBlackFriendList } from "../../contexts/DisplayChatContext";
 import { Display } from "./FriendList";
@@ -11,18 +11,22 @@ type typeUserInfo = {
 }
 
 type typeFlBl = {
-    id: number,
-    fl: number | null,
-    bl: number | null,
-    User_username: string,
+	id: number,
+	fl: number | null,
+	bl: number | null,
+	User_username: string,
 }
 
 function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 	setLstUserGlobal: React.Dispatch<React.SetStateAction<Array<typeFlBl>>>,
-	jwt: string, value: string | null, errorCode: number,
+	jwt: string, value: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	lstUserGlobal: Array<typeFlBl>) {
 	e.preventDefault();
+	if (!e)
+		return;
+	if (!value || value === "")
+		return;
 	fetch("http://" + location.host + "/api/users/add-blacklist", {
 		method: 'post',
 		headers: headerPost(jwt),
@@ -35,8 +39,7 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 		setErrorCode(res.status)
 	}).then(res => {
 		console.log(res);
-		if (res && res.code === 3)
-		{
+		if (res && res.code === 3) {
 			updateBlackFriendList({
 				id: res.id,
 				fl: res.fl, bl: res.bl, User_username: res.User_username
@@ -55,10 +58,10 @@ export default function BlackList(props: { jwt: string }) {
 	return (<section>
 		<h1>Black List</h1>
 		<form onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e, setLstUserGlobal
-			, props.jwt, value, errorCode, setErrorCode, lstUserGlobal)}>
+			, props.jwt, value, setErrorCode, lstUserGlobal)}>
 			<input type="text" placeholder="Enter username"
-				onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-					setValue(e.currentTarget.value)}/>
+				onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+					setValue(e.currentTarget.value)} />
 			<input type="submit" value="Add new block" />
 		</form>
 		{errorCode && errorCode === 1 && <span>User not found</span>}

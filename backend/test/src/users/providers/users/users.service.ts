@@ -127,7 +127,17 @@ export class UsersService {
 
         this.userRepository.createQueryBuilder()
             .update(User)
-            .set({ fa: fa, secret_fa: secret! })
+            .set({ fa: fa, secret_fa: secret!, fa_first_entry: false })
+            .where("user_id = :id")
+            .setParameters({ id: user_id })
+            .execute()
+    }
+    /* Will set to true fa_first_entry,
+    this is needed to check if user has set his fa code for the first time */
+    async updateFaFirstEntry(user_id: number) {
+        this.userRepository.createQueryBuilder()
+            .update(User)
+            .set({ fa_first_entry: true })
             .where("user_id = :id")
             .setParameters({ id: user_id })
             .execute()
