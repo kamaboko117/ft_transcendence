@@ -99,34 +99,30 @@ export default function MatchmakingPage() {
 
   const cancelRef = React.useRef(null);
 
+  /*
   const {
     isOpen: isAlertOpen,
     onOpen: openAlert,
     onClose: closeAlert,
   } = useDisclosure();
 
-  const [errorCode, setErrorCode] = useState<number>(200);
-  const [Queue, enterQueue] = useState(false);
-
-  const onQueuePop = () => {
+    const onQueuePop = () => {
     openAlert();
   };
-  useEffect(() => {
-    console.log("load exception listener");
-    usrSocket?.on("matchmakingfailed", (res: any) => {
-      console.log(res);
-  })
-  
-  usrSocket?.on("queueoutfailed", (res: any) => {
-    console.log(res);
-})
+  //In both cases, an alert is supposed to show up and it's dismissed
+  const refuseMatch = () => {
+    //user refused the match found by queue;
+    declineMatch();
+    closeAlert();
+  };
 
-usrSocket?.on("foundmatch", (res: any) => {
-  openAlert();
-  console.log(res);
-})
+  const acceptMatchFt = () => {
+    //user accepted the match found by queue
+    acceptMatch();  
+    closeAlert();
+  };
 
-usrSocket?.on("acceptMMmatchFailed", (res: any) => {
+  usrSocket?.on("acceptMMmatchFailed", (res: any) => {
   console.log(res);
 })
 
@@ -137,15 +133,59 @@ usrSocket?.on("declineMMmatchFailed", (res: any) => {
 usrSocket?.on("queueoutfailed", (res: any) => {
   console.log(res);
 })
-  
+
+  */
+
+
+/*
+
+      <AlertDialog
+        motionPreset="slideInBottom"
+        onClose={closeAlert}
+        isOpen={isAlertOpen}
+        isCentered
+        closeOnEsc={false}
+        closeOnOverlayClick={false}
+        leastDestructiveRef={React.useRef(null)}
+      >
+        <AlertDialogOverlay />
+        <AlertDialogContent>
+          <AlertDialogHeader>A new Challenger has arrived</AlertDialogHeader>
+          <AlertDialogCloseButton />
+          <AlertDialogBody>Are you ready for the next battle?</AlertDialogBody>
+          <AlertDialogFooter>
+            <Button color="#f194ff" onClick={acceptMatchFt}>
+              Accept
+            </Button>
+            <Button color="#f194ff" onClick={refuseMatch}></Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      */
+     
+
+  const [errorCode, setErrorCode] = useState<number>(200);
+  const [Queue, enterQueue] = useState(false);
+
+  useEffect(() => {
+    console.log("load exception listener");
+    usrSocket?.on("matchmakingfailed", (res: any) => {
+      console.log(res);
+  })
+
+
+usrSocket?.on("foundmatch", (res: any) => {
+  //openAlert();
+  console.log(res);
+})
+
   ;
   return (() => {
     console.log("unload exception listener");
     usrSocket?.off('matchmakingfailed');
-    usrSocket?.off('acceptMMmatchFailed');
-    usrSocket?.off('declineMMmatchFailed');
-    usrSocket?.off('queueoutfailed');
-    usrSocket?.off('queueoutfailed');
+   // usrSocket?.off('acceptMMmatchFailed');
+   // usrSocket?.off('declineMMmatchFailed');
     usrSocket?.off('foundmatch');
 
   })
@@ -180,18 +220,6 @@ usrSocket?.on("queueoutfailed", (res: any) => {
 
     }
   };
-  //In both cases, an alert is supposed to show up and it's dismissed
-  const refuseMatch = () => {
-    //user refused the match found by queue;
-    declineMatch();
-    closeAlert();
-  };
-
-  const acceptMatchFt = () => {
-    //user accepted the match found by queue
-    acceptMatch();  
-    closeAlert();
-  };
 
   
   return (
@@ -215,28 +243,6 @@ usrSocket?.on("queueoutfailed", (res: any) => {
           )}
         </Flex>
       </Button>
-      <AlertDialog
-        motionPreset="slideInBottom"
-        onClose={closeAlert}
-        isOpen={isAlertOpen}
-        isCentered
-        closeOnEsc={false}
-        closeOnOverlayClick={false}
-        leastDestructiveRef={React.useRef(null)}
-      >
-        <AlertDialogOverlay />
-        <AlertDialogContent>
-          <AlertDialogHeader>A new Challenger has arrived</AlertDialogHeader>
-          <AlertDialogCloseButton />
-          <AlertDialogBody>Are you ready for the next battle?</AlertDialogBody>
-          <AlertDialogFooter>
-            <Button color="#f194ff" onClick={acceptMatchFt}>
-              Accept
-            </Button>
-            <Button color="#f194ff" onClick={refuseMatch}></Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
     </>
   );
