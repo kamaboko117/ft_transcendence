@@ -93,9 +93,8 @@ export default function PlayPage(props: { jwt: string }) {
   return (
     <GameContext.Provider value={gameContextValue}>
       {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}
-      <div>Play</div>
       <button className="btn" onClick={openModalHandler}>
-        create new room
+        Create New Room
       </button>
       {modalIsOpen && (
         <Modal jwt={props.jwt} onCancel={closeModalHandler} onSubmit={joinRoom} />

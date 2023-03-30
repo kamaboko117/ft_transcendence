@@ -6,11 +6,12 @@ export default function NavBar() {
 	return (
 		<nav className="nav">
 			<Link to="/profile" className="site-title">User Profile</Link>
-			<ul>
+			<ul className="navbar">
 				<CustomLink to="/">Home</CustomLink>
 				<CustomLink to="/FriendList">FriendList</CustomLink>
 				<CustomLink to="/BlackList">BlackList</CustomLink>
 				<CustomLink to="/Setting">Setting</CustomLink>
+				<CustomLink to="/play">Play</CustomLink>
 			</ul>
 		</nav>
 	)
@@ -21,10 +22,10 @@ function CustomLink({ to, children, ...props }) {
 	const isActive = useMatch({ path: resolvedPath.pathname, end: true })
 
 	return (
-		<li className={isActive ? "active" : ""}>
-			<Link to={to} {...props}>
+		<div className={isActive ? "navbar_item navbar_item_active" : "navbar_item"}>
+			<Link className="navbar_link" to={to} {...props}>
 				{children}
 			</Link>
-		</li>
+		</div>
 	)
 }
