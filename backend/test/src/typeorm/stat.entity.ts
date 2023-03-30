@@ -21,6 +21,12 @@ export class Stat {
 	@Column()
 	rank: number;
 
+	@Column()
+	experience: number;
+
+	@Column()
+	counter: number;
+
 	@OneToOne(() => User, (user) => user.sstat, { nullable: false, cascade: true, onDelete: 'CASCADE' })
 	@JoinColumn({name: 'user_id'})
 	user: User;

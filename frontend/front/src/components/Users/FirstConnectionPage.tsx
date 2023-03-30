@@ -12,34 +12,35 @@ type userInput = {
 }*/
 
 function ChangeHandler(event: ChangeEvent<HTMLInputElement>
-	, setFile: React.Dispatch<React.SetStateAction<File | undefined>>) {
+	, setFile: React.Dispatch<React.SetStateAction<File | undefined> >) {
 	event.preventDefault();
 	const target = event.target;
 
-	if (target.files && target.files.length === 1) {
+	if (target.files && target.files.length === 1)
+	{
 		setFile(target.files[0]);
 	}
 }
 
 const headerPost = (jwt: Readonly<string | null>) => {
-	const header = new Headers({
-		Authorization: 'Bearer ' + jwt,
-	})
-	return (header);
+    const header = new Headers({
+        Authorization: 'Bearer ' + jwt,
+    })
+    return (header);
 };
 
 function update(event: FormEvent<HTMLFormElement>, username: string,
-	setPushUsername: React.Dispatch<React.SetStateAction<string | null>>,
+	setPushUsername: React.Dispatch<React.SetStateAction<string | null> >,
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
-	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-	setJwt: React.Dispatch<React.SetStateAction<null | string>>) {
+	setErrorCode: React.Dispatch<React.SetStateAction<number> >,
+	setJwt: React.Dispatch<React.SetStateAction<null | string> >) {
 	event.preventDefault();
 
 	const formData = new FormData();
 	if (fileSet) {
 		formData.append('fileset', fileSet);
 	}
-	formData.append('fa', JSON.stringify({ fa: FA }));
+	formData.append('fa', JSON.stringify({fa: FA}));
 	formData.append('username', username);
 	//pour ta dto
 	// tu recevras surement
@@ -52,15 +53,15 @@ function update(event: FormEvent<HTMLFormElement>, username: string,
 	//
 	//je crois t as des trucs pour t aider sur ce lien https://orkhan.gitbook.io/typeorm/docs/select-query-builder
 	/*cq dans backend, a mettre dans le provider user.service tu dois modifier cq pour mettre a jour l userthis.userRepository.createQueryBuilder()
-			.update(User)
-			.set({avatarPath: path, username: username etc}) << mettre les trucs que tu veux modifier, si ca fonctionne mal mp discord
-			.where("user_id = :id")
-			.setParameters({id: user_id})
-			.execute()
-		}*/
-	//url creer une fonction dans user.controller
-	//regarde la doc nestjs controller, tu dois faire une class DTO Pour valider les donnees
-	//exemple dans users/dto/... si c faux tu recevras erreur 400 dans ta console client
+            .update(User)
+            .set({avatarPath: path, username: username etc}) << mettre les trucs que tu veux modifier, si ca fonctionne mal mp discord
+            .where("user_id = :id")
+            .setParameters({id: user_id})
+            .execute()
+        }*/
+		//url creer une fonction dans user.controller
+		//regarde la doc nestjs controller, tu dois faire une class DTO Pour valider les donnees
+		//exemple dans users/dto/... si c faux tu recevras erreur 400 dans ta console client
 	fetch('http://' + location.host + '/api/users/firstlogin',
 		{
 			method: 'POST',
@@ -77,7 +78,11 @@ function update(event: FormEvent<HTMLFormElement>, username: string,
 			setPushUsername(res.username);
 			setJwt(res.token.access_token);
 		} else {
-			setErrorCode(400);
+			if (res.valid === false) {
+				setErrorCode(1);
+			}
+			else
+				setErrorCode(400);
 		}
 	}).catch(e => console.log(e));
 }
@@ -97,20 +102,23 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 	//check if user already have username
 	useEffect(() => {
 		fetch('http://' + location.host + '/api/users/first-profile/',
-			{ headers: header(props.jwt) })
-			.then(res => {
-				if (res.ok)
-					return (res.json());
-				setErrorCode(res.status);
-			})
-			.then((res) => {
+            { headers: header(props.jwt) })
+            .then(res => {
+                if (res.ok)
+                    return (res.json());
+                setErrorCode(res.status);
+            })
+            .then((res) => {
 				if (res
 					&& res.username != "" && res.username != null) {
 					navigate('/');
-				}
-			}).catch(e => console.log(e));
+                }
+            }).catch(e=>console.log(e));
 	}, []);
 
+	//useEffect(() => {
+		//userCtx.setUsername(pushUsername);
+	//}, [pushUsername]);
 	useEffect(() => {
 		const logout = async () => {
 			await userCtx.logoutUser();
@@ -119,18 +127,16 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 			&& pushUsername && pushUsername != "")
 			logout();
 	}, [pushUsername]);
-
 	useEffect(() => {
 		const login = async () => {
-			console.log("login")
 			await userCtx.loginUser({
 				jwt: jwt,
-				username: pushUsername,
+				username: username,
 				userId: userId
 			});
 			setLoad(true);
 		}
-		if (!userCtx.getJwt() && jwt)
+		if (jwt)
 			login();
 	}, [userCtx.getJwt()]);
 	useEffect(() => {
@@ -145,25 +151,26 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 
 	if (errorCode >= 401)
 		return (<FetchError code={errorCode} />);
-	return (
-		<section>
-			<article>
-				<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
+	return(
+	<section>
+		<article>
+			<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
 					update(event, username,
-						setPushUsername, file, FA, props.jwt,
-						setErrorCode, setJwt)}>
-					<label htmlFor="username">Username</label><br />
-					<input type="text" id="username" name="username" placeholder="ex: Charly"
-						onChange={(e: React.ChangeEvent<HTMLInputElement>) => { e.preventDefault(); setUsername(e.currentTarget.value) }} /><br /><br />
-					<input type="checkbox" id="twofactor"
-						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFA(prevCheck => !prevCheck)} />
-					<label htmlFor="twofactor">Enable Two Factor Authentication: 2FA</label><br /><br />
-					<input type="file" name="uploadAvatar" onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)} />
-					<input type="submit" value="Submit" />
-				</form>
-				{errorCode && errorCode === 400 && <span>Something is not valid, please enter inputs properly</span>}
-			</article>
-		</section>);
+					setPushUsername, file, FA, props.jwt,
+					setErrorCode, setJwt)}>
+				<label htmlFor="username">Username</label><br />
+				<input type="text" id="username" name="username" placeholder="ex: Charly"
+					onChange={(e: React.ChangeEvent<HTMLInputElement>) => {e.preventDefault();setUsername(e.currentTarget.value)}} /><br/><br/>
+				<input type="checkbox" id="twofactor"
+					onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFA(prevCheck => !prevCheck)} />
+				<label htmlFor="twofactor">Enable Two Factor Authentication: 2FA</label><br/><br/>
+				<input type="file" name="uploadAvatar" onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)} />
+				<input type="submit" value="Submit" />
+			</form>
+			{errorCode === 1 && <span style={{color: "red"}}>Username is already used.</span>}
+			{errorCode === 400 && <span>Something is not valid, please enter inputs properly</span>}
+		</article>
+	</section>);
 }
 
 export default FirstConnectionPage;
