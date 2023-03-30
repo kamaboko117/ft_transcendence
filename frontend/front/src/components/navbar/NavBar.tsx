@@ -19,7 +19,7 @@ export default function NavBar() {
 	return (
 		<nav>
 			<Link to="/profile">User Profile</Link>
-			<ul>
+			<ul className="navbar">
 				<NavBarLink to="/">Home</NavBarLink>
 				<NavBarLink to="/FriendList">FriendList</NavBarLink>
 				<NavBarLink to="/BlackList">BlackList</NavBarLink>
@@ -33,7 +33,7 @@ export default function NavBar() {
 }
 
 function NavBarLink({ to, children, ...props }) {
-	//const resolvedPath = useResolvedPath(to);
+	const resolvedPath = useResolvedPath(to);
 	const isActive = useMatch({ path: resolvedPath.pathname, end: true });
 
 	return (
