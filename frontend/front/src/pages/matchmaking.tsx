@@ -28,6 +28,22 @@ import { FetchError, header, headerPost } from '../components/FetchError';
 //client 192.168.1.31:4000
 //vm en nat
 
+
+
+
+// Après discussion sur le pont avec la partie Play, j'enlève la partie alertes toast
+//Au final, ce sera un bouton avec opt-in opt-out of queue dans la page play à côté de createroom
+//Quand ça match, je crée un room au nom d'un userid pour le joueur 1, je joinroom le joueur 2 en utilisant les fonctions dans play.tsx
+//Il y a un intérêt que ça passe par un room du play tsx pour qu'il soit possible de le voir dans le roomlist 
+// -> pouvoir spectateur un room à partir de là
+//Pas de pop-up pour accepter ou decliner le match vu que ce ne n'est pas démandé dans le sujet, aucune idée sur la correction
+//Peut être implementé après si le reste est bien fait
+// En conclusion, la partie socket/bouton matchmaking dans cette page sera bougé dans la page Play à côté du Create Room sans le toast
+// Il faudra que je disable le bouton createRoom(peut simplement if (Queue) alors rien faire ) ou empêcher un joueur de rejoindre un room avec le Queue state à true
+// Tout ça à rajouter dans un play finalisé, en attendant, gérér le opt out du matchmaking et que le frontend recoit l'en dessous
+//Côté backend, la fonction rungame emit vers le frontend socket id l'id du joueur avec lequel il est matché et si il est celui qui crée le room ou celui qui attend de rejoindre le room de l'autre
+
+
 const startmatchmaking = async (
   e: React.MouseEvent<HTMLButtonElement>,
   usrSocket: any,
