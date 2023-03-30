@@ -9,6 +9,7 @@ export type typeListUser = {
         fl: number | null,
         bl: number | null,
         User_username: string,
+        User_avatarPath: string | null
     }>
 }
 
@@ -18,6 +19,7 @@ export type typeListUserGlobal = {
         fl: number | null,
         bl: number | null,
         User_username: string,
+        User_avatarPath: string | null
     }>
 }
 
@@ -78,6 +80,7 @@ type typeFlBl = {
     fl: number | null,
     bl: number | null,
     User_username: string,
+    User_avatarPath: string | null
 }
 
 export const updateBlackFriendList = (

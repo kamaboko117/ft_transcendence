@@ -216,6 +216,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 					<input type="submit" value="Submit" />
 				</form>
 				{errorCode === 1 && <p style={{ color: "red" }}>Username is already used.</p>}
+				{errorCode === 400 && <p style={{ color: "red" }}>Image file format or size is wrong.</p>}
 			</article>
 		</section>);
 }

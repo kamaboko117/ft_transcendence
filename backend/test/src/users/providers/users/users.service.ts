@@ -198,7 +198,7 @@ export class UsersService {
 
     async findUserByName(username: string) {
         const user: User | null = await this.userRepository.createQueryBuilder("user")
-            .select(["user.userID", "user.username", "user.fa"])
+            .select(["user.userID", "user.username", "user.fa", "user.avatarPath"])
             .where('user.username = :name')
             .setParameters({ name: username })
             .getOne();
@@ -274,7 +274,7 @@ export class UsersService {
             .select("a.focus_id AS id")
             .addSelect("bl.type_list AS bl")
             .addSelect("fl.type_list AS fl")
-            .addSelect("User.username")
+            .addSelect(["User.username", "User.avatarPath"])
             .leftJoin(fl.getQuery(), "fl", "fl.focus_id = a.focus_id")
             .setParameters({ type1: 2 })
             .leftJoin(bl.getQuery(), "bl", "bl.focus_id = a.focus_id")

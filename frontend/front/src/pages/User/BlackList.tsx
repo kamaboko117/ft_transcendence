@@ -8,6 +8,7 @@ type typeUserInfo = {
 	id: number,
 	fl: number | null,
 	bl: number | null,
+	avatarPath: string | null
 }
 
 type typeFlBl = {
@@ -15,6 +16,7 @@ type typeFlBl = {
 	fl: number | null,
 	bl: number | null,
 	User_username: string,
+	User_avatarPath: string | null
 }
 
 function handleSubmit(e: React.FormEvent<HTMLFormElement>,
@@ -42,7 +44,7 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 		if (res && res.code === 3) {
 			updateBlackFriendList({
 				id: res.id,
-				fl: res.fl, bl: res.bl, User_username: res.User_username
+				fl: res.fl, bl: res.bl, User_username: res.User_username, User_avatarPath: res.User_avatarPath
 			}, lstUserGlobal, setLstUserGlobal);
 		}
 	})
@@ -51,7 +53,7 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 export default function BlackList(props: { jwt: string }) {
 	const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
 	const [userInfo, setUserInfo] = useState<typeUserInfo>({
-		username: "", id: 0, fl: null, bl: null
+		username: "", id: 0, fl: null, bl: null, avatarPath: null
 	});
 	const [value, setValue] = useState<null | string>(null);
 	const [errorCode, setErrorCode] = useState<number>(200);
