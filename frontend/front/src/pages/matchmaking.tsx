@@ -44,6 +44,12 @@ import { FetchError, header, headerPost } from '../components/FetchError';
 //Côté backend, la fonction rungame emit vers le frontend socket id l'id du joueur avec lequel il est matché et si il est celui qui crée le room ou celui qui attend de rejoindre le room de l'autre
 
 
+// Idée de douche, rajouter un component sur la page d'acceuil qui check si le serveur backend est joignable ou non avec le spinner tout con de nintendo là
+// Ca nous évite les "ah bah pk il marche plus le login maintenant lol"
+// Ca peut check tout bête avec un usrsocket vers le backend qui renvoie un "oui tkt je suis là" et tant qu'on n'a pas reçu de emit, on affiche un spinner
+// Après faire un gateway juste sur ça est peut-être un peu trop, je peux le rajouter dans mon mmgateway mais c'est meugnon
+//Il n'y a pas à check plusieurs fois, juste à check jusqu'à qu'il reçoit une réponse du backend et après on off
+
 const startmatchmaking = async (
   e: React.MouseEvent<HTMLButtonElement>,
   usrSocket: any,
