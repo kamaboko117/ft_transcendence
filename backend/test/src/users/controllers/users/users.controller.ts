@@ -23,6 +23,7 @@ import { TokenUser } from "src/chat/chat.interface";
 import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
+import * as bcrypt from 'bcrypt';
 
 @Controller("users")
 export class UsersController {
@@ -91,18 +92,32 @@ export class UsersController {
         }
         try {
             if (!isNaN(body.code)) {
+                //check if code already used, if yes then error
+                const ret = await bcrypt.compare(String(body.code),userDb.fa_psw);
+                if (ret === true)
+                    return ({ valid: false, username: userDb.username, token: null });
+                //check if code is valid with authenticator module
                 isValid = authenticator.verify({ token: String(body.code), secret: userDb.secret_fa });
                 if (isValid) {
                     user.fa_code = String(body.code);
+                    const salt = Number(process.env.SALT);
+                    //must hash code into db
+                    bcrypt.hash(user.fa_code, salt, ((err, psw) => {
+                        if (!err && psw)
+                            this.userService.update2FaPsw(user.userID, psw);
+                        else
+                            throw new NotFoundException("Authenticator code verification failed");
+                    }));
+                    //register user used a code in db, like this, we can't register again the qr code
                     this.userService.updateFaFirstEntry(user.userID);
                     access_token = await this.authService.login(user);
                     return ({ valid: isValid, username: userDb.username, token: access_token });
                 }
+                return ({ valid: false, username: userDb.username, token: null });
             }
         } catch (e) {
             throw new NotFoundException("Authenticator code verification failed");
         }
-        // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
         return ({ valid: isValid, username: userDb.username, token: null });
     }
 
@@ -121,20 +136,21 @@ export class UsersController {
                 maxAge: 300000,
                 httpOnly: true
             });
-        return ({ token: access_token, user_id: req.user.userID });
+        return ({ token: access_token, user_id: req.user.userID, username: req.user.username });
     }
 
     checkUpdateUserError(ret_user: any, ret_user2: any,
-        body: any, regexRet: any) {
+        body: any, regexRet: any): false | { valid: boolean, code: number,
+            img: string | null } {
         if (ret_user && ret_user.username === body.username
             && body.username != "")
-            return ({ valid: false, code: 1 });
+            return ({ valid: false, code: 1, img: null });
         if (ret_user2?.fa === true && regexRet
             && (body.username === ""))
-            return ({ valid: false, code: 2 });
+            return ({ valid: false, code: 2, img: null });
         if (ret_user2?.fa === false && !regexRet
             && (body.username === ""))
-            return ({ valid: false, code: 2 });
+            return ({ valid: false, code: 2, img: null });
         return (false);
     }
 
@@ -148,21 +164,34 @@ export class UsersController {
     }),
     ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
         let user: TokenUser = req.user;
-        const stringRegex = /^({"fa":true})$/;
-        const regex = stringRegex;
-        const regexRet = body.fa.match(regex);
+        const regex1 = /^({"fa":true})$/;
+        const regex2 = /^[\w\d]{3,}$/;
+        const regexRet = body.fa.match(regex1);
+        
+        if (body.username != "") {
+            if (24 < body.username.length)
+                return ({ valid: false, code: 4, img: null });
+            const regexRet2 = regex2.test(body.username);
+            console.log(regexRet2)
+            if (regexRet2 === false)
+                return ({ valid: false, code: 3, img: null });
+        }
+        if (file)
+            await this.userService.updatePathAvatarUser(user.userID, file.path);
         const ret_user = await this.userService.findUserByName(body.username);
         const ret_user2 = await this.userService.findUsersById(user.userID);
         console.log(user)
         console.log(regexRet);
         console.log(body)
-        if (file)
-            this.userService.updatePathAvatarUser(user.userID, file.path);
-        const retErr = this.checkUpdateUserError(ret_user,
+        
+        let retErr = this.checkUpdateUserError(ret_user,
             ret_user2, body,
             regexRet);
-        if (!(retErr === false))
+        if (!(retErr === false)) {
+            if (ret_user2 && file)
+                retErr.img = ret_user2.avatarPath;
             return (retErr);
+        }
         if (body.username !== "")
             user.username = body.username;
         else if (ret_user2)
@@ -183,7 +212,8 @@ export class UsersController {
         }
         const access_token = await this.authService.login(user);
         console.log(user)
-        return ({ valid: true, username: user.username, token: access_token });
+        return ({ valid: true, username: user.username,
+            token: access_token, img: ret_user2?.avatarPath });
     }
 
     @Public()
@@ -199,14 +229,27 @@ export class UsersController {
     ) file: Express.Multer.File | undefined, @Body() body: FirstConnection) {
         let user = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
+        const ret_user2 = await this.userService.findUserByName(body.username);
         if (body.username && body.username == "" || (ret_user && ret_user.username != "")) {
             return ({ valid: false, username: "" });
         }
+        console.log(ret_user)
+        if (ret_user2 && ret_user2.username === body.username
+            && body.username != "")
+            return ({ valid: true, code: 3, img: null });
         //body.fa must accept the regex
         //if regex not ok, then return NULL so no FA accepted
-        const stringRegex = /^({"fa":true})$/;
-        const regex = stringRegex;
-        const regexRet = body.fa.match(regex);
+        const regex1 = /^({"fa":true})$/;
+        const regex2 = /^[\w\d]{3,}$/;
+        if (body.username != "") {
+            if (24 < body.username.length)
+                return ({ valid: true, code: 1, img: null });
+            const regexRet2 = regex2.test(body.username);
+            console.log(regexRet2)
+            if (regexRet2 === false)
+                return ({ valid: true, code: 2, img: null });
+        }
+        const regexRet = body.fa.match(regex1);
         if (file)
             this.userService.updatePathAvatarUser(user.userID, file.path);
         this.userService.updateUsername(user.userID, body.username);
@@ -219,7 +262,7 @@ export class UsersController {
         user.username = body.username;
         const access_token = await this.authService.login(user);
         // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
-        return ({ valid: true, username: body.username, token: access_token });
+        return ({ valid: true, username: body.username, token: access_token, code: 0 });
     }
 
     @Post('avatarfile')
@@ -420,12 +463,10 @@ export class UsersController {
 
     @Get(':id')
     async findUsersById(@Param('id', ParseIntPipe) id: number) {
-        console.log("id/id");
-        console.log(id)
         const user = await this.userService.findUsersById(id);
-        console.log(user);
+    
         if (!user)
-            return ({ userID: 0, username: "", avatarPath: null, fa: false });
+            return ({ userID: 0, username: "", avatarPath: null, sstat: {} });
         return (user)
     }
 }

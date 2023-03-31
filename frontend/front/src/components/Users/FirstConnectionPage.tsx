@@ -28,11 +28,11 @@ const headerPost = (jwt: Readonly<string | null>) => {
 	return (header);
 };
 
-function update(event: FormEvent<HTMLFormElement>, username: string,
-	setPushUsername: React.Dispatch<React.SetStateAction<string | null>>,
+function update(event: FormEvent<HTMLFormElement>, username: string, userCtx, userId,
+	//setPushUsername: React.Dispatch<React.SetStateAction<string | null>>,
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-	setJwt: React.Dispatch<React.SetStateAction<null | string>>) {
+	/*setJwt: React.Dispatch<React.SetStateAction<null | string>>*/) {
 	event.preventDefault();
 
 	const formData = new FormData();
@@ -74,8 +74,17 @@ function update(event: FormEvent<HTMLFormElement>, username: string,
 	}).then(res => {
 		console.log(res)
 		if (res && res.valid === true) {
-			setPushUsername(res.username);
-			setJwt(res.token.access_token);
+			//setPushUsername(res.username);
+			//setJwt(res.token.access_token);
+			if (res.code === 0) {
+				userCtx.reconnectUser({
+					jwt: res.token.access_token,
+					username: res.username,
+					userId: userId
+				});
+			} else {
+				setErrorCode(res.code);
+			}
 		} else {
 			setErrorCode(400);
 		}
@@ -84,15 +93,15 @@ function update(event: FormEvent<HTMLFormElement>, username: string,
 
 function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 	const [errorCode, setErrorCode] = useState<number>(200);
-	const [jwt, setJwt] = useState<null | string>(null);
+	//const [jwt, setJwt] = useState<null | string>(null);
 	const [username, setUsername] = useState<string>("");
-	const [pushUsername, setPushUsername] = useState<string | null>(null);
+	//const [pushUsername, setPushUsername] = useState<string | null>(null);
 	const [FA, setFA] = useState<boolean>(false);
 	const [file, setFile] = useState<File | undefined>();
 	const userCtx: any = useContext(UserContext);
 	const navigate = useNavigate();
-	const [load, setLoad] = useState<boolean>(false);
-	const [userId, setUserId] = useState<number>(userCtx.getUserId());
+	//const [load, setLoad] = useState<boolean>(false);
+	//const [userId, setUserId] = useState<number>(userCtx.getUserId());
 
 	//check if user already have username
 	useEffect(() => {
@@ -111,7 +120,7 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 			}).catch(e => console.log(e));
 	}, []);
 
-	useEffect(() => {
+	/*useEffect(() => {
 		const logout = async () => {
 			await userCtx.logoutUser();
 		}
@@ -132,16 +141,17 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 		}
 		if (!userCtx.getJwt() && jwt)
 			login();
-	}, [userCtx.getJwt()]);
+	}, [userCtx.getJwt()]);*/
 	useEffect(() => {
-		if (jwt && jwt === userCtx.getJwt() && load === true) {
+	//	if (jwt && jwt === userCtx.getJwt() && load === true) {
+	if (userCtx.getUsername() != "")
 			if (FA === true)
 				navigate("/fa-activate");
 			else {
 				navigate("/");
 			}
-		}
-	}, [load])
+		//}
+	}, [userCtx.getJwt()]);
 
 	if (errorCode >= 401)
 		return (<FetchError code={errorCode} />);
@@ -149,9 +159,9 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 		<section>
 			<article>
 				<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
-					update(event, username,
-						setPushUsername, file, FA, props.jwt,
-						setErrorCode, setJwt)}>
+					update(event, username, userCtx, userCtx.getUserId(),
+						 file, FA, props.jwt,
+						setErrorCode)}>
 					<label htmlFor="username">Username</label><br />
 					<input type="text" id="username" name="username" placeholder="ex: Charly"
 						onChange={(e: React.ChangeEvent<HTMLInputElement>) => { e.preventDefault(); setUsername(e.currentTarget.value) }} /><br /><br />
@@ -161,6 +171,9 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 					<input type="file" name="uploadAvatar" onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)} />
 					<input type="submit" value="Submit" />
 				</form>
+				{errorCode === 1 && <p style={{ color: "red" }}>Username is too long</p>}
+				{errorCode === 2 && <p style={{ color: "red" }}>Username format is wrong.</p>}
+				{errorCode === 3 && <p style={{ color: "red" }}>Username is already used.</p>}
 				{errorCode && errorCode === 400 && <span>Something is not valid, please enter inputs properly</span>}
 			</article>
 		</section>);

@@ -77,10 +77,10 @@ update(event, username, setPushUsername, fileSet, FA, jwt, setErrorCode);
 }*/
 
 async function update(event: FormEvent<HTMLFormElement>, username: string,
-	setPushUsername: React.Dispatch<React.SetStateAction<string | null>>,
-	setJwt: React.Dispatch<React.SetStateAction<string | null>>,
+	userId: number | undefined,
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
-	setErrorCode: React.Dispatch<React.SetStateAction<number>>, userCtx) {
+	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+	setAvatarPath: React.Dispatch<React.SetStateAction<string | null>>, userCtx) {
 	event.preventDefault();
 
 	const formData = new FormData();
@@ -104,16 +104,23 @@ async function update(event: FormEvent<HTMLFormElement>, username: string,
 	}).then(res => {
 		if (res) {
 			console.log(res)
+			if (res.img)
+				setAvatarPath(res.img);
+			else
+				setAvatarPath("");
 			if (res.valid === true) {
-				setPushUsername(res.username);
+				/*setPushUsername(res.username);
 				setJwt(res.token.access_token);
 				setErrorCode(200);
-				userCtx.logoutUser();
+				userCtx.logoutUser();*/
+				userCtx.reconnectUser({
+					jwt: res.token.access_token,
+					username: res.username,
+					userId: userId
+				});
 			}
-			else if (res.valid === false && res.code === 1)
-				setErrorCode(1);
-			else if (res.valid === false && res.code === 2)
-				setErrorCode(2);
+			else if (res.valid === false)
+				setErrorCode(res.code);
 		}
 	}).catch(e => console.log(e));
 }
@@ -122,13 +129,14 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 	const [user, setUser] = useState<userInfo>();
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [username, setUsername] = useState<string>("");
-	const [pushUsername, setPushUsername] = useState<string | null>(null);
+	const [avatarPath, setAvatarPath] = useState<string | null>(null);
+	//const [pushUsername, setPushUsername] = useState<string | null>(null);
 	const [FA, setFA] = useState<boolean>(false);
 	const [oldFa, setOldFa] = useState<boolean>(false);
 	const [file, setFile] = useState<File | undefined>();
 	const userCtx: any = useContext(UserContext);
-	const [jwt, setJwt] = useState<null | string>(null);
-	const [finish, setFinish] = useState<boolean>(false);
+	//const [jwt, setJwt] = useState<null | string>(null);
+	//const [finish, setFinish] = useState<boolean>(false);
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -140,6 +148,10 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 			}).then((res: userInfo) => {
 				console.log(res);
 				if (res) {
+					if (res.avatarPath)
+						setAvatarPath(res.avatarPath);
+					else
+						setAvatarPath("");
 					setUser(res);
 					setFA(res.fa);
 					setOldFa(res.fa);
@@ -156,7 +168,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 			logout();
 	}, [jwt]);*/
 
-	useEffect(() => {
+	/*useEffect(() => {
 		const login = async () => {
 			console.log("login")
 			await userCtx.loginUser({
@@ -168,17 +180,18 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 		}
 		if (!userCtx.getJwt() && jwt)
 			login();
-	}, [userCtx.getJwt(), jwt]);
+	}, [userCtx.getJwt(), jwt]);*/
 
 	useEffect(() => {
-		if (finish === true) {
+		console.log("finish")
+		//if (finish === true) {
 			if (FA === true && oldFa === false)
 				navigate("/fa-activate");
-			else
-				setFinish(false);
+			//else
+			//	setFinish(false);
 			setOldFa(FA);
-		}
-	}, [finish]);
+		//}
+	}, [userCtx.getJwt()]);
 
 	if (errorCode >= 401)
 		return (<FetchError code={errorCode} />);
@@ -187,36 +200,41 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 			<article>
 				<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
 					update(event, username,
-						setPushUsername, setJwt, file, FA, props.jwt,
-						setErrorCode, userCtx)}>
-					<label htmlFor="username">
-						Username: {(pushUsername === null ? user?.username : pushUsername)}
+						user?.userID, file, FA, props.jwt,
+						setErrorCode, setAvatarPath, userCtx)}>
+					<label>
+						Username: { userCtx.getUsername() }
 					</label><br />
 					<input
 						type="text"
-						id="username"
-						name="username"
 						placeholder="ex: Charly"
 						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.currentTarget.value)}
 					/><br /><br />
 					<input
 						type="file"
-						name="uploadAvatar"
 						onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)}
 					/>
 					<input
 						type="checkbox"
-						id="twofactor"
 						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFA(prev => !prev)}
 						checked={FA}
 					/>
-					<label htmlFor="twofactor">
+					<label>
 						Enable Two Factor Authentication: 2FA
-					</label><br /><br />
+					</label>
+					
+					{avatarPath != null && <><br/><img
+						className="avatar"
+						src={avatarPath}
+						alt={"avatar " + user?.username}
+						onError={handleImgError}
+					/></>}
 					<input type="submit" value="Submit" />
 				</form>
 				{errorCode === 1 && <p style={{ color: "red" }}>Username is already used.</p>}
-				{errorCode === 400 && <p style={{ color: "red" }}>Image file format or size is wrong.</p>}
+				{errorCode === 3 && <p style={{ color: "red" }}>Username format is wrong.</p>}
+				{errorCode === 4 && <p style={{ color: "red" }}>Username is too long.</p>}
+				{errorCode === 400 && <p style={{ color: "red" }}>Image file format, size or wrong type input.</p>}
 			</article>
 		</section>);
 }

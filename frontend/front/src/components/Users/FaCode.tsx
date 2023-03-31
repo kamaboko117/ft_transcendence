@@ -15,8 +15,8 @@ const handleChange = (event, setCode) => {
 }
 
 const handleSubmit = (event, code: number | null,
-    jwt: string, userId: number,
-    setErrorCode, setValid, setUser) => {
+    jwt: string, userId: number, userCtx,
+    setErrorCode, setValid) => {
     event.preventDefault();
     const target = event?.currentTarget;
 
@@ -38,14 +38,19 @@ const handleSubmit = (event, code: number | null,
         }).then(res => {
             console.log(res)
             if (res) {
-                setValid(res.valid);
                 if (res.token) {
-                    setUser({
+                    /*setUser({
+                        jwt: res.token.access_token,
+                        username: res.username,
+                        userId: userId
+                    });*/
+                    userCtx.reconnectUser({
                         jwt: res.token.access_token,
                         username: res.username,
                         userId: userId
                     });
                 }
+                setValid(res.valid);
             }
         }).catch(e => console.log(e));
     } else {
@@ -63,7 +68,7 @@ const CleanerCode = (props: { userCtx, user, valid }) => {
     const [finish, setFinish] = useState<boolean>(false);
     const navigate = useNavigate();
 
-    useEffect(() => {
+    /*useEffect(() => {
         const login = async () => {
             await props.userCtx.loginUser({
                 jwt: props.user.jwt,
@@ -76,12 +81,12 @@ const CleanerCode = (props: { userCtx, user, valid }) => {
         //if (!props.user.jwt)
         if (props.valid === true)
             login();
-    }, [props.valid, props.userCtx.getJwt()]);
+    }, [props.valid, props.userCtx.getJwt()]);*/
 
-    useEffect(() => {
-        if (finish === true && props.userCtx.getJwt() != null)
+    /*useEffect(() => {
+        //if (finish === true && props.userCtx.getJwt() != null)
             navigate("/");
-    }, [finish, props.userCtx.getJwt()]);
+    }, [finish, props.userCtx.getJwt()]);*/
     return (<></>);
 }
 
@@ -89,14 +94,15 @@ function FaCode(props: { jwt: string }) {
     const userCtx: any = useContext(UserContext);
     const [valid, setValid] = useState<boolean | undefined>(undefined);
     const [code, setCode] = useState<number | null>(null);
-    const [url, setUrl] = useState<string | null>(null);
+    //const [url, setUrl] = useState<string | null>(null);
     //memorise user
-    const [user, setUser] = useState<typeState>({
+    /*const [user, setUser] = useState<typeState>({
         jwt: null,
         username: null,
         userId: userCtx.getUserId()
-    });
+    });*/
     const [errorCode, setErrorCode] = useState<number>(200);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetch('http://' + location.host + '/api/users/check-fa/',
@@ -108,6 +114,12 @@ function FaCode(props: { jwt: string }) {
     }, []);
 
     useEffect(() => {
+        if (valid === true) {
+            navigate("/");
+        }
+    }, [userCtx.getJwt(), valid]);
+
+   /* useEffect(() => {
         console.log(userCtx.getJwt())
         const logout = async () => {
             await userCtx.logoutUser();
@@ -116,15 +128,14 @@ function FaCode(props: { jwt: string }) {
             logout();
         }
 
-    }, [valid, user]);
+    }, [valid, user]);*/
 
     if (errorCode >= 401)
         return (<FetchError code={errorCode} />);
     return (<>
-        <CleanerCode valid={valid} userCtx={userCtx} user={user} />
         <span>Please enter the code from your authenticator</span>
-        <form onSubmit={(e) => handleSubmit(e, code, props.jwt, user.userId,
-            setErrorCode, setValid, setUser)}>
+        <form onSubmit={(e) => handleSubmit(e, code, props.jwt, userCtx.getUserId(), userCtx,
+            setErrorCode, setValid)}>
             <input type="text" onChange={(e) => handleChange(e, setCode)} />
             <input type="submit" />
         </form>

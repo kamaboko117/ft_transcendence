@@ -122,9 +122,6 @@ export class UsersService {
     }
 
     async update2FA(user_id: number, fa: boolean, secret: string | null) {
-        console.log("in 2FA")
-        console.log(fa)
-
         this.userRepository.createQueryBuilder()
             .update(User)
             .set({ fa: fa, secret_fa: secret!, fa_first_entry: false })
@@ -132,6 +129,16 @@ export class UsersService {
             .setParameters({ id: user_id })
             .execute()
     }
+
+    async update2FaPsw(user_id: number, psw: string) {
+        this.userRepository.createQueryBuilder()
+            .update(User)
+            .set({fa_psw: psw})
+            .where("user_id = :id")
+            .setParameters({ id: user_id })
+            .execute()
+    }
+
     /* Will set to true fa_first_entry,
     this is needed to check if user has set his fa code for the first time */
     async updateFaFirstEntry(user_id: number) {
@@ -163,7 +170,7 @@ export class UsersService {
             .where('user.user_id = :user') //:user = setParameters()
             .setParameters({ user: id })//anti hack
             .getOne();
-        console.log(user);
+        //console.log(user);
         return (user);
     }
 
@@ -189,7 +196,8 @@ export class UsersService {
 
     async getUserFaSecret(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
-            .select(['user.fa', 'user.secret_fa', 'user.username', 'user.fa_first_entry'])
+            .select(['user.fa', 'user.secret_fa',
+                'user.username', 'user.fa_first_entry', 'user.fa_psw'])
             .where('user.user_id = :user')
             .setParameters({ user: id })
             .getOne();
