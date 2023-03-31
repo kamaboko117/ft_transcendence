@@ -111,7 +111,7 @@ function FormUpdateUser(props: {jwt: string,
 const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	if (props.jwt === null)
 		return (<div>Must be logged</div>);
-	const [avatar_path, setavatar_path] = useState<string>("");
+	const [avatar_path, setavatar_path] = useState<string | null>(null);
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [user, setSstat] = useState<userInfo>();
 	useEffect(() => {
@@ -121,10 +121,13 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
                     return (res.json());
                 setErrorCode(res.status);
             }).then((res: userInfo) => {
-				console.log(res);
-				if (res && res.avatarPath)
-                	setavatar_path(res.avatarPath);
-				setSstat(res);
+				if (res) {
+					if (res.avatarPath)
+						setavatar_path(res.avatarPath);
+					else
+						setavatar_path("");
+					setSstat(res);
+				}
             }).catch(e=>console.log(e));
 	}, []);
 	if (errorCode >= 400)
@@ -132,12 +135,12 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	return (
 		<>
 		<h1>Username: [{user?.username}]</h1>
-		< img
+		{avatar_path != null && <img
 			className="avatar"
 			src={avatar_path}
 			alt={"avatar " + user?.username}
 			onError={handleImgError}
-		/>
+		/>}
 		<ul>
 			<li>Victoire: {user?.sstat.victory}</li>
 			<li>Défaite: {user?.sstat.defeat}</li>	

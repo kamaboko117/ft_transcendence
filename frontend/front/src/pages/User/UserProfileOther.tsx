@@ -19,7 +19,7 @@ type userInfo = {
 	username: string,
 	token: string,
 	userID: number,
-	avatarPath: string,
+	avatarPath: string | null,
 	sstat: statInfo
 }
 
@@ -32,53 +32,39 @@ const handleImgError = (e) => {
 }
 
 const UserProfileOther = (props: { jwt: string }) => {
-	const getLocation = useLocation();
 	const id = useParams().id as string;
 	const [errorCode, setErrorCode] = useState<number>(200);
-	const [otherUser, setOtheruser] = useState<userInfo>();
-	const id_res = id;
-	console.log(id_res);
+	const [otherUser, setOtherUser] = useState<userInfo>();
+
 	if (isNaN(Number(id)))
 		return (<span>Wrong type id</span>)
 	useEffect(() => {
-		fetch(`http://` + location.host + `/api/users/${id_res}`, { headers: header(props.jwt) })
-			.then(res => {
-				console.log(res)
-				if (res.ok)
-					return (res.json());
-			}).then(res => {
-				console.log(res);
-				if (res) {
-					setOtheruser(res)
-				}
-			})
-	}, []);
-	/*
-	useEffect( () => {
-		fetch('http://' + location.host + '/api/users/profile/', {headers: header(props.jwt)})
+		fetch(`http://` + location.host + `/api/users/${id}`, { headers: header(props.jwt) })
 			.then(res => {
 				if (res.ok)
 					return (res.json());
 				setErrorCode(res.status);
-			}).then((res: userInfo) => {
-				console.log(res);
-				if (res && res.avatarPath)
-					setavatar_path(res.avatarPath);
-				setOtheruser(res);
+			}).then(res => {
+				console.log(res)
+				if (res) {
+					setOtherUser(res);
+				}
 			})
 	}, []);
-	*/
+	
 	if (errorCode >= 400)
 		return (< FetchError code={errorCode} />);
+	if (typeof otherUser != undefined && otherUser?.userID === 0)
+		return(<span>No user found</span>);
 	return (
 		<>
 			<h1>Username: {otherUser?.username}</h1>
-			< img
+			{otherUser?.avatarPath != null && <img
 				className="avatar"
-				src={"../" + otherUser?.avatarPath}
+				src={'/' + otherUser.avatarPath}
 				alt={"avatar " + otherUser?.username}
 				onError={handleImgError}
-			/>
+			/>}
 			<ul>
 				<li>Victoire: {otherUser?.sstat.victory}</li>
 				<li>Défaite: {otherUser?.sstat.defeat}</li>

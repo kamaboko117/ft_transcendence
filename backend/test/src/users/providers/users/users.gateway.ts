@@ -68,6 +68,7 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  @UseGuards(JwtGuard)
   async handleDisconnect(client: Socket) {
     /*console.log("USER GATEWAY disconnect client id: " + client.id);
     const bearer = client.handshake.headers.authorization;
