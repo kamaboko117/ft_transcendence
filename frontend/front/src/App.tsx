@@ -1,5 +1,6 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
+import io, { Socket } from 'socket.io-client';
 
 import LoginPage from "./pages/login";
 import Logout from "./pages/Logout";
@@ -50,11 +51,24 @@ const ErrorPage = () => {
 function App() {
   const [username, setUsername] = useState<string>("");
   const userCtx: any = useContext(UserContext);
+  const [usrSocket, setUsrSocket] = useState<Socket<any, any> | undefined>();
   let jwt = userCtx.getJwt();
+
+  useEffect(() => {
+    console.log("socket mount1");
+    setUsrSocket(io("http://" + location.host, {
+      withCredentials: true,
+      extraHeaders: {
+          authorization: String(jwt)
+      },
+      autoConnect: false
+    }));
+    console.log("socket mount2");
+  }, [userCtx.getJwt()]);
 
   return (
     <>
-      <SocketProvider jwt={jwt}>
+      <SocketProvider jwt={jwt} usrSocket={usrSocket}>
         <DisplayChatGlobalProvider jwt={jwt}>
           <Routes>
             <Route path="/" element={
@@ -86,7 +100,15 @@ function App() {
               </>
             } >
             </Route>
-            <Route path="/profile/:id" element={<UserProfileOther jwt={jwt} />} />
+            <Route path="/profile/:id" element={
+              <>
+              <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
+                  width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
+                <NavBar />
+              <UserProfileOther jwt={jwt} /><PlayerApp />
+              </>
+            } />
             <Route path="/friendList" element={
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
@@ -125,7 +147,7 @@ function App() {
                 {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
                   width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
-                <FakeLogin />
+                <FakeLogin jwt={jwt} />
                 <PlayerApp />
               </>
             } />
@@ -134,7 +156,7 @@ function App() {
               <>{jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
                 width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
-                <ValidatePage />
+                <ValidatePage jwt={jwt} />
                 <PlayerApp />
               </>
             } />

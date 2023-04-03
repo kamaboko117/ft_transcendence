@@ -1,12 +1,31 @@
 import React, { useContext } from "react";
-import { Link, useMatch, useResolvedPath } from "react-router-dom";
+import { Link, useLocation, useMatch, useResolvedPath } from "react-router-dom";
 import UserContext from "../../contexts/UserContext";
 
 export default function NavBar() {
 	const userCtx: any = useContext(UserContext);
+	const getLocation = useLocation();
 	let jwt = userCtx.getJwt();
 
-	if (!jwt || jwt === "") {
+	console.log(getLocation)
+	/*if (getLocation.pathname === "/Setting") {
+		return (
+			<nav>
+				<Link to="/profile">User Profile</Link>
+				<ul>
+					<NavBarLink to="/">Home</NavBarLink>
+					<NavBarLink to="/FriendList">FriendList</NavBarLink>
+					<NavBarLink to="/BlackList">BlackList</NavBarLink>
+					<NavBarLink to="/Setting">Setting</NavBarLink>
+					<NavBarLink to="/channels">Channels</NavBarLink>
+					<NavBarLink to="/matchmaking">Matchmaking</NavBarLink>
+					<NavBarLink to="/play">Play</NavBarLink>
+					<NavBarLink to="/logout">Log Out</NavBarLink>
+				</ul>
+			</nav>
+		)
+	}
+	else */if (!jwt || jwt === "") {
 		return (
 			<nav>
 				<ul>
@@ -25,8 +44,9 @@ export default function NavBar() {
 				<NavBarLink to="/BlackList">BlackList</NavBarLink>
 				<NavBarLink to="/Setting">Setting</NavBarLink>
 				<NavBarLink to="/channels">Channels</NavBarLink>
-				<NavBarLink to="/logout">Log Out</NavBarLink>
+				<NavBarLink to="/matchmaking">Matchmaking</NavBarLink>
 				<NavBarLink to="/play">Play</NavBarLink>
+				<NavBarLink to="/logout">Log Out</NavBarLink>
 			</ul>
 		</nav>
 	)

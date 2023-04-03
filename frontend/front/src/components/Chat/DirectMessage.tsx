@@ -5,7 +5,7 @@ import "../../css/directMessage.css";
 import ContextDisplayChannel, { LoadUserGlobal } from '../../contexts/DisplayChatContext';
 import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import UserContext from '../../contexts/UserContext';
 import { commandChat } from './CommandChat';
 
@@ -212,7 +212,7 @@ type typePostMsg = {
     setMsg,
     setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,
     setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>,
-    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>
 }
 
 const PostMsg = (props: typePostMsg) => {
@@ -222,6 +222,7 @@ const PostMsg = (props: typePostMsg) => {
         setLstUserChat } = useContext(ContextDisplayChannel);
     const userCtx: any = useContext(UserContext);
     let jwt = userCtx.getJwt();
+    const navigate = useNavigate();
     /* Post msg */
     const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
         obj: any, ref: any) => {
@@ -234,7 +235,7 @@ const PostMsg = (props: typePostMsg) => {
         else if (obj.content && obj.content[0] === '/')
             commandChat(jwt, obj, props.setErrorCode,
                 lstUserGlobal, lstUserChat, setLstUserGlobal,
-                setLstUserChat);
+                setLstUserChat, navigate);
         else {
             props.usrSocket.emit('sendMsg', obj, (res) => {
                 if (res.room === obj.id && obj.idBox === obj.id)
@@ -258,7 +259,7 @@ const PostMsg = (props: typePostMsg) => {
             else if (obj.content && obj.content[0] === '/') {
                 commandChat(jwt, obj, props.setErrorCode,
                     lstUserGlobal, lstUserChat, setLstUserGlobal,
-                    setLstUserChat);
+                    setLstUserChat, navigate);
             } else {
                 props.usrSocket.emit('sendMsg', obj, (res) => {
                     if (res.room === obj.id && obj.idBox === obj.id)
@@ -425,7 +426,7 @@ const DiscussionBox = (props: {
         <PostMsg id={props.id} usrSocket={usrSocket} idBox={getSecondPartRegex} msg={msg}
             isPrivate={props.isPrivate} setMsg={setMsg}
             setErrorCode={props.setErrorCode}
-            setLstMsgChat={setLstMsgChat} setLstMsgPm={setLstMsgPm} />
+            setLstMsgChat={setLstMsgChat} setLstMsgPm={setLstMsgPm}/>
         <LoadUserGlobal jwt={props.jwt} />
     </div>);
 }

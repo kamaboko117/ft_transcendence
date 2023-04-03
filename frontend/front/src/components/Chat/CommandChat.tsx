@@ -6,6 +6,7 @@ type typeUserInfo = {
     id: number,
     fl: number | null,
     bl: number | null,
+    avatarPath: string | null
 }
 
 type typeFetchToBack = {
@@ -142,7 +143,8 @@ const isCmdValid = (cmd: string, length: number) => {
 */
 
 export const commandChat = (jwt: string, obj: any, setErrorCode,
-    lstUserGlobal, lstUserChat, setLstUserGlobal, setLstUserChat) => {
+    lstUserGlobal, lstUserChat,
+    setLstUserGlobal, setLstUserChat, navigate) => {
     const cmd = obj.content;
 
     const listHandle = (jwt: string,
@@ -150,10 +152,11 @@ export const commandChat = (jwt: string, obj: any, setErrorCode,
         type: number, userInfo: typeUserInfo): void => {
 
         function updateUserInfo(username: string, id: number,
-            friend: number | null, block: number | null) {
+            friend: number | null, block: number | null, avatarPath: string | null) {
             updateBlackFriendList({
                 id: id,
-                fl: friend, bl: block, User_username: username
+                fl: friend, bl: block,
+                User_username: username, User_avatarPath: avatarPath
             }, lstUserGlobal, setLstUserGlobal);
             if (lstUserChat.length > 0) {
                 const find = lstUserChat.find(elem => Number(elem.list_user_user_id) === id);
@@ -184,18 +187,18 @@ export const commandChat = (jwt: string, obj: any, setErrorCode,
                 if (res.add) {
                     if (res.type === 1) {
                         updateUserInfo(userInfo.User_username, Number(userInfo.id),
-                            userInfo.fl, res.type);
+                            userInfo.fl, res.type, userInfo.avatarPath);
                     } else if (res.type === 2) {
                         updateUserInfo(userInfo.User_username, Number(userInfo.id),
-                            res.type, userInfo.bl);
+                            res.type, userInfo.bl, userInfo.avatarPath);
                     }
                 } else {
                     if (res.type === 1) {
                         updateUserInfo(userInfo.User_username, Number(userInfo.id),
-                            userInfo.fl, null);
+                            userInfo.fl, null, userInfo.avatarPath);
                     } else if (res.type === 2) {
                         updateUserInfo(userInfo.User_username, Number(userInfo.id),
-                            null, userInfo.bl);
+                            null, userInfo.bl, userInfo.avatarPath);
                     }
                 }
             }
@@ -214,13 +217,20 @@ export const commandChat = (jwt: string, obj: any, setErrorCode,
                     setErrorCode(res.status)
                 })
                 .then((res: any) => {
-                    if (res.valid && ((firstPartCmd === "block" && res.bl === null)
-                        || (firstPartCmd === "unblock" && res.bl === 1))) {
-                        listHandle(jwt, setErrorCode, 1, res);
-                    }
-                    else if (res.valid && ((firstPartCmd === "friend" && res.fl === null)
-                        || (firstPartCmd === "unfriend" && res.fl === 2))) {
-                        listHandle(jwt, setErrorCode, 2, res);
+                    console.log(res);
+                    if (res && res.valid) {
+                        if (firstPartCmd === "profile") {
+                            navigate({ pathname: "/profile/" + res.id });
+                            return ;
+                        }
+                        if ((firstPartCmd === "block" && res.bl === null)
+                            || (firstPartCmd === "unblock" && res.bl === 1)) {
+                            listHandle(jwt, setErrorCode, 1, res);
+                        }
+                        else if ((firstPartCmd === "friend" && res.fl === null)
+                            || (firstPartCmd === "unfriend" && res.fl === 2)) {
+                            listHandle(jwt, setErrorCode, 2, res);
+                        }
                     }
                 }).catch(e => console.log(e));
         }
