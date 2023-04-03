@@ -80,7 +80,8 @@ async function update(event: FormEvent<HTMLFormElement>, username: string,
 	userId: number | undefined,
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-	setAvatarPath: React.Dispatch<React.SetStateAction<string | null>>, userCtx) {
+	setAvatarPath: React.Dispatch<React.SetStateAction<string | null>>,
+	setLstErr: React.Dispatch<React.SetStateAction<[]>>, userCtx) {
 	event.preventDefault();
 
 	const formData = new FormData();
@@ -104,37 +105,50 @@ async function update(event: FormEvent<HTMLFormElement>, username: string,
 	}).then(res => {
 		if (res) {
 			console.log(res)
-			if (res.img)
-				setAvatarPath(res.img);
-			else
-				setAvatarPath("");
 			if (res.valid === true) {
-				/*setPushUsername(res.username);
-				setJwt(res.token.access_token);
-				setErrorCode(200);
-				userCtx.logoutUser();*/
+				if (res.img)
+					setAvatarPath(res.img);
+				else
+					setAvatarPath("");
 				userCtx.reconnectUser({
 					jwt: res.token.access_token,
 					username: res.username,
 					userId: userId
 				});
+				setLstErr([]);
 			}
-			else if (res.valid === false)
-				setErrorCode(res.code);
+			else if (res.valid === false) {
+				setLstErr(res.err);
+			}
+			setErrorCode(res.code);
+				
 		}
 	}).catch(e => console.log(e));
+}
+
+const ErrorSubmit = (props: {lstErr: []}) => {
+    let i: number = 0;
+    return (<>
+        {props.lstErr &&
+            props.lstErr.map((err) => (
+                <p style={{ color: "red" }} key={++i}>{err}</p>
+            ))
+        }
+    </>);
 }
 
 function Setting(props: Readonly<{ jwt: string | null }>) {
 	const [user, setUser] = useState<userInfo>();
 	const [errorCode, setErrorCode] = useState<number>(200);
-	const [username, setUsername] = useState<string>("");
+	const [lstErr, setLstErr] = useState<[]>([]);
+	
 	const [avatarPath, setAvatarPath] = useState<string | null>(null);
 	//const [pushUsername, setPushUsername] = useState<string | null>(null);
 	const [FA, setFA] = useState<boolean>(false);
 	const [oldFa, setOldFa] = useState<boolean>(false);
 	const [file, setFile] = useState<File | undefined>();
 	const userCtx: any = useContext(UserContext);
+	const [username, setUsername] = useState<string>(userCtx.getUsername());
 	//const [jwt, setJwt] = useState<null | string>(null);
 	//const [finish, setFinish] = useState<boolean>(false);
 	const navigate = useNavigate();
@@ -159,29 +173,6 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 			}).catch(e => console.log(e));
 	}, []);
 
-	/*useEffect(() => {
-		const logout = async () => {
-			await userCtx.logoutUser();
-		}
-		if (jwt
-			&& pushUsername && pushUsername != "")
-			logout();
-	}, [jwt]);*/
-
-	/*useEffect(() => {
-		const login = async () => {
-			console.log("login")
-			await userCtx.loginUser({
-				jwt: jwt,
-				username: pushUsername,
-				userId: user?.userID
-			});
-			setFinish(true);
-		}
-		if (!userCtx.getJwt() && jwt)
-			login();
-	}, [userCtx.getJwt(), jwt]);*/
-
 	useEffect(() => {
 		console.log("finish")
 		//if (finish === true) {
@@ -198,31 +189,31 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 	return (
 		<section>
 			<article>
+				<label>Username: { userCtx.getUsername() }</label>
 				<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
 					update(event, username,
 						user?.userID, file, FA, props.jwt,
-						setErrorCode, setAvatarPath, userCtx)}>
-					<label>
-						Username: { userCtx.getUsername() }
-					</label><br />
+						setErrorCode, setAvatarPath, setLstErr,
+						userCtx)}>
+					<label>Username</label>
 					<input
 						type="text"
-						placeholder="ex: Charly"
+						placeholder="ex: Charly" value={username}
 						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.currentTarget.value)}
-					/><br /><br />
+					/>
+					<label>Update avatar</label>
 					<input
 						type="file"
 						onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)}
 					/>
+					<label>
+						Enable Two Factor Authentication: 2FA
+					</label>
 					<input
 						type="checkbox"
 						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFA(prev => !prev)}
 						checked={FA}
 					/>
-					<label>
-						Enable Two Factor Authentication: 2FA
-					</label>
-					
 					{avatarPath != null && <><br/><img
 						className="avatar"
 						src={avatarPath}
@@ -231,10 +222,8 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 					/></>}
 					<input type="submit" value="Submit" />
 				</form>
-				{errorCode === 1 && <p style={{ color: "red" }}>Username is already used.</p>}
-				{errorCode === 3 && <p style={{ color: "red" }}>Username format is wrong.</p>}
-				{errorCode === 4 && <p style={{ color: "red" }}>Username is too long.</p>}
-				{errorCode === 400 && <p style={{ color: "red" }}>Image file format, size or wrong type input.</p>}
+				<ErrorSubmit lstErr={lstErr} />
+				{errorCode === 400 && <p style={{ color: "red" }}>Wrong image file format, size or wrong type input.</p>}
 			</article>
 		</section>);
 }

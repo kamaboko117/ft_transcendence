@@ -172,6 +172,7 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 					<input type="submit" value="Submit" />
 				</form>
 				{errorCode === 1 && <p style={{ color: "red" }}>Username is too long</p>}
+				{errorCode === 4 && <p style={{ color: "red" }}>Username is too short</p>}
 				{errorCode === 2 && <p style={{ color: "red" }}>Username format is wrong.</p>}
 				{errorCode === 3 && <p style={{ color: "red" }}>Username is already used.</p>}
 				{errorCode && errorCode === 400 && <span>Something is not valid, please enter inputs properly</span>}

@@ -9,6 +9,7 @@ import SocketContext from '../../contexts/Socket';
 import { debounce } from 'debounce';
 import ContextDisplayChannel, { updateBlackFriendList } from '../../contexts/DisplayChatContext';
 import AdminComponent from './Admin';
+import { useNavigate } from 'react-router-dom';
 
 type typeUserInfo = {
     username: string,
@@ -116,8 +117,11 @@ export const inviteGame = (event: MouseEvent<HTMLButtonElement>): void => {
     event.preventDefault();
 }
 
-export const userProfile = (event: MouseEvent<HTMLButtonElement>): void => {
+export const userProfile = (event: MouseEvent<HTMLButtonElement>,
+    userId: number, navigate): void => {
     event.preventDefault();
+    if (event.target)
+        navigate({ pathname: "/profile/" + userId });
 }
 
 /*
@@ -235,22 +239,23 @@ export const StatusUser = (props: { userId: number, jwt: string }) => {
 
 const ButtonsInfos = (props: typeButtonsInfo) => {
     const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
+    const navigate = useNavigate();
 
     return (<>
         <StatusUser jwt={props.jwt} userId={props.userInfo.id} />
-        <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+        <button onClick={(e) => userProfile(e, props.userInfo.id, navigate)} className="userInfo">User Profile</button>
+        <button onClick={(e) =>
             listHandle(e, props.jwt,
                 props.userInfo.id, props.setErrorCode,
                 1, props.userInfo, props.setUserInfo, lstUserGlobal, setLstUserGlobal)}
             className="userInfo">{(props.userInfo.block === 1 ? "Unblock" : "Block")}</button>
-        <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+        <button onClick={(e) =>
             listHandle(e, props.jwt,
                 props.userInfo.id, props.setErrorCode,
                 2, props.userInfo, props.setUserInfo, lstUserGlobal, setLstUserGlobal)}
             className="userInfo">{(props.userInfo.friend === 2 ? "Remove" : "Add")} friend</button>
         <button onClick={inviteGame} className="userInfo">Invite to a game</button>
-        <button onClick={userProfile} className="userInfo">User Profile</button>
-        <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+        <button onClick={(e) =>
             directMessage(e, props.setDisplay,
                 props.setId, props.setErrorCode,
                 props.userId, props.jwt)
