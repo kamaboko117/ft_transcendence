@@ -115,7 +115,7 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #333333;
+  background-color: #2b2927;
   border-radius: 4px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   padding: 1rem;
@@ -124,7 +124,7 @@ button:focus-visible {
 }
 
 .room_item:hover {
-  background-color: #2b2927;
+  background-color: #333333;
 }
 
 .room_name {
@@ -133,12 +133,19 @@ button:focus-visible {
   margin: 0.5rem 0;
 }
 
-
+/* room items are set up in a grid */
 .room_list {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  grid-gap: 1rem;
+  padding: 1rem;
   background-color: #333333;
+}
+
+.room_list_container {
+  background-color: #333333;
+  padding: 1rem;
+  margin: 1rem;
 }
 
 .actions {
@@ -181,4 +188,57 @@ button:focus-visible {
   height: 100vh;
   top: 0;
   left: 0;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #333333;
+  color: white;
+}
+
+.navbar_item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.25s;
+  color: #ffffff;
+}
+
+.navbar_item_active {
+  background-color: #9c1458;
+
+}
+
+.navbar_item:hover {
+  background-color: #9c1458;
+}
+
+.navbar_link {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.navbar_link:hover {
+  color: #ffffff;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+
+  a:hover {
+    color: #747bff;
+  }
+
+  button {
+    background-color: #f9f9f9;
+  }
 }

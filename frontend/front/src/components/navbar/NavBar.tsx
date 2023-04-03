@@ -19,27 +19,28 @@ export default function NavBar() {
 	return (
 		<nav>
 			<Link to="/profile">User Profile</Link>
-			<ul>
+			<ul className="navbar">
 				<NavBarLink to="/">Home</NavBarLink>
 				<NavBarLink to="/FriendList">FriendList</NavBarLink>
 				<NavBarLink to="/BlackList">BlackList</NavBarLink>
 				<NavBarLink to="/Setting">Setting</NavBarLink>
 				<NavBarLink to="/channels">Channels</NavBarLink>
 				<NavBarLink to="/logout">Log Out</NavBarLink>
+				<NavBarLink to="/play">Play</NavBarLink>
 			</ul>
 		</nav>
 	)
 }
 
 function NavBarLink({ to, children, ...props }) {
-	//const resolvedPath = useResolvedPath(to);
-	//const isActive = useMatch({ path: resolvedPath.pathname, end: true });
+	const resolvedPath = useResolvedPath(to);
+	const isActive = useMatch({ path: resolvedPath.pathname, end: true });
 
 	return (
-		<li /*className={isActive ? "active" : ""}*/>
-			<Link to={to} {...props}>
+		<div className={isActive ? "navbar_item navbar_item_active" : "navbar_item"}>
+			<Link className="navbar_link" to={to} {...props}>
 				{children}
 			</Link>
-		</li>
+		</div>
 	)
 }
