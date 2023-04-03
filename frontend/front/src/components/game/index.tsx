@@ -6,7 +6,7 @@ const FPS = 60;
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
 
-export default function Game() {
+export default function Game(props: {id: string}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   interface IPlayer {
     x: number;
@@ -168,28 +168,53 @@ export default function Game() {
   }
 
   useEffect(() => {
+    if (socketService.socket) {
+      gameService
+      .joinGameRoom(socketService.socket, props.id)
+      .catch((err) => {
+        console.log("joining room");
+        alert(err);
+      });
+    }
+    console.log("joined from game component");
+    console.log("Game room mounting");
+    return (() => {
+      console.log("Game room unmount");
+      socketService.socket?.emit("leave_game", {roomId: props.id});
+    });
+  });
+
+  useEffect(() => {
     handleGameStart();
     const canvas = canvasRef.current;
-    if (!canvas) {
-      return;
+    //if (!canvas) {
+    //  return;
+    //}
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        return;
+      }
+      function game() {
+        if (!ctx) return;
+        render(ctx, player1, player2);
+      }
+      console.log("d");
+      canvas.addEventListener("mousemove", movePaddle);
+      setInterval(game, 1000 / FPS);
+      handleReceivedUpdate();
     }
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      return;
-    }
-    function game() {
-      if (!ctx) return;
-      render(ctx, player1, player2);
-    }
-    console.log("d");
-    canvas.addEventListener("mousemove", movePaddle);
-    setInterval(game, 1000 / FPS);
-    handleReceivedUpdate();
+    return (() => {
+      socketService.socket?.off("on_game_update");
+      socketService.socket?.off("onGameStart");
+    });
   }, [isGameStarted]);
 
   const handleGameStart = () => {
     if (socketService.socket) {
       gameService.onGameStart(socketService.socket, (data: any) => {
+        console.log("data")
+        console.log(data)
         setSide(data.side);
         setIsGameStarted(true);
         console.log("start");

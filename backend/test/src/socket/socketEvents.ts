@@ -140,6 +140,13 @@ export class SocketEvents {
     return socketRooms[0];
   }
 
+  @SubscribeMessage("leave_game")
+  leave(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
+    console.log("client id: " + client.id + "is leaving room");
+    if (data)
+      client.leave(data.roomId);
+  }
+
   @SubscribeMessage("join_game")
   async join(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
     console.log("New user joining room: ", data);

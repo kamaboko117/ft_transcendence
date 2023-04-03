@@ -20,7 +20,8 @@ function NewRoomModal(props: any) {
                 setErrorCode(response.status);
             })
             .then((data) => {
-                room = data.uid;
+                if (data)
+                    room = data.uid;
             });
         return room;
     }
