@@ -23,16 +23,18 @@ import { TokenUser } from "src/chat/chat.interface";
 import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
+import * as bcrypt from 'bcrypt';
 
 @Controller("users")
 export class UsersController {
     constructor(private readonly userService: UsersService,
         private authService: AuthService) { }
+    /*
+        @Get()
+        getUsers() {
+            return this.userService.getUsers();
+        }*/
 
-    @Get()
-    getUsers() {
-        return this.userService.getUsers();
-    }
 
     @Public()
     @UseGuards(JwtFirstGuard)
@@ -89,17 +91,32 @@ export class UsersController {
         }
         try {
             if (!isNaN(body.code)) {
+                //check if code already used, if yes then error
+                const ret = await bcrypt.compare(String(body.code),userDb.fa_psw);
+                if (ret === true)
+                    return ({ valid: false, username: userDb.username, token: null });
+                //check if code is valid with authenticator module
                 isValid = authenticator.verify({ token: String(body.code), secret: userDb.secret_fa });
                 if (isValid) {
                     user.fa_code = String(body.code);
+                    const salt = Number(process.env.SALT);
+                    //must hash code into db
+                    bcrypt.hash(user.fa_code, salt, ((err, psw) => {
+                        if (!err && psw)
+                            this.userService.update2FaPsw(user.userID, psw);
+                        else
+                            throw new NotFoundException("Authenticator code verification failed");
+                    }));
+                    //register user used a code in db, like this, we can't register again the qr code
+                    this.userService.updateFaFirstEntry(user.userID);
                     access_token = await this.authService.login(user);
                     return ({ valid: isValid, username: userDb.username, token: access_token });
                 }
+                return ({ valid: false, username: userDb.username, token: null });
             }
         } catch (e) {
             throw new NotFoundException("Authenticator code verification failed");
         }
-        // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
         return ({ valid: isValid, username: userDb.username, token: null });
     }
 
@@ -118,7 +135,33 @@ export class UsersController {
                 maxAge: 300000,
                 httpOnly: true
             });
-        return ({ token: access_token, user_id: req.user.userID });
+        return ({ token: access_token, user_id: req.user.userID, username: req.user.username });
+    }
+
+    checkUpdateUserError(ret_user: any, ret_user2: any,
+        body: any) {
+        let err: string[] = [];
+        const regex2 = /^[\w\d]{3,}$/;
+        const regexRet2 = regex2.test(body.username);
+    
+        if (24 < body.username.length)
+            err.push("Username is too long");
+        if (body.username.length === 0)
+            err.push("Username can't be empty");
+        if (body.username.length < 4 && body.username.length != 0)
+            err.push("Username is too short");
+        //check if username is already used, and if this not the self user
+        //if (ret_user.username === body.username
+        console.log(ret_user2)
+        console.log(ret_user)
+        if (ret_user && ret_user2) {
+            if (ret_user2.userID != ret_user.userID)
+                if (ret_user.username === body.username)
+                    err.push("Username is already used");
+        }
+        if (regexRet2 === false)
+            err.push("Username format is wrong, please use alphabet and numerics values");
+        return (err);
     }
 
     @Post('update-user')
@@ -126,52 +169,50 @@ export class UsersController {
     async updateUser(@Request() req: any, @UploadedFile(new ParseFilePipe({
         validators: [
             new MaxFileSizeValidator({ maxSize: 1000000 }),
-            new FileTypeValidator({ fileType: 'image/png' }),
+            new FileTypeValidator({ fileType: /^image\/(png|jpg|jpeg)$/ }),
         ], fileIsRequired: false
     }),
     ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
         let user: TokenUser = req.user;
-        console.log(body);
-        //body.fa must accept the regex
-        //if regex not ok, then return NULL so no FA accepted
-        const stringRegex = /^({"fa":true})$/;
-        const regex = stringRegex;
-        const regexRet = body.fa.match(regex);
-        console.log(regexRet);
         const ret_user = await this.userService.findUserByName(body.username);
-        const ret_user2 = await this.userService.findUsersById(user.userID);
-        console.log(ret_user2)
+        let ret_user2 = await this.userService.findUsersById(user.userID);
+        //check errors
+        let retErr = this.checkUpdateUserError(ret_user,
+            ret_user2, body);
 
-        if (ret_user && ret_user.username === body.username)
-            return ({ valid: false, code: 1 });
-        if (body.username === "" && ret_user2?.fa === true && body.fa === '{"fa":true}')
-            return ({ valid: false, code: 2 });
-        if (body.username === "" && ret_user2?.fa === false && body.fa === '{"fa":false}')
-            return ({ valid: false, code: 2 });
+        if (retErr.length != 0)
+            return ({valid: false, err: retErr});
+        //update avatar
         if (file)
-            this.userService.updatePathAvatarUser(user.userID, file.path);
+            await this.userService.updatePathAvatarUser(user.userID, file.path);
+        //need to update username token, for new login
+        if (body.username !== "")
+            user.username = body.username;
+        else if (ret_user2)
+            user.username = ret_user2.username;
+        //update username
         if (body.username && body.username != "")
             this.userService.updateUsername(user.userID, body.username);
+        //check if 2FA is used by requested user
+        const regex1 = /^({"fa":true})$/;
+        const regexRet = body.fa.match(regex1);
         if (regexRet && ret_user2?.fa === false) {
             //generate new auth secret
-            this.userService.update2FA(user.userID, true, authenticator.generateSecret());
             user.fa = true;
             user.fa_code = "";
+            this.userService.update2FA(user.userID, true, authenticator.generateSecret());
         }
-        else if (!regexRet)
+        else if (!regexRet) {
+            user.fa = false;
+            user.fa_code = "";
             this.userService.update2FA(user.userID, false, null);
-        if ((!body.username || body.username === "") && ret_user2)
-            user.username = ret_user2.username;
-        else
-            user.username = body.username;
-        console.log("decoded")
+        }
+        //need to generate new login token
         const access_token = await this.authService.login(user);
-        console.log("USERRR")
-        console.log(user)
-        if ((!body.username || body.username === "") && ret_user2)
-            return ({ valid: true, username: ret_user2.username, token: access_token });
-        // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
-        return ({ valid: true, username: body.username, token: access_token });
+        if (file)
+            ret_user2 = await this.userService.findUsersById(user.userID);
+        return ({ valid: true, username: user.username,
+            token: access_token, img: ret_user2?.avatarPath });
     }
 
     @Public()
@@ -181,20 +222,40 @@ export class UsersController {
     async uploadFirstLogin(@Request() req: any, @UploadedFile(new ParseFilePipe({
         validators: [
             new MaxFileSizeValidator({ maxSize: 1000000 }),
-            new FileTypeValidator({ fileType: 'image/png' }),
+            new FileTypeValidator({ fileType: /^image\/(png|jpg|jpeg)$/ }),
         ], fileIsRequired: false
     }),
     ) file: Express.Multer.File | undefined, @Body() body: FirstConnection) {
         let user = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
-        if (body.username && body.username == "" || (ret_user && ret_user.username != "")) {
-            return ({ valid: false, username: "" });
-        }
+        const ret_user2 = await this.userService.findUserByName(body.username);
+
+        let retErr = this.checkUpdateUserError(ret_user2,
+            ret_user, body);
+
+        if (retErr.length != 0)
+            return ({valid: false, err: retErr});
+        //if (body.username && body.username == "" || (ret_user && ret_user.username != "")) {
+        //    return ({ valid: false, username: "" });
+        //}
+       // if (ret_user2 && ret_user2.username === body.username
+        //    && body.username != "")
+        //    return ({ valid: true, code: 3, img: null });
         //body.fa must accept the regex
         //if regex not ok, then return NULL so no FA accepted
-        const stringRegex = /^({"fa":true})$/;
-        const regex = stringRegex;
-        const regexRet = body.fa.match(regex);
+        const regex1 = /^({"fa":true})$/;
+        //const regex2 = /^[\w\d]{3,}$/;
+        /*if (body.username != "") {
+            if (24 < body.username.length)
+                return ({ valid: true, code: 1, img: null });
+            if (body.username.length < 4 && body.username.length != 0)
+                return ({ valid: true, code: 4, img: null });
+            const regexRet2 = regex2.test(body.username);
+            console.log(regexRet2)
+            if (regexRet2 === false)
+                return ({ valid: true, code: 2, img: null });
+        }*/
+        const regexRet = body.fa.match(regex1);
         if (file)
             this.userService.updatePathAvatarUser(user.userID, file.path);
         this.userService.updateUsername(user.userID, body.username);
@@ -243,8 +304,6 @@ export class UsersController {
     async getProfile(@Request() req: any) {
         const user: TokenUser = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
-        console.log("profile");
-        console.log(ret_user);
         return (ret_user);
     }
 
@@ -255,8 +314,6 @@ export class UsersController {
     async firstConnectionProfile(@Request() req: any) {
         const user: TokenUser = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
-        console.log("profile");
-        console.log(ret_user);
         return (ret_user);
     }
 
@@ -320,13 +377,13 @@ export class UsersController {
             return ({
                 code: 3, id: Number(ret_user.userID),
                 fl: 2, bl: 1,
-                User_username: ret_user.username
+                User_username: ret_user.username, User_avatarPath: ret_user.avatarPath
             });
         }
         return ({
             code: 3, id: Number(ret_user.userID),
             fl: 2, bl: 0,
-            User_username: ret_user.username
+            User_username: ret_user.username, User_avatarPath: ret_user.avatarPath
         });
     }
 
@@ -350,13 +407,13 @@ export class UsersController {
             return ({
                 code: 3, id: Number(ret_user.userID),
                 fl: 2, bl: 1,
-                User_username: ret_user.username
+                User_username: ret_user.username, User_avatarPath: ret_user.avatarPath
             });
         }
         return ({
             code: 3, id: Number(ret_user.userID),
             fl: 2, bl: 0,
-            User_username: ret_user.username
+            User_username: ret_user.username, User_avatarPath: ret_user.avatarPath
         });
     }
 
@@ -385,6 +442,8 @@ export class UsersController {
     @UseGuards(CustomAuthGuard)
     @Post('login')
     async login(@Request() req: any, @Res({ passthrough: true }) response: any) {
+        console.log("USSSS")
+        console.log(req.user)
         let user: TokenUser = req.user;
         user.fa_code = "";
         const access_token = await this.authService.login(user);
@@ -410,13 +469,10 @@ export class UsersController {
 
     @Get(':id')
     async findUsersById(@Param('id', ParseIntPipe) id: number) {
-        console.log("id/id");
-        console.log(id)
         const user = await this.userService.findUsersById(id);
-        console.log(user);
+    
         if (!user)
-            return ({userID: 0,username:"", avatarPath: null,fa: false});
+            return ({ userID: 0, username: "", avatarPath: null, sstat: {} });
         return (user)
     }
-
 }

@@ -19,10 +19,11 @@ type userInfo = {
 	username: string,
 	token: string,
 	userID: number,
-	avatarPath: string,
+	avatarPath: string | null,
 	sstat: statInfo
 }
 
+/* display default img if not img loaded */
 const handleImgError = (e) => {
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
@@ -30,40 +31,43 @@ const handleImgError = (e) => {
         target.src =  "/upload_avatar/default.png"; 
     }
 }
-
-const UserProfileOther = (props: {jwt: string}) => {
-	const getLocation = useLocation();
-    const id = useParams().id as string;
+/* Focus user profile */
+const UserProfileOther = (props: { jwt: string }) => {
+	const id = useParams().id as string;
 	const [errorCode, setErrorCode] = useState<number>(200);
-	const [otherUser, setOtheruser] = useState<userInfo>();
-	const id_res = id;
-	console.log(id_res)
+	const [otherUser, setOtherUser] = useState<userInfo>();
+
 	if (isNaN(Number(id)))
 		return (<span>Wrong type id</span>)
 	useEffect(() => {
-		fetch('http://' + location.host + `/api/users/${id_res}`, {headers: header(props.jwt)})
+		fetch(`http://` + location.host + `/api/users/${id}`, { headers: header(props.jwt) })
 			.then(res => {
-				console.log(res)
 				if (res.ok)
 					return (res.json());
+				setErrorCode(res.status);
 			}).then(res => {
-				console.log(res);
+				console.log(res)
 				if (res) {
-					setOtheruser(res);
+					if (!res.avatarPath)
+						res.avatarPath = "";
+					setOtherUser(res);
 				}
 			})
 	}, []);
+
 	if (errorCode >= 400)
-		return(< FetchError code={errorCode}/>);
+		return (< FetchError code={errorCode} />);
+	if (typeof otherUser != undefined && otherUser?.userID === 0)
+		return(<span>No user found</span>);
 	return (
 		<>
 			<h1>Username: {otherUser?.username}</h1>
-			< img
+			{otherUser?.avatarPath != null && <img
 				className="avatar"
-				src={"../" + otherUser?.avatarPath}
+				src={'/' + otherUser.avatarPath}
 				alt={"avatar " + otherUser?.username}
-				onError={handleImgError} 
-			/>
+				onError={handleImgError}
+			/>}
 			<ul>
 				<li>Victoire: {otherUser?.sstat.victory}</li>
 				<li>Défaite: {otherUser?.sstat.defeat}</li>
@@ -71,7 +75,7 @@ const UserProfileOther = (props: {jwt: string}) => {
 				<li>Niveau: {otherUser?.sstat.level}</li>
 			</ul>
 		</>
-	)
+	);
 }
 
 export default UserProfileOther;
