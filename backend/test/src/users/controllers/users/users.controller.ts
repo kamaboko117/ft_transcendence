@@ -34,11 +34,6 @@ export class UsersController {
         return this.userService.getUsers();
     }
 
-    @Get("id/:id")
-    findUsersById(@Param("id", ParseIntPipe) id: number) {
-        return this.userService.findUsersById(id);
-    }
-
     @Public()
     @UseGuards(JwtFirstGuard)
     @Get('set-fa')
@@ -407,11 +402,21 @@ export class UsersController {
         });
     }
 
-    @Post("create")
+    @Post('create')
     @UsePipes(ValidationPipe)
     createUsers(@Body() createUserDto: CreateUserDto) {
         return this.userService.createUser(createUserDto);
     }
 
+    @Get(':id')
+    async findUsersById(@Param('id', ParseIntPipe) id: number) {
+        console.log("id/id");
+        console.log(id)
+        const user = await this.userService.findUsersById(id);
+        console.log(user);
+        if (!user)
+            return ({userID: 0,username:"", avatarPath: null,fa: false});
+        return (user)
+    }
 
 }
