@@ -23,6 +23,7 @@ type userInfo = {
 	sstat: statInfo
 }
 
+/* display default img if not img loaded */
 const handleImgError = (e) => {
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
@@ -30,7 +31,7 @@ const handleImgError = (e) => {
         target.src =  "/upload_avatar/default.png"; 
     }
 }
-
+/* Focus user profile */
 const UserProfileOther = (props: { jwt: string }) => {
 	const id = useParams().id as string;
 	const [errorCode, setErrorCode] = useState<number>(200);
@@ -47,11 +48,13 @@ const UserProfileOther = (props: { jwt: string }) => {
 			}).then(res => {
 				console.log(res)
 				if (res) {
+					if (!res.avatarPath)
+						res.avatarPath = "";
 					setOtherUser(res);
 				}
 			})
 	}, []);
-	
+
 	if (errorCode >= 400)
 		return (< FetchError code={errorCode} />);
 	if (typeof otherUser != undefined && otherUser?.userID === 0)

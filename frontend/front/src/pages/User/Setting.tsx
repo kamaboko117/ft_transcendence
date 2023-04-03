@@ -1,16 +1,8 @@
-/*
-import React from "react";
-
-export default function Setting() {
-	return <h1>Setting</h1>
-}
-*/
 import React, { useEffect, useState, ChangeEvent, FormEvent, useContext } from "react";
 import { FetchError, header } from "../../components/FetchError";
 import { useNavigate } from "react-router-dom";
 import UserContext from "../../contexts/UserContext";
 import '../../css/user.css';
-
 
 type userInfo = {
 	username: string,
@@ -19,6 +11,8 @@ type userInfo = {
 	avatarPath: string,
 	fa: boolean
 }
+
+/* display default img if not img loaded */
 
 const handleImgError = (e) => {
 	const target: HTMLImageElement = e.target as HTMLImageElement;
@@ -48,33 +42,6 @@ function ChangeHandler(event: ChangeEvent<HTMLInputElement>
 		setFile(target.files[0]);
 	}
 }
-
-/*function checkUsername(event: FormEvent<HTMLFormElement>, username: string,
-	setPushUsername: React.Dispatch<React.SetStateAction<string | null> >,
-	fileSet: File | undefined, FA: boolean, jwt: string | null,
-	setErrorCode: React.Dispatch<React.SetStateAction<number> >) {
-		event.preventDefault();
-		const formData = new FormData();
-		formData.append('username', username);
-		console.log(fileSet);
-		fetch('http://' + location.host + '/api/users/get-username',
-		{ headers: header(jwt) }
-		)
-		.then(res => {
-			console.log(res);
-			if (res.ok)
-				return (res.json());
-		})
-		.then(res => {
-			console.log(res)
-			if ()
-			*//*if (res.ok) {
-console.log("Username find");
-} else {
-update(event, username, setPushUsername, fileSet, FA, jwt, setErrorCode);
-}*/
-/*})
-}*/
 
 async function update(event: FormEvent<HTMLFormElement>, username: string,
 	userId: number | undefined,
@@ -120,8 +87,7 @@ async function update(event: FormEvent<HTMLFormElement>, username: string,
 			else if (res.valid === false) {
 				setLstErr(res.err);
 			}
-			setErrorCode(res.code);
-				
+			setErrorCode(res.status);
 		}
 	}).catch(e => console.log(e));
 }
@@ -141,16 +107,12 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 	const [user, setUser] = useState<userInfo>();
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [lstErr, setLstErr] = useState<[]>([]);
-	
 	const [avatarPath, setAvatarPath] = useState<string | null>(null);
-	//const [pushUsername, setPushUsername] = useState<string | null>(null);
 	const [FA, setFA] = useState<boolean>(false);
 	const [oldFa, setOldFa] = useState<boolean>(false);
 	const [file, setFile] = useState<File | undefined>();
 	const userCtx: any = useContext(UserContext);
 	const [username, setUsername] = useState<string>(userCtx.getUsername());
-	//const [jwt, setJwt] = useState<null | string>(null);
-	//const [finish, setFinish] = useState<boolean>(false);
 	const navigate = useNavigate();
 
 	useEffect(() => {

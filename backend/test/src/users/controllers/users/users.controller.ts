@@ -140,19 +140,7 @@ export class UsersController {
     }
 
     checkUpdateUserError(ret_user: any, ret_user2: any,
-        body: any)/*: false | { valid: boolean, code: number,
-        img: string | null }*/ {
-        /*if (ret_user && ret_user.username === body.username
-            && body.username != "")
-            return ({ valid: false, code: 1, img: null });
-        if (ret_user2?.fa === true && regexRet
-            && (body.username === ""))
-            return ({ valid: false, code: 2, img: null });
-        if (ret_user2?.fa === false && !regexRet
-            && (body.username === ""))
-            return ({ valid: false, code: 2, img: null });
-        return (false);*/
-
+        body: any) {
         let err: string[] = [];
         const regex2 = /^[\w\d]{3,}$/;
         const regexRet2 = regex2.test(body.username);
@@ -167,7 +155,7 @@ export class UsersController {
         //if (ret_user.username === body.username
         console.log(ret_user2)
         console.log(ret_user)
-        if (ret_user) {
+        if (ret_user && ret_user2) {
             if (ret_user2.userID != ret_user.userID)
                 if (ret_user.username === body.username)
                     err.push("Username is already used");
@@ -175,17 +163,6 @@ export class UsersController {
         if (regexRet2 === false)
             err.push("Username format is wrong, please use alphabet and numerics values");
         return (err);
-       // const regexRet = body.fa.match(regex1);
-        
-        /*if (body.username != "") {
-            if (24 < body.username.length)
-                return ({ valid: false, code: 4, img: null });
-            const regexRet2 = regex2.test(body.username);
-            console.log(regexRet2)
-            if (regexRet2 === false)
-                return ({ valid: false, code: 3, img: null });
-        }*/
-        //return (true);
     }
 
     @Post('update-user')
@@ -222,7 +199,6 @@ export class UsersController {
         const regexRet = body.fa.match(regex1);
         if (regexRet && ret_user2?.fa === false) {
             //generate new auth secret
-            console.log("NEW SEC")
             user.fa = true;
             user.fa_code = "";
             this.userService.update2FA(user.userID, true, authenticator.generateSecret());
@@ -247,24 +223,30 @@ export class UsersController {
     async uploadFirstLogin(@Request() req: any, @UploadedFile(new ParseFilePipe({
         validators: [
             new MaxFileSizeValidator({ maxSize: 1000000 }),
-            new FileTypeValidator({ fileType: 'image/png' }),
+            new FileTypeValidator({ fileType: /^image\/(png|jpg|jpeg)$/ }),
         ], fileIsRequired: false
     }),
     ) file: Express.Multer.File | undefined, @Body() body: FirstConnection) {
         let user = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
         const ret_user2 = await this.userService.findUserByName(body.username);
-        if (body.username && body.username == "" || (ret_user && ret_user.username != "")) {
-            return ({ valid: false, username: "" });
-        }
-        if (ret_user2 && ret_user2.username === body.username
-            && body.username != "")
-            return ({ valid: true, code: 3, img: null });
+
+        let retErr = this.checkUpdateUserError(ret_user2,
+            ret_user, body);
+
+        if (retErr.length != 0)
+            return ({valid: false, err: retErr});
+        //if (body.username && body.username == "" || (ret_user && ret_user.username != "")) {
+        //    return ({ valid: false, username: "" });
+        //}
+       // if (ret_user2 && ret_user2.username === body.username
+        //    && body.username != "")
+        //    return ({ valid: true, code: 3, img: null });
         //body.fa must accept the regex
         //if regex not ok, then return NULL so no FA accepted
         const regex1 = /^({"fa":true})$/;
-        const regex2 = /^[\w\d]{3,}$/;
-        if (body.username != "") {
+        //const regex2 = /^[\w\d]{3,}$/;
+        /*if (body.username != "") {
             if (24 < body.username.length)
                 return ({ valid: true, code: 1, img: null });
             if (body.username.length < 4 && body.username.length != 0)
@@ -273,7 +255,7 @@ export class UsersController {
             console.log(regexRet2)
             if (regexRet2 === false)
                 return ({ valid: true, code: 2, img: null });
-        }
+        }*/
         const regexRet = body.fa.match(regex1);
         if (file)
             this.userService.updatePathAvatarUser(user.userID, file.path);
@@ -287,7 +269,7 @@ export class UsersController {
         user.username = body.username;
         const access_token = await this.authService.login(user);
         // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
-        return ({ valid: true, username: body.username, token: access_token, code: 0 });
+        return ({ valid: true, username: body.username, token: access_token });
     }
 
     @Post('avatarfile')

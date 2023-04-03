@@ -243,7 +243,8 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
 
     return (<>
         <StatusUser jwt={props.jwt} userId={props.userInfo.id} />
-        <button onClick={(e) => userProfile(e, props.userInfo.id, navigate)} className="userInfo">User Profile</button>
+        <button onClick={(e) =>
+            userProfile(e, props.userInfo.id, navigate)} className="userInfo">User Profile</button>
         <button onClick={(e) =>
             listHandle(e, props.jwt,
                 props.userInfo.id, props.setErrorCode,
