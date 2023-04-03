@@ -122,12 +122,29 @@ export class UsersService {
     }
 
     async update2FA(user_id: number, fa: boolean, secret: string | null) {
-        console.log("in 2FA")
-        console.log(fa)
-
         this.userRepository.createQueryBuilder()
             .update(User)
-            .set({ fa: fa, secret_fa: secret! })
+            .set({ fa: fa, secret_fa: secret!, fa_first_entry: false })
+            .where("user_id = :id")
+            .setParameters({ id: user_id })
+            .execute()
+    }
+
+    async update2FaPsw(user_id: number, psw: string) {
+        this.userRepository.createQueryBuilder()
+            .update(User)
+            .set({fa_psw: psw})
+            .where("user_id = :id")
+            .setParameters({ id: user_id })
+            .execute()
+    }
+
+    /* Will set to true fa_first_entry,
+    this is needed to check if user has set his fa code for the first time */
+    async updateFaFirstEntry(user_id: number) {
+        this.userRepository.createQueryBuilder()
+            .update(User)
+            .set({ fa_first_entry: true })
             .where("user_id = :id")
             .setParameters({ id: user_id })
             .execute()
@@ -153,13 +170,16 @@ export class UsersService {
             .where('user.user_id = :user') //:user = setParameters()
             .setParameters({ user: id })//anti hack
             .getOne();
-        console.log(user);
+        //console.log(user);
         return (user);
     }
 
     async findUsersById(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
+            .addSelect(["Stat.victory", "Stat.defeat",
+                "Stat.nb_games", "Stat.level", "Stat.rank"])
+            .innerJoin('user.sstat', 'Stat')
             .where('user.user_id = :user')
             .setParameters({ user: id })
             .getOne();
@@ -176,7 +196,8 @@ export class UsersService {
 
     async getUserFaSecret(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
-            .select(['user.fa', 'user.secret_fa', 'user.username', 'user.fa_first_entry'])
+            .select(['user.fa', 'user.secret_fa',
+                'user.username', 'user.fa_first_entry', 'user.fa_psw'])
             .where('user.user_id = :user')
             .setParameters({ user: id })
             .getOne();
@@ -185,7 +206,7 @@ export class UsersService {
 
     async findUserByName(username: string) {
         const user: User | null = await this.userRepository.createQueryBuilder("user")
-            .select(["user.userID", "user.username", "user.fa"])
+            .select(["user.userID", "user.username", "user.fa", "user.avatarPath"])
             .where('user.username = :name')
             .setParameters({ name: username })
             .getOne();
@@ -261,7 +282,7 @@ export class UsersService {
             .select("a.focus_id AS id")
             .addSelect("bl.type_list AS bl")
             .addSelect("fl.type_list AS fl")
-            .addSelect("User.username")
+            .addSelect(["User.username", "User.avatarPath"])
             .leftJoin(fl.getQuery(), "fl", "fl.focus_id = a.focus_id")
             .setParameters({ type1: 2 })
             .leftJoin(bl.getQuery(), "bl", "bl.focus_id = a.focus_id")

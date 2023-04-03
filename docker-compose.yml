@@ -2,7 +2,6 @@ version: "3.9"
 services:
   backend:
     container_name: backend_tr
-    image: backend:v1.0
     tty: true
     build: docker/backend
     networks:
@@ -19,6 +18,8 @@ services:
       - APP_SECRET=${APP_SECRET}
       - VITE_APP_URI=${APP_URI}
       - AUTH_SECRET=${AUTH_SECRET}
+      - CHAT_SALT=${CHAT_SALT}
+      - SALT=${SALT}
     volumes:
       - ./backend:/var/www/html
       - ./frontend/front/public/upload_avatar:/var/www/html/test/upload_avatar
@@ -33,7 +34,6 @@ services:
     container_name: frontend_tr
     depends_on:
       - backend
-    image: frontend
     tty: true
     build: docker/frontend
     networks:
@@ -76,7 +76,6 @@ services:
 
   adminer:
     container_name: adminer
-    image: adminer:v1.0
     tty: true
     build: docker/adminer
     ports:

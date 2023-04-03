@@ -100,6 +100,21 @@ export function UserProvider(props: any) {
     localStorage.removeItem("ft_transcendence_gdda_userid");
   }
 
+  async function reconnectUser(props: User) {
+    console.log("logout");
+    setUser(props);
+    localStorage.removeItem("ft_transcendence_gdda_jwt");
+    localStorage.removeItem("ft_transcendence_gdda_username");
+    localStorage.removeItem("ft_transcendence_gdda_userid");
+    if (typeof user != "undefined") {
+      if (props.jwt != null && props.username != null && props.userId) {
+        localStorage.setItem("ft_transcendence_gdda_jwt", props.jwt);
+        localStorage.setItem("ft_transcendence_gdda_username", props.username);
+        localStorage.setItem("ft_transcendence_gdda_userid", props.userId);
+      }
+    }
+  }
+
   const getJwt = () => {
     return (user?.jwt);
   }
@@ -124,6 +139,7 @@ export function UserProvider(props: any) {
     user: user,
     loginUser: loginUser,
     logoutUser: logoutUser,
+    reconnectUser: reconnectUser,
     getJwt: getJwt,
     getUserId: getUserId,
     getUsername: getUsername,

@@ -1,16 +1,8 @@
-/*
-import React from "react";
-
-export default function Setting() {
-	return <h1>Setting</h1>
-}
-*/
 import React, { useEffect, useState, ChangeEvent, FormEvent, useContext } from "react";
 import { FetchError, header } from "../../components/FetchError";
 import { useNavigate } from "react-router-dom";
 import UserContext from "../../contexts/UserContext";
 import '../../css/user.css';
-
 
 type userInfo = {
 	username: string,
@@ -19,6 +11,8 @@ type userInfo = {
 	avatarPath: string,
 	fa: boolean
 }
+
+/* display default img if not img loaded */
 
 const handleImgError = (e) => {
 	const target: HTMLImageElement = e.target as HTMLImageElement;
@@ -49,38 +43,12 @@ function ChangeHandler(event: ChangeEvent<HTMLInputElement>
 	}
 }
 
-/*function checkUsername(event: FormEvent<HTMLFormElement>, username: string,
-	setPushUsername: React.Dispatch<React.SetStateAction<string | null> >,
-	fileSet: File | undefined, FA: boolean, jwt: string | null,
-	setErrorCode: React.Dispatch<React.SetStateAction<number> >) {
-		event.preventDefault();
-		const formData = new FormData();
-		formData.append('username', username);
-		console.log(fileSet);
-		fetch('http://' + location.host + '/api/users/get-username',
-		{ headers: header(jwt) }
-		)
-		.then(res => {
-			console.log(res);
-			if (res.ok)
-				return (res.json());
-		})
-		.then(res => {
-			console.log(res)
-			if ()
-			*//*if (res.ok) {
-console.log("Username find");
-} else {
-update(event, username, setPushUsername, fileSet, FA, jwt, setErrorCode);
-}*/
-/*})
-}*/
-
 async function update(event: FormEvent<HTMLFormElement>, username: string,
-	setPushUsername: React.Dispatch<React.SetStateAction<string | null>>,
-	setJwt: React.Dispatch<React.SetStateAction<string | null>>,
+	userId: number | undefined,
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
-	setErrorCode: React.Dispatch<React.SetStateAction<number>>) {
+	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+	setAvatarPath: React.Dispatch<React.SetStateAction<string | null>>,
+	setLstErr: React.Dispatch<React.SetStateAction<[]>>, userCtx) {
 	event.preventDefault();
 
 	const formData = new FormData();
@@ -105,40 +73,48 @@ async function update(event: FormEvent<HTMLFormElement>, username: string,
 		if (res) {
 			console.log(res)
 			if (res.valid === true) {
-				setPushUsername(res.username);
-				setJwt(res.token.access_token);
-				setErrorCode(200);
+				if (res.img)
+					setAvatarPath(res.img);
+				else
+					setAvatarPath("");
+				userCtx.reconnectUser({
+					jwt: res.token.access_token,
+					username: res.username,
+					userId: userId
+				});
+				setLstErr([]);
 			}
-			else if (res.valid === false && res.code === 1)
-				setErrorCode(1);
-			else if (res.valid === false && res.code === 2)
-				setErrorCode(2);
+			else if (res.valid === false) {
+				setLstErr(res.err);
+			}
+			setErrorCode(res.status);
 		}
-
 	}).catch(e => console.log(e));
+}
+
+const ErrorSubmit = (props: {lstErr: []}) => {
+    let i: number = 0;
+    return (<>
+        {props.lstErr &&
+            props.lstErr.map((err) => (
+                <p style={{ color: "red" }} key={++i}>{err}</p>
+            ))
+        }
+    </>);
 }
 
 function Setting(props: Readonly<{ jwt: string | null }>) {
 	const [user, setUser] = useState<userInfo>();
 	const [errorCode, setErrorCode] = useState<number>(200);
-	const [username, setUsername] = useState<string>("");
-	const [pushUsername, setPushUsername] = useState<string | null>(null);
+	const [lstErr, setLstErr] = useState<[]>([]);
+	const [avatarPath, setAvatarPath] = useState<string | null>(null);
 	const [FA, setFA] = useState<boolean>(false);
-	//const [avatar, setavatar] = useState<string>("");
+	const [oldFa, setOldFa] = useState<boolean>(false);
 	const [file, setFile] = useState<File | undefined>();
 	const userCtx: any = useContext(UserContext);
-	const [jwt, setJwt] = useState<null | string>(null);
-	const [load, setLoad] = useState<boolean>(false);
+	const [username, setUsername] = useState<string>(userCtx.getUsername());
 	const navigate = useNavigate();
-	//check if username is not empty, if not
-	//redirect to main page
-	/*useEffect(() => {
-		userCtx.setUsername(pushUsername);
-		if (pushUsername && pushUsername != ""
-			|| props.jwt === "" || props.jwt == null)
-			navigate("/");
-	}, [props.jwt, pushUsername]);
-*/
+
 	useEffect(() => {
 		fetch('http://' + location.host + '/api/users/profile/', { headers: header(props.jwt) })
 			.then(res => {
@@ -147,77 +123,69 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 				setErrorCode(res.status);
 			}).then((res: userInfo) => {
 				console.log(res);
-				setUser(res);
-				setFA(res.fa);
+				if (res) {
+					if (res.avatarPath)
+						setAvatarPath(res.avatarPath);
+					else
+						setAvatarPath("");
+					setUser(res);
+					setFA(res.fa);
+					setOldFa(res.fa);
+				}
 			}).catch(e => console.log(e));
 	}, []);
 
 	useEffect(() => {
-		const logout = async () => {
-			await userCtx.logoutUser();
-		}
-		if (jwt
-			&& pushUsername && pushUsername != "")
-			logout();
-	}, [jwt, pushUsername]);
-
-	useEffect(() => {
-		const login = async () => {
-			console.log("login")
-			await userCtx.loginUser({
-				jwt: jwt,
-				username: pushUsername,
-				userId: user?.userID
-			});
-			setLoad(true);
-		}
-		if (!userCtx.getJwt() && jwt)
-			login();
-	}, [userCtx.getJwt()]);
-
-	useEffect(() => {
-		if (jwt && jwt === userCtx.getJwt() && load === true) {
-			if (FA === true && user?.fa === false)
+		console.log("finish")
+		//if (finish === true) {
+			if (FA === true && oldFa === false)
 				navigate("/fa-activate");
-		}
-	}, [load]);
+			//else
+			//	setFinish(false);
+			setOldFa(FA);
+		//}
+	}, [userCtx.getJwt()]);
 
 	if (errorCode >= 401)
 		return (<FetchError code={errorCode} />);
 	return (
 		<section>
 			<article>
+				<label>Username: { userCtx.getUsername() }</label>
 				<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
 					update(event, username,
-						setPushUsername, setJwt, file, FA, props.jwt,
-						setErrorCode)}>
-					<label htmlFor="username">
-						Username: {(pushUsername === null ? user?.username : pushUsername)}
-					</label><br />
+						user?.userID, file, FA, props.jwt,
+						setErrorCode, setAvatarPath, setLstErr,
+						userCtx)}>
+					<label>Username</label>
 					<input
 						type="text"
-						id="username"
-						name="username"
-						placeholder="ex: Charly"
+						placeholder="ex: Charly" value={username}
 						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.currentTarget.value)}
-					/><br /><br />
+					/>
+					<label>Update avatar</label>
 					<input
 						type="file"
-						name="uploadAvatar"
 						onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)}
 					/>
+					<label>
+						Enable Two Factor Authentication: 2FA
+					</label>
 					<input
 						type="checkbox"
-						id="twofactor"
-						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFA(prevCheck => !prevCheck)}
-						defaultChecked={user?.fa}
+						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFA(prev => !prev)}
+						checked={FA}
 					/>
-					<label htmlFor="twofactor">
-						Enable Two Factor Authentication: 2FA
-					</label><br /><br />
+					{avatarPath != null && <><br/><img
+						className="avatar"
+						src={avatarPath}
+						alt={"avatar " + user?.username}
+						onError={handleImgError}
+					/></>}
 					<input type="submit" value="Submit" />
 				</form>
-				{errorCode === 1 && <p style={{ color: "red" }}>Username is already used.</p>}
+				<ErrorSubmit lstErr={lstErr} />
+				{errorCode === 400 && <p style={{ color: "red" }}>Wrong image file format, size or wrong type input.</p>}
 			</article>
 		</section>);
 }

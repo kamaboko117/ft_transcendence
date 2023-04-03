@@ -111,6 +111,7 @@ const PostMsg = (props: typePostMsg) => {
         setLstUserChat } = useContext(ContextDisplayChannel);
     const userCtx: any = useContext(UserContext);
     let jwt = userCtx.getJwt();
+    const navigate = useNavigate();
 
     /* Post msg */
     const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
@@ -122,7 +123,8 @@ const PostMsg = (props: typePostMsg) => {
         }
         else if (obj.content && obj.content[0] === '/')
             commandChat(jwt, obj, props.setErrorCode,
-                lstUserGlobal, lstUserChat, setLstUserGlobal, setLstUserChat);
+                lstUserGlobal, lstUserChat,
+                setLstUserGlobal, setLstUserChat, navigate);
         else {
             props.usrSocket.emit('sendMsg', obj, (res) => {
                 if (res.room === obj.id)
@@ -145,7 +147,7 @@ const PostMsg = (props: typePostMsg) => {
             else if (obj.content && obj.content[0] === '/') {
                 commandChat(jwt, obj, props.setErrorCode,
                     lstUserGlobal, lstUserChat, setLstUserGlobal,
-                    setLstUserChat);
+                    setLstUserChat, navigate);
             } else {
                 props.usrSocket.emit('sendMsg', obj, (res) => {
                     if (res.room === obj.id)
