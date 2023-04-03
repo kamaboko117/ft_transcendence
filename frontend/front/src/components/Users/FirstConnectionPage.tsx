@@ -3,14 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import UserContext from '../../contexts/UserContext';
 import { FetchError, header } from '../FetchError';
 
-/* dans ton handler submit, y mettre le feth vers backend  */
-/*
-type userInput = {
-	username: string,
-	FA: boolean,
-	avatar: string,
-}*/
-
 function ChangeHandler(event: ChangeEvent<HTMLInputElement>
 	, setFile: React.Dispatch<React.SetStateAction<File | undefined>>) {
 	event.preventDefault();
@@ -29,10 +21,9 @@ const headerPost = (jwt: Readonly<string | null>) => {
 };
 
 function update(event: FormEvent<HTMLFormElement>, username: string, userCtx, userId,
-	//setPushUsername: React.Dispatch<React.SetStateAction<string | null>>,
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-	/*setJwt: React.Dispatch<React.SetStateAction<null | string>>*/) {
+	setLstErr: React.Dispatch<React.SetStateAction<[]>>) {
 	event.preventDefault();
 
 	const formData = new FormData();
@@ -41,26 +32,6 @@ function update(event: FormEvent<HTMLFormElement>, username: string, userCtx, us
 	}
 	formData.append('fa', JSON.stringify({ fa: FA }));
 	formData.append('username', username);
-	//pour ta dto
-	// tu recevras surement
-	//object-fa: {fa: boolean}
-	//si t arrives pas en attendant tu fais object-fa: any mais faudra que ca soit comme au dessus car 	pas bien le any dans la validation
-
-	//ici reste du append dans body
-	//append en plus sur la page FirstCOnnection l username et 2FA activation
-
-	//
-	//je crois t as des trucs pour t aider sur ce lien https://orkhan.gitbook.io/typeorm/docs/select-query-builder
-	/*cq dans backend, a mettre dans le provider user.service tu dois modifier cq pour mettre a jour l userthis.userRepository.createQueryBuilder()
-			.update(User)
-			.set({avatarPath: path, username: username etc}) << mettre les trucs que tu veux modifier, si ca fonctionne mal mp discord
-			.where("user_id = :id")
-			.setParameters({id: user_id})
-			.execute()
-		}*/
-	//url creer une fonction dans user.controller
-	//regarde la doc nestjs controller, tu dois faire une class DTO Pour valider les donnees
-	//exemple dans users/dto/... si c faux tu recevras erreur 400 dans ta console client
 	fetch('http://' + location.host + '/api/users/firstlogin',
 		{
 			method: 'POST',
@@ -73,35 +44,41 @@ function update(event: FormEvent<HTMLFormElement>, username: string, userCtx, us
 		setErrorCode(res.status);
 	}).then(res => {
 		console.log(res)
-		if (res && res.valid === true) {
-			//setPushUsername(res.username);
-			//setJwt(res.token.access_token);
-			if (res.code === 0) {
+		if (res) {
+			if (res.valid === true) {
 				userCtx.reconnectUser({
 					jwt: res.token.access_token,
 					username: res.username,
 					userId: userId
 				});
-			} else {
-				setErrorCode(res.code);
+				setLstErr([]);
+			} else if (res.valid === false) {
+				setLstErr(res.err);
 			}
-		} else {
-			setErrorCode(400);
+			setErrorCode(res.status);
 		}
 	}).catch(e => console.log(e));
 }
 
+const ErrorSubmit = (props: {lstErr: []}) => {
+    let i: number = 0;
+    return (<>
+        {props.lstErr &&
+            props.lstErr.map((err) => (
+                <p style={{ color: "red" }} key={++i}>{err}</p>
+            ))
+        }
+    </>);
+}
+
 function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 	const [errorCode, setErrorCode] = useState<number>(200);
-	//const [jwt, setJwt] = useState<null | string>(null);
 	const [username, setUsername] = useState<string>("");
-	//const [pushUsername, setPushUsername] = useState<string | null>(null);
 	const [FA, setFA] = useState<boolean>(false);
 	const [file, setFile] = useState<File | undefined>();
 	const userCtx: any = useContext(UserContext);
+	const [lstErr, setLstErr] = useState<[]>([]);
 	const navigate = useNavigate();
-	//const [load, setLoad] = useState<boolean>(false);
-	//const [userId, setUserId] = useState<number>(userCtx.getUserId());
 
 	//check if user already have username
 	useEffect(() => {
@@ -120,37 +97,13 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 			}).catch(e => console.log(e));
 	}, []);
 
-	/*useEffect(() => {
-		const logout = async () => {
-			await userCtx.logoutUser();
-		}
-		if (jwt
-			&& pushUsername && pushUsername != "")
-			logout();
-	}, [pushUsername]);
-
 	useEffect(() => {
-		const login = async () => {
-			console.log("login")
-			await userCtx.loginUser({
-				jwt: jwt,
-				username: pushUsername,
-				userId: userId
-			});
-			setLoad(true);
-		}
-		if (!userCtx.getJwt() && jwt)
-			login();
-	}, [userCtx.getJwt()]);*/
-	useEffect(() => {
-	//	if (jwt && jwt === userCtx.getJwt() && load === true) {
 	if (userCtx.getUsername() != "")
 			if (FA === true)
 				navigate("/fa-activate");
 			else {
 				navigate("/");
 			}
-		//}
 	}, [userCtx.getJwt()]);
 
 	if (errorCode >= 401)
@@ -161,7 +114,7 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 				<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
 					update(event, username, userCtx, userCtx.getUserId(),
 						 file, FA, props.jwt,
-						setErrorCode)}>
+						setErrorCode, setLstErr)}>
 					<label htmlFor="username">Username</label><br />
 					<input type="text" id="username" name="username" placeholder="ex: Charly"
 						onChange={(e: React.ChangeEvent<HTMLInputElement>) => { e.preventDefault(); setUsername(e.currentTarget.value) }} /><br /><br />
@@ -171,11 +124,8 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 					<input type="file" name="uploadAvatar" onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)} />
 					<input type="submit" value="Submit" />
 				</form>
-				{errorCode === 1 && <p style={{ color: "red" }}>Username is too long</p>}
-				{errorCode === 4 && <p style={{ color: "red" }}>Username is too short</p>}
-				{errorCode === 2 && <p style={{ color: "red" }}>Username format is wrong.</p>}
-				{errorCode === 3 && <p style={{ color: "red" }}>Username is already used.</p>}
-				{errorCode && errorCode === 400 && <span>Something is not valid, please enter inputs properly</span>}
+				<ErrorSubmit lstErr={lstErr} />
+				{errorCode === 400 && <p style={{ color: "red" }}>Wrong image file format, size or wrong type input.</p>}
 			</article>
 		</section>);
 }

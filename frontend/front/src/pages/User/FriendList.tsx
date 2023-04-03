@@ -3,7 +3,8 @@ import ContextDisplayChannel, { LoadUserGlobal, updateBlackFriendList } from "..
 import scroll from 'react-scroll';
 import { useEventListenerUserInfo } from "../../useHook/useEventListener";
 import { FetchError, headerPost } from "../../components/FetchError";
-import { directMessage, handleImgError, StatusUser } from "../../components/Chat/ListUser";
+import { directMessage, handleImgError, StatusUser, userProfile } from "../../components/Chat/ListUser";
+import { useNavigate } from "react-router-dom";
 
 type typeUserInfo = {
 	username: string,
@@ -121,6 +122,7 @@ type typeButtonsInfo = {
 }
 
 const ButtonsInfos = (props: typeButtonsInfo) => {
+	const navigate = useNavigate();
 	const { setDisplay, setId } = useContext(ContextDisplayChannel);
 	const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
 	let type = 0;
@@ -131,6 +133,8 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
 
 	return (<>
 		<StatusUser jwt={props.jwt} userId={props.userInfo.id} />
+		<button onClick={(e) =>
+            userProfile(e, props.userInfo.id, navigate)} className="userInfo">User Profile</button>
 		{type && type === 2 && <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
 			listHandle(e, props.jwt, props.setErrorCode,
 				type, props.userInfo, props.setUserInfo, lstUserGlobal, setLstUserGlobal)}
@@ -142,7 +146,6 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
 			className="userInfo">{(props.userInfo.bl === type ? "Remove " : "Add ") + props.type}
 		</button>}
 		{type && type === 2 && <button className="userInfo">Invite to a game</button>}
-		<button className="userInfo">User Profile</button>
 		{
 			type && type == 2 && <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
 				directMessage(e, setDisplay,
