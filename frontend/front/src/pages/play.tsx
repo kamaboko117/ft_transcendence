@@ -22,11 +22,13 @@ export default function PlayPage(props: { jwt: string }) {
     connectSocket();
   }, []);
 */
+  const [idRoom, setIdRoom] = useState<string>("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadedRooms, setLoadedRooms] = useState([] as any);
   const [isInRoom, setIsInRoom] = useState(false);
   const gameContextValue: IGameContext = {
+    idRoom: 0,
     isInRoom: isInRoom,
     setInRoom: setIsInRoom,
     playerSide: 1,
@@ -51,7 +53,15 @@ export default function PlayPage(props: { jwt: string }) {
         }
         setLoadedRooms(rooms);
         setIsLoading(false);
+        console.log("is in " + isInRoom);
       });
+      return (() => {
+        console.log("play unmount")
+        setLoadedRooms([]);
+        usrSocket?.off("join_game_success");
+        usrSocket?.off("join_game_error");
+        console.log("is in unmount " + isInRoom);
+      })
   }, []);
   const { usrSocket } = useContext(SocketContext);
 
@@ -64,17 +74,18 @@ export default function PlayPage(props: { jwt: string }) {
       return;
     }
     setIsLoading(true);
-    const joined = await gameService
-      .joinGameRoom(usrSocket, roomId)
-      .catch((err) => {
-        console.log("joining room");
-        alert(err);
-      });
+    //const joined = await gameService
+    //  .joinGameRoom(usrSocket, roomId)
+    //  .catch((err) => {
+    //    console.log("joining room");
+    //    alert(err);
+    //  });
     console.log("joined");
-    if (joined) {
+    if (roomId && roomId != "") {
+      setIdRoom(roomId);
       setIsInRoom(true);
     }
-    console.log(joined);
+    //console.log(joined);
     setIsLoading(false);
   };
 
@@ -87,7 +98,7 @@ export default function PlayPage(props: { jwt: string }) {
   }
 
   if (isInRoom) {
-    return <Game />;
+    return <Game id={idRoom} />;
   }
 
   return (
