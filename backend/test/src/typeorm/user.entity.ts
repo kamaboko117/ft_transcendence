@@ -79,6 +79,7 @@ export class User {
   lstBlackFriendOwner: BlackFriendList[];
   @OneToMany(() => BlackFriendList, (blackfriendlist) => blackfriendlist.userFocus)
   lstBlackFriendFocus: BlackFriendList[];
+
   @OneToOne(() => Stat, (stat) => stat.user)
   sstat: Stat[]
 

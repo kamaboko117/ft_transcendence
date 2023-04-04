@@ -1,9 +1,9 @@
-import {PrimaryColumn, Column, Entity, ManyToOne, JoinColumn} from 'typeorm';
+import {PrimaryGeneratedColumn, Column, Entity, ManyToOne, JoinColumn} from 'typeorm';
 import {User} from './user.entity';
 
 @Entity()
 export class MatchHistory {
-	@PrimaryColumn()
+	@PrimaryGeneratedColumn()
 	id: number;
 
 	@Column({
