@@ -61,6 +61,18 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	}, []);
 	if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
+
+	/**
+	 * Avec MatchHistory, extraire le [nombre de partie] joué en selectionnant uniquement 2 colonnes (p1 & p2)
+	 * Avec MatchHistory, extraire le [nombre de victoire] en selectionnant uniquement la colonne user_victory
+	 * [Défaite] = [nombre de partie] - [nombre de victoire]
+	 */
+	const vc = user?.sstat.victory;
+	const nb_g = user?.sstat.nb_games;
+	let df = 0;
+	if (nb_g && vc) {
+		df = nb_g - vc;
+	}
 	return (
 		<>
 		<h1>Username: [{user?.username}]</h1>
@@ -71,11 +83,36 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 			onError={handleImgError}
 		/>}
 		<ul>
-			<li>Victoire: {user?.sstat.victory}</li>
-			<li>Défaite: {user?.sstat.defeat}</li>	
-			<li>Rang: {user?.sstat.rank}</li>		
-			<li>Niveau: {user?.sstat.level}</li>		
+			<li>Nb_Games: {nb_g}</li>
+			<li>Victoire: {vc}</li>
+			<li>Défaite: {df}</li>
+			<li>Rang: {user?.sstat.rank}</li>	
+			<li>Niveau: {user?.sstat.level}</li>	
 		</ul>
+		<table>
+			<thead>
+				<tr>
+					<th>Type Game</th>
+					<th>Player_One</th>
+					<th>Player_Two</th>
+					<th>Player_Victory</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th>Simple</th>
+					<th>id: 42</th>
+					<th>id: 52</th>
+					<th>id: 42</th>
+				</tr>
+				<tr>
+					<th>Custom</th>
+					<th>id: 42</th>
+					<th>id: 52</th>
+					<th>id: 52</th>
+				</tr>
+			</tbody>
+		</table>
 		</>
 	);
 }
