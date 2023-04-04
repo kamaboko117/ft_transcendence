@@ -1,5 +1,5 @@
 import React, { useEffect, useContext, useState } from "react";
-import socketService from "../services/socketService";
+//import socketService from "../services/socketService";
 import Modal from "../components/rooms/NewRoomModal";
 import Backdrop from "../components/backdrop";
 import RoomList from "../components/rooms/RoomList";
@@ -28,12 +28,14 @@ export default function PlayPage(props: { jwt: string }) {
   const [loadedRooms, setLoadedRooms] = useState([] as any);
   const [isInRoom, setIsInRoom] = useState(false);
   const gameContextValue: IGameContext = {
-    idRoom: 0,
+    idRoom: idRoom,
     isInRoom: isInRoom,
     setInRoom: setIsInRoom,
     playerSide: 1,
   };
   const [errorCode, setErrorCode] = useState<number>(200);
+  const { usrSocket } = useContext(SocketContext);
+
   useEffect(() => {
     fetch("http://" + location.host + "/api/rooms",
       { headers: header(props.jwt) })
@@ -58,16 +60,16 @@ export default function PlayPage(props: { jwt: string }) {
       return (() => {
         console.log("play unmount")
         setLoadedRooms([]);
-        usrSocket?.off("join_game_success");
-        usrSocket?.off("join_game_error");
+        //usrSocket?.off("join_game_success");
+        //usrSocket?.off("join_game_error");
         console.log("is in unmount " + isInRoom);
       })
   }, []);
-  const { usrSocket } = useContext(SocketContext);
+  
 
   const joinRoom = async (roomId: string) => {
-    socketService.socket = usrSocket
-    const socket = socketService.socket;
+    //socketService.socket = usrSocket
+    //const socket = socketService.socket;
 
     console.log("here");
     if (!usrSocket) {
@@ -98,7 +100,7 @@ export default function PlayPage(props: { jwt: string }) {
   }
 
   if (isInRoom) {
-    return <Game id={idRoom} />;
+    return <Game id={idRoom} usrSocket={usrSocket} />;
   }
 
   return (

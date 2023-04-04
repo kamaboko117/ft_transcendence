@@ -1,14 +1,14 @@
 import React from "react";
 
 export interface IGameContext {
-  idRoom: number;
+  idRoom: string;
   isInRoom: boolean;
   setInRoom: (inRoom: boolean) => void;
   playerSide: 1 | 2;
 }
 
 const defaultState: IGameContext = {
-  idRoom: 0,
+  idRoom: "",
   isInRoom: false,
   setInRoom: () => {},
   playerSide: 1,

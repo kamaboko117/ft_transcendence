@@ -1,14 +1,18 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { RoomsController } from './controllers/rooms/rooms.controller';
 import { RoomsService } from './services/rooms/rooms.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Room } from 'src/typeorm/room.entity';
+import { UsersModule } from 'src/users/users.module';
+import { SocketModule } from 'src/socket/socket.module';
+import { SocketEvents } from 'src/socket/socketEvents';
 //import { Room } from 'src/typeorm';
 
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Room])],
+  imports: [forwardRef(() => SocketModule), TypeOrmModule.forFeature([Room])],
   controllers: [RoomsController],
-  providers: [RoomsService]
+  providers: [RoomsService],
+  exports: [RoomsService]
 })
 export class RoomsModule { }

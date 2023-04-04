@@ -1,4 +1,6 @@
 import React, { useEffect, useContext, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Socket } from 'socket.io-client';
 import { lstMsg } from '../components/Chat/Chat';
 import { FetchError, header } from '../components/FetchError';
 
@@ -113,7 +115,36 @@ export const updateBlackFriendList = (
     }
 }
 
-export const DisplayChatGlobalProvider = (props: any) => {
+
+
+const InviteGame = (props: {userIdInvitation: number, uid: string | null, setInvitation: any}) => {
+    const navigate = useNavigate();
+
+    const handleNo = (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (e && e.target)
+            props.setInvitation(0);
+    }
+
+    const handleYes = (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (e && e.target && props.uid){
+            props.setInvitation(0);
+            navigate({pathname: '/play-invite/' + props.uid});
+        }
+    }
+
+    if (props.userIdInvitation != 0 && !isNaN(props.userIdInvitation)) {
+        return (<div className="invite-game">
+            <span>Accepte invitation</span>
+            <br></br>
+            <button onClick={handleYes} className="left">Yes</button>
+            <button onClick={handleNo} className="right">No</button>
+        </div>);
+    }
+    return (<></>);
+  }
+
+export const DisplayChatGlobalProvider = (props: {jwt: string,
+    usrSocket: Socket<any, any> | undefined, children: any}) => {
     const [errorCode, setErrorCode] = useState<number>(200);
     const [renderDirectMessage, setDisplay] = useState<boolean>(false);
     const [userId, setUserId] = useState<number>(0);
@@ -139,10 +170,27 @@ export const DisplayChatGlobalProvider = (props: any) => {
         setLstUserGlobal: setLstUserGlobal
     };
 
+    const [userIdInvitation, setInvitation] = useState<number>(0);
+    const [uid, setUid] = useState<string | null>(null);
+    useEffect(() => {
+        props.usrSocket?.on('inviteGame', (res: any) => {
+            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id);
+            if (!found) {
+                setInvitation(res.user_id);
+                setUid(res.idGame);
+            }
+            console.log(res);
+        });
+        return (() => {
+            props.usrSocket?.off('inviteGame');
+        });
+    }, [props.jwt, props.usrSocket]);
+    
     return (
         <ContextDisplayChannel.Provider value={providers}>
-            {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}
-            {props.children}
+            <InviteGame userIdInvitation={userIdInvitation} uid={uid} setInvitation={setInvitation} />
+            { errorCode && errorCode >= 400 && <FetchError code={errorCode} /> }
+            { props.children }
         </ContextDisplayChannel.Provider>
     );
 }

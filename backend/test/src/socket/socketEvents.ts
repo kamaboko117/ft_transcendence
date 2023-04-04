@@ -5,6 +5,9 @@ import {
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { MessageBody, ConnectedSocket } from "@nestjs/websockets";
+import { UsersGateway } from "src/users/providers/users/users.gateway";
+import { RoomsService } from "src/rooms/services/rooms/rooms.service";
+import { Room } from "src/typeorm/room.entity";
 
 const FPS = 60;
 const CANVAS_WIDTH = 600;
@@ -122,6 +125,9 @@ function update() {
   }
 })
 export class SocketEvents {
+
+  constructor(private userGateway: UsersGateway,
+    private readonly roomsService: RoomsService) { }
   @WebSocketServer()
   server: Server;
 
@@ -131,6 +137,28 @@ export class SocketEvents {
 
   handleDisconnect(client: Socket) {
     console.log("Client disconnected: ", client.id);
+  }
+
+  isUserConnected(id: string) {
+    const map = this.userGateway.getMap();
+  
+    for (let [key, value] of map.entries()) {
+      if (value === id) {
+        return (true);
+      }
+    }
+    return (false);
+  }
+
+  inviteUserToGame(userId: string, userIdFocus: string, idGame: string) {
+    const map = this.userGateway.getMap();
+
+    for (let [key, value] of map.entries()) {
+      if (value === userIdFocus) {
+        this.server.to(key).emit('inviteGame',
+          {idGame: idGame, user_id: userId});
+      }
+    }
   }
 
   private getSocketGameRoom(socket: Socket): string | undefined {
@@ -147,21 +175,52 @@ export class SocketEvents {
       client.leave(data.roomId);
   }
 
+  /* search if user is in private room */
+  checkIfUserFound(room: Room, clientId: string) {
+    const map = this.userGateway.getMap();
+    console.log(room);
+    const split = room?.roomName.split('|');
+    console.log(split)
+    if (split) {
+      for (let [key, value] of map.entries()) {
+        if (key === clientId) {
+          if (value === split[0] || value === split[1])
+            return (true);
+        }
+      }
+    }
+    return (false);
+  }
+
   @SubscribeMessage("join_game")
   async join(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
+    //await client.join(data.roomId);
     console.log("New user joining room: ", data);
-
+    console.log(this.server.sockets.adapter.rooms)
+    
     const connectedSockets = this.server.sockets.adapter.rooms.get(data.roomId);
     const socketRooms = Array.from(client.rooms.values()).filter(
       (r) => r !== client.id
     );
-
-    if (socketRooms.length > 0
-      || (connectedSockets && connectedSockets?.size > 1)) {
+    const room = await this.roomsService.findRoomById(data.roomId);
+    console.log(connectedSockets?.size)
+    //j'enleve ca car le find fonctionne mal, il cherche sur toutes les rooms chat compris, 
+    //si c pour trouver si deja en partie faut modifier
+    if (/*socketRooms.length > 0
+      || */(connectedSockets && connectedSockets?.size > 1)) {
       client.emit("join_game_error", { error: "Room is full" });
       return;
     } else {
       await client.join(data.roomId);
+      if (room && room.private === true){
+        const result: boolean = this.checkIfUserFound(room, client.id);
+        console.log("result: " + result)
+        console.log(this.server.sockets.adapter.rooms.get(data.roomId))
+        if (result === false){
+          client.emit("join_game_error", { error: "You are spectactor" });
+          return ;
+        }
+      }
       client.emit("join_game_success", { roomId: data.roomId });
       if (connectedSockets?.size === 2) {
         console.log("Starting game");

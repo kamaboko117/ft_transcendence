@@ -10,6 +10,7 @@ import { debounce } from 'debounce';
 import ContextDisplayChannel, { updateBlackFriendList } from '../../contexts/DisplayChatContext';
 import AdminComponent from './Admin';
 import { useNavigate } from 'react-router-dom';
+import { playPageInvite } from '../../pages/PlayInvite';
 
 type typeUserInfo = {
     username: string,
@@ -113,8 +114,12 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
     }).catch(e => console.log(e));
 }
 
-export const inviteGame = (event: MouseEvent<HTMLButtonElement>): void => {
+export const inviteGame = (event: MouseEvent<HTMLButtonElement>,
+    userId: number, jwt: string, navigate, setErrorCode): void => {
     event.preventDefault();
+    if (event.target)
+        playPageInvite(jwt, setErrorCode,
+            userId, navigate);
 }
 
 export const userProfile = (event: MouseEvent<HTMLButtonElement>,
@@ -255,7 +260,9 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
                 props.userInfo.id, props.setErrorCode,
                 2, props.userInfo, props.setUserInfo, lstUserGlobal, setLstUserGlobal)}
             className="userInfo">{(props.userInfo.friend === 2 ? "Remove" : "Add")} friend</button>
-        <button onClick={inviteGame} className="userInfo">Invite to a game</button>
+        <button onClick={(e) => inviteGame(e, props.userInfo.id, props.jwt,
+                                        navigate, props.setErrorCode)}
+            className="userInfo">Invite to a game</button>
         <button onClick={(e) =>
             directMessage(e, props.setDisplay,
                 props.setId, props.setErrorCode,

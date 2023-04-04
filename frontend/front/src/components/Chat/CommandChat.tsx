@@ -1,4 +1,5 @@
 import { updateBlackFriendList } from "../../contexts/DisplayChatContext";
+import { playPageInvite } from "../../pages/PlayInvite";
 import { header, headerPost } from "../FetchError";
 
 type typeUserInfo = {
@@ -221,6 +222,11 @@ export const commandChat = (jwt: string, obj: any, setErrorCode,
                     if (res && res.valid) {
                         if (firstPartCmd === "profile") {
                             navigate({ pathname: "/profile/" + res.id });
+                            return ;
+                        }
+                        if (firstPartCmd === "invite") {
+                            playPageInvite(jwt, setErrorCode,
+                                Number(res.id), navigate);
                             return ;
                         }
                         if ((firstPartCmd === "block" && res.bl === null)

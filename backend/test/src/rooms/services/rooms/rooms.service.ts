@@ -17,6 +17,12 @@ export class RoomsService {
     return this.roomRepository.save(newRoom);
   }
 
+  createRoomPrivate(name: string) {
+    const newRoom =
+      this.roomRepository.create({roomName: name, Capacity: 1, private: true});
+    return this.roomRepository.save(newRoom);
+  }
+
   getRooms() {
     return this.roomRepository.find();
   }

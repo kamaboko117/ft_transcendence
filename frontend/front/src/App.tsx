@@ -39,6 +39,10 @@ import UserContext, { UsernameSet } from "./contexts/UserContext";
 import { useLocation } from 'react-router-dom';
 import FaCode from "./components/Users/FaCode";
 import UserProfileOther from "./pages/User/UserProfileOther";
+import PlayPageInvite, {playPageInvite} from "./pages/PlayInvite";
+
+/* import css */
+import "./css/inviteGame.css";
 
 const ErrorPage = () => {
   const location = useLocation();
@@ -69,7 +73,7 @@ function App() {
   return (
     <>
       <SocketProvider jwt={jwt} usrSocket={usrSocket}>
-        <DisplayChatGlobalProvider jwt={jwt}>
+        <DisplayChatGlobalProvider jwt={jwt} usrSocket={usrSocket} >
           <Routes>
             <Route path="/" element={
               <>{jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
@@ -180,6 +184,15 @@ function App() {
                   width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
                 <NavBar />
                 <PlayPage jwt={jwt} /><PlayerApp />
+              </>
+            } />
+            <Route path="/play-invite/:id" element={
+              <>
+                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                {jwt && jwt != "" && <UnfoldDirectMessage /*render={renderDirectMessage} id={id}*/
+                  width={600} height={280} opacity={1} jwt={jwt} /*setId={setId}*/ />}
+                <NavBar />
+                <PlayPageInvite jwt={jwt} /><PlayerApp />
               </>
             } />
             <Route path="/matchmaking" element={

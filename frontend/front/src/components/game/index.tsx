@@ -1,13 +1,16 @@
 import React, { useEffect, useRef } from "react";
 import gameService from "../../services/gameService";
-import socketService from "../../services/socketService";
+//import socketService from "../../services/socketService";
 
 const FPS = 60;
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
 
-export default function Game(props: {id: string}) {
+
+export default function Game(props: {id: string, usrSocket}) {
+  let socketService = {socket: props.usrSocket}
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
   interface IPlayer {
     x: number;
     y: number;
@@ -23,6 +26,7 @@ export default function Game(props: {id: string}) {
 
   const [side, setSide] = React.useState(1);
   const [isGameStarted, setIsGameStarted] = React.useState(false);
+  const [errorCode, setErrorCode] = React.useState<number>(200);
 
   function drawRect(
     ctx: CanvasRenderingContext2D,
@@ -168,21 +172,28 @@ export default function Game(props: {id: string}) {
   }
 
   useEffect(() => {
+    console.log(socketService.socket)
     if (socketService.socket) {
-      gameService
-      .joinGameRoom(socketService.socket, props.id)
-      .catch((err) => {
-        console.log("joining room");
-        alert(err);
-      });
+      console.log("socketed")
+      const game = async () => {
+        await gameService
+          .joinGameRoom(socketService.socket, props.id)
+          .catch((err) => {
+            console.log("joining room " + err);
+            setErrorCode(1);
+          });
+      }
+      game();
     }
     console.log("joined from game component");
     console.log("Game room mounting");
     return (() => {
       console.log("Game room unmount");
       socketService.socket?.emit("leave_game", {roomId: props.id});
+      socketService.socket?.off("join_game_success");
+      socketService.socket?.off("join_game_error");
     });
-  });
+  }, [socketService.socket]);
 
   useEffect(() => {
     handleGameStart();
@@ -190,6 +201,9 @@ export default function Game(props: {id: string}) {
     //if (!canvas) {
     //  return;
     //}
+    console.log("canvas")
+    console.log(canvas)
+    console.log(isGameStarted)
     if (canvas) {
       const ctx = canvas.getContext("2d");
       if (!ctx) {
@@ -205,14 +219,15 @@ export default function Game(props: {id: string}) {
       handleReceivedUpdate();
     }
     return (() => {
+      console.log("canvas unmount")
       socketService.socket?.off("on_game_update");
       socketService.socket?.off("onGameStart");
     });
-  }, [isGameStarted]);
+  }, [isGameStarted, socketService.socket]);
 
-  const handleGameStart = () => {
+  const handleGameStart = async () => {
     if (socketService.socket) {
-      gameService.onGameStart(socketService.socket, (data: any) => {
+      await gameService.onGameStart(socketService.socket, (data: any) => {
         console.log("data")
         console.log(data)
         setSide(data.side);
@@ -226,7 +241,7 @@ export default function Game(props: {id: string}) {
     return (
       <div className="game">
         <h1 className="room_name">Game</h1>
-        <h1>waiting for opponent</h1>
+        {(errorCode != 1 ?<h1>waiting for opponent</h1>: <h1>Room is full, you are spectator</h1>)}
       </div>
     );
   }
