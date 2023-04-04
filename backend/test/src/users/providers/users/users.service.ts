@@ -41,12 +41,9 @@ export class UsersService {
         const newUser = this.userRepository.create(createUserDto);
         const stat = new Stat();
 
-        stat.defeat = 0;
         stat.level = 0;
-        stat.nb_games = 0;
         stat.rank = 0;
         stat.user = newUser;
-        stat.victory = 0;
         this.statRepository.save(stat);
         return (newUser);
     }
@@ -164,8 +161,7 @@ export class UsersService {
     async getUserProfile(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
-            .addSelect(["Stat.victory", "Stat.defeat",
-                "Stat.nb_games", "Stat.level", "Stat.rank"])//ici ajout les column des inner joins
+            .addSelect(["Stat.level", "Stat.rank"])//ici ajout les column des inner joins
             .innerJoin('user.sstat', 'Stat')// utiliser l''alias a droite, obligatoire je crois
             .where('user.user_id = :user') //:user = setParameters()
             .setParameters({ user: id })//anti hack
@@ -174,11 +170,18 @@ export class UsersService {
         return (user);
     }
 
+    async getVictory(id: number) {
+        const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
+            .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
+            .addSelect(['MatchHistory.matchPlayerOne', 'MatchHistory.matchPlayerTwo', 'MatchHistory.userVictory'])
+            .innerJoin('user.matchH', 'MatchHistory')
+            .where(user.M)
+    }
+
     async findUsersById(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
-            .addSelect(["Stat.victory", "Stat.defeat",
-                "Stat.nb_games", "Stat.level", "Stat.rank"])
+            .addSelect(["Stat.level", "Stat.rank"])
             .innerJoin('user.sstat', 'Stat')
             .where('user.user_id = :user')
             .setParameters({ user: id })

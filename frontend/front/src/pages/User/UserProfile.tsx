@@ -3,9 +3,6 @@ import { FetchError, header } from "../../components/FetchError";
 import '../../css/user.css';
 
 type statInfo = {
-	victory: number,
-	defeat: number,
-	nb_games: number,
 	level: number,
 	rank: number
 }
@@ -16,6 +13,11 @@ type userInfo = {
 	userID: number,
 	avatarPath: string,
 	sstat: statInfo
+}
+
+type matchH = {
+	nb_games: number,
+	victory: number,
 }
 
 /* display default img if not img loaded */
@@ -67,12 +69,12 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	 * Avec MatchHistory, extraire le [nombre de victoire] en selectionnant uniquement la colonne user_victory
 	 * [Défaite] = [nombre de partie] - [nombre de victoire]
 	 */
-	const vc = user?.sstat.victory;
-	const nb_g = user?.sstat.nb_games;
-	let df = 0;
-	if (nb_g && vc) {
-		df = nb_g - vc;
-	}
+	// const vc = user?.sstat.victory;
+	// const nb_g = user?.sstat.nb_games;
+	// let df = 0;
+	// if (nb_g && vc) {
+	// 	df = nb_g - vc;
+	// }
 	return (
 		<>
 		<h1>Username: [{user?.username}]</h1>
@@ -83,9 +85,9 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 			onError={handleImgError}
 		/>}
 		<ul>
-			<li>Nb_Games: {nb_g}</li>
-			<li>Victoire: {vc}</li>
-			<li>Défaite: {df}</li>
+			<li>Nb_Games: </li>
+			<li>Victoire: </li>
+			<li>Défaite: </li>
 			<li>Rang: {user?.sstat.rank}</li>	
 			<li>Niveau: {user?.sstat.level}</li>	
 		</ul>

@@ -7,15 +7,6 @@ export class Stat {
 	id: number;
 
 	@Column()
-	victory: number;
-
-	@Column()
-	defeat: number;
-
-	@Column()
-	nb_games: number;
-
-	@Column()
 	level: number;
 
 	@Column()
