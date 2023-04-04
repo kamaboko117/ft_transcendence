@@ -1,7 +1,7 @@
 import { io, Socket } from "socket.io-client";
 
-class SocketService {
-  public socket: Socket | undefined = undefined;
+//class SocketService {
+ // public socket: Socket | undefined = undefined;
 
   /*  public connect(url: string): Promise<Socket> {
       return new Promise((resolve, reject) => {
@@ -18,6 +18,6 @@ class SocketService {
         });
       });
     }*/
-}
+//}
 
-export default new SocketService();
+//export default new SocketService();

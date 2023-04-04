@@ -104,4 +104,8 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     //}
   }
+
+  getMap() {
+    return (this.mapSocket);
+  }
 }

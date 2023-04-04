@@ -56,6 +56,7 @@ export const SocketProvider = (props: {jwt: string, usrSocket: Socket<any, any> 
         return (() => {
             console.log("socket unmount");
             //if (!props.jwt)
+            props.usrSocket?.off('inviteGame');
             props.usrSocket?.off('exception');
             props.usrSocket?.disconnect();
         });

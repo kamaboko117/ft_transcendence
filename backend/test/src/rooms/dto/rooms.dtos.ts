@@ -5,3 +5,8 @@ export class CreateRoomDto {
     @MinLength(3)
     roomName: string;
 }
+
+export class CreateRoomPrivate {
+    @IsNumber()
+    id: number;
+}
