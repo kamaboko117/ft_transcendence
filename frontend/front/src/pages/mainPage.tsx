@@ -2,6 +2,8 @@ import React, { useContext } from "react";
 import "./mainPage.css";
 import { LoginButton, FakeLoginButton } from "../components/buttons/buttons";
 import UserContext, { UsernameSet } from "../contexts/UserContext";
+/* load list user block and friend */
+import { LoadUserGlobal } from '../contexts/DisplayChatContext';
 
 const client_id = import.meta.env.VITE_APP_ID;
 const app_uri = import.meta.env.VITE_APP_URI;
@@ -20,6 +22,7 @@ function MainPage(props: {
       <div>
         <UsernameSet jwt={props.jwt}
           username={props.username} setUsername={props.setUsername} />
+        <LoadUserGlobal jwt={props.jwt} />
         <img
           src='./public/transcendence.png'
           alt="transcendence picture"

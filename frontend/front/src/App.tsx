@@ -9,6 +9,9 @@ import ValidatePage from "./pages/validate";
 import FakeLogin from "./pages/fake-login";
 import PlayerApp from "./components/PlayerApp";
 
+/* load list user block and friend */
+import { LoadUserGlobal } from './contexts/DisplayChatContext';
+
 /* NavBar */
 import NavBar from './components/navbar/NavBar';
 
@@ -74,7 +77,8 @@ function App() {
             <Route path="/" element={
               <>{jwt && jwt != "" && <UnfoldDirectMessage
                 width={600} height={280} opacity={1} jwt={jwt} />}
-                <NavBar click={click} setClick={setClick} /><MainPage jwt={jwt} username={username} setUsername={setUsername} /><PlayerApp />
+                <NavBar click={click} setClick={setClick} />
+                <MainPage jwt={jwt} username={username} setUsername={setUsername} /><PlayerApp />
               </>} />
             <Route path="/first-connection" element={
               <>
@@ -93,6 +97,7 @@ function App() {
             <Route path="/profile" element={
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                <LoadUserGlobal jwt={jwt} />
                 {jwt && jwt != "" && <UnfoldDirectMessage
                   width={600} height={280} opacity={1} jwt={jwt} />}
                 <NavBar click={click} setClick={setClick} />
@@ -103,6 +108,7 @@ function App() {
             <Route path="/profile/:id" element={
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                <LoadUserGlobal jwt={jwt} />
                 {jwt && jwt != "" && <UnfoldDirectMessage
                   width={600} height={280} opacity={1} jwt={jwt} />}
                 <NavBar click={click} setClick={setClick} />
@@ -129,6 +135,7 @@ function App() {
             <Route path="/setting" element={
               <>
                 <NavBar click={click} setClick={setClick} />
+                <LoadUserGlobal jwt={jwt} />
                 <Setting jwt={jwt} /><PlayerApp />
               </>
             } />
@@ -160,6 +167,7 @@ function App() {
             <Route path="/channels" element={
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                <LoadUserGlobal jwt={jwt} />
                 {jwt && jwt != "" && <UnfoldDirectMessage
                   width={600} height={280} opacity={1} jwt={jwt} />}
                 <NavBar click={click} setClick={setClick} />
@@ -171,6 +179,7 @@ function App() {
             <Route path="/play" element={
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                <LoadUserGlobal jwt={jwt} />
                 {jwt && jwt != "" && <UnfoldDirectMessage
                   width={600} height={280} opacity={1} jwt={jwt} />}
                 <NavBar click={click} setClick={setClick} />
@@ -180,6 +189,7 @@ function App() {
             <Route path="/play-invite/:id" element={
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                <LoadUserGlobal jwt={jwt} />
                 {jwt && jwt != "" && <UnfoldDirectMessage
                   width={600} height={280} opacity={1} jwt={jwt} />}
                 <NavBar click={click} setClick={setClick} />
@@ -189,6 +199,7 @@ function App() {
             <Route path="/matchmaking" element={
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
+                <LoadUserGlobal jwt={jwt} />
                 {jwt && jwt != "" && <UnfoldDirectMessage
                   width={600} height={280} opacity={1} jwt={jwt} />}
                 <NavBar click={click} setClick={setClick} />
