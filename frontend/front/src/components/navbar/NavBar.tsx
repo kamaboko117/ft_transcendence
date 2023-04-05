@@ -1,34 +1,26 @@
-import React, { useContext } from "react";
-import { Link, useLocation, useMatch, useResolvedPath } from "react-router-dom";
+import React, { useContext, MouseEvent } from "react";
+import { Link, useMatch, useResolvedPath } from "react-router-dom";
 import UserContext from "../../contexts/UserContext";
 
-export default function NavBar() {
+export default function NavBar(props: { click: boolean, setClick: React.Dispatch<React.SetStateAction<boolean>> }) {
 	const userCtx: any = useContext(UserContext);
-	const getLocation = useLocation();
 	let jwt = userCtx.getJwt();
 
-	console.log(getLocation)
-	/*if (getLocation.pathname === "/Setting") {
-		return (
-			<nav>
-				<Link to="/profile">User Profile</Link>
-				<ul>
-					<NavBarLink to="/">Home</NavBarLink>
-					<NavBarLink to="/FriendList">FriendList</NavBarLink>
-					<NavBarLink to="/BlackList">BlackList</NavBarLink>
-					<NavBarLink to="/Setting">Setting</NavBarLink>
-					<NavBarLink to="/channels">Channels</NavBarLink>
-					<NavBarLink to="/matchmaking">Matchmaking</NavBarLink>
-					<NavBarLink to="/play">Play</NavBarLink>
-					<NavBarLink to="/logout">Log Out</NavBarLink>
-				</ul>
-			</nav>
-		)
+	const chooseClassName: string =
+		(props.click === true ? "navbar navbar-click" : "navbar");
+
+	const hancleClick = (e: MouseEvent<HTMLDivElement>) => {
+		if (e && e.target) {
+			props.setClick(prev => !prev);
+		}
 	}
-	else */if (!jwt || jwt === "") {
+
+	if (!jwt || jwt === "") {
 		return (
-			<nav>
-				<ul>
+			<nav className={chooseClassName}>
+				<div className="navbar-btn"
+					onClick={hancleClick}><span className="navbar-line"></span></div>
+				<ul className={chooseClassName}>
 					<NavBarLink to="/">Home</NavBarLink>
 					<NavBarLink to="/login">Log In</NavBarLink>
 				</ul>
@@ -36,9 +28,11 @@ export default function NavBar() {
 		)
 	}
 	return (
-		<nav>
-			<Link to="/profile">User Profile</Link>
-			<ul className="navbar">
+		<nav className={chooseClassName}>
+			<div className="navbar-btn"
+				onClick={hancleClick}><span className="navbar-line"></span></div>
+			<ul className={chooseClassName}>
+				<NavBarLink to="/profile">User Profile</NavBarLink>
 				<NavBarLink to="/">Home</NavBarLink>
 				<NavBarLink to="/FriendList">FriendList</NavBarLink>
 				<NavBarLink to="/BlackList">BlackList</NavBarLink>

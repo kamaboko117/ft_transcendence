@@ -207,7 +207,7 @@ export class ChatService {
             .setParameters({ id: id })
             .andWhere("list_msg.user_id NOT IN " + subQuery.getQuery())
             .setParameters({ userId: userId, type: 1 })
-            .orderBy("list_msg.id", 'ASC')
+            .orderBy("list_msg.created_at", 'ASC')
             .getMany();
         return (listMsg);
     }

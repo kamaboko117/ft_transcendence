@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FormEvent, MouseEvent, useState } from 'react';
+import React, { ChangeEvent, FormEvent, useState } from 'react';
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import "../../css/channel.css";
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
@@ -57,8 +57,6 @@ const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, setErr,
                     return (res.json());
             })
             .then(res => {
-                console.log("rrr")
-                console.log(res)
                 if (Object.keys(res).length !== 0) {
                     setErr(false);
                     navigate({ pathname: "/channels/" + name }, { state: { name: name, username: "" } });
@@ -116,14 +114,12 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         fetch('http://' + location.host + '/api/chat/public/',
             { headers: header(this.props.jwt) })
             .then(res => {
-                console.log(res.ok);
                 if (res.ok)
                     return (res.json());
                 this.setState({
                     errorCode: res.status
                 });
             }).then(res => {
-                console.log(res);
                 this.setState({
                     listChannel: res
                 })
@@ -241,7 +237,6 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     this.setState({ hasError: true, listError: res });
                 }
                 else {
-                    console.log(res)
                     this.setState({
                         hasError: false, listError: [],
                         listChannelPrivate: [...this.state.listChannelPrivate, res],
@@ -302,7 +297,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         if (this.state.errorCode >= 400)
             return (<FetchError code={this.state.errorCode} />)
         return (<section className='containerChannel'>
-            <h1>List channels + (affichage liste privée à faire + persist dtb)</h1>
+            <h1>List channels</h1>
             <article className='left'>
                 <table className='left'>
                     <thead>

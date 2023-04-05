@@ -285,7 +285,6 @@ const AdminComponent = (props: AdminCompType) => {
                     props.setErrorCode(res.status)
                 })
                 .then((res) => {
-                    console.log(res)
                     if (res && res.role) {
                         setUserId(res.userId);
                         setRole(res.role);

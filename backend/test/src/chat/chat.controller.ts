@@ -170,7 +170,7 @@ export class ChatController {
             err.push("Password and chat name can't be the same.");
         if (channel != null)
             err.push("Channel already exist.");
-        if (chat.name.length > 0 && chat.name.length < 5)
+        if (chat.name.length > 0 && chat.name.length < 4)
             err.push("Channel name too short.");
         if (chat.name.length > 0 && 100 < chat.name.length)
             err.push("Channel name too long.");
@@ -211,7 +211,7 @@ export class ChatController {
             err.push("Chat name must not be empty.");
         else if (chat.name == chat.password)
             err.push("Password and chat name can't be the same.");
-        if (chat.name.length > 0 && chat.name.length < 5)
+        if (chat.name.length > 0 && chat.name.length < 4)
             err.push("Channel name too short.");
         if (chat.name.length > 0 && 100 < chat.name.length)
             err.push("Channel name too long.");
@@ -263,7 +263,7 @@ export class ChatController {
         if (typeof getUser === "undefined" || getUser === null
             || getUser === "Ban")
             return ({});
-        let arrayStart: number = channel.lstMsg.length - 5;
+        let arrayStart: number = channel.lstMsg.length - 30;
         let arrayEnd: number = channel.lstMsg.length;
         if (arrayStart < 0)
             arrayStart = 0;

@@ -81,12 +81,6 @@ th {
     background-color: crimson;
 }
 
-/*
-th,
-td {
-    padding-left: 10px;
-}*/
-
 tr:hover {
 
     opacity: 0.9;
@@ -101,7 +95,6 @@ input[type="submit"] {
     padding: 1em;
     padding-top: 0.6em;
     padding-bottom: 0.6em;
-    /*margin-left: 10px;*/
 }
 
 input[type="radio"] {

@@ -1,7 +1,7 @@
 import React, { createContext, useEffect } from "react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { FetchError, header} from '../components/FetchError';
+import { FetchError, header } from '../components/FetchError';
 
 const UserContext = createContext({});
 
@@ -15,9 +15,11 @@ export type User = {
 //check if user is correctly logged
 //check if username is empty
 //if empty, this is a first connection
-export const UsernameSet = (props: {jwt: string,
+export const UsernameSet = (props: {
+  jwt: string,
   username: string,
-  setUsername: React.Dispatch<React.SetStateAction<string>>}) => {
+  setUsername: React.Dispatch<React.SetStateAction<string>>
+}) => {
   const [errorCode, setErrorCode] = useState<number>(200);
   const [load, setLoad] = useState<boolean>(false);
   const navigate = useNavigate();
@@ -26,22 +28,19 @@ export const UsernameSet = (props: {jwt: string,
     //check if user json web token is still valid
     //and need to check if username in db is set, to know if it's a first connection
     const login = async () => {
-      console.log("usernameSet load")
-      //if (props.jwt) {
-        await fetch('http://' + location.host + '/api/users/profile/',
+      await fetch('http://' + location.host + '/api/users/profile/',
         { headers: header(props.jwt) })
         .then(res => {
-            if (res && res.ok)
-                return (res.json());
-            setErrorCode(res.status);
+          if (res && res.ok)
+            return (res.json());
+          setErrorCode(res.status);
         })
         .then(res => {
           if (res)
             props.setUsername(res.username)
           setLoad(true);
         })
-        .catch(e=>console.log(e));
-      //}
+        .catch(e => console.log(e));
     }
     login();
   }, [props.jwt, props.username, getLocation]);
@@ -50,12 +49,12 @@ export const UsernameSet = (props: {jwt: string,
   useEffect(() => {
     if (props.jwt && props.jwt != "" && load === true
       && (props.username === "" || props.username === null)) {
-        console.log("navigate");
-        navigate("/first-connection");
+      console.log("navigate");
+      navigate("/first-connection");
     }
   }, [props.username, load])
   if (errorCode >= 400)
-        return (<FetchError code={errorCode} />);
+    return (<FetchError code={errorCode} />);
   return (<></>);
 }
 
@@ -74,11 +73,9 @@ export function UserProvider(props: any) {
       userId: localStorage.getItem("ft_transcendence_gdda_userid")
     });
   }, []);
-  
+
   async function loginUser(props: User) {
     setUser(props);
-    console.log(props);
-    console.log("set localStorage");
     if (typeof user != "undefined") {
       if (props.jwt != null && props.username != null && props.userId) {
         localStorage.setItem("ft_transcendence_gdda_jwt", props.jwt);
@@ -89,7 +86,6 @@ export function UserProvider(props: any) {
   }
   /* Faire une vrai deconnexion */
   async function logoutUser() {
-    console.log("logout");
     setUser({
       jwt: null,
       username: null,
@@ -101,7 +97,6 @@ export function UserProvider(props: any) {
   }
 
   async function reconnectUser(props: User) {
-    console.log("logout");
     setUser(props);
     localStorage.removeItem("ft_transcendence_gdda_jwt");
     localStorage.removeItem("ft_transcendence_gdda_username");

@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useState } from "react";
-import "./mainPage.module.css";
+import React, { useContext } from "react";
+import "./mainPage.css";
 import { LoginButton, FakeLoginButton } from "../components/buttons/buttons";
-import UserContext, { User, UsernameSet } from "../contexts/UserContext";
+import UserContext, { UsernameSet } from "../contexts/UserContext";
 
 const client_id = import.meta.env.VITE_APP_ID;
 const app_uri = import.meta.env.VITE_APP_URI;
@@ -20,19 +20,25 @@ function MainPage(props: {
       <div>
         <UsernameSet jwt={props.jwt}
           username={props.username} setUsername={props.setUsername} />
+        <img
+          src='./public/transcendence.png'
+          alt="transcendence picture"
+          className='transcendence'
+        />
         <div>Hello</div>
       </div>
     )
   }
   return (
-    <div className={"splash_middle"}>
-      <span>{app_uri}</span>
-      <span>{redirect_uri}</span>
-
-      <div className={"splash_content"}>
+    <div className="splash_middle">
+      <img className='transcendence'
+        src='./public/transcendence.png'
+        alt="transcendence picture"
+      />
+      <div className="splash_content">
         <LoginButton url={loginUrl} />
       </div>
-      <div className={"splash_content"}>
+      <div className="splash_content">
         <FakeLoginButton />
       </div>
     </div>

@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
 import "./index.css";
+import './css/navbar.css'
 import App from "./App";
 import { UserProvider } from "./contexts/UserContext";
 import { ErrorBoundary } from 'react-error-boundary'
@@ -22,11 +23,11 @@ function ErrorFallback({ error, resetErrorBoundary }) {
 root.render(
   //<React.StrictMode>
   <ErrorBoundary FallbackComponent={ErrorFallback}>
-  <UserProvider>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </UserProvider>
+    <UserProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </UserProvider>
   </ErrorBoundary>
   //</React.StrictMode>
 );

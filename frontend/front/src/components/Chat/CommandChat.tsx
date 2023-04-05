@@ -35,7 +35,6 @@ const fetchToBackWithTimer = (elem: typeFetchToBack) => {
         })
     })
         .then(res => {
-            console.log(res)
             if (res.ok)
                 return (res)
         })
@@ -52,7 +51,6 @@ const fetchToBackSpecial = (elem: typeFetchToBack) => {
         })
     })
         .then(res => {
-            console.log(res)
             if (res.ok)
                 return (res)
         })
@@ -69,7 +67,6 @@ const fetchToBackPsw = (elem: typeFetchToBackPsw) => {
         })
     })
         .then(res => {
-            console.log(res)
             if (res.ok)
                 return (res)
         })
@@ -86,7 +83,6 @@ const getUserInfoByName = (jwt: string, username: string,
                 return (res.json());
             setErrorCode(res.status)
         }).then(res => {
-            console.log(res)
             if (res && res.valid === true &&
                 (firstPartCmd === "unban" || firstPartCmd === "unmute")) {
                 fetchToBackSpecial({
@@ -218,16 +214,15 @@ export const commandChat = (jwt: string, obj: any, setErrorCode,
                     setErrorCode(res.status)
                 })
                 .then((res: any) => {
-                    console.log(res);
                     if (res && res.valid) {
                         if (firstPartCmd === "profile") {
                             navigate({ pathname: "/profile/" + res.id });
-                            return ;
+                            return;
                         }
                         if (firstPartCmd === "invite") {
                             playPageInvite(jwt, setErrorCode,
                                 Number(res.id), navigate);
-                            return ;
+                            return;
                         }
                         if ((firstPartCmd === "block" && res.bl === null)
                             || (firstPartCmd === "unblock" && res.bl === 1)) {
@@ -246,7 +241,6 @@ export const commandChat = (jwt: string, obj: any, setErrorCode,
     }
 
     function runAdminCmd(jwt: string, firstPartCmd: string, secondPartCmd: string, thirdPart: string) {
-        console.log("run adm")
         fetch('http://' + location.host + '/api/chat-role/getRole?' + new URLSearchParams({
             id: obj.id,
         }), { headers: header(jwt) })

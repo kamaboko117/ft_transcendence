@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState, useCallback } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 import { lstMsg } from '../components/Chat/Chat';
@@ -91,21 +91,17 @@ export const updateBlackFriendList = (
     setLstUserGlobal: React.Dispatch<React.SetStateAction<Array<typeFlBl>>>
 ) => {
     const search = () => {
-        console.log(lstUserGlobal.length)
         const found = lstUserGlobal.find(elem => Number(elem.id) === user.id);
-        console.log(found)
+
         return (found);
     }
-    let didChange: boolean = false;
+
     if (search()) {
         //update array
-        console.log(user);
         const newArr = lstUserGlobal.map((value) => {
-            console.log(value)
             if (value && Number(value.id) === user.id) {
                 value.bl = user.bl;
                 value.fl = user.fl;
-                didChange = true;
             }
             return (value);
         });
@@ -117,18 +113,16 @@ export const updateBlackFriendList = (
 
 
 
-const InviteGame = (props: {userIdInvitation: number, uid: string | null, setInvitation: any}) => {
+const InviteGame = (props: { userIdInvitation: number, uid: string | null, setInvitation: any }) => {
     const navigate = useNavigate();
-
     const handleNo = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (e && e.target)
             props.setInvitation(0);
     }
-
     const handleYes = (e: React.MouseEvent<HTMLButtonElement>) => {
-        if (e && e.target && props.uid){
+        if (e && e.target && props.uid) {
             props.setInvitation(0);
-            navigate({pathname: '/play-invite/' + props.uid});
+            navigate({ pathname: '/play-invite/' + props.uid });
         }
     }
 
@@ -141,10 +135,12 @@ const InviteGame = (props: {userIdInvitation: number, uid: string | null, setInv
         </div>);
     }
     return (<></>);
-  }
+}
 
-export const DisplayChatGlobalProvider = (props: {jwt: string,
-    usrSocket: Socket<any, any> | undefined, children: any}) => {
+export const DisplayChatGlobalProvider = (props: {
+    jwt: string,
+    usrSocket: Socket<any, any> | undefined, children: any
+}) => {
     const [errorCode, setErrorCode] = useState<number>(200);
     const [renderDirectMessage, setDisplay] = useState<boolean>(false);
     const [userId, setUserId] = useState<number>(0);
@@ -153,6 +149,7 @@ export const DisplayChatGlobalProvider = (props: {jwt: string,
     const [lstMsgPm, setLstMsgPm] = useState<lstMsg[]>([] as lstMsg[]);
     const [lstUserChat, setLstUserChat] = useState<typeListUser["listUser"]>(Array);
     const [lstUserGlobal, setLstUserGlobal] = useState<typeListUserGlobal["listUser"]>(Array);
+
     const providers = {
         renderDirectMessage: renderDirectMessage,
         userId: userId,
@@ -169,9 +166,9 @@ export const DisplayChatGlobalProvider = (props: {jwt: string,
         setLstUserChat: setLstUserChat,
         setLstUserGlobal: setLstUserGlobal
     };
-
     const [userIdInvitation, setInvitation] = useState<number>(0);
     const [uid, setUid] = useState<string | null>(null);
+
     useEffect(() => {
         props.usrSocket?.on('inviteGame', (res: any) => {
             let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id);
@@ -179,18 +176,17 @@ export const DisplayChatGlobalProvider = (props: {jwt: string,
                 setInvitation(res.user_id);
                 setUid(res.idGame);
             }
-            console.log(res);
         });
         return (() => {
             props.usrSocket?.off('inviteGame');
         });
     }, [props.jwt, props.usrSocket]);
-    
+
     return (
         <ContextDisplayChannel.Provider value={providers}>
             <InviteGame userIdInvitation={userIdInvitation} uid={uid} setInvitation={setInvitation} />
-            { errorCode && errorCode >= 400 && <FetchError code={errorCode} /> }
-            { props.children }
+            {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}
+            {props.children}
         </ContextDisplayChannel.Provider>
     );
 }
