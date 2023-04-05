@@ -5,6 +5,7 @@ import { DataSource, Repository } from "typeorm";
 import { CreateUserDto } from "src/users/dto/users.dtos";
 import { Stat } from "src/typeorm/stat.entity";
 import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
+import { MatchHistory } from "src/typeorm/matchHistory.entity";
 
 const validateURL = "https://api.intra.42.fr/oauth/token"
 const infoURL = "https://api.intra.42.fr/oauth/token/info"
@@ -20,6 +21,8 @@ export class UsersService {
         private readonly statRepository: Repository<Stat>,
         @InjectRepository(BlackFriendList)
         private readonly blFrRepository: Repository<BlackFriendList>,
+        @InjectRepository(MatchHistory)
+        private readonly matchHistoryRepository: Repository<MatchHistory>,
         private dataSource: DataSource,
     ) { }
 
@@ -170,12 +173,27 @@ export class UsersService {
         return (user);
     }
 
-    async getVictory(id: number) {
-        const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
-            .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
-            .addSelect(['MatchHistory.matchPlayerOne', 'MatchHistory.matchPlayerTwo', 'MatchHistory.userVictory'])
-            .innerJoin('user.matchH', 'MatchHistory')
-            .where(user.M)
+
+    /* Nombre de Partie joué(s)
+     * SELECT COUNT("player_one", "player_two") 
+     * FROM "match_history" 
+     * WHERE "player_two" = id OR "player_one" = id
+     */
+
+    /* Nombre de Partie gangée(s)
+     * SELECT COUNT("user_victory")
+     * FROM "match_history"
+     * WHERE "user_victory" = id
+     */
+    async getVictoryNb(id: number) {
+        console.log('id = ' + id);
+        const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
+            .select(['user_victory'])
+            .where('user_victory = :user')
+            .setParameters({ user: id })//anti hack
+            .getCount();
+            console.log("RET=====> " + ret_nb);
+        return (ret_nb);
     }
 
     async findUsersById(id: number) {

@@ -84,11 +84,11 @@ export class User {
   sstat: Stat[]
 
   //OneToMany vers MatchHistory
-  @OneToMany(() => MatchHistory, (matchhistory) => matchhistory.player_one)
+  @OneToMany(() => MatchHistory, (matchhistory) => matchhistory.MP1)
   matchPlayerOne: MatchHistory[];
-  @OneToMany(() => MatchHistory, (matchhistory) => matchhistory.player_two)
+  @OneToMany(() => MatchHistory, (matchhistory) => matchhistory.MP2)
   matchPlayerTwo: MatchHistory[];
-  @OneToMany(() => MatchHistory, (matchhistory) => matchhistory.user_victory)
+  @OneToMany(() => MatchHistory, (matchhistory) => matchhistory.victory_user)
   userVictory: MatchHistory[];
 
 }

@@ -61,6 +61,20 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 				}
             }).catch(e=>console.log(e));
 	}, []);
+	const [vc, setVC] = useState(0);
+	useEffect(() => {
+		fetch('http://' + location.host + '/api/users/get-victory-nb/', {headers: header(props.jwt)})
+			.then(res => {
+				if (res.ok)
+					return (res.text())
+				setErrorCode(res.status);
+			}).then((res) => {
+				if (res) {
+					console.log('Fetch ===> ' + res);
+					setVC(Number(res));
+				}
+			})
+	}, [])
 	if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
 
@@ -75,6 +89,7 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	// if (nb_g && vc) {
 	// 	df = nb_g - vc;
 	// }
+
 	return (
 		<>
 		<h1>Username: [{user?.username}]</h1>
@@ -86,7 +101,7 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 		/>}
 		<ul>
 			<li>Nb_Games: </li>
-			<li>Victoire: </li>
+			<li>Victoire: {vc}</li>
 			<li>Défaite: </li>
 			<li>Rang: {user?.sstat.rank}</li>	
 			<li>Niveau: {user?.sstat.level}</li>	

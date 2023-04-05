@@ -352,6 +352,14 @@ export class UsersController {
         return (ret_user);
     }
 
+    @Get('get-victory-nb')
+    async getNbVictory(@Request() req: any) {
+        const user: TokenUser = req.user;
+        const ret_nb = await this.userService.getVictoryNb(user.userID);
+        return (ret_nb);
+
+    }
+
 
     /* 0 = user not found */
     /* 1 = already added in friend list */
