@@ -201,17 +201,13 @@ export const StatusUser = (props: { userId: number, jwt: string }) => {
     const { usrSocket } = useContext(SocketContext);
     const [status, setStatus] = useState<number>(0);
     useEffect(() => {
-        //emit ask user connecté/ig sur map, puis return reponse
-        //.on les deconnexions, co, in 
+        //emit ask user conneced/ig on map, then return reponse
+        //.on connections and deconnections
         usrSocket?.emit("status", { userId: props.userId }, (res: { code: number }) => {
-            console.log("Sta")
-            console.log(res)
             if (res)
                 setStatus(res.code);
         });
         usrSocket?.on('currentStatus', (res: { code: number, userId: string }) => {
-            console.log(res)
-            console.log(props.userId)
             if (res && props.userId === Number(res.userId))
                 setStatus(res.code);
         })
@@ -261,7 +257,7 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
                 2, props.userInfo, props.setUserInfo, lstUserGlobal, setLstUserGlobal)}
             className="userInfo">{(props.userInfo.friend === 2 ? "Remove" : "Add")} friend</button>
         <button onClick={(e) => inviteGame(e, props.userInfo.id, props.jwt,
-                                        navigate, props.setErrorCode)}
+            navigate, props.setErrorCode)}
             className="userInfo">Invite to a game</button>
         <button onClick={(e) =>
             directMessage(e, props.setDisplay,
@@ -295,7 +291,6 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
     if (object)
         found = object.find(elem => Number(elem.list_user_user_id) === userInfo.id);
     useEffect(() => {
-        console.log("userinfo mount");
         if (found) {
             setUserInfo({
                 username: userInfo.username,
@@ -306,6 +301,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
             });
         }
     }, [found, props.id]);
+
     /* need to iterate listUser state, when user that has been updated is found
         return new array from map
     */
@@ -326,24 +322,16 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
     }, [userInfo]);
 
     const [offsetTop, setTop] = useState<number>(0);
-    const chooseClassName: string = (userInfo.username != "" ? "userInfo userInfoClick" : "userInfo");
-    //const [chooseClassName, setChooseClassName] = useState<string>("userInfo");
+    const chooseClassName: string
+        = (userInfo.username != "" ? "userInfo userInfoClick" : "userInfo");
     let i: number = 0;
     const Element = scroll.Element;
-
-    /*useEffect(() => {
-        console.log(userInfo.username)
-        //chooseClassName = (userInfo.username != "" ? "userInfo userInfoClick" : "userInfo");
-        if (userInfo.username != "")
-            setChooseClassName("userInfo userInfoClick");
-    }, [userInfo.username])*/
 
     const handleListenerClick = () => {
         setUserInfo({ username: "", role: "", id: 0, friend: null, block: null, avatarPath: null });
     }
     //Read React's reference doc
     const ref: any = useEventListenerUserInfo(handleListenerClick);
-    //need callback otherwise useEffect will add X time function and will bug
     const callback = useCallback(
         debounce(function resizeFunction() {
             if (userInfo.username != "") {
@@ -393,13 +381,6 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
 }
 
 /* socket.on pour ecouter les user qui rejoignent le chat et les afficher */
-/*
-    admin et owner doit pouvoir mute/ban
-    owner doit pouvoir mettre des gens admin
-    quand admin quitte, quelqu'un devient owner, si possible un admin
-    user doit pouvoir blockUnblock inviteGame userProfile directMessage
-*/
-
 const ListUserChat = (props: {
     id: string, jwt: string
 }) => {
@@ -418,7 +399,6 @@ const ListUserChat = (props: {
             }).catch(e => console.log(e)));
         }
         fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
-            console.log(res)
             setLstUserChat(res);
         }).catch(e => console.log(e));
         usrSocket?.on("updateListChat", () => {
@@ -426,14 +406,11 @@ const ListUserChat = (props: {
                 setLstUserChat(res);
             });
         });
-        console.log("list user mount");
-        //console.log(lstUserPm);
         return (() => {
-            console.log("list user unmount");
             setLstUserChat([]);
             usrSocket?.off("updateListChat");
         });
-    }, [/*JSON.stringify(lstUserChat),*/ /*JSON.stringify(lstUserPm)*/, props.id, usrSocket]);
+    }, [props.id, usrSocket]);
 
     if (errorCode >= 400)
         return (<FetchError code={errorCode} />);

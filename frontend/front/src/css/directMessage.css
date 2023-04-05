@@ -5,6 +5,7 @@
     bottom: 0;
     z-index: 1;
     width: 100%;
+    background-color: crimson;
 }
 
 div.listDiscussion {
@@ -12,6 +13,7 @@ div.listDiscussion {
     flex-direction: column;
     background-color: red;
     width: 40%;
+    border: solid 1px black;
 }
 
 div.listDiscussion>* {
@@ -45,6 +47,7 @@ div.listDiscussion>input[type="text"] {
     display: flex;
     flex-direction: column;
     background-color: red;
+    border: 1px solid black;
 }
 
 
@@ -87,6 +90,10 @@ form.formPm {
 
 form.formPm>* {
     width: 100%;
+    margin: 0;
+}
+
+button.update-channel2 {
     margin: 0;
 }
 

@@ -190,44 +190,7 @@ button:focus-visible {
   left: 0;
 }
 
-.navbar {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  background-color: #333333;
-  color: white;
-}
-
-.navbar_item {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.25s;
-  color: #ffffff;
-}
-
-.navbar_item_active {
-  background-color: #9c1458;
-
-}
-
-.navbar_item:hover {
-  background-color: #9c1458;
-}
-
-.navbar_link {
-  color: #ffffff;
-  text-decoration: none;
-}
-
-.navbar_link:hover {
-  color: #ffffff;
-}
-
+/*
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -241,4 +204,4 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
-}
+}*/

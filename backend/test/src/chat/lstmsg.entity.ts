@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { Channel } from './chat.entity';
 import { User } from '../typeorm/user.entity';
 
@@ -22,4 +22,7 @@ export class ListMsg {
     chat: Channel;
     @Column({ nullable: false })
     chatid: string;
+
+    @CreateDateColumn()
+    created_at: Date;
 }

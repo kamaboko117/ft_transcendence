@@ -55,7 +55,7 @@ export const ListMsg = (props: any) => {
     const Element = scroll.Element;
     let EScroll = scroll.animateScroll;
     let i: number = 0;
-    let arrayLength: number = props.lstMsg.length - 5;
+    let arrayLength: number = props.lstMsg.length - 30;
     if (arrayLength < 0)
         arrayLength = 0;
     useEffect(() => {
@@ -68,7 +68,7 @@ export const ListMsg = (props: any) => {
                 props.lstMsg &&
                 props.lstMsg.slice(arrayLength, props.lstMsg.length).map((msg: msg) => (
                     <React.Fragment key={++i}>
-                        <div style={{ border: "1px solid yellow" }}>
+                        <div style={{ border: "1px solid black" }}>
                             <img src={"/" + msg.user.avatarPath} className="chatBox"
                                 alt={"avatar " + msg.user.username}
                                 onError={handleImgError}
@@ -88,9 +88,7 @@ const handleLeave = async (e: React.MouseEvent<HTMLButtonElement>, contextUserLe
     id: string,
 }, navigate: any) => {
     e.preventDefault();
-    console.log(obj);
     usrSocket.emit('leaveRoomChat', obj, (res: any) => {
-        console.log("leave chat : " + res);
         navigate("/channels");
         contextUserLeave();
     });
@@ -185,7 +183,6 @@ const PostMsg = (props: typePostMsg) => {
 }
 
 const MainChat = (props: any) => {
-    //const refElem = useRef(null);
     const [online, setOnline] = useState<undefined | boolean | string>(undefined)
     const userCtx: any = useContext(UserContext);
     const { usrSocket } = useContext(SocketContext);
@@ -206,18 +203,13 @@ const MainChat = (props: any) => {
         });
         //listen to excption sent by backend
         usrSocket?.on('exception', (res) => {
-            console.log("err");
             if (res.status === "error" && res.message === "Token not valid")
                 props.setErrorCode(403);
             else
                 props.setErrorCode(500);
         });
-        console.log("mount");
-        console.log("START EMIT");
         return (() => {
             //unsubscribeChat
-            console.log("STOP EMIT");
-            console.log("unmount");
             usrSocket?.emit("stopEmit", { id: props.id }, () => {
                 setOnline(false);
             });
@@ -226,7 +218,7 @@ const MainChat = (props: any) => {
     }, [props.id, usrSocket]);
     const navigate = useNavigate();
     const contextUserLeave = useContext(ContextUserLeave);
-    const { id, lstMsgChat, lstUserChat, lstUserGlobal, setLstMsgChat, setLstMsgPm } = useContext(ContextDisplayChannel);
+    const { lstMsgChat, lstUserGlobal, setLstMsgChat, setLstMsgPm } = useContext(ContextDisplayChannel);
     const [chatName, setChatName] = useState<string>("");
 
     useEffect(() => {
@@ -249,11 +241,9 @@ const MainChat = (props: any) => {
             } else {
                 navigate("/channels");
             }
-            console.log("load...");
         }
         if (online === true)
             ft_lst();
-        console.log("liste mount");
         usrSocket?.on("actionOnUser", (res: any) => {
             if ((res.type === "Ban" || res.type === "Kick")
                 && userCtx.getUserId() === res.user_id
@@ -267,7 +257,6 @@ const MainChat = (props: any) => {
             //    setLstMsgPm((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
-            console.log("liste unmount");
             usrSocket?.off("actionOnUser");
             setLstMsgChat([]);
             setChatName("");

@@ -51,6 +51,7 @@ type propsListChannel = {
         id: string,
         name: string,
     }>,
+    setChannel: React.Dispatch<React.SetStateAction<listChan[]>>,
     setId: React.Dispatch<React.SetStateAction<string>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     setPm: React.Dispatch<React.SetStateAction<listPm[]>>
@@ -168,7 +169,13 @@ const handleClick = (event: React.MouseEvent<HTMLUListElement>,
     const target: HTMLElement = event.target as HTMLElement;
     setId(target.id);
 }
-1
+
+const handleUpdate = (e: React.MouseEvent<HTMLButtonElement>,
+    setChannel, setPm, jwt, setErrorCode) => {
+    if (e && e.target)
+        updateChannel(setChannel, setPm, jwt, setErrorCode);
+}
+
 const ListDiscussion = (props: propsListChannel) => {
     const Element = scroll.Element;
     let i = 0;
@@ -201,6 +208,13 @@ const ListDiscussion = (props: propsListChannel) => {
                 ))}
             </ul>
         </Element>
+        <button onClick={(e) => handleUpdate(e, props.setChannel,
+            props.setPm, props.jwt,
+            props.setErrorCode)}
+            className='update-channel update-channel2'
+        >
+            Update
+        </button>
         <BoxPmUser setId={props.setId} setErrorCode={props.setErrorCode} setPm={props.setPm} jwt={props.jwt} listPm={props.listPm} />
     </div>
     );
@@ -229,7 +243,6 @@ const PostMsg = (props: typePostMsg) => {
         e.preventDefault();
 
         if (obj.content && obj.content === "/help") {
-            console.log("hh")
             setLstMsgPm((lstMsg) => [...lstMsg, helper]);
         }
         else if (obj.content && obj.content[0] === '/')
@@ -253,7 +266,6 @@ const PostMsg = (props: typePostMsg) => {
         if (e.key === "Enter" && e.shiftKey === false) {
             e.preventDefault();
             if (obj.content && obj.content === "/help") {
-                console.log("hh")
                 setLstMsgPm((lstMsg) => [...lstMsg, helper]);
             }
             else if (obj.content && obj.content[0] === '/') {
@@ -317,12 +329,10 @@ const DiscussionBox = (props: {
         getSecondPartRegex = getLocation.replace(stringRegex, "");
     }
     const userCtx: any = useContext(UserContext);
-    //const refElem = useRef(null);
     const { usrSocket } = useContext(SocketContext);
     const [online, setOnline] = useState<undefined | boolean | string>(undefined)
     useEffect(() => {
         //subscribeChat
-        console.log("JOIN ROOM ID: " + props.id);
         if (props.id != "") {
             usrSocket?.emit("joinRoomChat", {
                 id: props.id,
@@ -344,27 +354,19 @@ const DiscussionBox = (props: {
             else
                 props.setErrorCode(500);
         })
-        console.log("mount");
         return (() => {
             //unsubscribeChat
-            console.log("unmount");
-            console.log("replace: " + getSecondPartRegex);
-            console.log("props.id:" + props.id);
             if (getSecondPartRegex != props.id
                 && getFirstPartRegex && getFirstPartRegex[0] == "/channels/") {
-                console.log("emit has stopped");
                 usrSocket?.emit("stopEmit", { id: props.id }, () => {
                     setOnline(false);
                 });
-            } else {
-                console.log("must not stop emit from chat");
             }
             usrSocket?.off("exception");
         })
     }, [props.id, usrSocket]);
 
-    //const [lstMsg, setLstMsg] = useState<lstMsg[]>([] as lstMsg[]);
-    const { lstMsgPm, lstUserGlobal, /*lstUserChat,*/ setLstMsgPm, setLstMsgChat } = useContext(ContextDisplayChannel);
+    const { lstMsgPm, lstUserGlobal, setLstMsgPm, setLstMsgChat } = useContext(ContextDisplayChannel);
     useEffect(() => {
         const ft_lst = async () => {
             const res = await fetch('http://' + location.host + '/api/chat?' + new URLSearchParams({
@@ -379,25 +381,20 @@ const DiscussionBox = (props: {
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
                 setLstMsgPm(res.lstMsg);
             }
-            console.log("load...");
         }
         if (online === true)
             ft_lst();
-        console.log("liste mount");
         usrSocket?.on("actionOnUser2", (res: any) => {
             if ((res.type === "Ban" || res.type === "Kick")
                 && userCtx.getUserId() === res.user_id
                 && res.room === props.id) {
                 props.setId("");
             }
-            //if (res.room === props.id && getSecondPartRegex == props.id)
-            //    setLstMsgChat((lstMsg) => [...lstMsg, res]);
             if (res.room === props.id)
                 setLstMsgPm((lstMsg) => [...lstMsg, res]);
         });
 
         return (() => {
-            console.log("liste unmount");
             usrSocket?.off("actionOnUser2");
             setLstMsgPm([]);
         });
@@ -426,9 +423,32 @@ const DiscussionBox = (props: {
         <PostMsg id={props.id} usrSocket={usrSocket} idBox={getSecondPartRegex} msg={msg}
             isPrivate={props.isPrivate} setMsg={setMsg}
             setErrorCode={props.setErrorCode}
-            setLstMsgChat={setLstMsgChat} setLstMsgPm={setLstMsgPm}/>
+            setLstMsgChat={setLstMsgChat} setLstMsgPm={setLstMsgPm} />
         <LoadUserGlobal jwt={props.jwt} />
     </div>);
+}
+
+const updateChannel = (setChannel, setPm, jwt, setErrorCode) => {
+    fetch('http://' + location.host + '/api/chat/list-pm',
+        { headers: header(jwt) })
+        .then(res => {
+            if (res.ok)
+                return (res.json());
+            setErrorCode(res.status);
+        })
+        .then(res => {
+            setPm(res);
+        }).catch(e => console.log(e));
+    /* load all channels */
+    fetch('http://' + location.host + '/api/chat/channel-registered',
+        { headers: header(jwt) })
+        .then(res => {
+            if (res.ok)
+                return (res.json());
+            setErrorCode(res.status);
+        }).then(res => {
+            setChannel(res);
+        }).catch(e => console.log(e))
 }
 
 const Box = (props: settingBox) => {
@@ -436,27 +456,8 @@ const Box = (props: settingBox) => {
     const [lstChannel, setChannel] = useState<listChan[]>([] as listChan[]);
 
     useEffect(() => {
-        /* load privates messages */
-        fetch('http://' + location.host + '/api/chat/list-pm',
-            { headers: header(props.jwt) })
-            .then(res => {
-                if (res.ok)
-                    return (res.json());
-                props.setErrorCode(res.status);
-            })
-            .then(res => {
-                setPm(res);
-            }).catch(e => console.log(e));
-        /* load all channels */
-        fetch('http://' + location.host + '/api/chat/channel-registered',
-            { headers: header(props.jwt) })
-            .then(res => {
-                if (res.ok)
-                    return (res.json());
-                props.setErrorCode(res.status);
-            }).then(res => {
-                setChannel(res);
-            }).catch(e => console.log(e))
+        /* load channels */
+        updateChannel(setChannel, setPm, props.jwt, props.setErrorCode);
         return (() => {
             setPm([]);
             setChannel([]);
@@ -469,7 +470,7 @@ const Box = (props: settingBox) => {
             maxHeight: props.height,
             opacity: props.opacity,
         }}>
-            <ListDiscussion listPm={lstPm} listChannel={lstChannel}
+            <ListDiscussion listPm={lstPm} listChannel={lstChannel} setChannel={setChannel}
                 setId={props.setId} setErrorCode={props.setErrorCode} setPm={setPm}
                 jwt={props.jwt} />
             <DiscussionBox id={props.id} jwt={props.jwt}
@@ -487,7 +488,6 @@ const FoldDirectMessage = (props: settingChat) => {
         maxWidth: props.width,
         height: props.height,
         opacity: props.opacity,
-        background: 'red'
     }}><Button /><span>Open chat box</span></article>);
 }
 
