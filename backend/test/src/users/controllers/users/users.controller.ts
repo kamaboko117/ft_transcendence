@@ -29,13 +29,6 @@ import * as bcrypt from 'bcrypt';
 export class UsersController {
     constructor(private readonly userService: UsersService,
         private authService: AuthService) { }
-    /*
-        @Get()
-        getUsers() {
-            return this.userService.getUsers();
-        }*/
-
-
 
     @Public()
     @UseGuards(JwtFirstGuard)
@@ -93,7 +86,7 @@ export class UsersController {
         try {
             if (!isNaN(body.code)) {
                 //check if code already used, if yes then error
-                const ret = await bcrypt.compare(String(body.code),userDb.fa_psw);
+                const ret = await bcrypt.compare(String(body.code), userDb.fa_psw);
                 if (ret === true)
                     return ({ valid: false, username: userDb.username, token: null });
                 //check if code is valid with authenticator module
@@ -126,7 +119,6 @@ export class UsersController {
     @UseGuards(FakeAuthGuard)
     @Get('fake-login')
     async fakeLogin(@Request() req: any, @Res({ passthrough: true }) response: any) {
-        console.log("LOGIN POST");
         const access_token = await this.authService.login(req.user);
         const refresh = await this.authService.refresh(req.user);
         console.log(access_token);
@@ -144,7 +136,7 @@ export class UsersController {
         let err: string[] = [];
         const regex2 = /^[\w\d]{3,}$/;
         const regexRet2 = regex2.test(body.username);
-    
+
         if (24 < body.username.length)
             err.push("Username is too long");
         if (body.username.length === 0)
@@ -152,9 +144,6 @@ export class UsersController {
         if (body.username.length < 4 && body.username.length != 0)
             err.push("Username is too short");
         //check if username is already used, and if this not the self user
-        //if (ret_user.username === body.username
-        console.log(ret_user2)
-        console.log(ret_user)
         if (ret_user && ret_user2) {
             if (ret_user2.userID != ret_user.userID)
                 if (ret_user.username === body.username)
@@ -182,7 +171,7 @@ export class UsersController {
             ret_user2, body);
 
         if (retErr.length != 0)
-            return ({valid: false, err: retErr});
+            return ({ valid: false, err: retErr });
         //update avatar
         if (file)
             await this.userService.updatePathAvatarUser(user.userID, file.path);
@@ -212,8 +201,10 @@ export class UsersController {
         const access_token = await this.authService.login(user);
         if (file)
             ret_user2 = await this.userService.findUsersById(user.userID);
-        return ({ valid: true, username: user.username,
-            token: access_token, img: ret_user2?.avatarPath });
+        return ({
+            valid: true, username: user.username,
+            token: access_token, img: ret_user2?.avatarPath
+        });
     }
 
     @Public()
@@ -235,27 +226,8 @@ export class UsersController {
             ret_user, body);
 
         if (retErr.length != 0)
-            return ({valid: false, err: retErr});
-        //if (body.username && body.username == "" || (ret_user && ret_user.username != "")) {
-        //    return ({ valid: false, username: "" });
-        //}
-       // if (ret_user2 && ret_user2.username === body.username
-        //    && body.username != "")
-        //    return ({ valid: true, code: 3, img: null });
-        //body.fa must accept the regex
-        //if regex not ok, then return NULL so no FA accepted
+            return ({ valid: false, err: retErr });
         const regex1 = /^({"fa":true})$/;
-        //const regex2 = /^[\w\d]{3,}$/;
-        /*if (body.username != "") {
-            if (24 < body.username.length)
-                return ({ valid: true, code: 1, img: null });
-            if (body.username.length < 4 && body.username.length != 0)
-                return ({ valid: true, code: 4, img: null });
-            const regexRet2 = regex2.test(body.username);
-            console.log(regexRet2)
-            if (regexRet2 === false)
-                return ({ valid: true, code: 2, img: null });
-        }*/
         const regexRet = body.fa.match(regex1);
         if (file)
             this.userService.updatePathAvatarUser(user.userID, file.path);
@@ -268,7 +240,6 @@ export class UsersController {
         }
         user.username = body.username;
         const access_token = await this.authService.login(user);
-        // this.userService.faire une fonction dans le service pour mettre a jour l username et 2FA via typeorm
         return ({ valid: true, username: body.username, token: access_token });
     }
 
@@ -321,7 +292,7 @@ export class UsersController {
     /* get info focus user with friend and block list from requested user*/
     @Get('info-fr-bl')
     async getUserInfo(@Request() req: any,
-        @Query('name') name: Readonly<string>) {
+        @Query('name') name: string) {
         const user: TokenUser = req.user;
         const ret_user = await this.userService.findUserByName(name);
 
@@ -352,7 +323,6 @@ export class UsersController {
         const ret_user = await this.userService.findUserByName(user.username);
         return (ret_user);
     }
-
 
     /* 0 = user not found */
     /* 1 = already added in friend list */
@@ -471,7 +441,7 @@ export class UsersController {
     @Get(':id')
     async findUsersById(@Param('id', ParseIntPipe) id: number) {
         const user = await this.userService.findUsersById(id);
-    
+
         if (!user)
             return ({ userID: 0, username: "", avatarPath: null, sstat: {} });
         return (user)

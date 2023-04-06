@@ -3,7 +3,7 @@ import { FetchError, header, headerPost } from '../FetchError';
 import { useEventListenerUserInfo } from '../../useHook/useEventListener'
 import "../../css/channel.css";
 import "../../css/chat.css";
-import "../../css/user.css"
+import "../../css/user.css";
 import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { debounce } from 'debounce';
@@ -366,7 +366,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
             </Element >
             <div className={chooseClassName} style={{ top: offsetTop }}>
                 <label className="userInfo">{userInfo.username}</label>
-                <img src={"/" + userInfo.avatarPath} className="chatBox"
+                <img src={"/" + userInfo.avatarPath} className="avatarList"
                     alt={"avatar " + userInfo.username}
                     onError={handleImgError}
                 />

@@ -18,6 +18,7 @@ export class AuthService {
     /* find or create user from 42 API */
     async validateUser(code: string) {
         const token: { access_token: string, refresh_token: string } | undefined = await this.usersServices.getToken(code);
+        console.log(token)
         if (typeof token === "undefined")
             return (undefined);
         const iduser: number = await this.usersServices.getInformationBearer(token);
@@ -26,10 +27,10 @@ export class AuthService {
         if (!user)
             user = await this.usersServices.createUser({ userID: iduser, username: '', token: '' });
         return (user);
-	}
-	/* create fake user */
-	async fakeUser() {
-		const iduser: number = Math.ceil(Math.random() * 9452160 + 1000000);
+    }
+    /* create fake user */
+    async fakeUser() {
+        const iduser: number = Math.ceil(Math.random() * 9452160 + 1000000);
         const user = await this.usersServices.createUser({ userID: iduser, username: iduser.toString(), token: '' });
         return (user);
     }
@@ -72,12 +73,12 @@ export class AuthService {
             if (userExistInDb.username != decoded.username ||
                 userExistInDb.username === "" || userExistInDb === null
                 || (userExistInDb.fa === true
-                && (userExistInDb.secret_fa === null || userExistInDb.secret_fa === "")))
+                    && (userExistInDb.secret_fa === null || userExistInDb.secret_fa === "")))
                 return (false);
             //check if 2FA has been activated and if the fa_code is not empty
             //if (userExistInDb.fa === true
-              //  && (decoded.fa_code === null || decoded.fa_code === ""))
-                //return (false);
+            //  && (decoded.fa_code === null || decoded.fa_code === ""))
+            //return (false);
             if (userExistInDb.fa === true || userExistInDb.secret_fa) {
                 if (!decoded.fa_code || decoded.fa_code === "")
                     return (false);
@@ -89,7 +90,7 @@ export class AuthService {
                     return (false);
                 }*/
             }
-            
+
             return (userExistInDb);
         } catch (e) {
             return (false);
