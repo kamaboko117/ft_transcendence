@@ -204,6 +204,22 @@ export class UsersService {
             .getCount()
         return(ret_nb);
     }
+/*
+ * SELECT (type_game, player_one, player_two, user_victory)
+ * FROM match_history
+ * WHERE (player_one = id OR player_two = id)
+ */
+
+// SELECT (type_game, player_one, player_two, user_victory) FROM match_history WHERE (player_one = 74133 OR player_two = 74133);
+    async getRawMH(id: number) {
+        console.log('GetRawMH: ' + id);
+        const ret_raw = await this.matchHistoryRepository.createQueryBuilder("match")
+            .select(['type_game', 'player_one', 'player_two', 'user_victory'])
+            .where('player_one = :user OR player_two = :user')
+            .setParameters({user: id})
+            .getRawMany()
+        return(ret_raw);
+    }
 
     async findUsersById(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")

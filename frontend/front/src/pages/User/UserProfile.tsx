@@ -15,9 +15,11 @@ type userInfo = {
 	sstat: statInfo
 }
 
-type matchH = {
-	nb_games: number,
-	victory: number,
+type rawMH = {
+	type_game: string,
+	player_one: string,
+	player_two: string,
+	player_victory: string
 }
 
 /* display default img if not img loaded */
@@ -39,6 +41,45 @@ export const headerPost = (jwt: Readonly<string | null>) => {
 /*
 	Owner profile
 */
+
+/* Table of Match_History */
+const Match_History_Raw = (props: rawMH) => {
+	const {type_game, player_one, player_two, player_victory} = props;
+
+	return(
+		<tr>
+			<td>{type_game}</td>
+			<td>{player_one}</td>
+			<td>{player_two}</td>
+			<td>{player_victory}</td>
+		</tr>
+	)
+}
+
+const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
+	const [raw_MH, setRaw] = useState<rawMH>();
+	const [errorCode, setErrorCode] = useState<number>(200);
+	if (props.jwt === null)
+		return (<div>Must be logged</div>);
+	useEffect(() => {
+		fetch('http://' + location.host + '/api/users/get_raw_mh', {headers: header(props.jwt)})
+		.then(res => {
+			if (res.ok)
+				return(res.json());
+			setErrorCode(res.status);
+		}).then((res: rawMH) => {
+			if (res) {
+				setRaw(res);
+			}
+		})
+	}, [])
+	return(
+		<tbody>
+			{}
+		</tbody>
+	);
+}
+
 const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	if (props.jwt === null)
 		return (<div>Must be logged</div>);
@@ -106,7 +147,15 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 			<li>Rang: {user?.sstat.rank}</li>	
 			<li>Niveau: {user?.sstat.level}</li>	
 		</ul>
-		<table>
+
+		</>
+	);
+}
+
+export default UserProfile;
+
+/**
+ * 		<table>
 			<thead>
 				<tr>
 					<th>Type Game</th>
@@ -130,8 +179,4 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 				</tr>
 			</tbody>
 		</table>
-		</>
-	);
-}
-
-export default UserProfile;
+ */

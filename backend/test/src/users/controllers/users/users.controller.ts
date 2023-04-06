@@ -366,6 +366,13 @@ export class UsersController {
         return(ret_nb);
     }
 
+    @Get('get_raw_mh')
+    async getMHRaw(@Request() req: any) {
+        const user: TokenUser = req.user;
+        const ret_raw = await this.userService.getRawMH(user.userID);
+        return (ret_raw);
+    }
+
 
     /* 0 = user not found */
     /* 1 = already added in friend list */
