@@ -127,8 +127,8 @@ export class ChatController {
 
         if (user.userID === Number(id))
             return (null);
-        const channel_id = await this.findPm(user.userID, id);
-        return (channel_id);
+        const channel = await this.findPm(user.userID, id);
+        return (channel);
     }
     /* End of fixed chatbox part */
 
