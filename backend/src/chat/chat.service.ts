@@ -145,13 +145,13 @@ export class ChatService {
     /* Create private message part */
     async createPrivateMessage(userOne: Readonly<number>,
         userTwo: Readonly<string>): Promise<string> {
-        let newChat: {
+        /*let newChat: {
             id: number, name: string, accesstype: string
         } = {
             id: userOne + Number(userTwo),
             name: String(userOne + userTwo),
             accesstype: '4'
-        };
+        };*/
         /* create Private message channel */
         await this.chatsRepository.createQueryBuilder()
             .insert().into(Channel)
