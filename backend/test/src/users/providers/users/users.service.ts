@@ -76,6 +76,7 @@ export class UsersService {
             }
             return (undefined)
         }).catch(e => console.log(e));
+        console.log(res)
         if (typeof res === "undefined" || typeof res.access_token === "undefined")
             return (undefined);
         token = {
@@ -133,7 +134,7 @@ export class UsersService {
     async update2FaPsw(user_id: number, psw: string) {
         this.userRepository.createQueryBuilder()
             .update(User)
-            .set({fa_psw: psw})
+            .set({ fa_psw: psw })
             .where("user_id = :id")
             .setParameters({ id: user_id })
             .execute()

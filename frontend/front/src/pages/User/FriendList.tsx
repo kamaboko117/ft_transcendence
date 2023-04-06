@@ -3,8 +3,9 @@ import ContextDisplayChannel, { LoadUserGlobal, updateBlackFriendList } from "..
 import scroll from 'react-scroll';
 import { useEventListenerUserInfo } from "../../useHook/useEventListener";
 import { FetchError, headerPost } from "../../components/FetchError";
-import { directMessage, handleImgError, StatusUser, userProfile } from "../../components/Chat/ListUser";
+import { directMessage, handleImgError, inviteGame, StatusUser, userProfile } from "../../components/Chat/ListUser";
 import { useNavigate } from "react-router-dom";
+import "../../css/user.css";
 
 type typeUserInfo = {
 	username: string,
@@ -134,7 +135,7 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
 	return (<>
 		<StatusUser jwt={props.jwt} userId={props.userInfo.id} />
 		<button onClick={(e) =>
-            userProfile(e, props.userInfo.id, navigate)} className="userInfo">User Profile</button>
+			userProfile(e, props.userInfo.id, navigate)} className="userInfo">User Profile</button>
 		{type && type === 2 && <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
 			listHandle(e, props.jwt, props.setErrorCode,
 				type, props.userInfo, props.setUserInfo, lstUserGlobal, setLstUserGlobal)}
@@ -145,9 +146,11 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
 				type, props.userInfo, props.setUserInfo, lstUserGlobal, setLstUserGlobal)}
 			className="userInfo">{(props.userInfo.bl === type ? "Remove " : "Add ") + props.type}
 		</button>}
-		{type && type === 2 && <button className="userInfo">Invite to a game</button>}
+		<button onClick={(e) => inviteGame(e, props.userInfo.id, props.jwt,
+			navigate, props.setErrorCode)}
+			className="userInfo">Invite to a game</button>
 		{
-			type && type == 2 && <button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+			<button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
 				directMessage(e, setDisplay,
 					setId, props.setErrorCode,
 					props.userInfo.id, props.jwt)
@@ -243,7 +246,7 @@ export const Display = (props: {
 		</Element>
 		<div className={chooseClassName} style={{ position: "relative" }}>
 			<label className="userInfo">{props.userInfo.username}</label>
-			<img src={"/" + props.userInfo.avatarPath} className="chatBox"
+			<img src={"/" + props.userInfo.avatarPath} className="avatarList"
 				alt={"avatar " + props.userInfo.username}
 				onError={handleImgError}
 			/>

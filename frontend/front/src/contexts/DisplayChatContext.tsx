@@ -90,9 +90,10 @@ export const updateBlackFriendList = (
     lstUserGlobal: Array<typeFlBl>,
     setLstUserGlobal: React.Dispatch<React.SetStateAction<Array<typeFlBl>>>
 ) => {
+    console.log(user)
     const search = () => {
         const found = lstUserGlobal.find(elem => Number(elem.id) === user.id);
-
+        console.log(found)
         return (found);
     }
 
@@ -110,8 +111,6 @@ export const updateBlackFriendList = (
         setLstUserGlobal(prev => [...prev, user]);
     }
 }
-
-
 
 const InviteGame = (props: { userIdInvitation: number, uid: string | null, setInvitation: any }) => {
     const navigate = useNavigate();

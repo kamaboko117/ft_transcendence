@@ -28,6 +28,13 @@ img.avatar {
     max-width: 200px;
 }
 
+img.avatarList {
+    align-self: flex-start;
+    max-width: 50px;
+    width: 100%;
+    margin: auto
+}
+
 .element>.user {
     background-color: coral;
 }

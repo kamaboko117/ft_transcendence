@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useContext, MouseEvent } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FetchError, header, headerPost } from '../../components/FetchError';
 import UserContext from '../../contexts/UserContext';
 import ContextDisplayChannel, { updateBlackFriendList } from '../../contexts/DisplayChatContext';
+import { inviteGame } from '../../components/Chat/ListUser';
 
 
 /* useLocation recover values from url
@@ -34,9 +35,46 @@ const handleImgError = (e) => {
 	}
 }
 
+type frBl = {
+	friend: number | null,
+	block: number | null
+}
+
+function updateList(res: { add: boolean, type: number },
+	otherUser: userInfo, frBl: frBl, lstUserGlobal, setLstUserGlobal) {
+	function updateUserInfo(username: string, id: number,
+		friend: number | null, block: number | null, avatarPath: string | null) {
+		updateBlackFriendList({
+			id: id,
+			fl: friend, bl: block,
+			User_username: username, User_avatarPath: avatarPath
+		}, lstUserGlobal, setLstUserGlobal);
+	}
+	if (res.type === 2) {
+		if (res.add === true)
+			updateUserInfo(otherUser.username, Number(otherUser.userID),
+				res.type, frBl.block,
+				otherUser.avatarPath);
+		else
+			updateUserInfo(otherUser.username, Number(otherUser.userID),
+				null, frBl.block,
+				otherUser.avatarPath);
+	} else if (res.type === 1) {
+		if (res.add === true)
+			updateUserInfo(otherUser.username, Number(otherUser.userID),
+				frBl.friend, res.type,
+				otherUser.avatarPath);
+		else
+			updateUserInfo(otherUser.username, Number(otherUser.userID),
+				frBl.friend, null,
+				otherUser.avatarPath);
+	}
+}
+
 const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-	type: number, id: string, otherUser: userInfo | undefined,
+	type: number, id: string, otherUser: userInfo | undefined, frBl: frBl,
+	setFrBl: React.Dispatch<React.SetStateAction<frBl>>,
 	lstUserGlobal: {
 		id: number, fl: number | null,
 		bl: number | null, User_username: string, User_avatarPath: string | null
@@ -48,6 +86,7 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 	if (!otherUser || !event || !event.target) {
 		return;
 	}
+
 	fetch("http://" + location.host + "/api/users/fr-bl-list", {
 		method: 'post',
 		headers: headerPost(jwt),
@@ -60,47 +99,51 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 		setErrorCode(res.status);
 	}).then((res: { add: boolean, type: number }) => {
 		if (res) {
-			console.log(res)
-			/*updateBlackFriendList({
-				id: Number(id),
-				fl: friend, bl: block,
-				User_username: otherUser.username,
-				User_avatarPath: otherUser.username
-			}, lstUserGlobal, setLstUserGlobal);*/
+			console.log(res);
+			updateList(res, otherUser, frBl, lstUserGlobal, setLstUserGlobal);
 		}
 	}).catch(err => console.log(err));
-}
-
-type frBl = {
-	friend: number | null,
-	block: number | null
 }
 
 const FriendBlockUser = (props: { userCtx, id, otherUser: userInfo | undefined, jwt: string }) => {
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
 	const [frBl, setFrBl] = useState<frBl>({ friend: null, block: null });
+	const navigate = useNavigate();
 	useEffect(() => {
 		lstUserGlobal.forEach((value, key) => {
 			console.log(typeof value.id)
 			console.log(typeof props.id)
-			if (value.id === props.id) {
+			if (String(value.id) === props.id) {
 				setFrBl({ friend: value.fl, block: value.bl });
 			}
-		})
+		});
 	}, [JSON.stringify(lstUserGlobal)]);
 	if (errorCode >= 400)
 		return (<FetchError code={errorCode} />);
 	if (props.otherUser) {
 		return (<>
 			{props.userCtx.getUserId() != props.id && <button onClick={(e) => {
-				listHandle(e, props.jwt, setErrorCode, 1, props.id, props.otherUser, lstUserGlobal, setLstUserGlobal)
+				listHandle(e, props.jwt, setErrorCode,
+					1, props.id, props.otherUser, frBl, setFrBl,
+					lstUserGlobal, setLstUserGlobal)
 			}}
-			>{(frBl.block === 1 ? "Unblock" : "Block")} User</button>}
+			>
+				{(frBl.block === 1 ? "Unblock" : "Block")} User
+			</button>}
 			{props.userCtx.getUserId() != props.id && <button onClick={(e) => {
-				listHandle(e, props.jwt, setErrorCode, 2, props.id, props.otherUser, lstUserGlobal, setLstUserGlobal)
+				listHandle(e, props.jwt, setErrorCode,
+					2, props.id, props.otherUser, frBl, setFrBl,
+					lstUserGlobal, setLstUserGlobal)
 			}}
-			>{(frBl.friend === 2 ? "Remove" : "Add")} friend</button>}
+			>
+				{(frBl.friend === 2 ? "Remove" : "Add")} friend
+			</button>}
+			<button onClick={(e) => inviteGame(e, Number(props.otherUser?.userID), props.jwt,
+				navigate, setErrorCode)}
+			>
+				Invite to a game
+			</button>
 		</>);
 	}
 	return (<></>);
