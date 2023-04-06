@@ -249,7 +249,9 @@ export class ChatController {
         const user: TokenUser = req.user;
         const chan = await this.chatService.getChannelByTest(id);
         const listMsg = await this.chatService.getListMsgByChannelId(id, user.userID);
-
+        console.log(chan)
+        if (!chan)
+            return ({});
         let channel = {
             id: chan?.id,
             name: chan?.name,
@@ -258,14 +260,15 @@ export class ChatController {
             accesstype: chan?.accesstype,
             lstMsg: listMsg
         };
+        console.log(channel)
         if (typeof channel === "undefined" || channel === null)
             return ({});
         const getUser = await this.chatService.getUserOnChannel(id, user.userID);
+        console.log(getUser)
         if (getUser === "Ban")
             return ({ ban: true });
-        if (typeof getUser === "undefined" || getUser === null
-            || getUser === "Ban")
-            return ({});
+        if (typeof getUser === "undefined" || getUser === null)
+            return ({ authorized: false });
         let arrayStart: number = channel.lstMsg.length - 30;
         let arrayEnd: number = channel.lstMsg.length;
         if (arrayStart < 0)
