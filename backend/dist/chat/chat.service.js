@@ -120,11 +120,6 @@ let ChatService = class ChatService {
         return (listUser);
     }
     async createPrivateMessage(userOne, userTwo) {
-        let newChat = {
-            id: userOne + Number(userTwo),
-            name: String(userOne + userTwo),
-            accesstype: '4'
-        };
         await this.chatsRepository.createQueryBuilder()
             .insert().into(chat_entity_1.Channel)
             .values({

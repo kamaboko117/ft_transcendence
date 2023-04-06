@@ -25,7 +25,9 @@ export declare class ChatController {
             };
         };
     }>;
-    openPrivateMessage(req: any, id: string): Promise<string | null>;
+    openPrivateMessage(req: any, id: string): Promise<{
+        asw: string | null | undefined;
+    }>;
     getHasPaswd(req: any, id: string): Promise<boolean>;
     postNewPublicChat(req: any, chat: CreateChatDto): Promise<InformationChat | string[]>;
     postNewPrivateChat(req: any, chat: CreateChatDto): Promise<InformationChat | string[]>;
