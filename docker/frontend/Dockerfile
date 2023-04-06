@@ -3,7 +3,7 @@ USER root
 #volume	/var/www/html
 WORKDIR /var/www/html
 COPY entrypoint.sh /usr/bin
-WORKDIR /var/www/html/front
+WORKDIR /var/www/html
 RUN chmod +x /usr/bin/entrypoint.sh
 ENTRYPOINT ["/usr/bin/entrypoint.sh"]
 CMD ["npm", "run", "dev"]

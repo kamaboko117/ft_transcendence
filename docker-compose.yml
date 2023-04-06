@@ -22,7 +22,7 @@ services:
       - SALT=${SALT}
     volumes:
       - ./backend:/var/www/html
-      - ./frontend/front/public/upload_avatar:/var/www/html/test/upload_avatar
+      - ./frontend/public/upload_avatar:/var/www/html/upload_avatar
     deploy:
       restart_policy:
         condition: on-failure
@@ -43,7 +43,7 @@ services:
       - "5174"
     volumes:
       - ./frontend:/var/www/html
-      - ./frontend/front/public/upload_avatar:/var/www/html/front/public/upload_avatar
+      - ./frontend/public/upload_avatar:/var/www/html/public/upload_avatar
     environment:
       - VITE_APP_ID=${APP_ID}
       - VITE_APP_SECRET=${APP_SECRET}
