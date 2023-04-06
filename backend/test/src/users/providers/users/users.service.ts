@@ -192,8 +192,17 @@ export class UsersService {
             .where('user_victory = :user')
             .setParameters({ user: id })//anti hack
             .getCount();
-            console.log("RET=====> " + ret_nb);
         return (ret_nb);
+    }
+
+    async getGamesNb(id: number) {
+        console.log('id = ' + id);
+        const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
+            .select(['player_one', 'player_two'])
+            .where('player_one = :user OR player_two = :user')
+            .setParameters({user: id})
+            .getCount()
+        return(ret_nb);
     }
 
     async findUsersById(id: number) {

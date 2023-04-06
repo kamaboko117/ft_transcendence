@@ -61,7 +61,7 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 				}
             }).catch(e=>console.log(e));
 	}, []);
-	const [vc, setVC] = useState(0);
+	const [vc, setVC] = useState<number>(0);
 	useEffect(() => {
 		fetch('http://' + location.host + '/api/users/get-victory-nb/', {headers: header(props.jwt)})
 			.then(res => {
@@ -70,25 +70,25 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 				setErrorCode(res.status);
 			}).then((res) => {
 				if (res) {
-					console.log('Fetch ===> ' + res);
 					setVC(Number(res));
 				}
 			})
 	}, [])
+	const [nb_g, setNb_g] = useState<number>(0);
+	const [df, setDf] = useState<number>(0);
+	useEffect(() => {
+		fetch('http://' + location.host + '/api/users/get-games-nb/', {headers: header(props.jwt)})
+			.then(res => {
+				if (res.ok)
+					return(res.text())
+				setErrorCode(res.status);
+			}).then((res) => {
+				setNb_g(Number(res));
+				setDf(nb_g - vc);
+			})
+	})
 	if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
-
-	/**
-	 * Avec MatchHistory, extraire le [nombre de partie] joué en selectionnant uniquement 2 colonnes (p1 & p2)
-	 * Avec MatchHistory, extraire le [nombre de victoire] en selectionnant uniquement la colonne user_victory
-	 * [Défaite] = [nombre de partie] - [nombre de victoire]
-	 */
-	// const vc = user?.sstat.victory;
-	// const nb_g = user?.sstat.nb_games;
-	// let df = 0;
-	// if (nb_g && vc) {
-	// 	df = nb_g - vc;
-	// }
 
 	return (
 		<>
@@ -100,9 +100,9 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 			onError={handleImgError}
 		/>}
 		<ul>
-			<li>Nb_Games: </li>
+			<li>Nb_Games: {nb_g}</li>
 			<li>Victoire: {vc}</li>
-			<li>Défaite: </li>
+			<li>Défaite: {df}</li>
 			<li>Rang: {user?.sstat.rank}</li>	
 			<li>Niveau: {user?.sstat.level}</li>	
 		</ul>

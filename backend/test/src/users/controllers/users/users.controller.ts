@@ -357,7 +357,13 @@ export class UsersController {
         const user: TokenUser = req.user;
         const ret_nb = await this.userService.getVictoryNb(user.userID);
         return (ret_nb);
+    }
 
+    @Get('get-games-nb')
+    async getNbGames(@Request() req: any) {
+        const user: TokenUser = req.user;
+        const ret_nb = await this.userService.getGamesNb(user.userID);
+        return(ret_nb);
     }
 
 
