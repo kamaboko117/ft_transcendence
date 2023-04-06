@@ -1,6 +1,5 @@
 FROM node:19-alpine3.16
 USER root
-#volume	/var/www/html
 COPY entrypoint.sh /usr/bin
 WORKDIR /var/www/html
 ENV DOCKERIZE_VERSION v0.6.1
