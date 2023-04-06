@@ -60,15 +60,15 @@ function update(event: FormEvent<HTMLFormElement>, username: string, userCtx, us
 	}).catch(e => console.log(e));
 }
 
-const ErrorSubmit = (props: {lstErr: []}) => {
-    let i: number = 0;
-    return (<>
-        {props.lstErr &&
-            props.lstErr.map((err) => (
-                <p style={{ color: "red" }} key={++i}>{err}</p>
-            ))
-        }
-    </>);
+const ErrorSubmit = (props: { lstErr: [] }) => {
+	let i: number = 0;
+	return (<>
+		{props.lstErr &&
+			props.lstErr.map((err) => (
+				<p style={{ color: "red" }} key={++i}>{err}</p>
+			))
+		}
+	</>);
 }
 
 function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
@@ -98,7 +98,7 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 	}, []);
 
 	useEffect(() => {
-	if (userCtx.getUsername() != "")
+		if (userCtx.getUsername() != "")
 			if (FA === true)
 				navigate("/fa-activate");
 			else {
@@ -106,14 +106,14 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 			}
 	}, [userCtx.getJwt()]);
 
-	if (errorCode >= 401)
+	if (errorCode >= 401 && errorCode != 413)
 		return (<FetchError code={errorCode} />);
 	return (
 		<section>
 			<article>
 				<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
 					update(event, username, userCtx, userCtx.getUserId(),
-						 file, FA, props.jwt,
+						file, FA, props.jwt,
 						setErrorCode, setLstErr)}>
 					<label htmlFor="username">Username</label><br />
 					<input type="text" id="username" name="username" placeholder="ex: Charly"
@@ -125,7 +125,17 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 					<input type="submit" value="Submit" />
 				</form>
 				<ErrorSubmit lstErr={lstErr} />
-				{errorCode === 400 && <p style={{ color: "red" }}>Wrong image file format, size or wrong type input.</p>}
+				{errorCode === 400
+					&&
+					<p style={{ color: "red" }}>
+						Wrong image file format, size or wrong type input.
+					</p>
+				}
+				{errorCode === 413
+					&& <p style={{ color: "red" }}>
+						Image is too large, please upload a size inferior to 1MB.
+					</p>
+				}
 			</article>
 		</section>);
 }

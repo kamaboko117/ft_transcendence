@@ -8,10 +8,9 @@ import {
     UseGuards,
     UsePipes,
     ValidationPipe,
-    Request, Res, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, NotFoundException, UnauthorizedException, HttpException, HttpStatus, Query
+    Request, Res, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, NotFoundException, UnauthorizedException, HttpException, HttpStatus, Query, BadRequestException
 } from "@nestjs/common";
 import { CreateUserDto, BlockUnblock, UpdateUser, Username, FirstConnection, Code } from "src/users/dto/users.dtos";
-//import { UsersService } from "src/users/services/users/users.service";
 import { UsersService } from "src/users/providers/users/users.service";
 import { CustomAuthGuard } from 'src/auth/auth.guard';
 import { FakeAuthGuard } from 'src/auth/fake.guard';
@@ -43,8 +42,6 @@ export class UsersController {
         if (userDb.fa === false
             || userDb.secret_fa === null || userDb.secret_fa === "")
             throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
-        console.log("SET FA")
-        console.log(userDb);
         if (userDb.fa_first_entry === true)
             return ({ code: 3, url: null });
         const otpAuth = authenticator.keyuri(userDb.username, "ft_transcendence", userDb.secret_fa);
@@ -86,9 +83,11 @@ export class UsersController {
         try {
             if (!isNaN(body.code)) {
                 //check if code already used, if yes then error
-                const ret = await bcrypt.compare(String(body.code), userDb.fa_psw);
-                if (ret === true)
-                    return ({ valid: false, username: userDb.username, token: null });
+                if (userDb.fa_psw != null) {
+                    const ret = await bcrypt.compare(String(body.code), userDb.fa_psw);
+                    if (ret === true)
+                        return ({ valid: false, username: userDb.username, token: null });
+                }
                 //check if code is valid with authenticator module
                 isValid = authenticator.verify({ token: String(body.code), secret: userDb.secret_fa });
                 if (isValid) {
@@ -109,7 +108,7 @@ export class UsersController {
                 return ({ valid: false, username: userDb.username, token: null });
             }
         } catch (e) {
-            throw new NotFoundException("Authenticator code verification failed");
+            throw new BadRequestException("Something went wrong");
         }
         return ({ valid: isValid, username: userDb.username, token: null });
     }
@@ -413,8 +412,6 @@ export class UsersController {
     @UseGuards(CustomAuthGuard)
     @Post('login')
     async login(@Request() req: any, @Res({ passthrough: true }) response: any) {
-        console.log("USSSS")
-        console.log(req.user)
         let user: TokenUser = req.user;
         user.fa_code = "";
         const access_token = await this.authService.login(user);

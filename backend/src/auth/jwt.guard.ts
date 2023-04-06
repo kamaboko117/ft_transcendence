@@ -1,12 +1,8 @@
 import { ExecutionContext, Injectable, SetMetadata, Inject } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-//import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { Reflector } from '@nestjs/core';
 import { WsException } from '@nestjs/websockets';
-import { resolve } from 'path';
-import { User } from 'src/typeorm';
-import { Observable } from 'rxjs';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
@@ -26,12 +22,9 @@ export class JwtGuard extends AuthGuard('jwt') {
         let bearer: string = "";
         if (isPublic)
             return (true);
-        console.log("guard jwt")
         if (typeof request.route != "undefined"
-            && typeof request.headers.authorization != "undefined"){
+            && typeof request.headers.authorization != "undefined") {
             bearer = request.headers.authorization.split('Bearer ')[1];
-            console.log("jwt route")
-            console.log(request.route.path);
         }
         else if (typeof request.route == "undefined") {
             bearer = request.handshake.headers.authorization;
@@ -41,7 +34,6 @@ export class JwtGuard extends AuthGuard('jwt') {
         const decoded = await this.authService.verifyToken(bearer);
         if ((decoded === null && typeof request.route == "undefined")
             || (decoded === false && typeof request.route == "undefined")) {
-                console.log("exception");
             throw new WsException('Token not valid');
         }
         else if (decoded === null || decoded === false)

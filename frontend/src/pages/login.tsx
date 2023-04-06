@@ -1,4 +1,4 @@
-import React, {useContext} from "react";
+import React from "react";
 import { LoginButton, FakeLoginButton } from "../components/buttons/buttons";
 import { Navigate } from "react-router-dom";
 
@@ -12,14 +12,14 @@ function LoginPage(props: any) {
 
   if (props.user) return <Navigate to="/" />;
   return (
-	<>
-    <div>
-      <h1>Please Log In</h1>
-      <></>
-      <LoginButton url={loginUrl} />
-    </div>
-        <FakeLoginButton />
-	</>
+    <>
+      <div>
+        <h1>Please Log In</h1>
+        <></>
+        <LoginButton url={loginUrl} />
+      </div>
+      <FakeLoginButton />
+    </>
   );
 }
 

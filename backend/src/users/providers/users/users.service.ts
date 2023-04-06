@@ -23,20 +23,6 @@ export class UsersService {
         private dataSource: DataSource,
     ) { }
 
-    /*
-        consulte ca pour t'aider :
-        https://orkhan.gitbook.io/typeorm/docs/select-query-builder
-        UTILISE CA POUR AJOUTER LA FRIEND LIST ET BLACK LIST
-        await this.listUserRepository
-        .createQueryBuilder()
-        .insert()
-        .into(ListUser) << modifier pour les entites
-        .values([{
-            user_id: user_id, << modifier dans values
-            chatid: data.id
-        }])
-        .execute();
-    */
     async createUser(createUserDto: CreateUserDto) {
         const newUser = this.userRepository.create(createUserDto);
         const stat = new Stat();
@@ -171,7 +157,6 @@ export class UsersService {
             .where('user.user_id = :user') //:user = setParameters()
             .setParameters({ user: id })//anti hack
             .getOne();
-        //console.log(user);
         return (user);
     }
 

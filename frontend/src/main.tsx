@@ -6,7 +6,7 @@ import "./index.css";
 import './css/navbar.css'
 import App from "./App";
 import { UserProvider } from "./contexts/UserContext";
-import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorBoundary } from 'react-error-boundary';
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement

@@ -1,15 +1,7 @@
-import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UsersService } from 'src/users/providers/users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { WsException } from '@nestjs/websockets';
 import { TokenUser } from 'src/chat/chat.interface';
-import { authenticator } from 'otplib';
-
-type User = {
-    userID: any,
-    token: string,
-    username: string
-}
 
 @Injectable()
 export class AuthService {
@@ -17,8 +9,8 @@ export class AuthService {
         private jwtService: JwtService) { }
     /* find or create user from 42 API */
     async validateUser(code: string) {
-        const token: { access_token: string, refresh_token: string } | undefined = await this.usersServices.getToken(code);
-        console.log(token)
+        const token: { access_token: string, refresh_token: string } | undefined
+            = await this.usersServices.getToken(code);
         if (typeof token === "undefined")
             return (undefined);
         const iduser: number = await this.usersServices.getInformationBearer(token);
@@ -35,7 +27,6 @@ export class AuthService {
         return (user);
     }
 
-
     /* then log user, returning a Json web token */
     async login(user: TokenUser) {
         const payload = {
@@ -48,9 +39,9 @@ export class AuthService {
         const access_token = { access_token: this.jwtService.sign(payload) };
         return (access_token);
     }
+
     /* This is to check token when user first connect, no username or fa required*/
     async verifyFirstToken(token: string) {
-        console.log("TOK: " + token);
         try {
             const decoded = this.jwtService.verify(token, { secret: process.env.AUTH_SECRET });
             const userExistInDb = await this.usersServices.findUserByIdForGuard(decoded.sub)
@@ -63,7 +54,6 @@ export class AuthService {
     }
 
     async verifyToken(token: string) {
-        console.log("TOK: " + token);
         try {
             const decoded = this.jwtService.verify(token, { secret: process.env.AUTH_SECRET });
             const userExistInDb = await this.usersServices.findUserByIdForGuard(decoded.sub)
@@ -76,21 +66,10 @@ export class AuthService {
                     && (userExistInDb.secret_fa === null || userExistInDb.secret_fa === "")))
                 return (false);
             //check if 2FA has been activated and if the fa_code is not empty
-            //if (userExistInDb.fa === true
-            //  && (decoded.fa_code === null || decoded.fa_code === ""))
-            //return (false);
             if (userExistInDb.fa === true || userExistInDb.secret_fa) {
                 if (!decoded.fa_code || decoded.fa_code === "")
                     return (false);
-                /*const isValid = authenticator
-                    .verify({token: String(decoded.fa_code), secret: userExistInDb.secret_fa});
-                if (!isValid)
-                {
-                    console.log("FA not valid")
-                    return (false);
-                }*/
             }
-
             return (userExistInDb);
         } catch (e) {
             return (false);

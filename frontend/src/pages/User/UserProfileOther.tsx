@@ -20,7 +20,6 @@ type statInfo = {
 
 type userInfo = {
 	username: string,
-	/*token: string,*/
 	userID: number,
 	avatarPath: string | null,
 	sstat: statInfo
@@ -99,7 +98,6 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 		setErrorCode(res.status);
 	}).then((res: { add: boolean, type: number }) => {
 		if (res) {
-			console.log(res);
 			updateList(res, otherUser, frBl, lstUserGlobal, setLstUserGlobal);
 		}
 	}).catch(err => console.log(err));
@@ -112,8 +110,6 @@ const FriendBlockUser = (props: { userCtx, id, otherUser: userInfo | undefined, 
 	const navigate = useNavigate();
 	useEffect(() => {
 		lstUserGlobal.forEach((value, key) => {
-			console.log(typeof value.id)
-			console.log(typeof props.id)
 			if (String(value.id) === props.id) {
 				setFrBl({ friend: value.fl, block: value.bl });
 			}
@@ -165,7 +161,6 @@ const UserProfileOther = (props: { jwt: string }) => {
 					return (res.json());
 				setErrorCode(res.status);
 			}).then(res => {
-				console.log(res)
 				if (res) {
 					if (!res.avatarPath)
 						res.avatarPath = "";
