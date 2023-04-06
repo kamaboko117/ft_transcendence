@@ -57,6 +57,7 @@ const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, setErr,
                     return (res.json());
             })
             .then(res => {
+                console.log(res)
                 if (Object.keys(res).length !== 0) {
                     setErr(false);
                     navigate({ pathname: "/channels/" + name }, { state: { name: name, username: "" } });

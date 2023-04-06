@@ -33,10 +33,10 @@ export declare class ChatController {
     postNewPrivateChat(req: any, chat: CreateChatDto): Promise<InformationChat | string[]>;
     passwordIsValid(psw: PswChat): Promise<boolean>;
     getChannel(req: any, id: string): Promise<{
-        id: string | undefined;
-        name: string | undefined;
-        owner: number | undefined;
-        accesstype: string | undefined;
+        id: string;
+        name: string;
+        owner: number;
+        accesstype: string;
         lstMsg: {
             user_id: number;
             content: string;
@@ -44,7 +44,12 @@ export declare class ChatController {
         authorized: boolean;
     } | {
         ban?: undefined;
+        authorized?: undefined;
     } | {
         ban: boolean;
+        authorized?: undefined;
+    } | {
+        authorized: boolean;
+        ban?: undefined;
     }>;
 }

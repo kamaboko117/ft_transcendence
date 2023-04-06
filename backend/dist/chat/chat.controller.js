@@ -180,6 +180,9 @@ let ChatController = class ChatController {
         const user = req.user;
         const chan = await this.chatService.getChannelByTest(id);
         const listMsg = await this.chatService.getListMsgByChannelId(id, user.userID);
+        console.log(chan);
+        if (!chan)
+            return ({});
         let channel = {
             id: chan === null || chan === void 0 ? void 0 : chan.id,
             name: chan === null || chan === void 0 ? void 0 : chan.name,
@@ -188,14 +191,15 @@ let ChatController = class ChatController {
             accesstype: chan === null || chan === void 0 ? void 0 : chan.accesstype,
             lstMsg: listMsg
         };
+        console.log(channel);
         if (typeof channel === "undefined" || channel === null)
             return ({});
         const getUser = await this.chatService.getUserOnChannel(id, user.userID);
+        console.log(getUser);
         if (getUser === "Ban")
             return ({ ban: true });
-        if (typeof getUser === "undefined" || getUser === null
-            || getUser === "Ban")
-            return ({});
+        if (typeof getUser === "undefined" || getUser === null)
+            return ({ authorized: false });
         let arrayStart = channel.lstMsg.length - 30;
         let arrayEnd = channel.lstMsg.length;
         if (arrayStart < 0)
