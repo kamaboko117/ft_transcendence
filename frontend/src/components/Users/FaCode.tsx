@@ -36,14 +36,8 @@ const handleSubmit = (event, code: number | null,
                 return (res.json());
             setErrorCode(res.status);
         }).then(res => {
-            console.log(res)
             if (res) {
                 if (res.token) {
-                    /*setUser({
-                        jwt: res.token.access_token,
-                        username: res.username,
-                        userId: userId
-                    });*/
                     userCtx.reconnectUser({
                         jwt: res.token.access_token,
                         username: res.username,
@@ -52,55 +46,19 @@ const handleSubmit = (event, code: number | null,
                 }
                 setValid(res.valid);
             }
-        }).catch(e => console.log(e));
+        }).catch(e => {
+            console.log(e);
+            setValid(false);
+        });
     } else {
         setValid(false);
     }
-}
-
-type typeState = {
-    jwt: null | string,
-    username: string | null,
-    userId: number
-}
-
-const CleanerCode = (props: { userCtx, user, valid }) => {
-    const [finish, setFinish] = useState<boolean>(false);
-    const navigate = useNavigate();
-
-    /*useEffect(() => {
-        const login = async () => {
-            await props.userCtx.loginUser({
-                jwt: props.user.jwt,
-                username: props.user.username,
-                userId: props.user.userId
-            });
-            //if (props.userCtx.getJwt() != null && props.userCtx.getJwt() !== "")
-            setFinish(true);
-        }
-        //if (!props.user.jwt)
-        if (props.valid === true)
-            login();
-    }, [props.valid, props.userCtx.getJwt()]);*/
-
-    /*useEffect(() => {
-        //if (finish === true && props.userCtx.getJwt() != null)
-            navigate("/");
-    }, [finish, props.userCtx.getJwt()]);*/
-    return (<></>);
 }
 
 function FaCode(props: { jwt: string }) {
     const userCtx: any = useContext(UserContext);
     const [valid, setValid] = useState<boolean | undefined>(undefined);
     const [code, setCode] = useState<number | null>(null);
-    //const [url, setUrl] = useState<string | null>(null);
-    //memorise user
-    /*const [user, setUser] = useState<typeState>({
-        jwt: null,
-        username: null,
-        userId: userCtx.getUserId()
-    });*/
     const [errorCode, setErrorCode] = useState<number>(200);
     const navigate = useNavigate();
 
@@ -118,17 +76,6 @@ function FaCode(props: { jwt: string }) {
             navigate("/");
         }
     }, [userCtx.getJwt(), valid]);
-
-   /* useEffect(() => {
-        console.log(userCtx.getJwt())
-        const logout = async () => {
-            await userCtx.logoutUser();
-        }
-        if (user.jwt && valid === true) {
-            logout();
-        }
-
-    }, [valid, user]);*/
 
     if (errorCode >= 401)
         return (<FetchError code={errorCode} />);

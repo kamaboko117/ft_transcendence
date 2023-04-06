@@ -17,22 +17,18 @@ export class RoleController {
 
     async getRole(userId: Readonly<number>,
         channelId: Readonly<string>): Promise<typeGetRole> {
-        //is owner from channel?
         if (!channelId || !userId)
             return ({ role: "", userId: undefined });
-        //const channel: Channel | null = await this.roleService.getOwner(channelId);
-        //mute because try multiple owner
-        //if (channel && channel.user_id === userId)
-        //    return ({role: "Owner", userId: userId})
         const list_user: ListUser | null = await this.roleService.getRole(channelId, userId);
         if (!list_user)
             return ({ role: "", userId: undefined });
         return ({ role: list_user.role, userId: list_user.user_id });
     }
+
     /* GET part */
     /* id = channel's id */
     @Get('getRole')
-    async getQueryRole(@Request() req: Readonly<any>,
+    async getQueryRole(@Request() req: any,
         @Query('id') id: string): Promise<typeGetRole> {
         const user: TokenUser = req.user;
         const role: typeGetRole = await this.getRole(user.userID, id);
@@ -41,45 +37,45 @@ export class RoleController {
     }
 
     /*  grant user to administrator */
-    async grantUser(idFromRequest: number, getRoleRequest: typeGetRole,
-        userId: Readonly<number>, id: Readonly<string>, newRole: string) {
+    async grantUser(idFromRequest: Readonly<number>, getRoleRequest: Readonly<typeGetRole>,
+        userId: Readonly<number>, id: Readonly<string>, newRole: Readonly<string>) {
         if (getRoleRequest.role === "Owner"
             && Number(getRoleRequest.userId) === idFromRequest) {
             await this.roleService.grantAdminUserWithTransact(id, userId, newRole);
         }
     }
 
-    banUser(id: Readonly<string>, userId: number,
-        time: number, role: Readonly<string>) {
+    banUser(id: Readonly<string>, userId: Readonly<number>,
+        time: Readonly<number>, role: Readonly<string>) {
         if (time < 0)
             return;
         if (role === "Administrator" || role === "Owner")
             this.roleService.banUser(id, userId, time);
     }
 
-    unBanUser(id: Readonly<string>, userId: number,
+    unBanUser(id: Readonly<string>, userId: Readonly<number>,
         role: Readonly<string>) {
         if (role === "Administrator" || role === "Owner") {
             this.roleService.unBanUser(id, userId);
         }
     }
 
-    unMuteUser(id: Readonly<string>, userId: number,
+    unMuteUser(id: Readonly<string>, userId: Readonly<number>,
         role: Readonly<string>) {
         if (role === "Administrator" || role === "Owner") {
             this.roleService.unMuteUser(id, userId);
         }
     }
 
-    muteUser(id: Readonly<string>, userId: number,
-        time: number, role: Readonly<string>) {
+    muteUser(id: Readonly<string>, userId: Readonly<number>,
+        time: Readonly<number>, role: Readonly<string>) {
         if (time < 0)
             return;
         if (role === "Administrator" || role === "Owner")
             this.roleService.muteUser(id, userId, time);
     }
 
-    kickUser(id: Readonly<string>, userId: number,
+    kickUser(id: Readonly<string>, userId: Readonly<number>,
         role: Readonly<string>) {
         if (role === "Administrator" || role === "Owner")
             this.roleService.kickUser(id, userId);

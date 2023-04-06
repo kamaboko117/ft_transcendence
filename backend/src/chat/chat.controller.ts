@@ -18,25 +18,27 @@ type Channel_ret = {
 
 @Controller('chat')
 export class ChatController {
-    constructor(private chatGateway: ChatGateway, private chatService: ChatService,
+    constructor(/*private chatGateway: ChatGateway, */private chatService: ChatService,
         private userService: UsersService) { }
+
     /* Get part */
     @UseGuards(JwtGuard)
     @Get('public')
-    getAllPublic(@Request() req: any): Promise<InformationChat[]> {
+    getAllPublic(/*@Request() req: any*/): Promise<InformationChat[]> {
         return (this.chatService.getAllPublic());
     }
+
     @UseGuards(JwtGuard)
     @Get('private')
-    async getAllPrivate(@Request() req: any,
-        @Query('id') id: Readonly<string>): Promise<InformationChat[]> {
+    async getAllPrivate(@Request() req: any/*,
+        @Query('id') id: Readonly<string>*/): Promise<InformationChat[]> {
         const user: TokenUser = req.user;
         return (await this.chatService.getAllPrivate(user.userID));
     }
 
     @Get('users')
     async getAllUsersOnChannel(@Request() req: any,
-        @Query('id') id: Readonly<string>) {
+        @Query('id') id: string) {
         const user: TokenUser = req.user;
         const listUsers: any = await this.chatService.getAllUsersOnChannel(id, user.userID);
 
@@ -67,6 +69,7 @@ export class ChatController {
         await this.chatService.findDuplicateAndDelete(id);
         const list_user: Channel_ret | undefined
             = await this.chatService.findPmUsers(user_id, id);
+
         if (typeof list_user === "undefined") {
             const ret: string
                 = await this.chatService.createPrivateMessage(user_id, id);
@@ -78,7 +81,7 @@ export class ChatController {
     /* Find user PM by username */
     @Get('find-pm-username')
     async openPrivateMessageByUsername(@Request() req: any,
-        @Query('username') username: Readonly<string>): Promise<{
+        @Query('username') username: string): Promise<{
             valid: boolean,
             channel_id: string, listPm: {
                 chatid: string,
@@ -119,7 +122,7 @@ export class ChatController {
     */
     @Get('private-messages')
     async openPrivateMessage(@Request() req: any,
-        @Query('id') id: Readonly<string>): Promise<string | null> {
+        @Query('id') id: string): Promise<string | null> {
         const user: TokenUser = req.user;
 
         if (user.userID === Number(id))
@@ -136,7 +139,7 @@ export class ChatController {
     @UseGuards(JwtGuard)
     @Get('has-paswd')
     async getHasPaswd(@Request() req: any,
-        @Query('id') id: Readonly<string>): Promise<boolean> {
+        @Query('id') id: string): Promise<boolean> {
         const user: TokenUser = req.user;
         const channel: undefined | DbChat = await this.chatService.getChannelByTest(id);
         if (typeof channel != "undefined" && channel != null) {
@@ -242,7 +245,7 @@ export class ChatController {
 
     @Get('')
     async getChannel(@Request() req: any,
-        @Query('id') id: Readonly<string>) {
+        @Query('id') id: string) {
         const user: TokenUser = req.user;
         const chan = await this.chatService.getChannelByTest(id);
         const listMsg = await this.chatService.getListMsgByChannelId(id, user.userID);

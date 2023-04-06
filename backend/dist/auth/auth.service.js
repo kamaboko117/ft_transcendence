@@ -20,7 +20,6 @@ let AuthService = class AuthService {
     }
     async validateUser(code) {
         const token = await this.usersServices.getToken(code);
-        console.log(token);
         if (typeof token === "undefined")
             return (undefined);
         const iduser = await this.usersServices.getInformationBearer(token);
@@ -46,7 +45,6 @@ let AuthService = class AuthService {
         return (access_token);
     }
     async verifyFirstToken(token) {
-        console.log("TOK: " + token);
         try {
             const decoded = this.jwtService.verify(token, { secret: process.env.AUTH_SECRET });
             const userExistInDb = await this.usersServices.findUserByIdForGuard(decoded.sub);
@@ -59,7 +57,6 @@ let AuthService = class AuthService {
         }
     }
     async verifyToken(token) {
-        console.log("TOK: " + token);
         try {
             const decoded = this.jwtService.verify(token, { secret: process.env.AUTH_SECRET });
             const userExistInDb = await this.usersServices.findUserByIdForGuard(decoded.sub);

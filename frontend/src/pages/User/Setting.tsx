@@ -1,6 +1,7 @@
 import React, { useEffect, useState, ChangeEvent, FormEvent, useContext } from "react";
 import { FetchError, header } from "../../components/FetchError";
 import { useNavigate } from "react-router-dom";
+import { Socket } from 'socket.io-client';
 import UserContext from "../../contexts/UserContext";
 import '../../css/user.css';
 
@@ -57,8 +58,6 @@ async function update(event: FormEvent<HTMLFormElement>, username: string,
 	}
 	formData.append('fa', JSON.stringify({ fa: FA }));
 	formData.append('username', username);
-	console.log(fileSet);
-	console.log(jwt)
 	await fetch('http://' + location.host + '/api/users/update-user',
 		{
 			method: 'POST',
@@ -73,6 +72,7 @@ async function update(event: FormEvent<HTMLFormElement>, username: string,
 		if (res) {
 			console.log(res)
 			if (res.valid === true) {
+
 				if (res.img)
 					setAvatarPath(res.img);
 				else
@@ -92,18 +92,20 @@ async function update(event: FormEvent<HTMLFormElement>, username: string,
 	}).catch(e => console.log(e));
 }
 
-const ErrorSubmit = (props: {lstErr: []}) => {
-    let i: number = 0;
-    return (<>
-        {props.lstErr &&
-            props.lstErr.map((err) => (
-                <p style={{ color: "red" }} key={++i}>{err}</p>
-            ))
-        }
-    </>);
+const ErrorSubmit = (props: { lstErr: [] }) => {
+	let i: number = 0;
+	return (<>
+		{props.lstErr &&
+			props.lstErr.map((err) => (
+				<p style={{ color: "red" }} key={++i}>{err}</p>
+			))
+		}
+	</>);
 }
 
-function Setting(props: Readonly<{ jwt: string | null }>) {
+function Setting(props: Readonly<{
+	jwt: string | null
+}>) {
 	const [user, setUser] = useState<userInfo>();
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [lstErr, setLstErr] = useState<[]>([]);
@@ -122,7 +124,6 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 					return (res.json());
 				setErrorCode(res.status);
 			}).then((res: userInfo) => {
-				console.log(res);
 				if (res) {
 					if (res.avatarPath)
 						setAvatarPath(res.avatarPath);
@@ -136,22 +137,17 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 	}, []);
 
 	useEffect(() => {
-		console.log("finish")
-		//if (finish === true) {
-			if (FA === true && oldFa === false)
-				navigate("/fa-activate");
-			//else
-			//	setFinish(false);
-			setOldFa(FA);
-		//}
+		if (FA === true && oldFa === false)
+			navigate("/fa-activate");
+		setOldFa(FA);
 	}, [userCtx.getJwt()]);
 
-	if (errorCode >= 401)
+	if (errorCode >= 401 && errorCode != 413)
 		return (<FetchError code={errorCode} />);
 	return (
 		<section>
 			<article>
-				<label>Username: { userCtx.getUsername() }</label>
+				<label>Username: {userCtx.getUsername()}</label>
 				<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
 					update(event, username,
 						user?.userID, file, FA, props.jwt,
@@ -176,7 +172,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFA(prev => !prev)}
 						checked={FA}
 					/>
-					{avatarPath != null && <><br/><img
+					{avatarPath != null && <><br /><img
 						className="avatar"
 						src={avatarPath}
 						alt={"avatar " + user?.username}
@@ -185,7 +181,16 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 					<input type="submit" value="Submit" />
 				</form>
 				<ErrorSubmit lstErr={lstErr} />
-				{errorCode === 400 && <p style={{ color: "red" }}>Wrong image file format, size or wrong type input.</p>}
+				{errorCode === 400
+					&& <p style={{ color: "red" }}>
+						Wrong image file format, size or wrong type input.
+					</p>
+				}
+				{errorCode === 413
+					&& <p style={{ color: "red" }}>
+						Image is too large, please upload a size inferior to 1MB.
+					</p>
+				}
 			</article>
 		</section>);
 }

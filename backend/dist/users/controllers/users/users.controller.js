@@ -39,8 +39,6 @@ let UsersController = class UsersController {
         if (userDb.fa === false
             || userDb.secret_fa === null || userDb.secret_fa === "")
             throw new common_1.HttpException('Forbidden', common_1.HttpStatus.FORBIDDEN);
-        console.log("SET FA");
-        console.log(userDb);
         if (userDb.fa_first_entry === true)
             return ({ code: 3, url: null });
         const otpAuth = otplib_1.authenticator.keyuri(userDb.username, "ft_transcendence", userDb.secret_fa);
@@ -71,9 +69,11 @@ let UsersController = class UsersController {
         }
         try {
             if (!isNaN(body.code)) {
-                const ret = await bcrypt.compare(String(body.code), userDb.fa_psw);
-                if (ret === true)
-                    return ({ valid: false, username: userDb.username, token: null });
+                if (userDb.fa_psw != null) {
+                    const ret = await bcrypt.compare(String(body.code), userDb.fa_psw);
+                    if (ret === true)
+                        return ({ valid: false, username: userDb.username, token: null });
+                }
                 isValid = otplib_1.authenticator.verify({ token: String(body.code), secret: userDb.secret_fa });
                 if (isValid) {
                     user.fa_code = String(body.code);
@@ -92,7 +92,7 @@ let UsersController = class UsersController {
             }
         }
         catch (e) {
-            throw new common_1.NotFoundException("Authenticator code verification failed");
+            throw new common_1.BadRequestException("Something went wrong");
         }
         return ({ valid: isValid, username: userDb.username, token: null });
     }
@@ -291,8 +291,6 @@ let UsersController = class UsersController {
         return ({ add: true, type: body.type });
     }
     async login(req, response) {
-        console.log("USSSS");
-        console.log(req.user);
         let user = req.user;
         user.fa_code = "";
         const access_token = await this.authService.login(user);

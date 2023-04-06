@@ -46,7 +46,6 @@ import "./css/inviteGame.css";
 
 const ErrorPage = () => {
   const location = useLocation();
-  console.log(location);
   if (location.state === null)
     return (<div>Error 404</div>);
   return (<div>Error {location.state.code}</div>)
@@ -135,7 +134,6 @@ function App() {
             <Route path="/setting" element={
               <>
                 <NavBar click={click} setClick={setClick} />
-                <LoadUserGlobal jwt={jwt} />
                 <Setting jwt={jwt} /><PlayerApp />
               </>
             } />

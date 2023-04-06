@@ -35,12 +35,9 @@ let JwtGuard = class JwtGuard extends (0, passport_1.AuthGuard)('jwt') {
         let bearer = "";
         if (isPublic)
             return (true);
-        console.log("guard jwt");
         if (typeof request.route != "undefined"
             && typeof request.headers.authorization != "undefined") {
             bearer = request.headers.authorization.split('Bearer ')[1];
-            console.log("jwt route");
-            console.log(request.route.path);
         }
         else if (typeof request.route == "undefined") {
             bearer = request.handshake.headers.authorization;
@@ -50,7 +47,6 @@ let JwtGuard = class JwtGuard extends (0, passport_1.AuthGuard)('jwt') {
         const decoded = await this.authService.verifyToken(bearer);
         if ((decoded === null && typeof request.route == "undefined")
             || (decoded === false && typeof request.route == "undefined")) {
-            console.log("exception");
             throw new websockets_1.WsException('Token not valid');
         }
         else if (decoded === null || decoded === false)

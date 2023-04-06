@@ -14,7 +14,6 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatController = void 0;
 const common_1 = require("@nestjs/common");
-const chat_gateway_1 = require("./chat.gateway");
 const create_chat_dto_1 = require("./dto/create-chat.dto");
 const psw_chat_dto_1 = require("./psw-chat.dto");
 const bcrypt = require("bcrypt");
@@ -23,15 +22,14 @@ const jwt_guard_1 = require("../auth/jwt.guard");
 const users_service_1 = require("../users/providers/users/users.service");
 const chat_service_1 = require("./chat.service");
 let ChatController = class ChatController {
-    constructor(chatGateway, chatService, userService) {
-        this.chatGateway = chatGateway;
+    constructor(chatService, userService) {
         this.chatService = chatService;
         this.userService = userService;
     }
-    getAllPublic(req) {
+    getAllPublic() {
         return (this.chatService.getAllPublic());
     }
-    async getAllPrivate(req, id) {
+    async getAllPrivate(req) {
         const user = req.user;
         return (await this.chatService.getAllPrivate(user.userID));
     }
@@ -216,18 +214,16 @@ let ChatController = class ChatController {
 __decorate([
     (0, common_1.UseGuards)(jwt_guard_1.JwtGuard),
     (0, common_1.Get)('public'),
-    __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], ChatController.prototype, "getAllPublic", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_guard_1.JwtGuard),
     (0, common_1.Get)('private'),
     __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Query)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ChatController.prototype, "getAllPrivate", null);
 __decorate([
@@ -235,7 +231,7 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Query)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], ChatController.prototype, "getAllUsersOnChannel", null);
 __decorate([
@@ -257,7 +253,7 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Query)('username')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], ChatController.prototype, "openPrivateMessageByUsername", null);
 __decorate([
@@ -265,7 +261,7 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Query)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], ChatController.prototype, "openPrivateMessage", null);
 __decorate([
@@ -274,7 +270,7 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Query)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], ChatController.prototype, "getHasPaswd", null);
 __decorate([
@@ -307,12 +303,12 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Query)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], ChatController.prototype, "getChannel", null);
 ChatController = __decorate([
     (0, common_1.Controller)('chat'),
-    __metadata("design:paramtypes", [chat_gateway_1.ChatGateway, chat_service_1.ChatService,
+    __metadata("design:paramtypes", [chat_service_1.ChatService,
         users_service_1.UsersService])
 ], ChatController);
 exports.ChatController = ChatController;

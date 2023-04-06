@@ -1,6 +1,5 @@
-import { ExecutionContext, Injectable, SetMetadata, Inject } from '@nestjs/common';
+import { ExecutionContext, Injectable, Inject } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-//import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 
 @Injectable()
@@ -13,8 +12,6 @@ export class JwtFirstGuard extends AuthGuard('jwt') {
         const request = context.switchToHttp().getRequest(); //see guard doc
         let bearer: string = "";
 
-        console.log("FIRST")
-        console.log(request.route.path);
         if (typeof request.route != "undefined"
             && typeof request.headers.authorization != "undefined") {
             bearer = request.headers.authorization.split('Bearer ')[1];

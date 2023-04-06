@@ -4,10 +4,9 @@ import Modal from "../components/rooms/NewRoomModal";
 import Backdrop from "../components/backdrop";
 import RoomList from "../components/rooms/RoomList";
 import GameContext, { IGameContext } from "../contexts/game-context";
-import gameService from "../services/gameService";
 import Game from "../components/game";
 import SocketContext from '../contexts/Socket';
-import { FetchError, header, headerPost } from '../components/FetchError';
+import { FetchError, header } from '../components/FetchError';
 
 export default function PlayPage(props: { jwt: string }) {
   /*const connectSocket = async () => {
@@ -57,15 +56,15 @@ export default function PlayPage(props: { jwt: string }) {
         setIsLoading(false);
         console.log("is in " + isInRoom);
       });
-      return (() => {
-        console.log("play unmount")
-        setLoadedRooms([]);
-        //usrSocket?.off("join_game_success");
-        //usrSocket?.off("join_game_error");
-        console.log("is in unmount " + isInRoom);
-      })
+    return (() => {
+      console.log("play unmount")
+      setLoadedRooms([]);
+      //usrSocket?.off("join_game_success");
+      //usrSocket?.off("join_game_error");
+      console.log("is in unmount " + isInRoom);
+    })
   }, []);
-  
+
 
   const joinRoom = async (roomId: string) => {
     //socketService.socket = usrSocket

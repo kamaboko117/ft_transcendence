@@ -24,8 +24,6 @@ let JwtFirstGuard = class JwtFirstGuard extends (0, passport_1.AuthGuard)('jwt')
     async canActivate(context) {
         const request = context.switchToHttp().getRequest();
         let bearer = "";
-        console.log("FIRST");
-        console.log(request.route.path);
         if (typeof request.route != "undefined"
             && typeof request.headers.authorization != "undefined") {
             bearer = request.headers.authorization.split('Bearer ')[1];
