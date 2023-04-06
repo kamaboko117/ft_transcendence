@@ -122,13 +122,13 @@ export class ChatController {
     */
     @Get('private-messages')
     async openPrivateMessage(@Request() req: any,
-        @Query('id') id: string): Promise<string | null> {
+        @Query('id') id: string): Promise<{ asw: string | null | undefined }> {
         const user: TokenUser = req.user;
 
         if (user.userID === Number(id))
-            return (null);
+            return ({ asw: null });
         const channel = await this.findPm(user.userID, id);
-        return (channel);
+        return ({ asw: channel });
     }
     /* End of fixed chatbox part */
 

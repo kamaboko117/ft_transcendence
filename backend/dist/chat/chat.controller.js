@@ -88,9 +88,9 @@ let ChatController = class ChatController {
     async openPrivateMessage(req, id) {
         const user = req.user;
         if (user.userID === Number(id))
-            return (null);
-        const channel_id = await this.findPm(user.userID, id);
-        return (channel_id);
+            return ({ asw: null });
+        const channel = await this.findPm(user.userID, id);
+        return ({ asw: channel });
     }
     async getHasPaswd(req, id) {
         const user = req.user;

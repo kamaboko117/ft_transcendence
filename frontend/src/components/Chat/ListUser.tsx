@@ -136,7 +136,9 @@ export const userProfile = (event: MouseEvent<HTMLButtonElement>,
     setId
     DirectMessage component will load messages itself
 */
-
+type aswType = {
+    asw: string | null | undefined
+}
 export const directMessage = (event: MouseEvent<HTMLButtonElement>,
     setDisplay: any, setId: React.Dispatch<React.SetStateAction<string>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
@@ -148,12 +150,13 @@ export const directMessage = (event: MouseEvent<HTMLButtonElement>,
     }), { headers: header(jwt) })
         .then(res => {
             if (res.ok)
-                return (res.text());
+                return (res.json());
             setErrorCode(res.status)
-        }).then((res: string | undefined) => {
+        }).then((res: aswType) => {
             if (res) {
                 setDisplay(true);
-                setId(res);
+                if (res.asw)
+                    setId(res.asw);
             }
         }).catch(e => console.log(e));
 }
