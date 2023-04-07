@@ -81,7 +81,7 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
         }, lstUserGlobal, setLstUserGlobal);
     }
 
-    fetch("http://" + location.host + "/api/users/fr-bl-list", {
+    fetch("https://" + location.host + "/api/users/fr-bl-list", {
         method: 'post',
         headers: headerPost(jwt),
         body: JSON.stringify({
@@ -145,7 +145,7 @@ export const directMessage = (event: MouseEvent<HTMLButtonElement>,
     userId: number, jwt: string): void => {
     event.preventDefault();
 
-    fetch('http://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
+    fetch('https://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
         id: String(userId),
     }), { headers: header(jwt) })
         .then(res => {
@@ -393,7 +393,7 @@ const ListUserChat = (props: {
 
     useEffect(() => {
         const fetchListUser = async (id: string, jwt: string, setErrorCode: any) => {
-            return (await fetch('http://' + location.host + '/api/chat/users?' + new URLSearchParams({
+            return (await fetch('https://' + location.host + '/api/chat/users?' + new URLSearchParams({
                 id: id,
             }), { headers: header(jwt) }).then(res => {
                 if (res.ok)

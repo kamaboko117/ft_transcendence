@@ -28,7 +28,7 @@ function FakeLogin(props: {jwt: string}) {
   useEffect(() => {
     //gets existing user from database if exists. If not, returns [false, <42id>]
     const getUser = () => {
-      return (fetch('http://' + location.host + '/api/users/fake-login').then(response => {
+      return (fetch('https://' + location.host + '/api/users/fake-login').then(response => {
         if (response.ok)
           return (response.json());
         setErrorCode(response.status);

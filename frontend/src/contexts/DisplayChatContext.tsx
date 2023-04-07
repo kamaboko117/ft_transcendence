@@ -66,7 +66,7 @@ export const LoadUserGlobal = (props: { jwt: string }) => {
     const [errorCode, setErrorCode] = useState<number>(200);
 
     useEffect(() => {
-        fetch('http://' + location.host + '/api/users/fr-bl-list', { headers: header(props.jwt) })
+        fetch('https://' + location.host + '/api/users/fr-bl-list', { headers: header(props.jwt) })
             .then(res => {
                 if (res.ok)
                     return (res.json());

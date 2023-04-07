@@ -125,7 +125,8 @@ export class UsersController {
         response.cookie('refresh_token', refresh.refresh_token,
             {
                 maxAge: 300000,
-                httpOnly: true
+                httpOnly: true,
+                sameSite: 'Strict',
             });
         return ({ token: access_token, user_id: req.user.userID, username: req.user.username });
     }
@@ -421,7 +422,7 @@ export class UsersController {
             {
                 maxAge: 300000,
                 httpOnly: true,
-                sameSite: 'Strict'
+                sameSite: 'Strict',
             });
         return ({
             token: access_token, user_id: req.user.userID,

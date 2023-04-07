@@ -59,12 +59,13 @@ function App() {
   let jwt = userCtx.getJwt();
 
   useEffect(() => {
-    setUsrSocket(io("http://" + location.host, {
+    setUsrSocket(io("https://" + location.host, {
       withCredentials: true,
       extraHeaders: {
         authorization: String(jwt)
       },
-      autoConnect: false
+      autoConnect: false,
+      secure: true
     }));
   }, [userCtx.getJwt()]);
 

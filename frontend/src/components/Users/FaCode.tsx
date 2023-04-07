@@ -23,7 +23,7 @@ const handleSubmit = (event, code: number | null,
     if (!target)
         return;
     if (code && !isNaN(code)) {
-        fetch('http://' + location.host + '/api/users/valid-fa-code',
+        fetch('https://' + location.host + '/api/users/valid-fa-code',
             {
                 method: 'POST',
                 headers: headerPost(jwt),
@@ -63,7 +63,7 @@ function FaCode(props: { jwt: string }) {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetch('http://' + location.host + '/api/users/check-fa/',
+        fetch('https://' + location.host + '/api/users/check-fa/',
             { headers: header(props.jwt) })
             .then(res => {
                 if (!res.ok)

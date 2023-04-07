@@ -223,7 +223,7 @@ const MainChat = (props: any) => {
 
     useEffect(() => {
         const ft_lst = async () => {
-            const res = await fetch('http://' + location.host + '/api/chat?' + new URLSearchParams({
+            const res = await fetch('https://' + location.host + '/api/chat?' + new URLSearchParams({
                 id: props.id,
             }),
                 { headers: header(props.jwt) })
@@ -335,7 +335,7 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
 
     if (value === "" || value === null)
         return (false);
-    return (await fetch("http://" + location.host + "/api/chat/valid-paswd/", {
+    return (await fetch("https://" + location.host + "/api/chat/valid-paswd/", {
         method: 'post',
         headers: headerPost(jwt),
         body: JSON.stringify({
@@ -355,7 +355,7 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
 */
 const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>): Promise<boolean> => {
-    return (await fetch('http://' + location.host + '/api/chat/has-paswd?' + new URLSearchParams({
+    return (await fetch('https://' + location.host + '/api/chat/has-paswd?' + new URLSearchParams({
         id: id,
     }),
         { headers: header(jwt) })

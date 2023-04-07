@@ -14,7 +14,7 @@ function UserItem(props: ItemProps) {
 
     useEffect(() => {
         if (props.jwt) {
-            fetch('http://' + location.host + '/api/users/profile/',
+            fetch('https://' + location.host + '/api/users/profile/',
             { headers: header(props.jwt) })
             .then(res => {
                 if (res.ok)

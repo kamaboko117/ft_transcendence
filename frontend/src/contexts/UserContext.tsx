@@ -28,7 +28,7 @@ export const UsernameSet = (props: {
     //check if user json web token is still valid
     //and need to check if username in db is set, to know if it's a first connection
     const login = async () => {
-      await fetch('http://' + location.host + '/api/users/profile/',
+      await fetch('https://' + location.host + '/api/users/profile/',
         { headers: header(props.jwt) })
         .then(res => {
           if (res && res.ok)
