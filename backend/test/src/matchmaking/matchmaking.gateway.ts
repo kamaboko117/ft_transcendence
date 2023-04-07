@@ -125,6 +125,8 @@ getKey(player: any) {
       const user = socket.user;
 
       if (typeof user.userID != 'number') return false;
+      let player1 = { id:user.userID }
+      this.mm.leaveQueue(player1);
 
     } catch (error) {
       console.log('leaving queue failed');
