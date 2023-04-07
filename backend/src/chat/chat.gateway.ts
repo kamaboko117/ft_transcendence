@@ -74,14 +74,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (typeof user.userID != "number")
       return (false);
-    const channel: any = await this.chatsRepository.findOne({
+    const channel: Channel | null = await this.chatsRepository.findOne({
       where: {
         id: data.id
       }
     });
-    const getName = channel?.name;
+    //const getName = channel?.name;
     if (typeof channel != "undefined" && channel != null) {
       const getUser: any = await this.chatService.getUserOnChannel(data.id, user.userID);
+      console.log("joinRoomChat")
+      console.log(getUser)
+      if (channel.accesstype === '4' && !getUser)
+        return (false)
       if (getUser === "Ban")
         return ({ ban: true });
       if (typeof getUser === "undefined" || getUser === null) {

@@ -48,6 +48,7 @@ const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, setErr,
     e.preventDefault();
 
     if (name) {
+        navigate("/channels");
         await fetch('http://' + location.host + '/api/chat?' + new URLSearchParams({
             id: name,
         }),
@@ -58,9 +59,11 @@ const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, setErr,
             })
             .then(res => {
                 console.log(res)
+                console.log(name)
                 if (Object.keys(res).length !== 0) {
                     setErr(false);
-                    navigate({ pathname: "/channels/" + name }, { state: { name: name, username: "" } });
+                    navigate({ pathname: "/channels/" + name },
+                        { state: { name: name, username: "" } });
                 }
                 else
                     setErr(true);
