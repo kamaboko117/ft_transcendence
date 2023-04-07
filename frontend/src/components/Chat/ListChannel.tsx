@@ -49,7 +49,7 @@ const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, setErr,
 
     if (name) {
         navigate("/channels");
-        await fetch('http://' + location.host + '/api/chat?' + new URLSearchParams({
+        await fetch('https://' + location.host + '/api/chat?' + new URLSearchParams({
             id: name,
         }),
             { headers: header(jwt) })
@@ -115,7 +115,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         this.onSubmit = this.onSubmit.bind(this);
     }
     componentDidMount = (): void => {
-        fetch('http://' + location.host + '/api/chat/public/',
+        fetch('https://' + location.host + '/api/chat/public/',
             { headers: header(this.props.jwt) })
             .then(res => {
                 if (res.ok)
@@ -128,7 +128,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     listChannel: res
                 })
             }).catch(e => console.log(e));
-        fetch('http://' + location.host + '/api/chat/private',
+        fetch('https://' + location.host + '/api/chat/private',
             { headers: header(this.props.jwt) }).then(res => {
                 if (res.ok)
                     return (res.json());
@@ -149,7 +149,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         })
     }
     onClick = (): void => {
-        fetch('http://' + location.host + '/api/chat/public/',
+        fetch('https://' + location.host + '/api/chat/public/',
             { headers: header(this.props.jwt) })
             .then(res => {
                 if (res.ok)
@@ -159,7 +159,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     listChannel: res
                 })
             }).catch(e => console.log(e))
-        fetch('http://' + location.host + '/api/chat/private',
+        fetch('https://' + location.host + '/api/chat/private',
             { headers: header(this.props.jwt) }).then(res => {
                 if (res.ok)
                     return (res.json());
@@ -185,7 +185,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         e.preventDefault();
 
         if (this.state.rad == "0") {
-            fetch('http://' + location.host + '/api/chat/new-public/', {
+            fetch('https://' + location.host + '/api/chat/new-public/', {
                 method: 'post',
                 headers: headerPost(this.props.jwt),
                 body: JSON.stringify({
@@ -217,7 +217,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             }).catch(e => console.log(e));
         }
         else {
-            fetch('http://' + location.host + '/api/chat/new-private/', {
+            fetch('https://' + location.host + '/api/chat/new-private/', {
                 method: 'post',
                 headers: headerPost(this.props.jwt),
                 body: JSON.stringify({

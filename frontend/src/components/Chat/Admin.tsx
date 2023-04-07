@@ -33,7 +33,7 @@ const handleClick = (event: React.MouseEvent<HTMLButtonElement>, channelId: stri
     action: string, jwt: string, userId: number) => {
     const e: HTMLElement = event.target as HTMLElement;
 
-    fetch('http://' + location.host + '/api/chat-role/role-action', {
+    fetch('https://' + location.host + '/api/chat-role/role-action', {
         method: 'post',
         headers: headerPost(jwt),
         body: JSON.stringify({
@@ -43,7 +43,7 @@ const handleClick = (event: React.MouseEvent<HTMLButtonElement>, channelId: stri
 }
 
 const fetchToBackWithTimer = (elem: typeFetchToBack) => {
-    fetch('http://' + location.host + '/api/chat-role/role-action', {
+    fetch('https://' + location.host + '/api/chat-role/role-action', {
         method: 'post',
         headers: headerPost(elem.jwt),
         body: JSON.stringify({
@@ -191,7 +191,7 @@ const fetchKick = (event: React.MouseEvent<HTMLButtonElement>,
     if (!target)
         return;
     if (askKick === true) {
-        fetch('http://' + location.host + '/api/chat-role/role-action', {
+        fetch('https://' + location.host + '/api/chat-role/role-action', {
             method: 'post',
             headers: headerPost(object.jwt),
             body: JSON.stringify({
@@ -276,7 +276,7 @@ const AdminComponent = (props: AdminCompType) => {
 
     useEffect(() => {
         const getRole = () => {
-            fetch('http://' + location.host + '/api/chat-role/getRole?' + new URLSearchParams({
+            fetch('https://' + location.host + '/api/chat-role/getRole?' + new URLSearchParams({
                 id: props.id,
             }), { headers: header(props.jwt) })
                 .then(res => {

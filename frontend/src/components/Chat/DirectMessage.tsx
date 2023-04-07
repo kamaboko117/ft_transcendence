@@ -107,7 +107,7 @@ const handleSubmitPmUser = (e: React.FormEvent<HTMLFormElement>, user: string, j
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     setPm: React.Dispatch<React.SetStateAction<listPm[]>>) => {
     e.preventDefault();
-    fetch('http://' + location.host + '/api/chat/find-pm-username?' + new URLSearchParams({
+    fetch('https://' + location.host + '/api/chat/find-pm-username?' + new URLSearchParams({
         username: String(user)
     }), { headers: header(jwt) })
         .then(res => {
@@ -369,7 +369,7 @@ const DiscussionBox = (props: {
     const { lstMsgPm, lstUserGlobal, setLstMsgPm, setLstMsgChat } = useContext(ContextDisplayChannel);
     useEffect(() => {
         const ft_lst = async () => {
-            const res = await fetch('http://' + location.host + '/api/chat?' + new URLSearchParams({
+            const res = await fetch('https://' + location.host + '/api/chat?' + new URLSearchParams({
                 id: props.id,
             }),
                 { headers: header(props.jwt) })
@@ -429,7 +429,7 @@ const DiscussionBox = (props: {
 }
 
 const updateChannel = (setChannel, setPm, jwt, setErrorCode) => {
-    fetch('http://' + location.host + '/api/chat/list-pm',
+    fetch('https://' + location.host + '/api/chat/list-pm',
         { headers: header(jwt) })
         .then(res => {
             if (res.ok)
@@ -440,7 +440,7 @@ const updateChannel = (setChannel, setPm, jwt, setErrorCode) => {
             setPm(res);
         }).catch(e => console.log(e));
     /* load all channels */
-    fetch('http://' + location.host + '/api/chat/channel-registered',
+    fetch('https://' + location.host + '/api/chat/channel-registered',
         { headers: header(jwt) })
         .then(res => {
             if (res.ok)

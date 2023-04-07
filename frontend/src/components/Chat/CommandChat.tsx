@@ -26,7 +26,7 @@ type typeFetchToBackPsw = {
 }
 
 const fetchToBackWithTimer = (elem: typeFetchToBack) => {
-    fetch('http://' + location.host + '/api/chat-role/role-action', {
+    fetch('https://' + location.host + '/api/chat-role/role-action', {
         method: 'post',
         headers: headerPost(elem.jwt),
         body: JSON.stringify({
@@ -42,7 +42,7 @@ const fetchToBackWithTimer = (elem: typeFetchToBack) => {
 }
 
 const fetchToBackSpecial = (elem: typeFetchToBack) => {
-    fetch('http://' + location.host + '/api/chat-role/role-action-spe', {
+    fetch('https://' + location.host + '/api/chat-role/role-action-spe', {
         method: 'post',
         headers: headerPost(elem.jwt),
         body: JSON.stringify({
@@ -58,7 +58,7 @@ const fetchToBackSpecial = (elem: typeFetchToBack) => {
 }
 
 const fetchToBackPsw = (elem: typeFetchToBackPsw) => {
-    fetch('http://' + location.host + '/api/chat-role/role-action-psw', {
+    fetch('https://' + location.host + '/api/chat-role/role-action-psw', {
         method: 'post',
         headers: headerPost(elem.jwt),
         body: JSON.stringify({
@@ -75,7 +75,7 @@ const fetchToBackPsw = (elem: typeFetchToBackPsw) => {
 
 const getUserInfoByName = (jwt: string, username: string,
     setErrorCode, id: string, firstPartCmd: string, thirdPart: string) => {
-    fetch('http://' + location.host + '/api/users/info-fr-bl?' + new URLSearchParams({
+    fetch('https://' + location.host + '/api/users/info-fr-bl?' + new URLSearchParams({
         name: username
     }), { headers: header(jwt) })
         .then(res => {
@@ -169,7 +169,7 @@ export const commandChat = (jwt: string, obj: any, setErrorCode,
                 }
             }
         }
-        fetch("http://" + location.host + "/api/users/fr-bl-list", {
+        fetch("https://" + location.host + "/api/users/fr-bl-list", {
             method: 'post',
             headers: headerPost(jwt),
             body: JSON.stringify({
@@ -205,7 +205,7 @@ export const commandChat = (jwt: string, obj: any, setErrorCode,
     function runUserCmd(jwt: string, firstPartCmd: string, secondPartCmd: string) {
         function getInfoUser(jwt: string, firstPartCmd: string, secondPartCmd: string,
             setErrorCode) {
-            fetch('http://' + location.host + '/api/users/info-fr-bl?' + new URLSearchParams({
+            fetch('https://' + location.host + '/api/users/info-fr-bl?' + new URLSearchParams({
                 name: secondPartCmd
             }), { headers: header(jwt) })
                 .then(res => {
@@ -241,7 +241,7 @@ export const commandChat = (jwt: string, obj: any, setErrorCode,
     }
 
     function runAdminCmd(jwt: string, firstPartCmd: string, secondPartCmd: string, thirdPart: string) {
-        fetch('http://' + location.host + '/api/chat-role/getRole?' + new URLSearchParams({
+        fetch('https://' + location.host + '/api/chat-role/getRole?' + new URLSearchParams({
             id: obj.id,
         }), { headers: header(jwt) })
             .then(res => {

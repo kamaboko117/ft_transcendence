@@ -4,10 +4,18 @@ const core_1 = require("@nestjs/core");
 const app_module_1 = require("./app.module");
 const common_1 = require("@nestjs/common");
 const cookieParser = require("cookie-parser");
+const fs_1 = require("fs");
 const express_1 = require("express");
 const helmet_1 = require("helmet");
+let httpsOptions = null;
 async function bootstrap() {
-    const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    const keyP = (0, fs_1.readFileSync)('/etc/nginx/certificate.key');
+    const certP = (0, fs_1.readFileSync)('/etc/nginx/certificate.crt');
+    httpsOptions = {
+        key: keyP,
+        cert: certP,
+    };
+    const app = await core_1.NestFactory.create(app_module_1.AppModule, { httpsOptions });
     app.useGlobalPipes(new common_1.ValidationPipe());
     app.enableCors();
     app.use(cookieParser());

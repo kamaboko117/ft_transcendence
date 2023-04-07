@@ -20,7 +20,7 @@ function SettingFa(props: { jwt: string }) {
     const [errorCode, setErrorCode] = useState<number>(200);
 
     useEffect(() => {
-        fetch('http://' + location.host + '/api/users/set-fa/',
+        fetch('https://' + location.host + '/api/users/set-fa/',
             { headers: header(props.jwt) })
             .then(res => {
                 if (res.ok)

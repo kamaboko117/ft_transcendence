@@ -32,7 +32,7 @@ function update(event: FormEvent<HTMLFormElement>, username: string, userCtx, us
 	}
 	formData.append('fa', JSON.stringify({ fa: FA }));
 	formData.append('username', username);
-	fetch('http://' + location.host + '/api/users/firstlogin',
+	fetch('https://' + location.host + '/api/users/firstlogin',
 		{
 			method: 'POST',
 			headers: headerPost(jwt),
@@ -82,7 +82,7 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 
 	//check if user already have username
 	useEffect(() => {
-		fetch('http://' + location.host + '/api/users/first-profile/',
+		fetch('https://' + location.host + '/api/users/first-profile/',
 			{ headers: header(props.jwt) })
 			.then(res => {
 				if (res.ok)

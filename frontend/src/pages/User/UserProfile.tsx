@@ -44,7 +44,7 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [user, setSstat] = useState<userInfo>();
 	useEffect(() => {
-		fetch('http://' + location.host + '/api/users/profile/', { headers: header(props.jwt) })
+		fetch('https://' + location.host + '/api/users/profile/', { headers: header(props.jwt) })
 			.then(res => {
 				if (res.ok)
 					return (res.json());

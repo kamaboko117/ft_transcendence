@@ -30,7 +30,7 @@ function ValidatePage(props: { jwt: string }) {
   //ask load user
   useEffect(() => {
     const getUser = (code: string | null | false) => {
-      return (fetch('http://' + location.host + '/api/users/login', {
+      return (fetch('https://' + location.host + '/api/users/login', {
         method: 'post',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

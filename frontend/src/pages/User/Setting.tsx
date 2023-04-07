@@ -58,7 +58,7 @@ async function update(event: FormEvent<HTMLFormElement>, username: string,
 	}
 	formData.append('fa', JSON.stringify({ fa: FA }));
 	formData.append('username', username);
-	await fetch('http://' + location.host + '/api/users/update-user',
+	await fetch('https://' + location.host + '/api/users/update-user',
 		{
 			method: 'POST',
 			headers: headerPost(jwt),
@@ -118,7 +118,7 @@ function Setting(props: Readonly<{
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		fetch('http://' + location.host + '/api/users/profile/', { headers: header(props.jwt) })
+		fetch('https://' + location.host + '/api/users/profile/', { headers: header(props.jwt) })
 			.then(res => {
 				if (res.ok)
 					return (res.json());
