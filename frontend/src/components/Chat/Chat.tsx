@@ -429,10 +429,16 @@ const Chat = (props: { jwt: string }) => {
 
     if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
-    const hasPass: Promise<boolean> = hasPassword(id, props.jwt, setErrorCode);
-    hasPass.then(res => {
-        setLoadPsw(res);
-    }).catch(e => console.log(e));
+    
+    useEffect(() => {
+        const hasPass: Promise<boolean> = hasPassword(id, props.jwt, setErrorCode);
+        console.log("load chat")
+        hasPass.then(res => {
+            console.log(res)
+            setLoadPsw(res);
+        }).catch(e => console.log(e));
+    }, []);
+    
     return (<BlockChat id={id} getLocation={getLocation}
         setErrorCode={setErrorCode} jwt={props.jwt}
         hasPsw={psw} />);

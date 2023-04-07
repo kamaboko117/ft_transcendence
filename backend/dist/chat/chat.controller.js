@@ -173,8 +173,11 @@ let ChatController = class ChatController {
         const channel = await this.chatService.getChannelByTest(psw.id);
         if (typeof channel == "undefined" || channel === null || channel.password == '')
             return (false);
-        const comp = await bcrypt.compare(psw.psw, channel.password);
-        return (comp);
+        if (psw && psw.psw && channel && channel.password) {
+            const comp = await bcrypt.compare(psw.psw, channel.password);
+            return (comp);
+        }
+        return (false);
     }
     async getChannel(req, id) {
         const user = req.user;
@@ -195,6 +198,7 @@ let ChatController = class ChatController {
         if (typeof channel === "undefined" || channel === null)
             return ({});
         const getUser = await this.chatService.getUserOnChannel(id, user.userID);
+        console.log("get user:");
         console.log(getUser);
         if (getUser === "Ban")
             return ({ ban: true });

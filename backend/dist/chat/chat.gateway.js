@@ -68,9 +68,12 @@ let ChatGateway = class ChatGateway {
                 id: data.id
             }
         });
-        const getName = channel === null || channel === void 0 ? void 0 : channel.name;
         if (typeof channel != "undefined" && channel != null) {
             const getUser = await this.chatService.getUserOnChannel(data.id, user.userID);
+            console.log("joinRoomChat");
+            console.log(getUser);
+            if (channel.accesstype === '4' && !getUser)
+                return (false);
             if (getUser === "Ban")
                 return ({ ban: true });
             if (typeof getUser === "undefined" || getUser === null) {
