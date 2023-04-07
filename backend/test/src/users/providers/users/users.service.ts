@@ -212,12 +212,12 @@ export class UsersService {
 
 // SELECT (type_game, player_one, player_two, user_victory) FROM match_history WHERE (player_one = 74133 OR player_two = 74133);
     async getRawMH(id: number) {
-        console.log('GetRawMH: ' + id);
         const ret_raw = await this.matchHistoryRepository.createQueryBuilder("match")
             .select(['type_game', 'player_one', 'player_two', 'user_victory'])
             .where('player_one = :user OR player_two = :user')
             .setParameters({user: id})
             .getRawMany()
+            console.log('getRawMH ======> ' + ret_raw);
         return(ret_raw);
     }
 

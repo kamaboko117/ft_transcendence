@@ -157,7 +157,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 						user?.userID, file, FA, props.jwt,
 						setErrorCode, setAvatarPath, setLstErr,
 						userCtx)}>
-					<label>Username</label>
+					<label>Update Username</label>
 					<input
 						type="text"
 						placeholder="ex: Charly" value={username}

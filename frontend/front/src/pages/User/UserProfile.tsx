@@ -55,7 +55,15 @@ const Match_History_Raw = (props: rawMH) => {
 		</tr>
 	)
 }
-
+/**
+ * 
+ *  props: Readonly<{ jwt: string | null }>
+ * 		<tbody>
+			<th>
+				<td>Test de ouf !!!!</td>
+			</th>
+		</tbody>
+ */
 const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
 	const [raw_MH, setRaw] = useState<rawMH>();
 	const [errorCode, setErrorCode] = useState<number>(200);
@@ -73,10 +81,9 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
 			}
 		})
 	}, [])
+	// console.log(raw_MH);
 	return(
-		<tbody>
-			{}
-		</tbody>
+		<></>
 	);
 }
 
@@ -147,7 +154,7 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 			<li>Rang: {user?.sstat.rank}</li>	
 			<li>Niveau: {user?.sstat.level}</li>	
 		</ul>
-
+			<Match_History_Table jwt={props.jwt}/>
 		</>
 	);
 }
