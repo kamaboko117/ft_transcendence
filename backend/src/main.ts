@@ -9,8 +9,8 @@ import helmet from 'helmet';
 let httpsOptions = null;
 
 async function bootstrap() {
-  const keyP = readFileSync('/etc/nginx/certificate.key');
-  const certP = readFileSync('/etc/nginx/certificate.crt');
+  const keyP = readFileSync(String(process.env.HTTPS_KEY));
+  const certP = readFileSync(String(process.env.HTTPS_CERT));
   httpsOptions = {
     key: keyP,
     cert: certP,

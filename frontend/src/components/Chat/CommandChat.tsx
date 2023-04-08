@@ -98,7 +98,7 @@ const getUserInfoByName = (jwt: string, username: string,
                     userId: Number(res.id), option: thirdPart
                 });
             }
-        })
+        }).catch(err => console.log(err));
 }
 
 const isCmdValid = (cmd: string, length: number) => {

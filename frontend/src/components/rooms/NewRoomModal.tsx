@@ -7,7 +7,7 @@ function NewRoomModal(props: any) {
 
     async function AddRoomHandler(roomname: string) {
         let room;
-        await fetch("http://" + location.host + "/api/rooms/create", {
+        await fetch("https://" + location.host + "/api/rooms/create", {
             method: "POST",
             body: JSON.stringify({
                 roomName: roomname,
@@ -22,7 +22,7 @@ function NewRoomModal(props: any) {
             .then((data) => {
                 if (data)
                     room = data.uid;
-            });
+            }).catch(err => console.log(err));
         return room;
     }
 

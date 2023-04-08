@@ -9,7 +9,7 @@ export function playPageInvite(jwt: string, setErrorCode,
 
     async function addRoomHandler(jwt: string, setErrorCode,
         focusUserId: number) {
-        await fetch("http://" + location.host + "/api/rooms/create-private", {
+        await fetch("https://" + location.host + "/api/rooms/create-private", {
             method: "POST",
             body: JSON.stringify({
                 id: focusUserId,
@@ -27,7 +27,7 @@ export function playPageInvite(jwt: string, setErrorCode,
                         return;
                     navigate({ pathname: '/play-invite/' + data.uid });
                 }
-            });
+            }).catch(err => console.log(err));
     }
     addRoomHandler(jwt, setErrorCode, focusUserId);
 }

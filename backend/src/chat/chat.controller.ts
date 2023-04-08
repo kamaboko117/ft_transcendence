@@ -1,5 +1,4 @@
 import { Controller, Request, Query, Get, Post, Body, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
-import { ChatGateway } from './chat.gateway';
 import { InformationChat, TokenUser, DbChat } from './chat.interface';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { PswChat } from './psw-chat.dto';

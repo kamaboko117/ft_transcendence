@@ -267,7 +267,7 @@ const MainChat = (props: any) => {
     useEffect(() => {
         usrSocket?.on("sendBackMsg", (res: any) => {
             //need to check if user is blocked
-            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id);
+            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id && elem.bl === 1);
             if (!found) {
                 if (res.room === props.id)
                     setLstMsgChat((lstMsg) => [...lstMsg, res]);
@@ -363,7 +363,7 @@ const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>,
             if (res.ok)
                 return (res.json());
             setErrorCode(res.status);
-        }).catch(e => console.log(e)));
+        }));
 }
 
 const DisplayErrorPasswordBox = (props: { error: boolean }) => {

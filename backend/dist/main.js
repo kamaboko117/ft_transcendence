@@ -9,8 +9,8 @@ const express_1 = require("express");
 const helmet_1 = require("helmet");
 let httpsOptions = null;
 async function bootstrap() {
-    const keyP = (0, fs_1.readFileSync)('/etc/nginx/certificate.key');
-    const certP = (0, fs_1.readFileSync)('/etc/nginx/certificate.crt');
+    const keyP = (0, fs_1.readFileSync)(String(process.env.HTTPS_KEY));
+    const certP = (0, fs_1.readFileSync)(String(process.env.HTTPS_CERT));
     httpsOptions = {
         key: keyP,
         cert: certP,

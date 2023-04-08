@@ -1,5 +1,6 @@
 import React, { useEffect, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import scrollElement from 'react-scroll/modules/mixins/scroll-element';
 import { Socket } from 'socket.io-client';
 import { lstMsg } from '../components/Chat/Chat';
 import { FetchError, header } from '../components/FetchError';
@@ -71,7 +72,8 @@ export const LoadUserGlobal = (props: { jwt: string }) => {
                 if (res.ok)
                     return (res.json());
                 setErrorCode(res.status);
-            }).then(res => setLstUserGlobal(res));
+            }).then(res => setLstUserGlobal(res))
+            .catch(err => console.log(err));
         return (() => { });
     }, [props.jwt]);
     return (<>{errorCode && errorCode >= 400 && <FetchError code={errorCode} />}</>);
@@ -170,7 +172,10 @@ export const DisplayChatGlobalProvider = (props: {
 
     useEffect(() => {
         props.usrSocket?.on('inviteGame', (res: any) => {
-            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id);
+            console.log(res)
+            console.log(lstUserGlobal)
+            let found = lstUserGlobal.find(elem => elem.id === res.user_id && elem.bl === 1);
+            console.log(found)
             if (!found) {
                 setInvitation(res.user_id);
                 setUid(res.idGame);
@@ -179,10 +184,11 @@ export const DisplayChatGlobalProvider = (props: {
         return (() => {
             props.usrSocket?.off('inviteGame');
         });
-    }, [props.jwt, props.usrSocket]);
+    }, [props.jwt, props.usrSocket, lstUserGlobal]);
 
     return (
         <ContextDisplayChannel.Provider value={providers}>
+            <LoadUserGlobal jwt={props.jwt} />
             <InviteGame userIdInvitation={userIdInvitation} uid={uid} setInvitation={setInvitation} />
             {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}
             {props.children}
