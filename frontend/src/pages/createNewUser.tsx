@@ -11,7 +11,7 @@ function CreateNewUser(props: any) {
     console.log(response);
     function AddUserHandler(username: string) {
         console.log(`user ID: ${response[1]}`);
-        fetch("http://" + location.host + "/api/users/create", {
+        fetch("https://" + location.host + "/api/users/create", {
             method: "POST",
             body: JSON.stringify({
                 userID: response[1],
@@ -28,7 +28,7 @@ function CreateNewUser(props: any) {
                 console.log(data);
                 loginUser(data);
                 localStorage.setItem("user", JSON.stringify(data));
-            });
+            }).catch(err => console.log(err));
     }
     if (userCtx.user.username) {
 

@@ -20,6 +20,8 @@ services:
       - AUTH_SECRET=${AUTH_SECRET}
       - CHAT_SALT=${CHAT_SALT}
       - SALT=${SALT}
+      - HTTPS_KEY=${HTTPS_KEY}
+      - HTTPS_CERT=${HTTPS_CERT}
     volumes:
       - ./backend:/var/www/html
       - ./frontend/public/upload_avatar:/var/www/html/upload_avatar
@@ -50,6 +52,8 @@ services:
       - VITE_APP_ID=${APP_ID}
       - VITE_APP_SECRET=${APP_SECRET}
       - VITE_APP_URI=${APP_URI}
+      - VITE_HTTPS_KEY=${HTTPS_KEY}
+      - VITE_HTTPS_CERT=${HTTPS_CERT}
     deploy:
       restart_policy:
         condition: on-failure

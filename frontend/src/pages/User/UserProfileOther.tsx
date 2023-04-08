@@ -86,7 +86,7 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 		return;
 	}
 
-	fetch("http://" + location.host + "/api/users/fr-bl-list", {
+	fetch("https://" + location.host + "/api/users/fr-bl-list", {
 		method: 'post',
 		headers: headerPost(jwt),
 		body: JSON.stringify({
@@ -155,7 +155,7 @@ const UserProfileOther = (props: { jwt: string }) => {
 	if (isNaN(Number(id)))
 		return (<span>Wrong type id</span>)
 	useEffect(() => {
-		fetch(`http://` + location.host + `/api/users/${id}`, { headers: header(props.jwt) })
+		fetch(`https://` + location.host + `/api/users/${id}`, { headers: header(props.jwt) })
 			.then(res => {
 				if (res.ok)
 					return (res.json());
@@ -166,7 +166,7 @@ const UserProfileOther = (props: { jwt: string }) => {
 						res.avatarPath = "";
 					setOtherUser(res);
 				}
-			})
+			}).catch(err => console.log(err));
 	}, []);
 
 	if (errorCode >= 400)

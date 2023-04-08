@@ -29,7 +29,7 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 		return;
 	if (!value || value === "")
 		return;
-	fetch("http://" + location.host + "/api/users/add-blacklist", {
+	fetch("https://" + location.host + "/api/users/add-blacklist", {
 		method: 'post',
 		headers: headerPost(jwt),
 		body: JSON.stringify({
@@ -47,7 +47,7 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 				fl: res.fl, bl: res.bl, User_username: res.User_username, User_avatarPath: res.User_avatarPath
 			}, lstUserGlobal, setLstUserGlobal);
 		}
-	})
+	}).catch(err => console.log(err))
 }
 
 export default function BlackList(props: { jwt: string }) {

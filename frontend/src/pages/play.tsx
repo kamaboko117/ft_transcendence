@@ -36,7 +36,7 @@ export default function PlayPage(props: { jwt: string }) {
   const { usrSocket } = useContext(SocketContext);
 
   useEffect(() => {
-    fetch("http://" + location.host + "/api/rooms",
+    fetch("https://" + location.host + "/api/rooms",
       { headers: header(props.jwt) })
       .then((response) => {
         if (response.ok)
@@ -55,7 +55,7 @@ export default function PlayPage(props: { jwt: string }) {
         setLoadedRooms(rooms);
         setIsLoading(false);
         console.log("is in " + isInRoom);
-      });
+      }).catch(err => console.log(err));
     return (() => {
       console.log("play unmount")
       setLoadedRooms([]);

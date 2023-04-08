@@ -68,7 +68,7 @@ function FaCode(props: { jwt: string }) {
             .then(res => {
                 if (!res.ok)
                     setErrorCode(res.status);
-            })
+            }).catch(err => console.log(err));
     }, []);
 
     useEffect(() => {
