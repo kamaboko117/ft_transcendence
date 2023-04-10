@@ -54,6 +54,9 @@ const UserProfileOther = (props: { jwt: string }) => {
 				}
 			})
 	}, []);
+	/**
+	 * Mettre a jour OtherUser avec les données adequat
+	 */
 
 	if (errorCode >= 400)
 		return (< FetchError code={errorCode} />);
