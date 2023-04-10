@@ -6,12 +6,12 @@ export declare class AuthService {
     private jwtService;
     constructor(usersServices: UsersService, jwtService: JwtService);
     validateUser(code: string): Promise<any>;
-    fakeUser(): Promise<import("../typeorm").User>;
+    fakeUser(): Promise<any>;
     login(user: TokenUser): Promise<{
         access_token: string;
     }>;
-    verifyFirstToken(token: string): Promise<false | import("../typeorm").User | null>;
-    verifyToken(token: string): Promise<false | import("../typeorm").User | null>;
+    verifyFirstToken(token: string): Promise<false | import("../typeorm").User | null | undefined>;
+    verifyToken(token: string): Promise<false | import("../typeorm").User | null | undefined>;
     refresh(user: TokenUser): Promise<{
         refresh_token: string;
     }>;

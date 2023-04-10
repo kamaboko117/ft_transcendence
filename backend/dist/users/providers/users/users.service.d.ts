@@ -24,9 +24,10 @@ export declare class UsersService {
     update2FA(user_id: number, fa: boolean, secret: string | null): Promise<void>;
     update2FaPsw(user_id: number, psw: string): Promise<void>;
     updateFaFirstEntry(user_id: number): Promise<void>;
+    updateTokenJwt(user_id: number, token: string): Promise<void>;
     getUserProfile(id: number): Promise<User | null>;
     findUsersById(id: number): Promise<User | null>;
-    findUserByIdForGuard(id: number): Promise<User | null>;
+    findUserByIdForGuard(id: number): Promise<User | null | undefined>;
     getUserFaSecret(id: number): Promise<User | null>;
     findUserByName(username: string): Promise<User | null>;
     searchUserInList(ownerId: number, focusId: number, type: number): Promise<BlackFriendList | null>;

@@ -24,7 +24,7 @@ function MainPage(props: {
           username={props.username} setUsername={props.setUsername} />
         <LoadUserGlobal jwt={props.jwt} />
         <img
-          src='./public/transcendence.png'
+          src='./transcendence.png'
           alt="transcendence picture"
           className='transcendence'
         />
@@ -35,7 +35,7 @@ function MainPage(props: {
   return (
     <div className="splash_middle">
       <img className='transcendence'
-        src='./public/transcendence.png'
+        src='./transcendence.png'
         alt="transcendence picture"
       />
       <div className="splash_content">

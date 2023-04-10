@@ -33,7 +33,7 @@ export class UsersService {
         stat.rank = 0;
         stat.user = newUser;
         stat.victory = 0;
-        this.statRepository.save(stat);
+        await this.statRepository.save(stat);
         return (newUser);
     }
 
@@ -96,7 +96,7 @@ export class UsersService {
             .set({ avatarPath: path })
             .where("user_id = :id")
             .setParameters({ id: user_id })
-            .execute()
+            .execute();
     }
 
     async updateUsername(user_id: number, username: string) {
@@ -105,7 +105,7 @@ export class UsersService {
             .set({ username: username })
             .where("user_id = :id")
             .setParameters({ id: user_id })
-            .execute()
+            .execute();
     }
 
     async update2FA(user_id: number, fa: boolean, secret: string | null) {
@@ -114,7 +114,7 @@ export class UsersService {
             .set({ fa: fa, secret_fa: secret!, fa_first_entry: false })
             .where("user_id = :id")
             .setParameters({ id: user_id })
-            .execute()
+            .execute();
     }
 
     async update2FaPsw(user_id: number, psw: string) {
@@ -123,7 +123,7 @@ export class UsersService {
             .set({ fa_psw: psw })
             .where("user_id = :id")
             .setParameters({ id: user_id })
-            .execute()
+            .execute();
     }
 
     /* Will set to true fa_first_entry,
@@ -134,7 +134,18 @@ export class UsersService {
             .set({ fa_first_entry: true })
             .where("user_id = :id")
             .setParameters({ id: user_id })
-            .execute()
+            .execute();
+    }
+
+    async updateTokenJwt(user_id: number, token: string) {
+        console.log("djqsdqsjkldjqslkdjsdqlksdjjsjlkdlk")
+        console.log(user_id)
+        await this.userRepository.createQueryBuilder()
+            .update(User)
+            .set({ token: token })
+            .where("user_id = :id")
+            .setParameters({ id: user_id })
+            .execute();
     }
 
     /*
@@ -173,8 +184,8 @@ export class UsersService {
     }
 
     async findUserByIdForGuard(id: number) {
-        const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
-            .where('user.user_id = :user')
+        const user: Promise<User | undefined | null> = this.userRepository.createQueryBuilder("user")
+            .where('user_id = :user')
             .setParameters({ user: id })
             .getOne();
         return (user);

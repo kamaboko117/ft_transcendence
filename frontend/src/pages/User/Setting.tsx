@@ -1,7 +1,6 @@
 import React, { useEffect, useState, ChangeEvent, FormEvent, useContext } from "react";
 import { FetchError, header } from "../../components/FetchError";
-import { useNavigate } from "react-router-dom";
-import { Socket } from 'socket.io-client';
+import { useLocation, useNavigate } from "react-router-dom";
 import UserContext from "../../contexts/UserContext";
 import '../../css/user.css';
 
@@ -141,13 +140,14 @@ function Setting(props: Readonly<{
 			navigate("/fa-activate");
 		setOldFa(FA);
 	}, [userCtx.getJwt()]);
-
+	
+	const getLocation = useLocation();
 	if (errorCode >= 401 && errorCode != 413)
 		return (<FetchError code={errorCode} />);
 	return (
 		<section>
 			<article>
-				<label>Username: {userCtx.getUsername()}</label>
+				{getLocation.pathname === "/Setting" && <label>Username: {userCtx.getUsername()}</label>}
 				<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
 					update(event, username,
 						user?.userID, file, FA, props.jwt,

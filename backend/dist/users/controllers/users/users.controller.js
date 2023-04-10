@@ -97,16 +97,21 @@ let UsersController = class UsersController {
         return ({ valid: isValid, username: userDb.username, token: null });
     }
     async fakeLogin(req, response) {
-        const access_token = await this.authService.login(req.user);
-        const refresh = await this.authService.refresh(req.user);
-        console.log(access_token);
-        console.log(refresh);
+        let user = req.user;
+        user.fa_code = "";
+        console.log("FAKE LOGIN");
+        console.log(user);
+        const access_token = await this.authService.login(user);
+        const refresh = await this.authService.refresh(user);
         response.cookie('refresh_token', refresh.refresh_token, {
             maxAge: 300000,
             httpOnly: true,
             sameSite: 'Strict',
         });
-        return ({ token: access_token, user_id: req.user.userID, username: req.user.username });
+        return ({
+            token: access_token, user_id: req.user.userID,
+            username: user.username, fa: user.fa
+        });
     }
     checkUpdateUserError(ret_user, ret_user2, body) {
         let err = [];
@@ -294,6 +299,8 @@ let UsersController = class UsersController {
     async login(req, response) {
         let user = req.user;
         user.fa_code = "";
+        console.log("LOGIN");
+        console.log(user);
         const access_token = await this.authService.login(user);
         const refresh = await this.authService.refresh(user);
         response.cookie('refresh_token', refresh.refresh_token, {

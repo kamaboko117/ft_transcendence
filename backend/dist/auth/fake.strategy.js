@@ -21,6 +21,8 @@ let FakeStrategy = class FakeStrategy extends (0, passport_1.PassportStrategy)(p
     }
     async validate(req) {
         const user = await this.authService.fakeUser();
+        console.log("uuu");
+        console.log(user);
         if (!user || typeof user == "undefined")
             throw new common_1.UnauthorizedException();
         return (user);

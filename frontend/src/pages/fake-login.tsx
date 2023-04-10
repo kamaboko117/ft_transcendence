@@ -35,7 +35,6 @@ function FakeLogin(props: {jwt: string}) {
       }).catch(e=>console.log(e)));
     };
     getUser().then(res => {
-      console.log(res);
       if (typeof res != "undefined") {
         setFa(res.fa);
         userCtx.loginUser({
@@ -43,9 +42,6 @@ function FakeLogin(props: {jwt: string}) {
           username: res.username,
           userId: String(res.user_id)
         });
-        //setJwt(res.token.access_token);
-        //setUserId(res.user_id);
-        //setUsername(res.username);
       }
     })
   }, []);

@@ -39,7 +39,7 @@ let UsersService = class UsersService {
         stat.rank = 0;
         stat.user = newUser;
         stat.victory = 0;
-        this.statRepository.save(stat);
+        await this.statRepository.save(stat);
         return (newUser);
     }
     async getToken(code) {
@@ -127,6 +127,16 @@ let UsersService = class UsersService {
             .setParameters({ id: user_id })
             .execute();
     }
+    async updateTokenJwt(user_id, token) {
+        console.log("djqsdqsjkldjqslkdjsdqlksdjjsjlkdlk");
+        console.log(user_id);
+        await this.userRepository.createQueryBuilder()
+            .update(typeorm_2.User)
+            .set({ token: token })
+            .where("user_id = :id")
+            .setParameters({ id: user_id })
+            .execute();
+    }
     async getUserProfile(id) {
         const user = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
@@ -150,8 +160,8 @@ let UsersService = class UsersService {
         return (user);
     }
     async findUserByIdForGuard(id) {
-        const user = await this.userRepository.createQueryBuilder("user")
-            .where('user.user_id = :user')
+        const user = this.userRepository.createQueryBuilder("user")
+            .where('user_id = :user')
             .setParameters({ user: id })
             .getOne();
         return (user);
