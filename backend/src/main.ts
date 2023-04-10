@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { readFileSync } from 'fs';
 import { urlencoded, json } from 'express';
-import helmet from 'helmet';
+//import helmet from 'helmet';
 
 let httpsOptions = null;
 
@@ -21,7 +21,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));
-  app.use(helmet());
+  //app.use(helmet());
   await app.listen(3000);
 }
 bootstrap();

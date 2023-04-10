@@ -6,7 +6,6 @@ const common_1 = require("@nestjs/common");
 const cookieParser = require("cookie-parser");
 const fs_1 = require("fs");
 const express_1 = require("express");
-const helmet_1 = require("helmet");
 let httpsOptions = null;
 async function bootstrap() {
     const keyP = (0, fs_1.readFileSync)(String(process.env.HTTPS_KEY));
@@ -21,7 +20,6 @@ async function bootstrap() {
     app.use(cookieParser());
     app.use((0, express_1.json)({ limit: '10mb' }));
     app.use((0, express_1.urlencoded)({ extended: true, limit: '10mb' }));
-    app.use((0, helmet_1.default)());
     await app.listen(3000);
 }
 bootstrap();

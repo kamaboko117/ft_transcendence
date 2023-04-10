@@ -188,7 +188,7 @@ export const DisplayChatGlobalProvider = (props: {
 
     return (
         <ContextDisplayChannel.Provider value={providers}>
-            <LoadUserGlobal jwt={props.jwt} />
+            {props.jwt && props.jwt != "" && <LoadUserGlobal jwt={props.jwt} />}
             <InviteGame userIdInvitation={userIdInvitation} uid={uid} setInvitation={setInvitation} />
             {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}
             {props.children}
