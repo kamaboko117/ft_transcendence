@@ -19,7 +19,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         username: string, fa: boolean, fa_code: string}) {
         const ret: TokenUser = {
             userID: Number(payload.sub),
-            token: payload.token,
             username: payload.username,
             fa: payload.fa,
             fa_code: payload.fa_code

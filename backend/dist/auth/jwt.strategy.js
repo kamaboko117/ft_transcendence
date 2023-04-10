@@ -25,7 +25,6 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
     async validate(payload) {
         const ret = {
             userID: Number(payload.sub),
-            token: payload.token,
             username: payload.username,
             fa: payload.fa,
             fa_code: payload.fa_code

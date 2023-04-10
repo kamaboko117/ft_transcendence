@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FetchError, header } from "../../components/FetchError";
 import '../../css/user.css';
+import Setting from "./Setting";
 
 type statInfo = {
 	victory: number,
@@ -58,24 +59,25 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 					setSstat(res);
 				}
 			}).catch(e => console.log(e));
-	}, []);
+	}, [props.jwt]);
 	if (errorCode >= 400)
 		return (<FetchError code={errorCode} />);
 	return (
 		<>
 			<h1>Username: [{user?.username}]</h1>
-			{avatar_path != null && <img
+			{/*avatar_path != null && <img
 				className="avatar"
 				src={avatar_path}
 				alt={"avatar " + user?.username}
 				onError={handleImgError}
-			/>}
+	/>*/}
 			<ul>
 				<li>Victoire: {user?.sstat.victory}</li>
 				<li>Défaite: {user?.sstat.defeat}</li>
 				<li>Rang: {user?.sstat.rank}</li>
 				<li>Niveau: {user?.sstat.level}</li>
 			</ul>
+			<Setting jwt={props.jwt} />
 		</>
 	);
 }

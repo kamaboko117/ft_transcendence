@@ -24,24 +24,32 @@ let AuthService = class AuthService {
             return (undefined);
         const iduser = await this.usersServices.getInformationBearer(token);
         let user = await this.usersServices.findUserByIdForGuard(iduser);
-        if (!user)
+        if (!user) {
             user = await this.usersServices.createUser({ userID: iduser, username: '', token: '' });
+        }
         return (user);
     }
     async fakeUser() {
         const iduser = Math.ceil(Math.random() * 9452160 + 1000000);
-        const user = await this.usersServices.createUser({ userID: iduser, username: iduser.toString(), token: '' });
+        await this.usersServices.createUser({ userID: iduser, username: '', token: '' });
+        let user = await this.usersServices.findUserByIdForGuard(iduser);
+        console.log("FFAAKAKEDAKAL");
+        console.log(user);
         return (user);
     }
     async login(user) {
         const payload = {
-            sub: user.userID,
-            token: user.token,
+            sub: Number(user.userID),
             username: user.username,
             fa: user.fa,
             fa_code: user.fa_code
         };
+        console.log("PAYYYYY");
+        console.log(payload);
         const access_token = { access_token: this.jwtService.sign(payload) };
+        console.log("aqdjqsjdhjkqshdjkqshdqskdhqsjkdhqsjkd");
+        console.log(await this.usersServices.findUserByIdForGuard(user.userID));
+        await this.usersServices.updateTokenJwt(Number(user.userID), access_token.access_token);
         return (access_token);
     }
     async verifyFirstToken(token) {
@@ -50,6 +58,8 @@ let AuthService = class AuthService {
             const userExistInDb = await this.usersServices.findUserByIdForGuard(decoded.sub);
             if (!userExistInDb)
                 return (userExistInDb);
+            if (userExistInDb.token != token)
+                return (false);
             return (userExistInDb);
         }
         catch (e) {
@@ -62,6 +72,8 @@ let AuthService = class AuthService {
             const userExistInDb = await this.usersServices.findUserByIdForGuard(decoded.sub);
             if (!userExistInDb)
                 return (userExistInDb);
+            if (userExistInDb.token != token)
+                return (false);
             if (userExistInDb.username != decoded.username ||
                 userExistInDb.username === "" || userExistInDb === null
                 || (userExistInDb.fa === true
@@ -80,7 +92,6 @@ let AuthService = class AuthService {
     async refresh(user) {
         const payload = {
             sub: user.userID,
-            token: user.token,
             username: user.username,
             fa: user.fa
         };

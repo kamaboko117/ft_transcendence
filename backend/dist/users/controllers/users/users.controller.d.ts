@@ -31,7 +31,8 @@ export declare class UsersController {
             access_token: string;
         };
         user_id: any;
-        username: any;
+        username: string;
+        fa: boolean;
     }>;
     checkUpdateUserError(ret_user: any, ret_user2: any, body: any): string[];
     updateUser(req: any, file: Express.Multer.File | undefined, body: UpdateUser): Promise<{
