@@ -29,6 +29,12 @@ type typeFetchToBack = {
     option: string
 }
 
+type admPassword = {
+    jwt: string,
+    id: string,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>;
+}
+
 const handleClick = (event: React.MouseEvent<HTMLButtonElement>, channelId: string,
     action: string, jwt: string, userId: number) => {
     const e: HTMLElement = event.target as HTMLElement;
@@ -267,6 +273,135 @@ const AdminButtons = (props: {
             {haveAdminGrant && <MuteUser shortPropsVariable={shortPropsVariable} />}
             {haveAdminGrant && <KickUser shortPropsVariable={shortPropsVariable} />}
         </>
+    )
+}
+
+const PasswordExist = (props: {
+    jwt: string,
+    id: string,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    setType: React.Dispatch<React.SetStateAction<boolean>>
+}) => {
+    useEffect(() => {
+        fetch('https://' + location.host + '/api/chat-role/get-access-type?' + new URLSearchParams({
+            id: props.id,
+        }), { headers: header(props.jwt) })
+            .then(res => {
+                if (res.ok)
+                    return (res.json());
+            }).then((res: boolean) => {
+                if (typeof res === "boolean")
+                    props.setType(res);
+            });
+    }, [props.id]);
+    return (<></>);
+}
+
+function submitPsw(e, jwt: string, action: string,
+    id: string, psw: string,
+    setType: React.Dispatch<React.SetStateAction<boolean>>,
+    setErr: React.Dispatch<React.SetStateAction<boolean>>) {
+    e.preventDefault();
+
+    if (e && e.target) {
+        fetch('https://' + location.host + '/api/chat-role/role-action-psw', {
+            method: 'post',
+            headers: headerPost(jwt),
+            body: JSON.stringify({
+                id: id, action: action,
+                psw: psw
+            })
+        })
+            .then(res => {
+                if (res.ok)
+                    return (res.json());
+                if (res.status === 400)
+                    setErr(true);
+            })
+            .then(res => {
+                console.log(res)
+                if (typeof res === "boolean") {
+                    if (action === "setpsw")
+                        setType(true);
+                    else if (action === "unsetpsw")
+                        setType(false);
+                    setErr(false);
+                }
+            })
+            .catch(e => console.log(e));
+    }
+}
+
+const PswBox = (props: {
+    jwt: string,
+    id: string,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    typeDisplay: boolean,
+    setType: React.Dispatch<React.SetStateAction<boolean>>
+}) => {
+
+    const UpdateDeletePsw = () => {
+        const [psw, setPsw] = useState<string>("");
+        const [err, setErr] = useState<boolean>(false);
+        return (<div>
+            {props.typeDisplay === true && <h3>Update Password</h3>}
+            {props.typeDisplay === false && <h3>Add Password</h3>}
+            <form method='post' onSubmit={(e) => submitPsw(e, props.jwt,
+                'setpsw', props.id,
+                psw, props.setType, setErr)}>
+                <input type="password" onChange={(e) => setPsw(e.target.value)}
+                    placeholder='Password' name="password" />
+                <button type='submit'>Submit</button>
+            </form>
+            {props.typeDisplay === true &&
+                <><h4>Delete Password</h4>
+                    <button onClick={(e) => submitPsw(e, props.jwt,
+                        'unsetpsw', props.id,
+                        'psw', props.setType, setErr)}>Delete</button>
+                </>
+            }
+            {err === true && <><br /><span>Please enter a password</span></>}
+        </div>);
+    }
+
+    return (<>
+        <UpdateDeletePsw />
+    </>);
+}
+/* typeDisplay === true has a psw otherwise no */
+/* Used to update / remove password channel by owner */
+export const PasswordOwnerBox = (props: admPassword) => {
+    const [role, setRole] = useState<string>("");
+    const [typeDisplay, setType] = useState<boolean>(false);
+    useEffect(() => {
+        fetch('https://' + location.host + '/api/chat-role/getRole?' + new URLSearchParams({
+            id: props.id,
+        }), { headers: header(props.jwt) })
+            .then(res => {
+                if (res.ok)
+                    return (res.json());
+                props.setErrorCode(res.status)
+            })
+            .then((res) => {
+                if (res && res.role) {
+                    setRole(res.role);
+                }
+                else {
+                    setRole("");
+                }
+            }).catch(e => console.log(e));
+    }, [[props.id]]);
+    return (<>
+        {role != "Owner" ? <></> :
+            <article className='pswBox'>
+                <PasswordExist jwt={props.jwt}
+                    id={props.id} setErrorCode={props.setErrorCode}
+                    setType={setType} />
+                <PswBox jwt={props.jwt}
+                    id={props.id} setErrorCode={props.setErrorCode}
+                    typeDisplay={typeDisplay} setType={setType} />
+            </article>}
+    </>
     )
 }
 

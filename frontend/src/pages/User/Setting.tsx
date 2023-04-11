@@ -4,12 +4,21 @@ import { useLocation, useNavigate } from "react-router-dom";
 import UserContext from "../../contexts/UserContext";
 import '../../css/user.css';
 
+type statInfo = {
+	victory: number,
+	defeat: number,
+	nb_games: number,
+	level: number,
+	rank: number
+}
+
 type userInfo = {
 	username: string,
 	token: string,
 	userID: number,
 	avatarPath: string,
 	fa: boolean
+	sstat: statInfo
 }
 
 /* display default img if not img loaded */
@@ -140,14 +149,22 @@ function Setting(props: Readonly<{
 			navigate("/fa-activate");
 		setOldFa(FA);
 	}, [userCtx.getJwt()]);
-	
-	const getLocation = useLocation();
+
 	if (errorCode >= 401 && errorCode != 413)
 		return (<FetchError code={errorCode} />);
 	return (
 		<section>
+			<h1>Username: [{userCtx.getUsername()}]</h1>
 			<article>
-				{getLocation.pathname === "/Setting" && <label>Username: {userCtx.getUsername()}</label>}
+				<ul>
+					<li>Victoire: {user?.sstat.victory}</li>
+					<li>Défaite: {user?.sstat.defeat}</li>
+					<li>Rang: {user?.sstat.rank}</li>
+					<li>Niveau: {user?.sstat.level}</li>
+				</ul>
+			</article>
+			<article>
+				{/*getLocation.pathname === "/Setting" && <label>Username: {userCtx.getUsername()}</label>*/}
 				<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
 					update(event, username,
 						user?.userID, file, FA, props.jwt,

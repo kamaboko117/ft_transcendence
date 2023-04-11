@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useContext } from 'react';
 import ListUserChat from './ListUser';
+import { PasswordOwnerBox } from './Admin';
 import { FetchError, header, headerPost } from '../FetchError';
 import "../../css/chat.css";
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
@@ -299,31 +300,12 @@ const MainChat = (props: any) => {
             <ListMsg lstMsg={lstMsgChat} />
             <PostMsg id={props.id} msg={msg} usrSocket={usrSocket} setErrorCode={props.setErrorCode}
                 setMsg={setMsg} setLstMsgChat={setLstMsgChat} setLstMsgPm={setLstMsgPm} />
-            {/*<div className="sendMsg">
-                <textarea ref={refElem} id="submitArea" placeholder='Inclure commande deban dans chat'
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMsg(e.currentTarget.value)}
-                    onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
-                        handleSubmitArea(e,
-                            usrSocket, {
-                            id: props.id,
-                            idBox: id,
-                            content: msg
-                        },
-                            refElem,
-                            setMsg, setLstMsgChat, setLstMsgPm)}
-                    className="chatBox" name="msg"></textarea>
-                <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmitButton(e,
-                    usrSocket, {
-                    id: props.id,
-                    idBox: id,
-                    content: msg
-                }, refElem, setMsg, setLstMsgChat, setLstMsgPm)}
-                    className="chatBox">Go</button>
-            </div>*/}
         </article>
         <article className='right'>
             <LoadUserGlobal jwt={props.jwt} />
             <ListUserChat id={props.id} jwt={props.jwt} />
+            <PasswordOwnerBox jwt={props.jwt}
+                id={props.id} setErrorCode={props.setErrorCode} />
         </article>
     </>);
 }
@@ -429,7 +411,7 @@ const Chat = (props: { jwt: string }) => {
 
     if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
-    
+
     useEffect(() => {
         const hasPass: Promise<boolean> = hasPassword(id, props.jwt, setErrorCode);
         console.log("load chat")
@@ -438,7 +420,7 @@ const Chat = (props: { jwt: string }) => {
             setLoadPsw(res);
         }).catch(e => console.log(e));
     }, []);
-    
+
     return (<BlockChat id={id} getLocation={getLocation}
         setErrorCode={setErrorCode} jwt={props.jwt}
         hasPsw={psw} />);
