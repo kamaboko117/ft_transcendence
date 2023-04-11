@@ -18,6 +18,7 @@ const lstban_entity_1 = require("../chat/lstban.entity");
 const lstmute_entity_1 = require("../chat/lstmute.entity");
 const blackFriendList_entity_1 = require("./blackFriendList.entity");
 const stat_entity_1 = require("./stat.entity");
+const matchHistory_entity_1 = require("./matchHistory.entity");
 let User = class User {
 };
 __decorate([
@@ -99,6 +100,18 @@ __decorate([
     (0, typeorm_1.OneToOne)(() => stat_entity_1.Stat, (stat) => stat.user),
     __metadata("design:type", Array)
 ], User.prototype, "sstat", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => matchHistory_entity_1.MatchHistory, (matchhistory) => matchhistory.MP1),
+    __metadata("design:type", Array)
+], User.prototype, "matchPlayerOne", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => matchHistory_entity_1.MatchHistory, (matchhistory) => matchhistory.MP2),
+    __metadata("design:type", Array)
+], User.prototype, "matchPlayerTwo", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => matchHistory_entity_1.MatchHistory, (matchhistory) => matchhistory.victory_user),
+    __metadata("design:type", Array)
+], User.prototype, "userVictory", void 0);
 User = __decorate([
     (0, typeorm_1.Entity)()
 ], User);

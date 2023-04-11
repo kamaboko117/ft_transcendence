@@ -3,12 +3,14 @@ import { DataSource, Repository } from "typeorm";
 import { CreateUserDto } from "src/users/dto/users.dtos";
 import { Stat } from "src/typeorm/stat.entity";
 import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
+import { MatchHistory } from "src/typeorm/matchHistory.entity";
 export declare class UsersService {
     private readonly userRepository;
     private readonly statRepository;
     private readonly blFrRepository;
+    private readonly matchHistoryRepository;
     private dataSource;
-    constructor(userRepository: Repository<User>, statRepository: Repository<Stat>, blFrRepository: Repository<BlackFriendList>, dataSource: DataSource);
+    constructor(userRepository: Repository<User>, statRepository: Repository<Stat>, blFrRepository: Repository<BlackFriendList>, matchHistoryRepository: Repository<MatchHistory>, dataSource: DataSource);
     createUser(createUserDto: CreateUserDto): Promise<User>;
     getToken(code: string): Promise<{
         access_token: string;
@@ -26,6 +28,9 @@ export declare class UsersService {
     updateFaFirstEntry(user_id: number): Promise<void>;
     updateTokenJwt(user_id: number, token: string): Promise<void>;
     getUserProfile(id: number): Promise<User | null>;
+    getVictoryNb(id: number): Promise<number>;
+    getGamesNb(id: number): Promise<number>;
+    getRawMH(id: number): Promise<any[]>;
     findUsersById(id: number): Promise<User | null>;
     findUserByIdForGuard(id: number): Promise<User | null | undefined>;
     getUserFaSecret(id: number): Promise<User | null>;

@@ -21,18 +21,6 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", Number)
-], Stat.prototype, "victory", void 0);
-__decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", Number)
-], Stat.prototype, "defeat", void 0);
-__decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", Number)
-], Stat.prototype, "nb_games", void 0);
-__decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", Number)
 ], Stat.prototype, "level", void 0);
 __decorate([
     (0, typeorm_1.Column)(),

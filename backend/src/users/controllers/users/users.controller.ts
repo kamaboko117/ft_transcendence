@@ -20,6 +20,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { FileInterceptor } from "@nestjs/platform-express";
 import { TokenUser } from "src/chat/chat.interface";
 import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
+import { MatchHistory } from "src/typeorm/matchHistory.entity";
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import * as bcrypt from 'bcrypt';
@@ -328,6 +329,27 @@ export class UsersController {
         const user: TokenUser = req.user;
         const ret_user = await this.userService.findUserByName(user.username);
         return (ret_user);
+    }
+
+    @Get('get-victory-nb')
+    async getNbVictory(@Request() req: any) {
+        const user: TokenUser = req.user;
+        const ret_nb = await this.userService.getVictoryNb(user.userID);
+        return (ret_nb);
+    }
+
+    @Get('get-games-nb')
+    async getNbGames(@Request() req: any) {
+        const user: TokenUser = req.user;
+        const ret_nb = await this.userService.getGamesNb(user.userID);
+        return(ret_nb);
+    }
+
+    @Get('get_raw_mh')
+    async getMHRaw(@Request() req: any) {
+        const user: TokenUser = req.user;
+        const ret_raw = await this.userService.getRawMH(user.userID);
+        return (ret_raw);
     }
 
     /* 0 = user not found */

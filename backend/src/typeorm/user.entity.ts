@@ -6,6 +6,7 @@ import { ListBan } from '../chat/lstban.entity';
 import { ListMute } from '../chat/lstmute.entity';
 import { BlackFriendList } from './blackFriendList.entity';
 import { Stat } from './stat.entity';
+import { MatchHistory } from './matchHistory.entity';
 
 @Entity()
 export class User {
@@ -78,7 +79,16 @@ export class User {
   lstBlackFriendOwner: BlackFriendList[];
   @OneToMany(() => BlackFriendList, (blackfriendlist) => blackfriendlist.userFocus)
   lstBlackFriendFocus: BlackFriendList[];
+
   @OneToOne(() => Stat, (stat) => stat.user)
   sstat: Stat[]
+
+    //OneToMany vers MatchHistory
+  @OneToMany(() => MatchHistory, (matchhistory) => matchhistory.MP1)
+  matchPlayerOne: MatchHistory[];
+  @OneToMany(() => MatchHistory, (matchhistory) => matchhistory.MP2)
+  matchPlayerTwo: MatchHistory[];
+  @OneToMany(() => MatchHistory, (matchhistory) => matchhistory.victory_user)
+  userVictory: MatchHistory[];
 
 }

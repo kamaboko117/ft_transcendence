@@ -229,6 +229,21 @@ let UsersController = class UsersController {
         const ret_user = await this.userService.findUserByName(user.username);
         return (ret_user);
     }
+    async getNbVictory(req) {
+        const user = req.user;
+        const ret_nb = await this.userService.getVictoryNb(user.userID);
+        return (ret_nb);
+    }
+    async getNbGames(req) {
+        const user = req.user;
+        const ret_nb = await this.userService.getGamesNb(user.userID);
+        return (ret_nb);
+    }
+    async getMHRaw(req) {
+        const user = req.user;
+        const ret_raw = await this.userService.getRawMH(user.userID);
+        return (ret_raw);
+    }
     async addFriend(req, body) {
         const user = req.user;
         const ret_user = await this.userService.findUserByName(body.username);
@@ -446,6 +461,27 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "getUsername", null);
+__decorate([
+    (0, common_1.Get)('get-victory-nb'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getNbVictory", null);
+__decorate([
+    (0, common_1.Get)('get-games-nb'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getNbGames", null);
+__decorate([
+    (0, common_1.Get)('get_raw_mh'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getMHRaw", null);
 __decorate([
     (0, common_1.Post)('add-friend'),
     __param(0, (0, common_1.Request)()),

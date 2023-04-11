@@ -71,6 +71,9 @@ export declare class UsersController {
     getUserInfo(req: any, name: string): Promise<any>;
     getFriendBlackListUser(req: any): Promise<BlackFriendList[]>;
     getUsername(req: any): Promise<import("../../../typeorm").User | null>;
+    getNbVictory(req: any): Promise<number>;
+    getNbGames(req: any): Promise<number>;
+    getMHRaw(req: any): Promise<any[]>;
     addFriend(req: any, body: Username): Promise<{
         code: number;
         id?: undefined;

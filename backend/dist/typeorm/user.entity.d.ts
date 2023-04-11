@@ -1,6 +1,7 @@
 import { Channel } from '../chat/chat.entity';
 import { BlackFriendList } from './blackFriendList.entity';
 import { Stat } from './stat.entity';
+import { MatchHistory } from './matchHistory.entity';
 export declare class User {
     userID: number;
     username: string;
@@ -18,4 +19,7 @@ export declare class User {
     lstBlackFriendOwner: BlackFriendList[];
     lstBlackFriendFocus: BlackFriendList[];
     sstat: Stat[];
+    matchPlayerOne: MatchHistory[];
+    matchPlayerTwo: MatchHistory[];
+    userVictory: MatchHistory[];
 }
