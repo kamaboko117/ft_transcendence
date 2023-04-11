@@ -17,7 +17,7 @@ export declare class MatchMakingGateway implements OnGatewayConnection, OnGatewa
         private: boolean;
         uid: string;
     } | undefined>;
-    test(): void;
+    test(players: any): void;
     runGame(players: any): void;
     wait(milliseconds: any): Promise<unknown>;
     getKey(player: any): any;

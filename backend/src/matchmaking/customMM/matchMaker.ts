@@ -1,3 +1,6 @@
+import { MatchMakingGateway } from '../matchmaking.gateway';
+
+
 let errorMessages = {
 	playerInQueue: "Player is already in queue",
 	playerNotInQueue: "Player is not in queue",
@@ -30,23 +33,32 @@ export class Matchmaker<P> {
 	protected inGame: Game<P>[];
 
 	private nextGameId: number;
+	private mmgateway: MatchMakingGateway;
 
 	protected checkInterval: number; // Time to check for players, value in milliseconds defaults to 5000
 	protected maxMatchSize: number;
 	protected minMatchSize: number;
 
+	private callconsole(players: P[]) : void
+	{
+		console.log("calllzed by rungame");
+		this.mmgateway.test(players);
+	}
+
 	get playersInQueue(): number {
 		return this.queue.length;
 	}
 
-	constructor(resolver: (players: P[]) => void, getKey: (player: P) => string, options?: IMatchMakerOptions) {
+	constructor(resolver: (players: P[]) => void, getKey: (player: P) => string, mgateway : MatchMakingGateway, options?: IMatchMakerOptions) {
 		this.resolver = (players: P[]) => {
 			this.inGame.push({ players, id: this.nextGameId++ });
 			resolver(players);
+			this.callconsole(players);
 		};
 		this.getKey = getKey
 		this.queue = [];
 		this.inGame = [];
+		this.mmgateway = mgateway;
 
 		this.nextGameId = Number.MIN_SAFE_INTEGER;
 

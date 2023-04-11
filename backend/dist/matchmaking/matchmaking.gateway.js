@@ -29,7 +29,7 @@ let MatchMakingGateway = class MatchMakingGateway {
         this.socketEvents = socketEvents;
         this.mmQueue = {};
         this.MMSocket = new Map();
-        this.mm = new fifo_1.FifoMatchmaker(this.runGame, this.getKey, { checkInterval: 2000 });
+        this.mm = new fifo_1.FifoMatchmaker(this.runGame, this.getKey, this, { checkInterval: 2000 });
     }
     async emitbackplayer2id(id1, id2) {
         const name = String(id1) + '|' + String(id2);
@@ -43,7 +43,12 @@ let MatchMakingGateway = class MatchMakingGateway {
         console.log(itm);
         this.socketEvents.inviteUserToGame(String(id1), String(id2), itm.uid);
     }
-    test() { console.log("calllzed by rungame"); }
+    test(players) {
+        console.log("calllzed by mmgateway!");
+        console.log("test started with:");
+        console.log(players);
+        this.emitbackplayer2id(players[0].id, players[1].id);
+    }
     runGame(players) {
         console.log("Game started with:");
         console.log(players);
