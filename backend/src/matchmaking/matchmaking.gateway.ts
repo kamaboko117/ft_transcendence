@@ -24,11 +24,15 @@ import {
   HttpStatus,
   UseGuards,
   Logger,
-  NotImplementedException,
+  NotImplementedException
 } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { TokenUser } from '../chat/chat.interface';
-const { FifoMatchmaker } = require('matchmaking');
+import { SocketEvents } from 'src/socket/socketEvents';
+import { RoomsService } from 'src/rooms/services/rooms/rooms.service';
+import { CreateRoomDto, CreateRoomPrivate } from 'src/rooms/dto/rooms.dtos';
+import { FifoMatchmaker } from './customMM/fifo';
+
 
 type Match = {
   player1id: string;
@@ -52,7 +56,14 @@ export class MatchMakingGateway
 
   private readonly MMSocket: Map<string, string>;
   private mmQueue: { [key: string]: TokenUser[] } = {};
-  private mm : typeof FifoMatchmaker;
+  //private mm : typeof FifoMatchmaker;
+  private mm : FifoMatchmaker<any>;
+
+  constructor(private readonly roomsService: RoomsService, private readonly socketEvents: SocketEvents) {
+    this.MMSocket = new Map();
+    //this.mm = new FifoMatchmaker(this.runGame, this.getKey, { checkInterval: 2000 });
+    this.mm = new FifoMatchmaker(this.runGame, this.getKey, { checkInterval: 2000 });
+  }
 
     /*
   //Partie matchmaking queue in
@@ -76,16 +87,59 @@ export class MatchMakingGateway
 
 */
 
-runGame(players : any) {
-  console.log("Game started with:");
-  console.log(players);
-}
-getKey(player: any) {
-  return player.id;
-}
-  constructor() {
-    this.MMSocket = new Map();
-    this.mm = new FifoMatchmaker(this.runGame, this.getKey, { checkInterval: 2000 });
+
+  async emitbackplayer2id(id1 : number, id2: number) {
+
+    const name: string = String(id1) + '|' + String(id2);
+    if (id1 === id2){
+        return ({roomName: '', Capacity: '0', private: false, uid: ''});
+    }
+    const isUserConnected = await this.socketEvents.isUserConnected(String(id2));
+    if (!isUserConnected)
+        return ({roomName: '', Capacity: '0', private: false, uid: ''});
+  const itm = await this.roomsService.createRoomPrivate(name);
+  console.log(itm);
+  this.socketEvents.inviteUserToGame(String(id1), String(id2), itm.uid);
+
+  }
+
+  test(){console.log("calllzed by rungame");}
+
+  
+  runGame(players : any) {
+
+    console.log("Game started with:");
+    console.log(players);
+    console.log(players[0].id);
+ 
+    //this.emitbackplayer2id(players[0].id, players[1].id);
+  
+    /*
+    let id1 = players[0].id;
+    let id2 = players[1].id;
+
+    const name: string = String(id1) + '|' + String(id2);
+    if (id1 === id2){
+        return ({roomName: '', Capacity: '0', private: false, uid: ''});
+    }
+    const isUserConnected = await this.socketEvents.isUserConnected(String(id2));
+    if (!isUserConnected)
+        return ({roomName: '', Capacity: '0', private: false, uid: ''});
+  const itm = await this.roomsService.createRoomPrivate(name);
+  console.log(itm);
+  this.socketEvents.inviteUserToGame(String(id1), String(id2), itm.uid);
+*/
+
+  }
+
+  wait(milliseconds : any){
+    return new Promise(resolve => {
+        setTimeout(resolve, milliseconds);
+    });
+  }
+
+  getKey(player: any) {
+    return player.id;
   }
 
   async handleConnection(client: Socket) {
@@ -176,6 +230,8 @@ getKey(player: any) {
       // leave the page? = leave queue
 
       const user = socket.user;
+      let player1 = { id:user.userID }
+      this.mm.leaveQueue(player1);
     } catch (error) {
       console.log('disconnect MM failed');
       this.server.to(socket.id).emit('disconnect MM failed', {
