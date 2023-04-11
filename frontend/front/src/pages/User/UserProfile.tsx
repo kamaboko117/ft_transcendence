@@ -17,9 +17,9 @@ type userInfo = {
 
 type rawMH = {
 	type_game: string,
-	player_one: string,
-	player_two: string,
-	player_victory: string
+	t1_username: string,
+	t2_username: string,
+	t3_username: string
 }
 
 /* display default img if not img loaded */
@@ -43,17 +43,20 @@ export const headerPost = (jwt: Readonly<string | null>) => {
 */
 
 /* Table of Match_History */
-const Match_History_Raw = (props: rawMH) => {
-	const {type_game, player_one, player_two, player_victory} = props;
-
-	return(
-		<tr>
-			<td>{type_game}</td>
-			<td>{player_one}</td>
-			<td>{player_two}</td>
-			<td>{player_victory}</td>
-		</tr>
-	)
+const Match_History_Raw = (props: {rawMH: Array<rawMH> | undefined}) => {
+	//const {type_game, player_one, player_two, player_victory} = props;
+	let i: number = 0;
+	// console.log(props.rawMH);
+	return(<>
+		{props.rawMH && props.rawMH.map((val) => 
+			<tr key={++i}>
+				<td>{val.type_game}</td>
+				<td>{val.t1_username}</td>
+				<td>{val.t2_username}</td>
+				<td>{val.t3_username}</td>
+			</tr>
+		)}
+	</>)
 }
 /**
  * 
@@ -64,8 +67,16 @@ const Match_History_Raw = (props: rawMH) => {
 			</th>
 		</tbody>
  */
+
+		/**
+			select type_game, t1.username, t2.username, t3.username
+			from match_history
+			inner join "user" t1 on player_one = t1.user_id
+			inner join "user" t2 on player_two = t2.user_id
+			inner join "user" t3 on user_victory = t3.user_id
+		 */
 const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
-	const [raw_MH, setRaw] = useState<rawMH>();
+	const [raw_MH, setRaw] = useState<Array<rawMH>>();
 	const [errorCode, setErrorCode] = useState<number>(200);
 	if (props.jwt === null)
 		return (<div>Must be logged</div>);
@@ -75,15 +86,27 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
 			if (res.ok)
 				return(res.json());
 			setErrorCode(res.status);
-		}).then((res: rawMH) => {
+		}).then((res: Array<rawMH>) => {
 			if (res) {
 				setRaw(res);
 			}
 		})
 	}, [])
-	// console.log(raw_MH);
+	
 	return(
-		<></>
+		<table>
+			<thead>
+				<tr>
+					<th>Type Game</th>
+					<th>Player_One</th>
+					<th>Player_Two</th>
+					<th>Player_Victory</th>
+				</tr>
+			</thead>
+			<tbody>
+					< Match_History_Raw rawMH={raw_MH}/>
+			</tbody>
+		</table>
 	);
 }
 

@@ -208,12 +208,22 @@ export class UsersService {
  * SELECT (type_game, player_one, player_two, user_victory)
  * FROM match_history
  * WHERE (player_one = id OR player_two = id)
+ * 
+ * 	select type_game, t1.username, t2.username, t3.username
+    from match_history
+    inner join "user" t1 on player_one = t1.user_id
+    inner join "user" t2 on player_two = t2.user_id
+    inner join "user" t3 on user_victory = t3.user_id
+    where (player_one = id OR player_two = id)
  */
 
 // SELECT (type_game, player_one, player_two, user_victory) FROM match_history WHERE (player_one = 74133 OR player_two = 74133);
     async getRawMH(id: number) {
         const ret_raw = await this.matchHistoryRepository.createQueryBuilder("match")
-            .select(['type_game', 'player_one', 'player_two', 'user_victory'])
+            .select(['type_game', 't1.username', 't2.username', 't3.username'])
+            .innerJoin("User", "t1", "player_one = t1.user_id")
+            .innerJoin("User", "t2", "player_two = t2.user_id")
+            .innerJoin("User", "t3", "user_victory = t3.user_id")
             .where('player_one = :user OR player_two = :user')
             .setParameters({user: id})
             .getRawMany()
