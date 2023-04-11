@@ -11,6 +11,8 @@ export declare class RoleService {
     private listMuteRepository;
     constructor(dataSource: DataSource, roleGateway: RoleGateway);
     getOwner(id: Readonly<string>): Promise<Channel | null>;
+    getHasPsw(id: Readonly<string>): Promise<boolean>;
+    getAccessType(id: Readonly<string>): Promise<Channel | null>;
     getRole(id: Readonly<string>, userId: Readonly<number>): Promise<ListUser | null>;
     getUser(id: Readonly<string>, userId: Readonly<number>): Promise<ListUser | null>;
     kickUser(id: Readonly<string>, user_id: Readonly<number>): Promise<void>;

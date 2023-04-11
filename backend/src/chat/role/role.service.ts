@@ -31,6 +31,26 @@ export class RoleService {
                 return (channel)
         }
 
+        async getHasPsw(id: Readonly<string>): Promise<boolean> {
+                const channel: Channel | null = await this.chatsRepository.createQueryBuilder("channel")
+                        .select("channel.password")
+                        .where("channel.id = :id")
+                        .setParameters({ id: id })
+                        .getOne();
+                if (channel && channel.password && channel.password != "")
+                        return (true);
+                return (false)
+        }
+
+        getAccessType(id: Readonly<string>): Promise<Channel | null> {
+                const channel: Promise<Channel | null> = this.chatsRepository.createQueryBuilder("channel")
+                        .select("channel.accesstype")
+                        .where("channel.id = :id")
+                        .setParameters({ id: id })
+                        .getOne();
+                return (channel);
+        }
+
         getRole(id: Readonly<string>, userId: Readonly<number>): Promise<ListUser | null> {
                 const list_user: Promise<ListUser | null> = this.listUserRepository.createQueryBuilder("list_user")
                         .where("list_user.chatid = :id")
@@ -240,14 +260,22 @@ export class RoleService {
 
         async setPsw(id: Readonly<string>, psw: Readonly<string>) {
                 const runner = this.dataSource.createQueryRunner();
-
+                let accesstype = '0';
                 await runner.connect();
                 await runner.startTransaction();
                 try {
+                        const accessDb = await this.getAccessType(id);
                         const salt = Number(process.env.CHAT_SALT);
                         const password = bcrypt.hashSync(psw, salt);
+                        if (accessDb) {
+                                accesstype = accessDb.accesstype;
+                                if (accessDb.accesstype === '0')
+                                        accesstype = '1';
+                                else if (accessDb.accesstype === '2')
+                                        accesstype = '3';
+                        }
                         await this.listUserRepository.createQueryBuilder().update(Channel)
-                                .set({ password: password, accesstype: '1' })
+                                .set({ password: password, accesstype: accesstype })
                                 .where("id = :id")
                                 .setParameters({ id: id })
                                 .execute();
@@ -262,12 +290,23 @@ export class RoleService {
 
         async unSetPsw(id: Readonly<string>) {
                 const runner = this.dataSource.createQueryRunner();
+                let accesstype = '0';
 
                 await runner.connect();
                 await runner.startTransaction();
                 try {
+                        const accessDb = await this.getAccessType(id);
+                        console.log("uns")
+                        if (accessDb) {
+                                accesstype = accessDb.accesstype;
+                                if (accessDb.accesstype === '1')
+                                        accesstype = '0';
+                                else if (accessDb.accesstype === '3')
+                                        accesstype = '2';
+                        }
+                        console.log(accesstype)
                         await this.listUserRepository.createQueryBuilder().update(Channel)
-                                .set({ password: "", accesstype: '0' })
+                                .set({ password: "", accesstype: accesstype })
                                 .where("id = :id")
                                 .setParameters({ id: id })
                                 .execute();

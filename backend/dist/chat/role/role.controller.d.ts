@@ -17,6 +17,7 @@ export declare class RoleController {
     kickUser(id: Readonly<string>, userId: Readonly<number>, role: Readonly<string>): void;
     setPsw(id: Readonly<string>, role: Readonly<string>, psw: Readonly<string>): void;
     unSetPsw(id: Readonly<string>, role: Readonly<string>): void;
+    getAccessType(req: any, id: string): Promise<boolean>;
     runActionAdmin(req: any, body: PostActionDto): Promise<boolean>;
     runActionAdminSpecial(req: any, body: PostActionDto): Promise<boolean>;
     runActionAdminPsw(req: any, body: PostActionDtoPsw): Promise<boolean>;

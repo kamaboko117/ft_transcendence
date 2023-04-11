@@ -73,6 +73,14 @@ let RoleController = class RoleController {
         if (role === "Owner")
             this.roleService.unSetPsw(id);
     }
+    async getAccessType(req, id) {
+        const user = req.user;
+        const getRole = await this.getRole(user.userID, id);
+        if (getRole.role != "Owner")
+            return (false);
+        const access = this.roleService.getHasPsw(id);
+        return (access);
+    }
     async runActionAdmin(req, body) {
         const user = req.user;
         const getRole = await this.getRole(user.userID, body.id);
@@ -126,6 +134,7 @@ let RoleController = class RoleController {
         return (true);
     }
     async runActionAdminPsw(req, body) {
+        console.log(body);
         const user = req.user;
         let action = body.action;
         const getRole = await this.getRole(user.userID, body.id);
@@ -154,6 +163,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], RoleController.prototype, "getQueryRole", null);
+__decorate([
+    (0, common_1.Get)('get-access-type'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], RoleController.prototype, "getAccessType", null);
 __decorate([
     (0, common_1.Post)('role-action'),
     __param(0, (0, common_1.Request)()),

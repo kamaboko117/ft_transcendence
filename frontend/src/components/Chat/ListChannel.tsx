@@ -336,7 +336,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     <label><input type="radio"
                         onChange={this.onChange} name="rad" value="2"
                         checked={this.state.rad === "2"} />Private</label>
-                    <input type="text" onChange={this.onChange}
+                    <input type="password" onChange={this.onChange}
                         placeholder='Password' name="password" />
                     <input type="submit" onChange={this.onChange} value="Add Channel" />
                 </form>

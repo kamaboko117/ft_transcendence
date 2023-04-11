@@ -20,13 +20,13 @@ type userInfo = {
 }
 
 /* display default img if not img loaded */
-const handleImgError = (e) => {
+/*const handleImgError = (e) => {
 	const target: HTMLImageElement = e.target as HTMLImageElement;
 
 	if (target) {
 		target.src = "/upload_avatar/default.png";
 	}
-}
+}*/
 
 export const headerPost = (jwt: Readonly<string | null>) => {
 	const header = new Headers({

@@ -96,15 +96,10 @@ function App() {
             } />
             <Route path="/profile" element={
               <>
-                <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />
-                <LoadUserGlobal jwt={jwt} />
-                {jwt && jwt != "" && <UnfoldDirectMessage
-                  width={600} height={280} opacity={1} jwt={jwt} />}
                 <NavBar />
-                <UserProfile jwt={jwt} /><PlayerApp />
+                <Setting jwt={jwt} /><PlayerApp />
               </>
-            } >
-            </Route>
+            } />
             <Route path="/profile/:id" element={
               <>
                 <UsernameSet jwt={jwt} username={username} setUsername={setUsername} />

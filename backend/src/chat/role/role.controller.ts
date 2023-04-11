@@ -93,6 +93,17 @@ export class RoleController {
             this.roleService.unSetPsw(id);
     }
 
+    @Get('get-access-type')
+    async getAccessType(@Request() req: any, @Query('id') id: string) {
+        const user: TokenUser = req.user;
+        const getRole = await this.getRole(user.userID, id);
+
+        if (getRole.role != "Owner")
+            return (false);
+        const access = this.roleService.getHasPsw(id);
+        return (access);
+    }
+
     /* POST */
     @Post('role-action')
     async runActionAdmin(@Request() req: any,
@@ -159,7 +170,7 @@ export class RoleController {
     @Post('role-action-psw')
     async runActionAdminPsw(@Request() req: any,
         @Body() body: PostActionDtoPsw): Promise<boolean> {
-
+        console.log(body)
         const user: TokenUser = req.user;
         let action: string = body.action;
         const getRole = await this.getRole(user.userID, body.id);

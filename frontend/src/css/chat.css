@@ -145,6 +145,10 @@ table.tableInfo {
     display: inline-flex;
 }
 
+.pswBox {
+    margin: auto;
+}
+
 @media screen and (max-width: 600px) {
     label.userInfo {
         text-align: center;
