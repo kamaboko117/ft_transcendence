@@ -46,6 +46,7 @@ type Match = {
     credential: true,
   },
 })
+
 export class MatchMakingGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
 {
@@ -62,7 +63,7 @@ export class MatchMakingGateway
   constructor(private readonly roomsService: RoomsService, private readonly socketEvents: SocketEvents) {
     this.MMSocket = new Map();
     //this.mm = new FifoMatchmaker(this.runGame, this.getKey, { checkInterval: 2000 });
-    this.mm = new FifoMatchmaker(this.runGame, this.getKey, { checkInterval: 2000 });
+    this.mm = new FifoMatchmaker(this.runGame, this.getKey, this, { checkInterval: 2000 });
   }
 
     /*
@@ -103,32 +104,18 @@ export class MatchMakingGateway
 
   }
 
-  test(){console.log("calllzed by rungame");}
+  public test(players: any){console.log("calllzed by mmgateway!");
 
-  
+  console.log("test started with:");
+  console.log(players);
+  this.emitbackplayer2id(players[0].id, players[1].id);
+  }
+
   runGame(players : any) {
 
     console.log("Game started with:");
     console.log(players);
     console.log(players[0].id);
- 
-    //this.emitbackplayer2id(players[0].id, players[1].id);
-  
-    /*
-    let id1 = players[0].id;
-    let id2 = players[1].id;
-
-    const name: string = String(id1) + '|' + String(id2);
-    if (id1 === id2){
-        return ({roomName: '', Capacity: '0', private: false, uid: ''});
-    }
-    const isUserConnected = await this.socketEvents.isUserConnected(String(id2));
-    if (!isUserConnected)
-        return ({roomName: '', Capacity: '0', private: false, uid: ''});
-  const itm = await this.roomsService.createRoomPrivate(name);
-  console.log(itm);
-  this.socketEvents.inviteUserToGame(String(id1), String(id2), itm.uid);
-*/
 
   }
 

@@ -1,3 +1,4 @@
+import { MatchMakingGateway } from '../matchmaking.gateway';
 export declare enum IPlayerState {
     NONE = 0,
     INQUEUE = 1,
@@ -18,11 +19,13 @@ export declare class Matchmaker<P> {
     protected queue: P[];
     protected inGame: Game<P>[];
     private nextGameId;
+    private mmgateway;
     protected checkInterval: number;
     protected maxMatchSize: number;
     protected minMatchSize: number;
+    private callconsole;
     get playersInQueue(): number;
-    constructor(resolver: (players: P[]) => void, getKey: (player: P) => string, options?: IMatchMakerOptions);
+    constructor(resolver: (players: P[]) => void, getKey: (player: P) => string, mgateway: MatchMakingGateway, options?: IMatchMakerOptions);
     push: (player: P) => void;
     getPlayerState(player: P): IPlayerState;
     leaveQueue(player: P): void;

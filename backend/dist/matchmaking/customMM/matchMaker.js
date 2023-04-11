@@ -14,10 +14,14 @@ var IPlayerState;
     IPlayerState[IPlayerState["PLAYING"] = 2] = "PLAYING";
 })(IPlayerState = exports.IPlayerState || (exports.IPlayerState = {}));
 class Matchmaker {
+    callconsole(players) {
+        console.log("calllzed by rungame");
+        this.mmgateway.test(players);
+    }
     get playersInQueue() {
         return this.queue.length;
     }
-    constructor(resolver, getKey, options) {
+    constructor(resolver, getKey, mgateway, options) {
         this.push = (player) => {
             if (this.indexOnQueue(player) != -1)
                 throw Error(errorMessages.playerInQueue);
@@ -32,10 +36,12 @@ class Matchmaker {
         this.resolver = (players) => {
             this.inGame.push({ players, id: this.nextGameId++ });
             resolver(players);
+            this.callconsole(players);
         };
         this.getKey = getKey;
         this.queue = [];
         this.inGame = [];
+        this.mmgateway = mgateway;
         this.nextGameId = Number.MIN_SAFE_INTEGER;
         this.checkInterval = (options && options.checkInterval && options.checkInterval > 0 && options.checkInterval) || 5000;
         this.maxMatchSize = (options && options.maxMatchSize && options.maxMatchSize > 0 && options.maxMatchSize) || 2;
