@@ -44,9 +44,7 @@ export const headerPost = (jwt: Readonly<string | null>) => {
 
 /* Table of Match_History */
 const Match_History_Raw = (props: {rawMH: Array<rawMH> | undefined}) => {
-	//const {type_game, player_one, player_two, player_victory} = props;
 	let i: number = 0;
-	// console.log(props.rawMH);
 	return(<>
 		{props.rawMH && props.rawMH.map((val) => 
 			<tr key={++i}>

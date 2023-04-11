@@ -169,8 +169,7 @@ export class UsersService {
             .where('user.user_id = :user') //:user = setParameters()
             .setParameters({ user: id })//anti hack
             .getOne();
-        //console.log(user);
-        return (user);
+         return (user);
     }
 
 
@@ -205,10 +204,6 @@ export class UsersService {
         return(ret_nb);
     }
 /*
- * SELECT (type_game, player_one, player_two, user_victory)
- * FROM match_history
- * WHERE (player_one = id OR player_two = id)
- * 
  * 	select type_game, t1.username, t2.username, t3.username
     from match_history
     inner join "user" t1 on player_one = t1.user_id
@@ -227,7 +222,6 @@ export class UsersService {
             .where('player_one = :user OR player_two = :user')
             .setParameters({user: id})
             .getRawMany()
-            console.log('getRawMH ======> ' + ret_raw);
         return(ret_raw);
     }
 
