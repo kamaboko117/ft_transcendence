@@ -171,30 +171,3 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 }
 
 export default UserProfile;
-
-/**
- * 		<table>
-			<thead>
-				<tr>
-					<th>Type Game</th>
-					<th>Player_One</th>
-					<th>Player_Two</th>
-					<th>Player_Victory</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<th>Simple</th>
-					<th>id: 42</th>
-					<th>id: 52</th>
-					<th>id: 42</th>
-				</tr>
-				<tr>
-					<th>Custom</th>
-					<th>id: 42</th>
-					<th>id: 52</th>
-					<th>id: 52</th>
-				</tr>
-			</tbody>
-		</table>
- */
