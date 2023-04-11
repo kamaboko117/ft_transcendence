@@ -9,13 +9,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MatchMakingModule = void 0;
 const common_1 = require("@nestjs/common");
 const matchmaking_gateway_1 = require("./matchmaking.gateway");
-const matchmaking_services_1 = require("./matchmaking.services");
+const rooms_module_1 = require("../rooms/rooms.module");
+const socket_module_1 = require("../socket/socket.module");
 let MatchMakingModule = class MatchMakingModule {
 };
 MatchMakingModule = __decorate([
     (0, common_1.Module)({
+        imports: [rooms_module_1.RoomsModule, socket_module_1.SocketModule],
         controllers: [],
-        providers: [matchmaking_gateway_1.MatchMakingGateway, matchmaking_services_1.MatchMakingService],
+        providers: [matchmaking_gateway_1.MatchMakingGateway],
         exports: [],
     })
 ], MatchMakingModule);
