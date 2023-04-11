@@ -58,16 +58,6 @@ const Match_History_Raw = (props: {rawMH: Array<rawMH> | undefined}) => {
 		)}
 	</>)
 }
-/**
- * 
- *  props: Readonly<{ jwt: string | null }>
- * 		<tbody>
-			<th>
-				<td>Test de ouf !!!!</td>
-			</th>
-		</tbody>
- */
-
 		/**
 			select type_game, t1.username, t2.username, t3.username
 			from match_history
@@ -163,7 +153,7 @@ const UserProfile = (props: Readonly<{ jwt: string | null }>) => {
 
 	return (
 		<>
-		<h1>Username: [{user?.username}]</h1>
+		<h1>{user?.username}</h1>
 		{avatar_path != null && <img
 			className="avatar"
 			src={avatar_path}
