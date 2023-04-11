@@ -19,26 +19,25 @@ const typeorm_2 = require("../../../typeorm");
 const typeorm_3 = require("typeorm");
 const stat_entity_1 = require("../../../typeorm/stat.entity");
 const blackFriendList_entity_1 = require("../../../typeorm/blackFriendList.entity");
+const matchHistory_entity_1 = require("../../../typeorm/matchHistory.entity");
 const validateURL = "https://api.intra.42.fr/oauth/token";
 const infoURL = "https://api.intra.42.fr/oauth/token/info";
 const appId = process.env.APP_ID;
 const appSecret = process.env.APP_SECRET;
 let UsersService = class UsersService {
-    constructor(userRepository, statRepository, blFrRepository, dataSource) {
+    constructor(userRepository, statRepository, blFrRepository, matchHistoryRepository, dataSource) {
         this.userRepository = userRepository;
         this.statRepository = statRepository;
         this.blFrRepository = blFrRepository;
+        this.matchHistoryRepository = matchHistoryRepository;
         this.dataSource = dataSource;
     }
     async createUser(createUserDto) {
         const newUser = this.userRepository.create(createUserDto);
         const stat = new stat_entity_1.Stat();
-        stat.defeat = 0;
         stat.level = 0;
-        stat.nb_games = 0;
         stat.rank = 0;
         stat.user = newUser;
-        stat.victory = 0;
         await this.statRepository.save(stat);
         return (newUser);
     }
@@ -140,13 +139,41 @@ let UsersService = class UsersService {
     async getUserProfile(id) {
         const user = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
-            .addSelect(["Stat.victory", "Stat.defeat",
-            "Stat.nb_games", "Stat.level", "Stat.rank"])
+            .addSelect(["Stat.level", "Stat.rank"])
             .innerJoin('user.sstat', 'Stat')
             .where('user.user_id = :user')
             .setParameters({ user: id })
             .getOne();
         return (user);
+    }
+    async getVictoryNb(id) {
+        console.log('id = ' + id);
+        const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
+            .select(['user_victory'])
+            .where('user_victory = :user')
+            .setParameters({ user: id })
+            .getCount();
+        return (ret_nb);
+    }
+    async getGamesNb(id) {
+        console.log('id = ' + id);
+        const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
+            .select(['player_one', 'player_two'])
+            .where('player_one = :user OR player_two = :user')
+            .setParameters({ user: id })
+            .getCount();
+        return (ret_nb);
+    }
+    async getRawMH(id) {
+        const ret_raw = await this.matchHistoryRepository.createQueryBuilder("match")
+            .select(['type_game', 't1.username', 't2.username', 't3.username'])
+            .innerJoin("User", "t1", "player_one = t1.user_id")
+            .innerJoin("User", "t2", "player_two = t2.user_id")
+            .innerJoin("User", "t3", "user_victory = t3.user_id")
+            .where('player_one = :user OR player_two = :user')
+            .setParameters({ user: id })
+            .getRawMany();
+        return (ret_raw);
     }
     async findUsersById(id) {
         const user = await this.userRepository.createQueryBuilder("user")
@@ -319,7 +346,9 @@ UsersService = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(typeorm_2.User)),
     __param(1, (0, typeorm_1.InjectRepository)(stat_entity_1.Stat)),
     __param(2, (0, typeorm_1.InjectRepository)(blackFriendList_entity_1.BlackFriendList)),
+    __param(3, (0, typeorm_1.InjectRepository)(matchHistory_entity_1.MatchHistory)),
     __metadata("design:paramtypes", [typeorm_3.Repository,
+        typeorm_3.Repository,
         typeorm_3.Repository,
         typeorm_3.Repository,
         typeorm_3.DataSource])

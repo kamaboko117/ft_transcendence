@@ -5,6 +5,7 @@ import { DataSource, Repository } from "typeorm";
 import { CreateUserDto } from "src/users/dto/users.dtos";
 import { Stat } from "src/typeorm/stat.entity";
 import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
+import { MatchHistory } from "src/typeorm/matchHistory.entity";
 
 const validateURL = "https://api.intra.42.fr/oauth/token"
 const infoURL = "https://api.intra.42.fr/oauth/token/info"
@@ -20,6 +21,8 @@ export class UsersService {
         private readonly statRepository: Repository<Stat>,
         @InjectRepository(BlackFriendList)
         private readonly blFrRepository: Repository<BlackFriendList>,
+        @InjectRepository(MatchHistory)
+        private readonly matchHistoryRepository: Repository<MatchHistory>,        
         private dataSource: DataSource,
     ) { }
 
@@ -27,12 +30,9 @@ export class UsersService {
         const newUser = this.userRepository.create(createUserDto);
         const stat = new Stat();
 
-        stat.defeat = 0;
         stat.level = 0;
-        stat.nb_games = 0;
         stat.rank = 0;
         stat.user = newUser;
-        stat.victory = 0;
         await this.statRepository.save(stat);
         return (newUser);
     }
@@ -159,18 +159,70 @@ export class UsersService {
         .getMany() OU getOne();
     */
 
-    async getUserProfile(id: number) {
-        const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
-            .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
-            .addSelect(["Stat.victory", "Stat.defeat",
-                "Stat.nb_games", "Stat.level", "Stat.rank"])//ici ajout les column des inner joins
-            .innerJoin('user.sstat', 'Stat')// utiliser l''alias a droite, obligatoire je crois
-            .where('user.user_id = :user') //:user = setParameters()
-            .setParameters({ user: id })//anti hack
-            .getOne();
-        return (user);
-    }
-
+        async getUserProfile(id: number) {
+            const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
+                .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
+                .addSelect(["Stat.level", "Stat.rank"])//ici ajout les column des inner joins
+                .innerJoin('user.sstat', 'Stat')// utiliser l''alias a droite, obligatoire je crois
+                .where('user.user_id = :user') //:user = setParameters()
+                .setParameters({ user: id })//anti hack
+                .getOne();
+             return (user);
+        }
+    
+    
+        /* Nombre de Partie joué(s)
+         * SELECT COUNT("player_one", "player_two") 
+         * FROM "match_history" 
+         * WHERE "player_two" = id OR "player_one" = id
+         */
+    
+        /* Nombre de Partie gangée(s)
+         * SELECT COUNT("user_victory")
+         * FROM "match_history"
+         * WHERE "user_victory" = id
+         */
+        async getVictoryNb(id: number) {
+            console.log('id = ' + id);
+            const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
+                .select(['user_victory'])
+                .where('user_victory = :user')
+                .setParameters({ user: id })//anti hack
+                .getCount();
+            return (ret_nb);
+        }
+    
+        async getGamesNb(id: number) {
+            console.log('id = ' + id);
+            const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
+                .select(['player_one', 'player_two'])
+                .where('player_one = :user OR player_two = :user')
+                .setParameters({user: id})
+                .getCount()
+            return(ret_nb);
+        }
+    /*
+     * 	select type_game, t1.username, t2.username, t3.username
+        from match_history
+        inner join "user" t1 on player_one = t1.user_id
+        inner join "user" t2 on player_two = t2.user_id
+        inner join "user" t3 on user_victory = t3.user_id
+        where (player_one = id OR player_two = id)
+     */
+    
+    // SELECT (type_game, player_one, player_two, user_victory) FROM match_history WHERE (player_one = 74133 OR player_two = 74133);
+        async getRawMH(id: number) {
+            const ret_raw = await this.matchHistoryRepository.createQueryBuilder("match")
+                .select(['type_game', 't1.username', 't2.username', 't3.username'])
+                .innerJoin("User", "t1", "player_one = t1.user_id")
+                .innerJoin("User", "t2", "player_two = t2.user_id")
+                .innerJoin("User", "t3", "user_victory = t3.user_id")
+                .where('player_one = :user OR player_two = :user')
+                .setParameters({user: id})
+                .getRawMany()
+            return(ret_raw);
+        }
+    
     async findUsersById(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])

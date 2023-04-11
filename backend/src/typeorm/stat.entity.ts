@@ -7,15 +7,6 @@ export class Stat {
 	id: number;
 
 	@Column()
-	victory: number;
-
-	@Column()
-	defeat: number;
-
-	@Column()
-	nb_games: number;
-
-	@Column()
 	level: number;
 
 	@Column()
@@ -26,5 +17,4 @@ export class Stat {
 	user: User;
 	@Column({nullable: false})
 	user_id: string
-
 }
