@@ -96,6 +96,7 @@ export class MatchMakingGateway
   public getPlayerStateMM(id : number) {
     return this.mm.getPlayerState(id);
   }
+  
 
   wait(milliseconds : any){
     return new Promise(resolve => {
@@ -129,6 +130,9 @@ export class MatchMakingGateway
         console.log("already in queue");
         return;
       }
+
+      this.socketEvents.getMap(); // L'utiliser pour vérifier le joueur dans un game
+
       console.log('queue in');
       const user = socket.user;
       console.log("test");

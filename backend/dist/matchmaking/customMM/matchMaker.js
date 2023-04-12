@@ -61,7 +61,6 @@ class Matchmaker {
     }
     endGame(players) {
         players = (players instanceof Array) ? players : [players];
-        console.log(this.inGame);
         let gameIndex = -1;
         for (let player of players) {
             let playerKey = this.getKey(player);
@@ -73,7 +72,6 @@ class Matchmaker {
         if (gameIndex == -1)
             throw Error(errorMessages.gameDoesNotExists);
         this.inGame.splice(gameIndex, 1);
-        console.log(this.inGame);
     }
 }
 exports.Matchmaker = Matchmaker;
