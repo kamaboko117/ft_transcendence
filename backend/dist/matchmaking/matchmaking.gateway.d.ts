@@ -27,5 +27,6 @@ export declare class MatchMakingGateway implements OnGatewayConnection, OnGatewa
     queueout(socket: Readonly<any>): false | undefined;
     accept(socket: Readonly<any>): Promise<void>;
     decline(socket: Readonly<any>): void;
+    endGame(socket: Readonly<any>): void;
     handleDisconnect(socket: Readonly<any>): void;
 }

@@ -189,6 +189,7 @@ export default function Game(props: {id: string, usrSocket}) {
     console.log("Game room mounting");
     return (() => {
       console.log("Game room unmount");
+      socketService.socket?.emit("endGame");
       socketService.socket?.emit("leave_game", {roomId: props.id});
       socketService.socket?.off("join_game_success");
       socketService.socket?.off("join_game_error");
