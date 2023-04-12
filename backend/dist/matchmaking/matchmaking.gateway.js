@@ -41,7 +41,7 @@ let MatchMakingGateway = class MatchMakingGateway {
             return ({ roomName: '', Capacity: '0', private: false, uid: '' });
         const itm = await this.roomsService.createRoomPrivate(name);
         console.log(itm);
-        this.socketEvents.inviteUserToGame(String(id1), String(id2), itm.uid);
+        this.socketEvents.MatchmakeUserToGame(String(id1), String(id2), itm.uid);
     }
     test(players) {
         console.log("calllzed by mmgateway!");
@@ -68,7 +68,9 @@ let MatchMakingGateway = class MatchMakingGateway {
     }
     async queuein(socket) {
         try {
-            console.log('queue in');
+            let statep1 = this.mm.getPlayerState(socket.user.userID);
+            if (statep1 != 0)
+                console.log('queue in');
             const user = socket.user;
             console.log("test");
             let player1 = { id: user.userID };

@@ -175,18 +175,21 @@ usrSocket?.on("queueoutfailed", (res: any) => {
   })
 
 
-usrSocket?.on("foundmatch", (res: any) => {
+usrSocket?.on("matchmakeGame", (res: any) => {
   //openAlert();
   console.log(res);
+  navigate({ pathname: '/play-invite/' + res.idGame});
 })
 
   ;
   return (() => {
     console.log("unload exception listener");
+    stopFindingMatch();
+    enterQueue(false); //resets button&spinner
     usrSocket?.off('matchmakingfailed');
    // usrSocket?.off('acceptMMmatchFailed');
    // usrSocket?.off('declineMMmatchFailed');
-    usrSocket?.off('foundmatch');
+    usrSocket?.off('matchmakeGame');
 
   })
   }, [usrSocket]);

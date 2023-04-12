@@ -11,6 +11,7 @@ export declare class SocketEvents {
     handleDisconnect(client: Socket): void;
     isUserConnected(id: string): boolean;
     inviteUserToGame(userId: string, userIdFocus: string, idGame: string): void;
+    MatchmakeUserToGame(userId: string, userIdFocus: string, idGame: string): void;
     private getSocketGameRoom;
     leave(data: any, client: Socket): void;
     checkIfUserFound(room: Room, clientId: string): boolean;
