@@ -19,7 +19,7 @@ const common_1 = require("@nestjs/common");
 const jwt_guard_1 = require("../auth/jwt.guard");
 const socketEvents_1 = require("../socket/socketEvents");
 const rooms_service_1 = require("../rooms/services/rooms/rooms.service");
-const fifo_1 = require("./customMM/fifo");
+const customMM_1 = require("./customMM/customMM");
 let MatchMakingGateway = class MatchMakingGateway {
     afterInit(server) {
         console.log('Matchmaking Gateway initialized');
@@ -29,7 +29,7 @@ let MatchMakingGateway = class MatchMakingGateway {
         this.socketEvents = socketEvents;
         this.mmQueue = {};
         this.MMSocket = new Map();
-        this.mm = new fifo_1.FifoMatchmaker(this.runGame, this.getKey, this, { checkInterval: 2000 });
+        this.mm = new customMM_1.CustomMM(this.runGame, this.getKey, this, { checkInterval: 2000 });
     }
     async emitbackplayer2id(id1, id2) {
         const name = String(id1) + '|' + String(id2);
@@ -43,16 +43,16 @@ let MatchMakingGateway = class MatchMakingGateway {
         console.log(itm);
         this.socketEvents.MatchmakeUserToGame(String(id1), String(id2), itm.uid);
     }
-    test(players) {
-        console.log("calllzed by mmgateway!");
-        console.log("test started with:");
-        console.log(players);
+    catchresolver(players) {
         this.emitbackplayer2id(players[0].id, players[1].id);
     }
     runGame(players) {
         console.log("Game started with:");
         console.log(players);
         console.log(players[0].id);
+    }
+    getPlayerStateMM(id) {
+        return this.mm.getPlayerState(id);
     }
     wait(milliseconds) {
         return new Promise(resolve => {
@@ -69,8 +69,15 @@ let MatchMakingGateway = class MatchMakingGateway {
     async queuein(socket) {
         try {
             let statep1 = this.mm.getPlayerState(socket.user.userID);
-            if (statep1 != 0)
-                console.log('queue in');
+            if (statep1 == 2) {
+                console.log("already in game");
+                return;
+            }
+            if (statep1 == 1) {
+                console.log("already in queue");
+                return;
+            }
+            console.log('queue in');
             const user = socket.user;
             console.log("test");
             let player1 = { id: user.userID };

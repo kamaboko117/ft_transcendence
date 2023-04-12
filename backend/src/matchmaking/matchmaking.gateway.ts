@@ -31,7 +31,7 @@ import { TokenUser } from '../chat/chat.interface';
 import { SocketEvents } from 'src/socket/socketEvents';
 import { RoomsService } from 'src/rooms/services/rooms/rooms.service';
 import { CreateRoomDto, CreateRoomPrivate } from 'src/rooms/dto/rooms.dtos';
-import { FifoMatchmaker } from './customMM/fifo';
+import { CustomMM } from './customMM/customMM';
 
 
 type Match = {
@@ -57,36 +57,12 @@ export class MatchMakingGateway
 
   private readonly MMSocket: Map<string, string>;
   private mmQueue: { [key: string]: TokenUser[] } = {};
-  //private mm : typeof FifoMatchmaker;
-  private mm : FifoMatchmaker<any>;
+  private mm : CustomMM<any>;
 
   constructor(private readonly roomsService: RoomsService, private readonly socketEvents: SocketEvents) {
     this.MMSocket = new Map();
-    //this.mm = new FifoMatchmaker(this.runGame, this.getKey, { checkInterval: 2000 });
-    this.mm = new FifoMatchmaker(this.runGame, this.getKey, this, { checkInterval: 2000 });
+    this.mm = new CustomMM(this.runGame, this.getKey, this, { checkInterval: 2000 });
   }
-
-    /*
-  //Partie matchmaking queue in
-    @UseGuards(JwtGuard)
-  async handleConnection(client: Socket) {
-    console.log("connect client id: " + client.id);
-    const bearer = client.handshake.headers.authorization;
-    if (bearer) {
-      const user: any = await this.authService.verifyToken(bearer);
-      if (user)
-        this.mapSocket.set(client.id, user.userID);
-    }
-  }
-
-  //Partie matchmaking queue out
-  handleDisconnect(client: Socket) {
-    console.log("disconnect client id: " + client.id);
-    this.mapSocket.delete(client.id);
-  }
-}
-
-*/
 
 
   async emitbackplayer2id(id1 : number, id2: number) {
@@ -104,10 +80,7 @@ export class MatchMakingGateway
 
   }
 
-  public test(players: any){console.log("calllzed by mmgateway!");
-
-  console.log("test started with:");
-  console.log(players);
+  public catchresolver(players: any){
   this.emitbackplayer2id(players[0].id, players[1].id);
   }
 
@@ -117,6 +90,11 @@ export class MatchMakingGateway
     console.log(players);
     console.log(players[0].id);
 
+  }
+
+  // 0=not in queue, 1=in queue, 2=in game
+  public getPlayerStateMM(id : number) {
+    return this.mm.getPlayerState(id);
   }
 
   wait(milliseconds : any){
@@ -141,7 +119,16 @@ export class MatchMakingGateway
   async queuein(@ConnectedSocket() socket: Readonly<any>) {
     try {
       let statep1=this.mm.getPlayerState(socket.user.userID); // 0=not in queue, 1=in queue, 2=in game
-      if (statep1 !=0)
+      if (statep1 == 2)
+      {
+        console.log("already in game");
+        return;
+      }
+      if (statep1 == 1)
+      {
+        console.log("already in queue");
+        return;
+      }
       console.log('queue in');
       const user = socket.user;
       console.log("test");

@@ -14,10 +14,6 @@ var IPlayerState;
     IPlayerState[IPlayerState["PLAYING"] = 2] = "PLAYING";
 })(IPlayerState = exports.IPlayerState || (exports.IPlayerState = {}));
 class Matchmaker {
-    callconsole(players) {
-        console.log("calllzed by rungame");
-        this.mmgateway.test(players);
-    }
     get playersInQueue() {
         return this.queue.length;
     }
@@ -36,7 +32,7 @@ class Matchmaker {
         this.resolver = (players) => {
             this.inGame.push({ players, id: this.nextGameId++ });
             resolver(players);
-            this.callconsole(players);
+            this.mmgateway.catchresolver(players);
         };
         this.getKey = getKey;
         this.queue = [];

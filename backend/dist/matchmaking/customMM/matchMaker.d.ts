@@ -23,7 +23,6 @@ export declare class Matchmaker<P> {
     protected checkInterval: number;
     protected maxMatchSize: number;
     protected minMatchSize: number;
-    private callconsole;
     get playersInQueue(): number;
     constructor(resolver: (players: P[]) => void, getKey: (player: P) => string, mgateway: MatchMakingGateway, options?: IMatchMakerOptions);
     push: (player: P) => void;
