@@ -50,8 +50,6 @@ export class UsersService {
         formData.append("code", code);
         formData.append("redirect_uri", process.env.VITE_APP_URI + "/validate");
         formData.append("state", "pouet2");
-        console.log(formData);
-        console.log("CODE: " + code);
 
         const res = await fetch(validateURL, {
             method: "POST",
@@ -62,14 +60,12 @@ export class UsersService {
             }
             return (undefined)
         }).catch(e => console.log(e));
-        console.log(res)
         if (typeof res === "undefined" || typeof res.access_token === "undefined")
             return (undefined);
         token = {
             access_token: res.access_token,
             refresh_token: res.refresh_token
         };
-        console.log(`token: ${token}`);
         if (typeof token == "undefined")
             return (undefined);
         return (token);
@@ -138,8 +134,6 @@ export class UsersService {
     }
 
     async updateTokenJwt(user_id: number, token: string) {
-        console.log("djqsdqsjkldjqslkdjsdqlksdjjsjlkdlk")
-        console.log(user_id)
         await this.userRepository.createQueryBuilder()
             .update(User)
             .set({ token: token })
@@ -288,7 +282,6 @@ export class UsersService {
             .where("a.owner_id = :ownerId")
             .setParameters({ ownerId: user_id })
             .getRawMany();
-        console.log(list);
         return (list);
     }
 

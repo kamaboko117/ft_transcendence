@@ -147,7 +147,6 @@ export class RoleController {
     @Post('role-action-spe')
     async runActionAdminSpecial(@Request() req: any,
         @Body() body: PostActionDto): Promise<boolean> {
-        console.log(body)
         const user: TokenUser = req.user;
         let action: string = body.action;
         const getRole = await this.getRole(user.userID, body.id);
@@ -170,7 +169,6 @@ export class RoleController {
     @Post('role-action-psw')
     async runActionAdminPsw(@Request() req: any,
         @Body() body: PostActionDtoPsw): Promise<boolean> {
-        console.log(body)
         const user: TokenUser = req.user;
         let action: string = body.action;
         const getRole = await this.getRole(user.userID, body.id);

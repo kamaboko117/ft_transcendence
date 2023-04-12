@@ -319,7 +319,6 @@ function submitPsw(e, jwt: string, action: string,
                     setErr(true);
             })
             .then(res => {
-                console.log(res)
                 if (typeof res === "boolean") {
                     if (action === "setpsw")
                         setType(true);
