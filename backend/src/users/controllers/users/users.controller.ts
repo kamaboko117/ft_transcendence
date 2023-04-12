@@ -470,7 +470,6 @@ export class UsersController {
     @Get(':id')
     async findUsersById(@Param('id', ParseIntPipe) id: number) {
         const user = await this.userService.findUsersById(id);
-
         if (!user)
             return ({ userID: 0, username: "", avatarPath: null, sstat: {} });
         return (user)

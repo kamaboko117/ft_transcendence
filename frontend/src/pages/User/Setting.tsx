@@ -5,9 +5,6 @@ import UserContext from "../../contexts/UserContext";
 import '../../css/user.css';
 
 type statInfo = {
-	victory: number,
-	defeat: number,
-	nb_games: number,
 	level: number,
 	rank: number
 }
