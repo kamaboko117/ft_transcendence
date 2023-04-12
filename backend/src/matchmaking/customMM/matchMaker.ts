@@ -39,12 +39,6 @@ export class Matchmaker<P> {
 	protected maxMatchSize: number;
 	protected minMatchSize: number;
 
-	private callconsole(players: P[]) : void
-	{
-		console.log("calllzed by rungame");
-		this.mmgateway.test(players);
-	}
-
 	get playersInQueue(): number {
 		return this.queue.length;
 	}
@@ -53,7 +47,7 @@ export class Matchmaker<P> {
 		this.resolver = (players: P[]) => {
 			this.inGame.push({ players, id: this.nextGameId++ });
 			resolver(players);
-			this.callconsole(players);
+			this.mmgateway.catchresolver(players);
 		};
 		this.getKey = getKey
 		this.queue = [];

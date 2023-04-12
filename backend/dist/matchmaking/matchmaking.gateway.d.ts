@@ -17,8 +17,9 @@ export declare class MatchMakingGateway implements OnGatewayConnection, OnGatewa
         private: boolean;
         uid: string;
     } | undefined>;
-    test(players: any): void;
+    catchresolver(players: any): void;
     runGame(players: any): void;
+    getPlayerStateMM(id: number): import("./customMM/matchMaker").IPlayerState;
     wait(milliseconds: any): Promise<unknown>;
     getKey(player: any): any;
     handleConnection(client: Socket): Promise<void>;

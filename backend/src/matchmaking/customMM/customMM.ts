@@ -1,13 +1,13 @@
 import { Matchmaker, IMatchMakerOptions } from './matchMaker'
 import { MatchMakingGateway } from '../matchmaking.gateway';
 
-interface IFifoMatchMakerOptions extends IMatchMakerOptions {
+interface ICustomMMOptions extends IMatchMakerOptions {
 
 }
 
-export class FifoMatchmaker<P> extends Matchmaker<P> {
+export class CustomMM<P> extends Matchmaker<P> {
 
-	constructor(resolver: (players: P[]) => void, getKey: (player: P) => string, mgateway : MatchMakingGateway, options?: IFifoMatchMakerOptions) {
+	constructor(resolver: (players: P[]) => void, getKey: (player: P) => string, mgateway : MatchMakingGateway, options?: ICustomMMOptions) {
 		super(resolver, getKey, mgateway, options);
 
 		setInterval(this.FifoMatch, this.checkInterval);
