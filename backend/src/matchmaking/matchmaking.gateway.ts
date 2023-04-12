@@ -100,7 +100,7 @@ export class MatchMakingGateway
         return ({roomName: '', Capacity: '0', private: false, uid: ''});
   const itm = await this.roomsService.createRoomPrivate(name);
   console.log(itm);
-  this.socketEvents.inviteUserToGame(String(id1), String(id2), itm.uid);
+  this.socketEvents.MatchmakeUserToGame(String(id1), String(id2), itm.uid);
 
   }
 
@@ -140,6 +140,8 @@ export class MatchMakingGateway
   @SubscribeMessage('queuein')
   async queuein(@ConnectedSocket() socket: Readonly<any>) {
     try {
+      let statep1=this.mm.getPlayerState(socket.user.userID); // 0=not in queue, 1=in queue, 2=in game
+      if (statep1 !=0)
       console.log('queue in');
       const user = socket.user;
       console.log("test");
