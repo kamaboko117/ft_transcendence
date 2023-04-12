@@ -24,10 +24,8 @@ export const SocketProvider = (props: { jwt: string, usrSocket: Socket<any, any>
             props.usrSocket?.on('exception', (res) => {
                 if (res.status === "error" && res.message === "Token not valid") {
                     setErrorCode(403)
-                    console.log("Token not valid");
                 }
                 else {
-                    console.log("Fatal Error");
                     setErrorCode(500);
                 }
             });

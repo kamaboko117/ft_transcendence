@@ -414,9 +414,7 @@ const Chat = (props: { jwt: string }) => {
 
     useEffect(() => {
         const hasPass: Promise<boolean> = hasPassword(id, props.jwt, setErrorCode);
-        console.log("load chat")
         hasPass.then(res => {
-            console.log(res)
             setLoadPsw(res);
         }).catch(e => console.log(e));
     }, []);

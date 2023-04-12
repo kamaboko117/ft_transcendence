@@ -77,7 +77,7 @@ function App() {
             <Route path="/" element={
               <>{jwt && jwt != "" && <UnfoldDirectMessage
                 width={600} height={280} opacity={1} jwt={jwt} />}
-                <NavBar />
+                <NavBar click={click} setClick={setClick} />
                 <MainPage jwt={jwt} username={username} setUsername={setUsername} /><PlayerApp />
               </>} />
             <Route path="/first-connection" element={
@@ -96,7 +96,7 @@ function App() {
             } />
             <Route path="/profile" element={
               <>
-                <NavBar />
+                <NavBar click={click} setClick={setClick} />
                 <Setting jwt={jwt} /><PlayerApp />
               </>
             } />
@@ -106,7 +106,7 @@ function App() {
                 <LoadUserGlobal jwt={jwt} />
                 {jwt && jwt != "" && <UnfoldDirectMessage
                   width={600} height={280} opacity={1} jwt={jwt} />}
-                <NavBar />
+                <NavBar click={click} setClick={setClick} />
                 <UserProfileOther jwt={jwt} /><PlayerApp />
               </>
             } />
@@ -116,7 +116,7 @@ function App() {
                 <LoadUserGlobal jwt={jwt} />
                 {jwt && jwt != "" && <UnfoldDirectMessage
                   width={600} height={280} opacity={1} jwt={jwt} />}
-                <NavBar />
+                <NavBar click={click} setClick={setClick} />
                 <FriendList jwt={jwt} /><PlayerApp />
               </>} />
             <Route path="/blackList" element={
@@ -125,19 +125,19 @@ function App() {
                 <LoadUserGlobal jwt={jwt} />
                 {jwt && jwt != "" && <UnfoldDirectMessage
                   width={600} height={280} opacity={1} jwt={jwt} />}
-                <NavBar />
+                <NavBar click={click} setClick={setClick} />
                 <BlackList jwt={jwt} /><PlayerApp />
               </>
             } />
             <Route path="/setting" element={
               <>
-                <NavBar />
+                <NavBar click={click} setClick={setClick} />
                 <Setting jwt={jwt} /><PlayerApp />
               </>
             } />
             <Route path="/login" element={
               <>
-                <NavBar />
+                <NavBar click={click} setClick={setClick} />
                 <LoginPage /><PlayerApp />
               </>
             } />
@@ -145,7 +145,7 @@ function App() {
               <>
                 {jwt && jwt != "" && <UnfoldDirectMessage
                   width={600} height={280} opacity={1} jwt={jwt} />}
-                <NavBar />
+                <NavBar click={click} setClick={setClick} />
                 <FakeLogin jwt={jwt} />
                 <PlayerApp />
               </>
@@ -154,7 +154,7 @@ function App() {
             <Route path="/validate" element={
               <>{jwt && jwt != "" && <UnfoldDirectMessage
                 width={600} height={280} opacity={1} jwt={jwt} />}
-                <NavBar />
+                <NavBar click={click} setClick={setClick} />
                 <ValidatePage jwt={jwt} />
                 <PlayerApp />
               </>
@@ -165,7 +165,7 @@ function App() {
                 <LoadUserGlobal jwt={jwt} />
                 {jwt && jwt != "" && <UnfoldDirectMessage
                   width={600} height={280} opacity={1} jwt={jwt} />}
-                <NavBar />
+                <NavBar click={click} setClick={setClick} />
                 <ListChannel jwt={jwt} /><PlayerApp />
               </>
             }>
@@ -177,7 +177,7 @@ function App() {
                 <LoadUserGlobal jwt={jwt} />
                 {jwt && jwt != "" && <UnfoldDirectMessage
                   width={600} height={280} opacity={1} jwt={jwt} />}
-                <NavBar />
+                <NavBar click={click} setClick={setClick} />
                 <PlayPage jwt={jwt} /><PlayerApp />
               </>
             } />
@@ -187,7 +187,7 @@ function App() {
                 <LoadUserGlobal jwt={jwt} />
                 {jwt && jwt != "" && <UnfoldDirectMessage
                   width={600} height={280} opacity={1} jwt={jwt} />}
-                <NavBar />
+                <NavBar click={click} setClick={setClick} />
                 <PlayPageInvite jwt={jwt} /><PlayerApp />
               </>
             } />
@@ -197,11 +197,11 @@ function App() {
                 <LoadUserGlobal jwt={jwt} />
                 {jwt && jwt != "" && <UnfoldDirectMessage
                   width={600} height={280} opacity={1} jwt={jwt} />}
-                <NavBar />
+                <NavBar click={click} setClick={setClick} />
                 <MatchmakingPage /><PlayerApp />
               </>
             } />
-            <Route path="/error-page" element={<><NavBar /><ErrorPage /></>} />
+            <Route path="/error-page" element={<><NavBar click={click} setClick={setClick} /><ErrorPage /></>} />
             <Route path="*" element={<><ErrorPage /></>} />
           </Routes>
 

@@ -296,7 +296,6 @@ export class RoleService {
                 await runner.startTransaction();
                 try {
                         const accessDb = await this.getAccessType(id);
-                        console.log("uns")
                         if (accessDb) {
                                 accesstype = accessDb.accesstype;
                                 if (accessDb.accesstype === '1')
@@ -304,7 +303,6 @@ export class RoleService {
                                 else if (accessDb.accesstype === '3')
                                         accesstype = '2';
                         }
-                        console.log(accesstype)
                         await this.listUserRepository.createQueryBuilder().update(Channel)
                                 .set({ password: "", accesstype: accesstype })
                                 .where("id = :id")

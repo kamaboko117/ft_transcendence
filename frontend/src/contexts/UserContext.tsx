@@ -49,7 +49,6 @@ export const UsernameSet = (props: {
   useEffect(() => {
     if (props.jwt && props.jwt != "" && load === true
       && (props.username === "" || props.username === null)) {
-      console.log("navigate");
       navigate("/first-connection");
     }
   }, [props.username, load])

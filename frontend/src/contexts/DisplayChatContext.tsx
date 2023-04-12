@@ -92,10 +92,8 @@ export const updateBlackFriendList = (
     lstUserGlobal: Array<typeFlBl>,
     setLstUserGlobal: React.Dispatch<React.SetStateAction<Array<typeFlBl>>>
 ) => {
-    console.log(user)
     const search = () => {
         const found = lstUserGlobal.find(elem => Number(elem.id) === user.id);
-        console.log(found)
         return (found);
     }
 
@@ -172,10 +170,8 @@ export const DisplayChatGlobalProvider = (props: {
 
     useEffect(() => {
         props.usrSocket?.on('inviteGame', (res: any) => {
-            console.log(res)
-            console.log(lstUserGlobal)
             let found = lstUserGlobal.find(elem => elem.id === res.user_id && elem.bl === 1);
-            console.log(found)
+
             if (!found) {
                 setInvitation(res.user_id);
                 setUid(res.idGame);
