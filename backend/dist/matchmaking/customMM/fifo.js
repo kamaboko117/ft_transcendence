@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FifoMatchmaker = void 0;
+exports.CustomMM = void 0;
 const matchMaker_1 = require("./matchMaker");
-class FifoMatchmaker extends matchMaker_1.Matchmaker {
+class CustomMM extends matchMaker_1.Matchmaker {
     constructor(resolver, getKey, mgateway, options) {
         super(resolver, getKey, mgateway, options);
         this.FifoMatch = () => {
@@ -18,5 +18,5 @@ class FifoMatchmaker extends matchMaker_1.Matchmaker {
         setInterval(this.FifoMatch, this.checkInterval);
     }
 }
-exports.FifoMatchmaker = FifoMatchmaker;
+exports.CustomMM = CustomMM;
 //# sourceMappingURL=fifo.js.map
