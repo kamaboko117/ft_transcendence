@@ -82,8 +82,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     //const getName = channel?.name;
     if (typeof channel != "undefined" && channel != null) {
       const getUser: any = await this.chatService.getUserOnChannel(data.id, user.userID);
-      console.log("joinRoomChat")
-      console.log(getUser)
       if (channel.accesstype === '4' && !getUser)
         return (false)
       if (getUser === "Ban")
@@ -267,7 +265,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(JwtGuard)
   async handleConnection(client: Socket) {
-    console.log("USER GATEWAY connect client id: " + client.id);
     const bearer = client.handshake.headers.authorization;
     if (bearer) {
       const user: any = await this.authService.verifyToken(bearer);
@@ -283,7 +280,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(JwtGuard)
   async handleDisconnect(client: Socket) {
-    console.log("USER GATEWAY disconnect client id: " + client.id);
     const bearer = client.handshake.headers.authorization;
     if (bearer) {
       const user: any = await this.authService.verifyToken(bearer);

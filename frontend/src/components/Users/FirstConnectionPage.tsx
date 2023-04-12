@@ -43,7 +43,6 @@ function update(event: FormEvent<HTMLFormElement>, username: string, userCtx, us
 			return (res.json());
 		setErrorCode(res.status);
 	}).then(res => {
-		console.log(res)
 		if (res) {
 			if (res.valid === true) {
 				userCtx.reconnectUser({

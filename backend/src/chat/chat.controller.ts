@@ -104,8 +104,6 @@ export class ChatController {
         if (!user || tokenUser.userID === Number(user.userID))
             return (error);
         const channel_id = await this.findPm(tokenUser.userID, String(user.userID));
-        console.log("CHANNEL FIND ID")
-        console.log(channel_id);
         return ({
             valid: true,
             channel_id: channel_id,
@@ -238,11 +236,11 @@ export class ChatController {
         const channel: undefined | DbChat = await this.chatService.getChannelByTest(psw.id);
         if (typeof channel == "undefined" || channel === null || channel.password == '')
             return (false);
-        if (psw && psw.psw && channel && channel.password){
+        if (psw && psw.psw && channel && channel.password) {
             const comp = await bcrypt.compare(psw.psw, channel.password);
             return (comp);
         }
-            
+
         return (false);
     }
 
@@ -252,7 +250,6 @@ export class ChatController {
         const user: TokenUser = req.user;
         const chan = await this.chatService.getChannelByTest(id);
         const listMsg = await this.chatService.getListMsgByChannelId(id, user.userID);
-        console.log(chan)
         if (!chan)
             return ({});
         let channel = {
@@ -263,12 +260,9 @@ export class ChatController {
             accesstype: chan?.accesstype,
             lstMsg: listMsg
         };
-        console.log(channel)
         if (typeof channel === "undefined" || channel === null)
             return ({});
         const getUser = await this.chatService.getUserOnChannel(id, user.userID);
-        console.log("get user:")
-        console.log(getUser)
         if (getUser === "Ban")
             return ({ ban: true });
         if (typeof getUser === "undefined" || getUser === null)
