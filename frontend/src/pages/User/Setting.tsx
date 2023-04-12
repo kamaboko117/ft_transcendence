@@ -1,4 +1,4 @@
-import React, { useEffect, useState, ChangeEvent, FormEvent, useContext } from "react";
+import React, { useEffect, useState, ChangeEvent, FormEvent, useContext, useRef } from "react";
 import { FetchError, header } from "../../components/FetchError";
 import { useLocation, useNavigate } from "react-router-dom";
 import UserContext from "../../contexts/UserContext";
@@ -19,6 +19,13 @@ type userInfo = {
 	avatarPath: string,
 	fa: boolean
 	sstat: statInfo
+}
+
+type rawMH = {
+	type_game: string,
+	t1_username: string,
+	t2_username: string,
+	t3_username: string
 }
 
 /* display default img if not img loaded */
@@ -109,9 +116,56 @@ const ErrorSubmit = (props: { lstErr: [] }) => {
 	</>);
 }
 
-function Setting(props: Readonly<{
-	jwt: string | null
-}>) {
+const Match_History_Raw = (props: {rawMH: Array<rawMH> | undefined}) => {
+	let i: number = 0;
+	return(<>
+		{props.rawMH && props.rawMH.map((val) => 
+			<tr key={++i}>
+				<td>{val.type_game}</td>
+				<td>{val.t1_username}</td>
+				<td>{val.t2_username}</td>
+				<td>{val.t3_username}</td>
+			</tr>
+		)}
+	</>)
+}
+
+const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
+	const [raw_MH, setRaw] = useState<Array<rawMH>>();
+	const [errorCode, setErrorCode] = useState<number>(200);
+	if (props.jwt === null)
+		return (<div>Must be logged</div>);
+	useEffect(() => {
+		fetch('https://' + location.host + '/api/users/get_raw_mh', {headers: header(props.jwt)})
+		.then(res => {
+			if (res.ok)
+				return(res.json());
+			setErrorCode(res.status);
+		}).then((res: Array<rawMH>) => {
+			if (res) {
+				setRaw(res);
+			}
+		})
+	}, [])
+	
+	return(
+		<table>
+			<thead>
+				<tr>
+					<th>Type Game</th>
+					<th>Player_One</th>
+					<th>Player_Two</th>
+					<th>Player_Victory</th>
+				</tr>
+			</thead>
+			<tbody>
+					< Match_History_Raw rawMH={raw_MH}/>
+			</tbody>
+		</table>
+	);
+}
+
+function Setting(props: Readonly<{ jwt: string | null }>) {
 	const [user, setUser] = useState<userInfo>();
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [lstErr, setLstErr] = useState<[]>([]);
@@ -147,19 +201,50 @@ function Setting(props: Readonly<{
 			navigate("/fa-activate");
 		setOldFa(FA);
 	}, [userCtx.getJwt()]);
+	const [vc, setVC] = useState<number>(0);
+	useEffect(() => {
+		fetch('https://' + location.host + '/api/users/get-victory-nb/', {headers: header(props.jwt)})
+			.then(res => {
+				if (res.ok)
+					return (res.text())
+				setErrorCode(res.status);
+			}).then((res) => {
+				if (res) {
+					setVC(Number(res));
+				}
+			})
+	}, [])
+	const [nb_g, setNb_g] = useState<number>(0);
+	const [df, setDf] = useState<number>(0);
+	const [nv, setNv] = useState<number>(0);
+	const [vc_tic, setTic] = useState<number>(0);
+	useEffect(() => {
+		fetch('https://' + location.host + '/api/users/get-games-nb/', {headers: header(props.jwt)})
+			.then(res => {
+				if (res.ok)
+					return(res.text())
+				setErrorCode(res.status);
+			}).then((res) => {
+				setNb_g(Number(res));
+				setDf(nb_g - vc);
+				setNv(Math.floor(vc / 3));
+			})
+	}, [])
 
 	if (errorCode >= 401 && errorCode != 413)
 		return (<FetchError code={errorCode} />);
 	return (
 		<section>
-			<h1>Username: [{userCtx.getUsername()}]</h1>
+			<h1>{userCtx.getUsername()}</h1>
 			<article>
 				<ul>
-					<li>Victoire: {user?.sstat.victory}</li>
-					<li>Défaite: {user?.sstat.defeat}</li>
-					<li>Rang: {user?.sstat.rank}</li>
-					<li>Niveau: {user?.sstat.level}</li>
+					<li>Nb_Games: {nb_g}</li>
+					<li>Victoire: {vc}</li>
+					<li>Défaite: {df}</li>
+					<li>Rang: {42}</li>
+					<li>Niveau: {nv}</li>
 				</ul>
+				< Match_History_Table jwt={props.jwt} />
 			</article>
 			<article>
 				{/*getLocation.pathname === "/Setting" && <label>Username: {userCtx.getUsername()}</label>*/}
@@ -206,6 +291,7 @@ function Setting(props: Readonly<{
 						Image is too large, please upload a size inferior to 1MB.
 					</p>
 				}
+				
 			</article>
 		</section>);
 }

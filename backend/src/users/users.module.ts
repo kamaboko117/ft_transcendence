@@ -7,9 +7,10 @@ import { Stat } from "src/typeorm/stat.entity";
 import { BlackFriendList } from '../typeorm/blackFriendList.entity'
 import { AuthModule } from 'src/auth/auth.module';
 import { UsersGateway } from "./providers/users/users.gateway";
+import { MatchHistory } from "src/typeorm/matchHistory.entity";
 //fowardRef = circular dependence
 @Module({
-    imports: [forwardRef(() => AuthModule), TypeOrmModule.forFeature([User, BlackFriendList, Stat])],
+    imports: [forwardRef(() => AuthModule), TypeOrmModule.forFeature([User, BlackFriendList, Stat, MatchHistory])],
     controllers: [UsersController],
     providers: [UsersService, UsersGateway],
     exports: [UsersService, UsersGateway]
