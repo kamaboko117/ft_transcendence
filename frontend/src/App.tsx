@@ -21,7 +21,6 @@ import Chat from "./components/Chat/Chat";
 import UnfoldDirectMessage from "./components/Chat/DirectMessage";
 
 /* User profile part */
-import UserProfile from "./pages/User/UserProfile";
 import Setting from "./pages/User/Setting";
 import FriendList from "./pages/User/FriendList";
 import BlackList from "./pages/User/BlackList";
@@ -127,12 +126,6 @@ function App() {
                   width={600} height={280} opacity={1} jwt={jwt} />}
                 <NavBar click={click} setClick={setClick} />
                 <BlackList jwt={jwt} /><PlayerApp />
-              </>
-            } />
-            <Route path="/setting" element={
-              <>
-                <NavBar click={click} setClick={setClick} />
-                <Setting jwt={jwt} /><PlayerApp />
               </>
             } />
             <Route path="/login" element={

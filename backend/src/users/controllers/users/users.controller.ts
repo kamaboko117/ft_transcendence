@@ -170,6 +170,7 @@ export class UsersController {
         ], fileIsRequired: false
     }),
     ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
+        console.log("Heheh");
         let user: TokenUser = req.user;
         const ret_user = await this.userService.findUserByName(body.username);
         let ret_user2 = await this.userService.findUsersById(user.userID);
