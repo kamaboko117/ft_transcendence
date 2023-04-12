@@ -120,8 +120,6 @@ export class UsersController {
     async fakeLogin(@Request() req: any, @Res({ passthrough: true }) response: any) {
         let user: TokenUser = req.user;
         user.fa_code = "";
-        console.log("FAKE LOGIN")
-        console.log(user)
         const access_token = await this.authService.login(user);
         const refresh = await this.authService.refresh(user);
 
@@ -344,7 +342,6 @@ export class UsersController {
         else if (Number(ret_user.userID) == user.userID)
             return ({ code: 2 });
         const findInList = await this.userService.searchUserInList(user.userID, ret_user.userID, 2);
-        console.log(findInList);
         if (findInList)
             return ({ code: 1 });
         this.userService.insertBlFr(user.userID, Number(ret_user.userID), 2);
@@ -374,7 +371,6 @@ export class UsersController {
         else if (Number(ret_user.userID) == user.userID)
             return ({ code: 2 });
         const findInList = await this.userService.searchUserInList(user.userID, ret_user.userID, 1);
-        console.log(findInList);
         if (findInList)
             return ({ code: 1 });
         this.userService.insertBlFr(user.userID, Number(ret_user.userID), 1);
@@ -408,7 +404,6 @@ export class UsersController {
         }
         else {
             //insert
-            console.log("insert")
             this.userService.insertBlFr(user.userID, body.userId, body.type);
         }
         return ({ add: true, type: body.type });
@@ -421,8 +416,6 @@ export class UsersController {
     async login(@Request() req: any, @Res({ passthrough: true }) response: any) {
         let user: TokenUser = req.user;
         user.fa_code = "";
-        console.log("LOGIN")
-        console.log(user)
         const access_token = await this.authService.login(user);
         const refresh = await this.authService.refresh(user);
 

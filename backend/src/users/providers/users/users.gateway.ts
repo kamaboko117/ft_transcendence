@@ -4,6 +4,7 @@ import { IsNumber } from 'class-validator';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtGuard } from 'src/auth/jwt.guard';
+import { SocketEvents } from 'src/socket/socketEvents';
 
 class Info {
   @IsNumber()
@@ -18,7 +19,8 @@ class Info {
 export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   private readonly mapSocket: Map<string, string>;
-  constructor(private authService: AuthService) {
+  constructor(private authService: AuthService, private socketEvents: SocketEvents
+  ) {
     this.mapSocket = new Map();
   }
 
@@ -26,22 +28,19 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('status')
   getStatusUser(@MessageBody() data: Info) {
     const map = this.mapSocket;
+    const mapUserInGame = this.socketEvents.getMap();
 
-    /*map.forEach((value) => {
+    for (let value of mapUserInGame.values()) {
       console.log(value)
       console.log(data.userId)
-      if (value === String(data.userId)) {
-        console.log("equal")
+      if (Number(value) === data.userId) {
         //check if in game
-        //else return online
-        return ({code: 1});
+        return ({ code: 2 });
       }
-    });*/
+    }
     for (let value of map.values()) {
       if (value === String(data.userId)) {
-        console.log("equal")
-        //check if in game
-        //else return online
+        //check if online
         return ({ code: 1 });
       }
     }

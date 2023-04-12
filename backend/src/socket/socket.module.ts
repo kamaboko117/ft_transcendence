@@ -4,8 +4,8 @@ import { UsersModule } from 'src/users/users.module';
 import { SocketEvents } from './socketEvents';
 
 @Module({
-    imports: [forwardRef(() => RoomsModule), UsersModule, ],
+    imports: [forwardRef(() => UsersModule), RoomsModule],
     providers: [SocketEvents],
     exports: [SocketEvents]
 })
-export class SocketModule {}
+export class SocketModule { }

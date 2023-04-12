@@ -8,6 +8,8 @@ import { MessageBody, ConnectedSocket } from "@nestjs/websockets";
 import { UsersGateway } from "src/users/providers/users/users.gateway";
 import { RoomsService } from "src/rooms/services/rooms/rooms.service";
 import { Room } from "src/typeorm/room.entity";
+import { Inject, UseGuards, forwardRef } from "@nestjs/common";
+import { JwtGuard } from "src/auth/jwt.guard";
 
 const FPS = 60;
 const CANVAS_WIDTH = 600;
@@ -125,9 +127,13 @@ function update() {
   }
 })
 export class SocketEvents {
-
-  constructor(private userGateway: UsersGateway,
-    private readonly roomsService: RoomsService) { }
+  private readonly mapUserInGame: Map<string, string>;
+  constructor(
+    @Inject(forwardRef(() => UsersGateway))
+    private readonly userGateway: UsersGateway,
+    private readonly roomsService: RoomsService) {
+    this.mapUserInGame = new Map();
+  }
   @WebSocketServer()
   server: Server;
 
@@ -141,7 +147,7 @@ export class SocketEvents {
 
   isUserConnected(id: string) {
     const map = this.userGateway.getMap();
-  
+
     for (let [key, value] of map.entries()) {
       if (value === id) {
         return (true);
@@ -156,7 +162,7 @@ export class SocketEvents {
     for (let [key, value] of map.entries()) {
       if (value === userIdFocus) {
         this.server.to(key).emit('inviteGame',
-          {idGame: idGame, user_id: userId});
+          { idGame: idGame, user_id: userId });
       }
     }
   }
@@ -171,8 +177,11 @@ export class SocketEvents {
   @SubscribeMessage("leave_game")
   leave(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
     console.log("client id: " + client.id + "is leaving room");
-    if (data)
+    if (data) {
       client.leave(data.roomId);
+      this.mapUserInGame.delete(client.id);
+    }
+
   }
 
   /* search if user is in private room */
@@ -191,13 +200,14 @@ export class SocketEvents {
     }
     return (false);
   }
-
+  @UseGuards(JwtGuard)
   @SubscribeMessage("join_game")
-  async join(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
+  async join(@MessageBody() data: any, @ConnectedSocket() client: any) {
+    const user = client.user;
     //await client.join(data.roomId);
     console.log("New user joining room: ", data);
     console.log(this.server.sockets.adapter.rooms)
-    
+
     const connectedSockets = this.server.sockets.adapter.rooms.get(data.roomId);
     const socketRooms = Array.from(client.rooms.values()).filter(
       (r) => r !== client.id
@@ -212,13 +222,14 @@ export class SocketEvents {
       return;
     } else {
       await client.join(data.roomId);
-      if (room && room.private === true){
+      this.mapUserInGame.set(client.id, user.userID);
+      if (room && room.private === true) {
         const result: boolean = this.checkIfUserFound(room, client.id);
         console.log("result: " + result)
         console.log(this.server.sockets.adapter.rooms.get(data.roomId))
-        if (result === false){
+        if (result === false) {
           client.emit("join_game_error", { error: "You are spectactor" });
-          return ;
+          return;
         }
       }
       client.emit("join_game_success", { roomId: data.roomId });
@@ -261,5 +272,9 @@ export class SocketEvents {
       player2.y = data.y;
     }
     client.to(gameRoom).emit("on_game_update", { player1, player2, ball });
+  }
+
+  getMap() {
+    return (this.mapUserInGame);
   }
 }
