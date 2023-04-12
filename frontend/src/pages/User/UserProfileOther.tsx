@@ -11,18 +11,23 @@ import { inviteGame } from '../../components/Chat/ListUser';
 */
 
 type statInfo = {
-	victory: number,
-	defeat: number,
-	nb_games: number,
 	level: number,
 	rank: number
+}
+
+type match = {
+	type_game: string,
+	t1_username: string,
+	t2_username: string,
+	t3_username: string
 }
 
 type userInfo = {
 	username: string,
 	userID: number,
 	avatarPath: string | null,
-	sstat: statInfo
+	sstat: statInfo,
+	match_h: match
 }
 
 /* display default img if not img loaded */
