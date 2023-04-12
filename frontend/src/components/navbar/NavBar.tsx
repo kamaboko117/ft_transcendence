@@ -2,16 +2,19 @@ import React, { useContext, MouseEvent, useState } from "react";
 import { Link, useMatch, useResolvedPath } from "react-router-dom";
 import UserContext from "../../contexts/UserContext";
 
-export default function NavBar() {
+export default function NavBar(props: {
+	click: boolean,
+	setClick: React.Dispatch<React.SetStateAction<boolean>>
+}) {
 	const userCtx: any = useContext(UserContext);
 	let jwt = userCtx.getJwt();
-	const [click, setClick] = useState<boolean>(false);
+
 	const chooseClassName: string =
-		(click === true ? "navbar navbar-click" : "navbar");
+		(props.click === true ? "navbar navbar-click" : "navbar");
 
 	const hancleClick = (e: MouseEvent<HTMLDivElement>) => {
 		if (e && e.target) {
-			setClick(prev => !prev);
+			props.setClick(prev => !prev);
 		}
 	}
 
