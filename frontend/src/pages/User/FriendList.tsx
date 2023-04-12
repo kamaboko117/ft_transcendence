@@ -91,7 +91,6 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
 	const name: string = e.textContent as string;
 	//get attributes node
 	const attributes: NamedNodeMap = e.attributes as NamedNodeMap;
-	console.log(e)
 	/* update userInfo state on click, from the html tree */
 	if (userInfo.username === "" || userInfo.username != name) {
 		//setUserId(Number(attributes[0].value));
@@ -214,7 +213,6 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 			return (res.json());
 		setErrorCode(res.status);
 	}).then(res => {
-		console.log(res);
 		if (res && res.code === 3) {
 			updateBlackFriendList({
 				id: res.id,

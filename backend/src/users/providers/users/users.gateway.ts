@@ -4,6 +4,7 @@ import { IsNumber } from 'class-validator';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtGuard } from 'src/auth/jwt.guard';
+import { SocketEvents } from 'src/socket/socketEvents';
 
 class Info {
   @IsNumber()
@@ -18,7 +19,8 @@ class Info {
 export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   private readonly mapSocket: Map<string, string>;
-  constructor(private authService: AuthService) {
+  constructor(private authService: AuthService, private socketEvents: SocketEvents
+  ) {
     this.mapSocket = new Map();
   }
 
@@ -26,22 +28,19 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('status')
   getStatusUser(@MessageBody() data: Info) {
     const map = this.mapSocket;
+    const mapUserInGame = this.socketEvents.getMap();
 
-    /*map.forEach((value) => {
+    for (let value of mapUserInGame.values()) {
       console.log(value)
       console.log(data.userId)
-      if (value === String(data.userId)) {
-        console.log("equal")
+      if (Number(value) === data.userId) {
         //check if in game
-        //else return online
-        return ({code: 1});
+        return ({ code: 2 });
       }
-    });*/
+    }
     for (let value of map.values()) {
       if (value === String(data.userId)) {
-        console.log("equal")
-        //check if in game
-        //else return online
+        //check if online
         return ({ code: 1 });
       }
     }
@@ -50,14 +49,11 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(JwtGuard)
   async handleConnection(client: Socket) {
-    console.log("USER GATEWAY connect client id: " + client.id);
     const bearer = client.handshake.headers.authorization;
-    console.log(bearer)
     if (bearer) {
       const user: any = await this.authService.verifyToken(bearer);
       if (!user)
         return;
-      console.log(user)
       this.mapSocket.forEach((value, key) => {
         this.server.to(key).emit("currentStatus", {
           code: 1, userId: user.userID
@@ -84,14 +80,11 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
       })*/
     let found: undefined | string = undefined
-    console.log("id: " + client.id)
     for (let [key, value] of this.mapSocket.entries()) {
-      console.log(key)
       if (key === client.id) {
         found = value;
       }
     }
-    console.log("FOUNDDDD: " + found)
     if (found) {
       this.mapSocket.forEach((value, key) => {
         this.server.to(key).emit("currentStatus", {

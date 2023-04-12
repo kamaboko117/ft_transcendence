@@ -73,7 +73,6 @@ function updateList(res: { add: boolean, type: number },
 const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	type: number, id: string, otherUser: userInfo | undefined, frBl: frBl,
-	setFrBl: React.Dispatch<React.SetStateAction<frBl>>,
 	lstUserGlobal: {
 		id: number, fl: number | null,
 		bl: number | null, User_username: string, User_avatarPath: string | null
@@ -103,11 +102,27 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 	}).catch(err => console.log(err));
 }
 
+
+
 const FriendBlockUser = (props: { userCtx, id, otherUser: userInfo | undefined, jwt: string }) => {
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
 	const [frBl, setFrBl] = useState<frBl>({ friend: null, block: null });
 	const navigate = useNavigate();
+
+	const Button = (props: { num: number, jwt: string, id, otherUser: userInfo | undefined }) => {
+		return (
+			<button onClick={(e) => {
+				listHandle(e, props.jwt, setErrorCode,
+					props.num, props.id, props.otherUser, frBl,
+					lstUserGlobal, setLstUserGlobal)
+			}}
+			>
+				{props.num === 1 && (frBl.block === 1 ? "Unblock user" : "Block user")}
+				{props.num === 2 && (frBl.friend === 2 ? "Remove friend" : "Add friend")}
+			</button>
+		);
+	}
 	useEffect(() => {
 		lstUserGlobal.forEach((value, key) => {
 			if (String(value.id) === props.id) {
@@ -119,27 +134,26 @@ const FriendBlockUser = (props: { userCtx, id, otherUser: userInfo | undefined, 
 		return (<FetchError code={errorCode} />);
 	if (props.otherUser) {
 		return (<>
-			{props.userCtx.getUserId() != props.id && <button onClick={(e) => {
-				listHandle(e, props.jwt, setErrorCode,
-					1, props.id, props.otherUser, frBl, setFrBl,
-					lstUserGlobal, setLstUserGlobal)
-			}}
-			>
-				{(frBl.block === 1 ? "Unblock" : "Block")} User
-			</button>}
-			{props.userCtx.getUserId() != props.id && <button onClick={(e) => {
-				listHandle(e, props.jwt, setErrorCode,
-					2, props.id, props.otherUser, frBl, setFrBl,
-					lstUserGlobal, setLstUserGlobal)
-			}}
-			>
-				{(frBl.friend === 2 ? "Remove" : "Add")} friend
-			</button>}
-			<button onClick={(e) => inviteGame(e, Number(props.otherUser?.userID), props.jwt,
-				navigate, setErrorCode)}
-			>
-				Invite to a game
-			</button>
+			{
+				props.userCtx.getUserId() != props.id &&
+				<Button num={1} jwt={props.jwt}
+					id={props.id} otherUser={props.otherUser} />
+			}
+			{
+				props.userCtx.getUserId() != props.id &&
+				<Button num={2} jwt={props.jwt}
+					id={props.id} otherUser={props.otherUser} />
+			}
+			{
+				props.userCtx.getUserId() != props.id &&
+				<button onClick={(e) =>
+					inviteGame(e, Number(props.otherUser?.userID), props.jwt,
+						navigate, setErrorCode)}
+				>
+					Invite to a game
+				</button>
+			}
+
 		</>);
 	}
 	return (<></>);

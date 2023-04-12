@@ -16,7 +16,7 @@ export class AuthService {
         const iduser: number = await this.usersServices.getInformationBearer(token);
         let user: any = await this.usersServices.findUserByIdForGuard(iduser);
 
-        if (!user){
+        if (!user) {
             user = await this.usersServices.createUser({ userID: iduser, username: '', token: '' });
         }
         return (user);
@@ -24,10 +24,8 @@ export class AuthService {
     /* create fake user */
     async fakeUser() {
         const iduser: number = Math.ceil(Math.random() * 9452160 + 1000000);
-        await this.usersServices.createUser({ userID: iduser, username:'', token: '' });
+        await this.usersServices.createUser({ userID: iduser, username: '', token: '' });
         let user: any = await this.usersServices.findUserByIdForGuard(iduser);
-        console.log("FFAAKAKEDAKAL")
-        console.log(user)
         return (user);
     }
 
@@ -40,11 +38,7 @@ export class AuthService {
             fa: user.fa,
             fa_code: user.fa_code
         }
-        console.log("PAYYYYY")
-        console.log(payload)
         const access_token = { access_token: this.jwtService.sign(payload) };
-        console.log("aqdjqsjdhjkqshdjkqshdqskdhqsjkdhqsjkd")
-        console.log(await this.usersServices.findUserByIdForGuard(user.userID));
         await this.usersServices.updateTokenJwt(Number(user.userID), access_token.access_token);
         return (access_token);
     }
@@ -98,8 +92,6 @@ export class AuthService {
             username: user.username,
             fa: user.fa
         }
-        console.log("refresh payload");
-        console.log(payload);
         const refresh_token = {
             refresh_token: this.jwtService.sign(payload, { expiresIn: '500s' })
         };
