@@ -47,7 +47,6 @@ const handleSubmit = (event, code: number | null,
                 setValid(res.valid);
             }
         }).catch(e => {
-            console.log(e);
             setValid(false);
         });
     } else {
