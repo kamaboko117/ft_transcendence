@@ -207,10 +207,12 @@ export const StatusUser = (props: { userId: number, jwt: string }) => {
         //emit ask user conneced/ig on map, then return reponse
         //.on connections and deconnections
         usrSocket?.emit("status", { userId: props.userId }, (res: { code: number }) => {
+            console.log(res)
             if (res)
                 setStatus(res.code);
         });
         usrSocket?.on('currentStatus', (res: { code: number, userId: string }) => {
+            console.log(res)
             if (res && props.userId === Number(res.userId))
                 setStatus(res.code);
         })
@@ -234,7 +236,7 @@ export const StatusUser = (props: { userId: number, jwt: string }) => {
         }
         {
             status === 2 && <div>
-                <div style={{ width: "20px", backgroundColor: "crimson" }}>
+                <div style={{ width: "20px", backgroundColor: "orange" }}>
                 </div><span style={{ flex: "1" }}>In game</span>
             </div>
         }
