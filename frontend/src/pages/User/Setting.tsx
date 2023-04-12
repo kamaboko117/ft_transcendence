@@ -78,9 +78,7 @@ async function update(event: FormEvent<HTMLFormElement>, username: string,
 		setErrorCode(res.status);
 	}).then(res => {
 		if (res) {
-			console.log(res)
 			if (res.valid === true) {
-
 				if (res.img)
 					setAvatarPath(res.img);
 				else

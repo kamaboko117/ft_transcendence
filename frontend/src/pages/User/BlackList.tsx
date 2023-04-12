@@ -40,7 +40,6 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 			return (res.json());
 		setErrorCode(res.status)
 	}).then(res => {
-		console.log(res);
 		if (res && res.code === 3) {
 			updateBlackFriendList({
 				id: res.id,

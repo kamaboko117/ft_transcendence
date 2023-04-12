@@ -50,14 +50,11 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(JwtGuard)
   async handleConnection(client: Socket) {
-    console.log("USER GATEWAY connect client id: " + client.id);
     const bearer = client.handshake.headers.authorization;
-    console.log(bearer)
     if (bearer) {
       const user: any = await this.authService.verifyToken(bearer);
       if (!user)
         return;
-      console.log(user)
       this.mapSocket.forEach((value, key) => {
         this.server.to(key).emit("currentStatus", {
           code: 1, userId: user.userID
@@ -84,14 +81,11 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
       })*/
     let found: undefined | string = undefined
-    console.log("id: " + client.id)
     for (let [key, value] of this.mapSocket.entries()) {
-      console.log(key)
       if (key === client.id) {
         found = value;
       }
     }
-    console.log("FOUNDDDD: " + found)
     if (found) {
       this.mapSocket.forEach((value, key) => {
         this.server.to(key).emit("currentStatus", {
