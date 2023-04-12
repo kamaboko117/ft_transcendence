@@ -201,6 +201,23 @@ export class MatchMakingGateway
   }
 
   @UseGuards(JwtGuard)
+  @SubscribeMessage('endGame')
+  endGame(@ConnectedSocket() socket: Readonly<any>) {
+    try {
+      // leave queue here?
+      console.log('remove from game');
+      const user = socket.user;
+      let player1 = { id:user.userID }
+      this.mm.endGame(player1);
+
+    } catch (error) {
+      console.log('decline match failed');
+      this.server.to(socket.id).emit('declineMMmatchFailed', {
+        message: 'decline match failed',
+      });
+    }
+  }
+  @UseGuards(JwtGuard)
   handleDisconnect(@ConnectedSocket() socket: Readonly<any>) {
     try {
       // leave the page? = leave queue

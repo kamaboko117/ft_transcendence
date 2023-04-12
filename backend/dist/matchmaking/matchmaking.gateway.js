@@ -131,6 +131,20 @@ let MatchMakingGateway = class MatchMakingGateway {
             });
         }
     }
+    endGame(socket) {
+        try {
+            console.log('remove from game');
+            const user = socket.user;
+            let player1 = { id: user.userID };
+            this.mm.endGame(player1);
+        }
+        catch (error) {
+            console.log('decline match failed');
+            this.server.to(socket.id).emit('declineMMmatchFailed', {
+                message: 'decline match failed',
+            });
+        }
+    }
     handleDisconnect(socket) {
         try {
             const user = socket.user;
@@ -181,6 +195,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], MatchMakingGateway.prototype, "decline", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_guard_1.JwtGuard),
+    (0, websockets_1.SubscribeMessage)('endGame'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], MatchMakingGateway.prototype, "endGame", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_guard_1.JwtGuard),
     __param(0, (0, websockets_1.ConnectedSocket)()),
