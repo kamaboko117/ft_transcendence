@@ -339,6 +339,19 @@ export class UsersController {
         return (ret_nb);
     }
 
+    @Get('get-victory-nb-other/:id')
+    async getNbVictoryOther(@Param('id', ParseIntPipe) id: number) {
+        const ret_nb = await this.userService.getVictoryNb(id);
+        return (ret_nb);
+    }
+   
+    @Get('get-games-nb-other/:id')
+    async getNbGamesOther(@Param('id', ParseIntPipe) id: number) {
+        const ret_nb = await this.userService.getGamesNb(id);
+        return(ret_nb);
+    }
+
+
     @Get('get-games-nb')
     async getNbGames(@Request() req: any) {
         const user: TokenUser = req.user;
@@ -353,11 +366,17 @@ export class UsersController {
         return (ret_raw);
     }
 
-    @Get('get_raw_mh_user')
+    @Get('get_raw_mh_user/:id')
     async getMHRawTwo(@Param('id', ParseIntPipe) id: number) {
         const ret_raw = await this.userService.getRawMH(id);
         return (ret_raw);
     }
+
+    @Get('updateHistory')
+    async updateHistoryfunc() {
+        this.userService.updateHistory('Simple', 2988219, 74133, 2988219);
+    }
+
 
 
     /* 0 = user not found */

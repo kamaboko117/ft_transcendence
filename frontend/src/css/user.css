@@ -38,3 +38,16 @@ img.avatarList {
 .element>.user {
     background-color: coral;
 }
+
+.profile-table {
+    margin: auto;
+}
+
+ul {
+    list-style-type: none;
+}
+@media screen and (max-width: 600px) {
+    h1 {
+        margin-left: 15px;
+    }
+}

@@ -146,7 +146,7 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
 	}, [])
 	
 	return(
-		<table>
+		<table className="profile-table">
 			<thead>
 				<tr>
 					<th>Type Game</th>
@@ -160,6 +160,53 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
 			</tbody>
 		</table>
 	);
+}
+
+const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: string | null}) => {
+	const [vc, setVC] = useState<number>(0);
+	const [df, setDf] = useState<number>(0);
+	const [nb_g, setNb_g] = useState<number>(0);
+
+	useEffect(() => {
+		fetch('https://' + location.host + '/api/users/get-games-nb/', {headers: header(props.jwt)})
+			.then(res => {
+				if (res.ok)
+					return(res.text())
+				props.setErrorCode(res.status);
+			}).then((res) => {
+				setNb_g(Number(res));
+			})
+	}, [])
+
+	useEffect(() => {
+		fetch('https://' + location.host + '/api/users/get-victory-nb/', {headers: header(props.jwt)})
+			.then(res => {
+				if (res.ok)
+					return (res.text())
+				props.setErrorCode(res.status);
+			}).then((res) => {
+				if (res) {
+					setVC(Number(res));
+					setDf(nb_g - vc)
+				}
+			})
+	}, [nb_g])
+
+	useEffect(() => {
+		fetch('https://' + location.host + '/api/users/updateHistory', {headers: header(props.jwt)})
+		
+	}, []);
+
+	return (<>
+		<ul>
+					<li>Nb_Games: {nb_g}</li>
+					<li>Victoire: {vc}</li>
+					<li>Défaite: {df}</li>
+					<li>Rang: {props.user?.sstat.rank}</li>
+					<li>Niveau: {props.user?.sstat.level}</li>
+				</ul>
+				< Match_History_Table jwt={props.jwt} />
+	</>)
 }
 
 function Setting(props: Readonly<{ jwt: string | null }>) {
@@ -198,50 +245,14 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 			navigate("/fa-activate");
 		setOldFa(FA);
 	}, [userCtx.getJwt()]);
-	const [vc, setVC] = useState<number>(0);
-	useEffect(() => {
-		fetch('https://' + location.host + '/api/users/get-victory-nb/', {headers: header(props.jwt)})
-			.then(res => {
-				if (res.ok)
-					return (res.text())
-				setErrorCode(res.status);
-			}).then((res) => {
-				if (res) {
-					setVC(Number(res));
-				}
-			})
-	}, [])
-	const [nb_g, setNb_g] = useState<number>(0);
-	const [df, setDf] = useState<number>(0);
-	const [nv, setNv] = useState<number>(0);
-	const [vc_tic, setTic] = useState<number>(0);
-	useEffect(() => {
-		fetch('https://' + location.host + '/api/users/get-games-nb/', {headers: header(props.jwt)})
-			.then(res => {
-				if (res.ok)
-					return(res.text())
-				setErrorCode(res.status);
-			}).then((res) => {
-				setNb_g(Number(res));
-				setDf(nb_g - vc);
-				setNv(Math.floor(vc / 3));
-			})
-	}, [])
-
+	
 	if (errorCode >= 401 && errorCode != 413)
 		return (<FetchError code={errorCode} />);
 	return (
 		<section>
 			<h1>{userCtx.getUsername()}</h1>
 			<article>
-				<ul>
-					<li>Nb_Games: {nb_g}</li>
-					<li>Victoire: {vc}</li>
-					<li>Défaite: {df}</li>
-					<li>Rang: {42}</li>
-					<li>Niveau: {nv}</li>
-				</ul>
-				< Match_History_Table jwt={props.jwt} />
+				<LoadResultGame user={user} setErrorCode={setErrorCode} jwt={props.jwt} />
 			</article>
 			<article>
 				{/*getLocation.pathname === "/Setting" && <label>Username: {userCtx.getUsername()}</label>*/}
