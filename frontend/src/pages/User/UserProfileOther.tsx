@@ -4,6 +4,7 @@ import { FetchError, header, headerPost } from '../../components/FetchError';
 import UserContext from '../../contexts/UserContext';
 import ContextDisplayChannel, { updateBlackFriendList } from '../../contexts/DisplayChatContext';
 import { inviteGame } from '../../components/Chat/ListUser';
+import { Match_History_Raw } from './Setting';
 
 
 /* useLocation recover values from url
@@ -15,7 +16,7 @@ type statInfo = {
 	rank: number
 }
 
-type match = {
+type rawMH = {
 	type_game: string,
 	t1_username: string,
 	t2_username: string,
@@ -27,7 +28,7 @@ type userInfo = {
 	userID: number,
 	avatarPath: string | null,
 	sstat: statInfo,
-	match_h: match
+	match_h: rawMH
 }
 
 /* display default img if not img loaded */
@@ -164,6 +165,41 @@ const FriendBlockUser = (props: { userCtx, id, otherUser: userInfo | undefined, 
 	return (<></>);
 }
 
+const Match_History_Table = (props: Readonly<{ jwt: string | null , id: number}>) => {
+	const [raw_MH, setRaw] = useState<Array<rawMH>>();
+	const [errorCode, setErrorCode] = useState<number>(200);
+	if (props.jwt === null)
+		return (<div>Must be logged</div>);
+	useEffect(() => {
+		fetch('https://' + location.host + `/api/users/get_raw_mh_user/${id}`, {headers: header(props.jwt)})
+		.then(res => {
+			if (res.ok)
+				return(res.json());
+			setErrorCode(res.status);
+		}).then((res: Array<rawMH>) => {
+			if (res) {
+				setRaw(res);
+			}
+		})
+	}, [])
+	
+	return(
+		<table>
+			<thead>
+				<tr>
+					<th>Type Game</th>
+					<th>Player_One</th>
+					<th>Player_Two</th>
+					<th>Player_Victory</th>
+				</tr>
+			</thead>
+			<tbody>
+					< Match_History_Raw rawMH={raw_MH}/>
+			</tbody>
+		</table>
+	);
+}
+
 /* Focus user profile */
 const UserProfileOther = (props: { jwt: string }) => {
 	const id = useParams().id as string;
@@ -202,11 +238,12 @@ const UserProfileOther = (props: { jwt: string }) => {
 				onError={handleImgError}
 			/>}
 			<ul>
-				<li>Victoire: {otherUser?.sstat.victory}</li>
-				<li>Défaite: {otherUser?.sstat.defeat}</li>
+				<li>Victoire: {42}</li>
+				<li>Défaite: {42}</li>
 				<li>Rang: {otherUser?.sstat.rank}</li>
 				<li>Niveau: {otherUser?.sstat.level}</li>
 			</ul>
+			< Match_History_Table jwt={props.jwt} id={id}/>
 			<FriendBlockUser userCtx={userCtx} id={id} otherUser={otherUser}
 				jwt={props.jwt} />
 

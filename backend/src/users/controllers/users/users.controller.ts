@@ -353,6 +353,13 @@ export class UsersController {
         return (ret_raw);
     }
 
+    @Get('get_raw_mh_user')
+    async getMHRawTwo(@Param('id', ParseIntPipe) id: number) {
+        const ret_raw = await this.userService.getRawMH(id);
+        return (ret_raw);
+    }
+
+
     /* 0 = user not found */
     /* 1 = already added in friend list */
     /* 2 = user is self */
