@@ -117,7 +117,7 @@ export class UsersController {
     @Public()
     @UseGuards(FakeAuthGuard)
     @Get('fake-login')
-    async fakeLogin(@Request() req: any, @Res({ passthrough: true }) response: any) {
+    async fakeLogin(@Request() req: any,/* @Res({ passthrough: true }) response: any*/) {
         let user: TokenUser = req.user;
         user.fa_code = "";
         const access_token = await this.authService.login(user);
@@ -413,7 +413,7 @@ export class UsersController {
     @Public()
     @UseGuards(CustomAuthGuard)
     @Post('login')
-    async login(@Request() req: any, @Res({ passthrough: true }) response: any) {
+    async login(@Request() req: any/*, @Res({ passthrough: true }) response: any*/) {
         let user: TokenUser = req.user;
         user.fa_code = "";
         const access_token = await this.authService.login(user);
