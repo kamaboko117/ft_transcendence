@@ -6,6 +6,7 @@ import { CreateUserDto } from "src/users/dto/users.dtos";
 import { Stat } from "src/typeorm/stat.entity";
 import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
 import { MatchHistory } from "src/typeorm/matchHistory.entity";
+import { identity } from "rxjs";
 
 const validateURL = "https://api.intra.42.fr/oauth/token"
 const infoURL = "https://api.intra.42.fr/oauth/token/info"
@@ -211,7 +212,7 @@ export class UsersService {
                 .innerJoin("User", "t3", "user_victory = t3.user_id")
                 .where('player_one = :user OR player_two = :user')
                 .setParameters({user: id})
-                .getRawMany()
+                .getRawMany();
             return(ret_raw);
         }
     
@@ -224,6 +225,72 @@ export class UsersService {
             .setParameters({ user: id })
             .getOne();
         return (user);
+    }
+
+
+    async updateConsecutive(id:number, consecutive_nb: number) {
+            await this.statRepository.createQueryBuilder()
+            .update(Stat)
+            .set({consecutive: consecutive_nb})
+            .where('user_id = :id', {id})
+            .execute()
+    }
+
+    async updateRank(id: number, rk: number) {
+        this.statRepository.createQueryBuilder()
+        .update(Stat)
+        .set({rank: rk})
+        .where('user_id = :id', {id})
+        .execute()
+    }
+
+    async updateLevel(id: number, lvl: number) {
+        this.statRepository.createQueryBuilder()
+        .update(Stat)
+        .set({level: Math.floor(lvl / 3)})
+        .where('user_id = :id', {id})
+        .execute()
+    }
+
+    async updateHistory(typeGame: string,id1: number, id2: number, idVictory: number) {
+        if (id1 == id2)
+            return;
+        this.matchHistoryRepository.createQueryBuilder()
+            .insert()
+            .into(MatchHistory)
+            .values([{
+                type_game: typeGame, player_one: id1, player_two: id2, user_victory: idVictory
+            }])
+            .execute();
+        //we want rank et consecutive victory
+        const stat = await this.statRepository.createQueryBuilder("stat")
+        .select(['stat.consecutive', 'stat.rank'])
+        .where('stat.user_id = :id', {id: idVictory})
+        .getOne()
+        console.log(stat);
+        //update consecutive victory
+        let nb_consecutive = 0;
+        if (stat)
+            nb_consecutive = stat.consecutive + 1;
+        if (stat && id1 != idVictory) {
+            this.updateConsecutive(id1, 0);
+        } else if (stat && id2 != idVictory) {
+            this.updateConsecutive(id2, 0);
+        }
+        if (stat && stat.rank < 2)
+            this.updateConsecutive(idVictory, nb_consecutive);
+        //update victory rank
+        if (stat && nb_consecutive == 3) {
+            this.updateConsecutive(idVictory, 0);
+            if (stat.rank < 2) {
+                this.updateRank(idVictory, stat.rank + 1);
+            }
+        }
+        // taking nb_victory
+        const vc = await this.getVictoryNb(idVictory);
+        // updating level
+        if (vc)
+            this.updateLevel(idVictory, vc);
     }
 
     async findUserByIdForGuard(id: number) {
