@@ -19,7 +19,8 @@
     "react-router-dom": "^6.6.2",
     "react-scroll": "^1.8.9",
     "socket.io-client": "^4.5.4",
-    "@chakra-ui/react": "^2.4.9"
+    "@chakra-ui/react": "^2.4.9",
+    "react-toastify": "9.1.2"
   },
   "devDependencies": {
     "@types/debounce": "^1.2.1",
