@@ -113,7 +113,7 @@ const ErrorSubmit = (props: { lstErr: [] }) => {
 	</>);
 }
 
-const Match_History_Raw = (props: {rawMH: Array<rawMH> | undefined}) => {
+export const Match_History_Raw = (props: {rawMH: Array<rawMH> | undefined}) => {
 	let i: number = 0;
 	return(<>
 		{props.rawMH && props.rawMH.map((val) => 
