@@ -121,14 +121,14 @@ export class UsersController {
         let user: TokenUser = req.user;
         user.fa_code = "";
         const access_token = await this.authService.login(user);
-        const refresh = await this.authService.refresh(user);
+        //const refresh = await this.authService.refresh(user);
 
-        response.cookie('refresh_token', refresh.refresh_token,
+        /*response.cookie('refresh_token', refresh.refresh_token,
             {
                 maxAge: 300000,
                 httpOnly: true,
                 sameSite: 'Strict',
-            });
+            });*/
         return ({
             token: access_token, user_id: req.user.userID,
             username: user.username, fa: user.fa
@@ -417,14 +417,14 @@ export class UsersController {
         let user: TokenUser = req.user;
         user.fa_code = "";
         const access_token = await this.authService.login(user);
-        const refresh = await this.authService.refresh(user);
+        //const refresh = await this.authService.refresh(user);
 
-        response.cookie('refresh_token', refresh.refresh_token,
+        /*response.cookie('refresh_token', refresh.refresh_token,
             {
                 maxAge: 300000,
                 httpOnly: true,
                 sameSite: 'Strict',
-            });
+            });*/
         return ({
             token: access_token, user_id: req.user.userID,
             username: user.username, fa: user.fa
