@@ -115,6 +115,8 @@ export class MatchMakingGateway
     client.join(client.id);
   }
 
+  
+
   @UseGuards(JwtGuard)
   @SubscribeMessage('queuein')
   async queuein(@ConnectedSocket() socket: Readonly<any>) {
@@ -123,19 +125,27 @@ export class MatchMakingGateway
       if (statep1 == 2)
       {
         console.log("already in game");
-        return;
+        throw Error("already in game");
       }
       if (statep1 == 1)
       {
         console.log("already in queue");
-        return;
+        throw Error("already in queue");
       }
 
-      this.socketEvents.getMap(); // L'utiliser pour vérifier le joueur dans un game
+      let map = this.socketEvents.getMap(); 
 
+      const iterator1 = map.values();
+      for (const value of iterator1) {
+        if (value == socket.user.userID)
+        {
+          console.log("already in game from socketEventsMap");
+          throw Error("already in game from socketEventsMap")
+        }
+      }
+      console.log(socket.user.userID);
       console.log('queue in');
       const user = socket.user;
-      console.log("test");
       let player1 = { id:user.userID }
       this.mm.push(player1);
 
