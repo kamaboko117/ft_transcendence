@@ -33,7 +33,6 @@ export class AuthService {
     async login(user: TokenUser) {
         const payload = {
             sub: Number(user.userID),
-            /*token: user.token,*/
             username: user.username,
             fa: user.fa,
             fa_code: user.fa_code
@@ -84,17 +83,4 @@ export class AuthService {
             return (false);
         }
     }
-    /*
-        async refresh(user: TokenUser) {
-            const payload = {
-                sub: user.userID,
-      */          /*token: user.token,*/
-    /*        username: user.username,
-            fa: user.fa
-        }
-        const refresh_token = {
-            refresh_token: this.jwtService.sign(payload, { expiresIn: '500s' })
-        };
-        return (refresh_token);
-    }*/
 }

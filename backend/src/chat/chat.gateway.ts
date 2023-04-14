@@ -35,7 +35,6 @@ class SendMsg {
   middleware nestjs socket
   https://github.com/nestjs/nest/issues/637
   avec react context socket query token
-  BONUS part https://dev.to/bravemaster619/how-to-use-socket-io-client-correctly-in-react-app-o65
 */
 
 @WebSocketGateway({
@@ -46,7 +45,6 @@ class SendMsg {
 
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
-  //afterInit(server: Server) { }
   @InjectRepository(Channel)
   private chatsRepository: Repository<Channel>;
   @InjectRepository(ListUser)
@@ -79,7 +77,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         id: data.id
       }
     });
-    //const getName = channel?.name;
     if (typeof channel != "undefined" && channel != null) {
       const getUser: any = await this.chatService.getUserOnChannel(data.id, user.userID);
       if (channel.accesstype === '4' && !getUser)
@@ -180,7 +177,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return ("No user found");
     const channel = await this.setNewOwner(user.userID, data.id, getUser.user_id);
     const [listUsr, count]: any = await this.listUserRepository.findAndCountBy({ chatid: data.id });
-    //const getName = channel?.name;
     socket.leave(data.id);
     this.server.to(data.id).emit("updateListChat", true);
     if (channel != undefined && channel != null && count === 0)
@@ -268,11 +264,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const bearer = client.handshake.headers.authorization;
     if (bearer) {
       const user: any = await this.authService.verifyToken(bearer);
-      /*this.mapSocket.forEach((value, key) => {
-        this.server.to(key).emit("currentStatus", {
-          code: 1, userId: user.userID
-        });
-      })*/
       if (user)
         this.mapSocket.set(client.id, user.userID);
     }
@@ -283,11 +274,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const bearer = client.handshake.headers.authorization;
     if (bearer) {
       const user: any = await this.authService.verifyToken(bearer);
-      /*this.mapSocket.forEach((value, key) => {
-        this.server.to(key).emit("currentStatus", {
-          code: 0, userId: user.userID
-        });
-      })*/
       if (user)
         this.mapSocket.delete(client.id);
     }

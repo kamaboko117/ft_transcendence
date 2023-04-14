@@ -35,7 +35,7 @@ export const SocketProvider = (props: { jwt: string, usrSocket: Socket<any, any>
             props.usrSocket?.off('exception');
             props.usrSocket?.disconnect();
         });
-    }, [/*props.jwt, */props.usrSocket]);
+    }, [props.usrSocket]);
 
     return (
         <SocketContext.Provider value={context}>

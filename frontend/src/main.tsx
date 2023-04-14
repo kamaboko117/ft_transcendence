@@ -21,7 +21,6 @@ function ErrorFallback({ error, resetErrorBoundary }) {
 }
 
 root.render(
-  //<React.StrictMode>
   <ErrorBoundary FallbackComponent={ErrorFallback}>
     <UserProvider>
       <BrowserRouter>
@@ -29,5 +28,4 @@ root.render(
       </BrowserRouter>
     </UserProvider>
   </ErrorBoundary>
-  //</React.StrictMode>
 );

@@ -34,10 +34,11 @@ function SettingFa(props: { jwt: string }) {
                 }
             }).catch(e => console.log(e));
     }, []);
+    const [click, setClick] = useState<boolean>(false);
     if (errorCode >= 401)
         return (<FetchError code={errorCode} />);
     if (waitForFa === 3)
-        return (<><NavBar /><p>Not permitted to register the same qr code  again.</p></>);
+        return (<><NavBar click={click} setClick={setClick} /><p>Not permitted to register the same qr code  again.</p></>);
     return (
         <section>
             <h1>Double Authentification</h1>
