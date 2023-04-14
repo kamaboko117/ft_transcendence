@@ -24,8 +24,9 @@ label.userInfo {
 }
 
 img.avatar {
-    height: 50%;
+    height: auto;
     max-width: 200px;
+    width: 100%;
 }
 
 img.avatarList {
@@ -46,14 +47,33 @@ img.avatarList {
 ul {
     list-style-type: none;
 }
+
 @media screen and (max-width: 600px) {
     form>input {
         width: 90%;
     }
+
     h1 {
+        font-size: 2em;
         margin-left: 15px;
     }
+
     .profile-table {
         width: 100%;
+    }
+}
+
+@media screen and (max-width: 200px) {
+    h1 {
+        font-size: 1em;
+    }
+
+    ul {
+        padding: 0;
+    }
+
+    th,
+    td {
+        font-size: 0.5em;
     }
 }
