@@ -280,6 +280,7 @@ export const handleImgError = (e) => {
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
     if (target) {
+        target.srcset = "/upload_avatar/default.png 2x";
         target.src = "/upload_avatar/default.png";
     }
 }
@@ -371,7 +372,8 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
             </Element >
             <div className={chooseClassName} style={{ top: offsetTop }}>
                 <label className="userInfo">{userInfo.username}</label>
-                <img src={"/" + userInfo.avatarPath} className="avatarList"
+                <img src={"/" + userInfo.avatarPath}
+                    srcSet={"/" + userInfo.avatarPath + ' 2x'}
                     alt={"avatar " + userInfo.username}
                     onError={handleImgError}
                 />

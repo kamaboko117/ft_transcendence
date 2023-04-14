@@ -30,6 +30,7 @@ const handleImgError = (e) => {
 	const target: HTMLImageElement = e.target as HTMLImageElement;
 
 	if (target) {
+		target.srcset = "/upload_avatar/default.png 2x";
 		target.src = "/upload_avatar/default.png";
 	}
 }
@@ -193,6 +194,7 @@ const UserProfileOther = (props: { jwt: string }) => {
 			{otherUser?.avatarPath != null && <img
 				className="avatar"
 				src={'/' + otherUser.avatarPath}
+				srcSet={'/' + otherUser.avatarPath + '2x'}
 				alt={"avatar " + otherUser?.username}
 				onError={handleImgError}
 			/>}

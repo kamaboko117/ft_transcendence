@@ -21,6 +21,14 @@
   }
 }
 
+.rhap_controls-section {
+  flex-wrap: wrap;
+}
+
+.rhap_main-controls {
+  flex-wrap: wrap;
+}
+
 /*
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);

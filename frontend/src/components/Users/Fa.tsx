@@ -47,7 +47,7 @@ function SettingFa(props: { jwt: string }) {
                 <p>Please, install an authenticator like Google Authenticator</p>
                 {waitForFa === 2 && url &&
                     <>
-                        <img src={url} alt="qrcode" />
+                        <img src={url} srcSet={url + ' 2x'} alt="qrcode" />
                         <br /><span>Please scan it on your smartphone</span>
                         <br /><button onClick={(e) => handleButton(e, navigate)}>Next</button>
                     </>

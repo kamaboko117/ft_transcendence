@@ -242,7 +242,9 @@ export const Display = (props: {
 		</Element>
 		<div className={chooseClassName} style={{ position: "relative" }}>
 			<label className="userInfo">{props.userInfo.username}</label>
-			<img src={"/" + props.userInfo.avatarPath} className="avatarList"
+			<img src={"/" + props.userInfo.avatarPath}
+				srcSet={"/" + props.userInfo.avatarPath + ' 2x'}
+				className="avatarList"
 				alt={"avatar " + props.userInfo.username}
 				onError={handleImgError}
 			/>
