@@ -25,6 +25,7 @@ type rawMH = {
 	t3_username: string
 }
 
+
 /* display default img if not img loaded */
 
 const handleImgError = (e) => {
@@ -164,7 +165,7 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
 }
 
 const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: string | null}) => {
-	const [vc, setVC] = useState<number>(0);
+	const [vc, setVc] = useState<number>(0);
 	const [df, setDf] = useState<number>(0);
 	const [nb_g, setNb_g] = useState<number>(0);
 
@@ -187,15 +188,14 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: s
 				props.setErrorCode(res.status);
 			}).then((res) => {
 				if (res) {
-					setVC(Number(res));
+					setVc(Number(res));
 					setDf(nb_g - vc)
 				}
 			})
 	}, [nb_g])
 
 	useEffect(() => {
-		fetch('https://' + location.host + '/api/users/updateHistory', {headers: header(props.jwt)})
-		
+		fetch('https://' + location.host + '/api/users/updateHistory', {headers: header(props.jwt)})	
 	}, []);
 
 	return (<>
@@ -203,12 +203,14 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: s
 					<li>Nb_Games: {nb_g}</li>
 					<li>Victoire: {vc}</li>
 					<li>Défaite: {df}</li>
-					<li>Rang: {props.user?.sstat.rank}</li>
+					<li>Rang: {props.user && rank_index[props.user?.sstat.rank]}</li>
 					<li>Niveau: {props.user?.sstat.level}</li>
 				</ul>
 				< Match_History_Table jwt={props.jwt} />
 	</>)
 }
+
+const rank_index = ['BRONZE', 'ARGENT', 'OR'];
 
 function Setting(props: Readonly<{ jwt: string | null }>) {
 	const [user, setUser] = useState<userInfo>();
