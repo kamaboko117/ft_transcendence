@@ -201,6 +201,8 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null , id: string}>
 	);
 }
 
+const rank_index = ['BRONZE', 'ARGENT', 'OR'];
+
 const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | undefined, jwt: string}) => {
 	const [vc, setVC] = useState<number>(0);
 	const [nb_g, setNb_g] = useState<number>(0);
@@ -235,7 +237,7 @@ const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | 
 				<li>Nb_Games: {nb_g}</li>
 				<li>Victoire: {vc}</li>
 				<li>Défaite: {df}</li>
-				<li>Rang: {props.otherUser?.sstat.rank}</li>
+				<li>Rang: {props.otherUser && ((props.otherUser?.sstat.rank < 2) ? rank_index[props.otherUser?.sstat.rank] : props.otherUser?.sstat.rank)}</li>
 				<li>Niveau: {props.otherUser?.sstat.level}</li>
 			</ul>
 			< Match_History_Table jwt={props.jwt} id={props.id}/>
