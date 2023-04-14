@@ -27,6 +27,7 @@ const handleImgError = (e) => {
 	const target: HTMLImageElement = e.target as HTMLImageElement;
 
 	if (target) {
+		target.srcset = "/upload_avatar/default.png 2x";
 		target.src = "/upload_avatar/default.png";
 	}
 }
@@ -190,6 +191,7 @@ function Setting(props: Readonly<{
 					{avatarPath != null && <><br /><img
 						className="avatar"
 						src={avatarPath}
+						srcSet={avatarPath + ' 2x'}
 						alt={"avatar " + user?.username}
 						onError={handleImgError}
 					/></>}

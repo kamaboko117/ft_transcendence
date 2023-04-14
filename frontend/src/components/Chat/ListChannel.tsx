@@ -298,58 +298,59 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
     render(): JSX.Element {
         if (this.state.errorCode >= 400)
             return (<FetchError code={this.state.errorCode} />)
-        return (<section className='containerChannel'>
-            <h1>List channels</h1>
-            <article className='left'>
-                <table className='left'>
-                    <thead>
-                        <tr>
-                            <th className='f-case'>Public Channel name</th>
-                            <th className='s-case'>Owner</th>
-                            <th className='s-case'>Access type</th>
-                        </tr>
-                    </thead>
-                    <this.PrintListPublic />
-                </table>
-                <table className='right'>
-                    <thead>
-                        <tr>
-                            <th className='f-case'>Private Channel name</th>
-                            <th className='s-case'>Owner</th>
-                            <th className='s-case'>Access type</th>
-                        </tr>
-                    </thead>
-                    <this.PrintListPrivate />
-                </table>
-                <button className='update-channel' onClick={this.onClick}>Update</button>
-            </article>
-            <article className='bottom'>
-                <form onSubmit={this.onSubmit} className="channel">
-                    <label>Create private or public channel</label>
-                    <input type="text" onChange={this.onChange}
-                        placeholder='Enter channel name' name="channelName" />
-                    <label><input type="radio"
-                        onChange={this.onChange} name="rad" value="0"
-                        checked={this.state.rad === "0"} />Public</label>
-                    <label><input type="radio"
-                        onChange={this.onChange} name="rad" value="2"
-                        checked={this.state.rad === "2"} />Private</label>
-                    <input type="password" onChange={this.onChange}
-                        placeholder='Password' name="password" />
-                    <input type="submit" onChange={this.onChange} value="Add Channel" />
-                </form>
-                {this.props.jwt && <OpenPrivateChat jwt={this.props.jwt} />}
-                {this.state.privateIdChannel && <div className='channel-id'><label>New private channel ID : </label>
-                    <span style={{ color: "#FA6405" }}>
-                        {this.state.privateIdChannel}
-                    </span>
-                </div>}
-                <ErrorSubmit hasError={this.state.hasError} listError={this.state.listError} />
-            </article>
-            <ContextUserLeave.Provider value={this.onClick}>
-                <Outlet />
-            </ContextUserLeave.Provider>
-        </section>);
+        return (
+            <section className='containerChannel'>
+                <h1>List channels</h1>
+                <article className='left'>
+                    <table className='left'>
+                        <thead>
+                            <tr>
+                                <th className='f-case'>Public Channel name</th>
+                                <th className='s-case'>Owner</th>
+                                <th className='s-case'>Access type</th>
+                            </tr>
+                        </thead>
+                        <this.PrintListPublic />
+                    </table>
+                    <table className='right'>
+                        <thead>
+                            <tr>
+                                <th className='f-case'>Private Channel name</th>
+                                <th className='s-case'>Owner</th>
+                                <th className='s-case'>Access type</th>
+                            </tr>
+                        </thead>
+                        <this.PrintListPrivate />
+                    </table>
+                    <button className='update-channel' onClick={this.onClick}>Update</button>
+                </article>
+                <article className='bottom'>
+                    <form onSubmit={this.onSubmit} className="channel">
+                        <label>Create private or public channel</label>
+                        <input type="text" onChange={this.onChange}
+                            placeholder='Enter channel name' name="channelName" />
+                        <label><input type="radio"
+                            onChange={this.onChange} name="rad" value="0"
+                            checked={this.state.rad === "0"} />Public</label>
+                        <label><input type="radio"
+                            onChange={this.onChange} name="rad" value="2"
+                            checked={this.state.rad === "2"} />Private</label>
+                        <input type="password" onChange={this.onChange}
+                            placeholder='Password' name="password" />
+                        <input type="submit" onChange={this.onChange} value="Add Channel" />
+                    </form>
+                    {this.props.jwt && <OpenPrivateChat jwt={this.props.jwt} />}
+                    {this.state.privateIdChannel && <div className='channel-id'><label>New private channel ID : </label>
+                        <span style={{ color: "#FA6405" }}>
+                            {this.state.privateIdChannel}
+                        </span>
+                    </div>}
+                    <ErrorSubmit hasError={this.state.hasError} listError={this.state.listError} />
+                </article>
+                <ContextUserLeave.Provider value={this.onClick}>
+                    <Outlet />
+                </ContextUserLeave.Provider>
+            </section>);
     }
 }
 
