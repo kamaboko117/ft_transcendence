@@ -37,11 +37,6 @@ function PlayPageInvite(props: { jwt: string }) {
     const id = useParams().id as string;
     const { usrSocket } = useContext(SocketContext);
 
-    /*useEffect(() => {
-        return (() => {
-            
-        });
-    }, [id]);*/
     if (id && id != "") {
         return <Game id={id} usrSocket={usrSocket} />;
     }

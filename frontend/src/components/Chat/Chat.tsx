@@ -254,15 +254,13 @@ const MainChat = (props: any) => {
             }
             if (res.room === props.id)
                 setLstMsgChat((lstMsg) => [...lstMsg, res]);
-            //if (res.room === props.id && props.id == id)
-            //    setLstMsgPm((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
             usrSocket?.off("actionOnUser");
             setLstMsgChat([]);
             setChatName("");
         });
-    }, [lstMsgChat.keys, props.id, /*JSON.stringify(lstUserChat),*/ JSON.stringify(lstUserGlobal),
+    }, [lstMsgChat.keys, props.id, JSON.stringify(lstUserGlobal),
         online, usrSocket]);
     /* Get message from backend, must reload properly when lstUser is updated */
     useEffect(() => {
@@ -272,14 +270,12 @@ const MainChat = (props: any) => {
             if (!found) {
                 if (res.room === props.id)
                     setLstMsgChat((lstMsg) => [...lstMsg, res]);
-                //if (res.room === props.id && props.id == id)
-                //    setLstMsgPm((lstMsg) => [...lstMsg, res]);
             }
         });
         return (() => { usrSocket?.off("sendBackMsg"); });
     }, [JSON.stringify(lstUserGlobal)])
     const [msg, setMsg] = useState<null | string>(null);
-    //const [lstUser, setLstUser] = useState<typeListUser["listUser"]>(Array);
+
     if (online === "Ban")
         return (<article className='containerChat'>You are banned from this chat</article>)
     else if (online === false)
