@@ -69,10 +69,12 @@ span.chatBox {
 }
 
 img.chatBox {
-    align-self: flex-start;
-    max-width: 50px;
-    width: 100%;
+    /*align-self: flex-start;*/
+    width: 50px;
+    /*width: 100%;*/
+    height: auto;
     margin-left: 10px;
+
 }
 
 .chatName {
@@ -82,7 +84,6 @@ img.chatBox {
 textarea.chatBox {
     width: 85%;
     resize: initial;
-    /*font: 2em;*/
     margin-left: 10px;
     margin-bottom: 10px;
     margin-right: 10px;

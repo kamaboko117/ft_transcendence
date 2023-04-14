@@ -17,20 +17,19 @@ type Channel_ret = {
 
 @Controller('chat')
 export class ChatController {
-    constructor(/*private chatGateway: ChatGateway, */private chatService: ChatService,
+    constructor(private chatService: ChatService,
         private userService: UsersService) { }
 
     /* Get part */
     @UseGuards(JwtGuard)
     @Get('public')
-    getAllPublic(/*@Request() req: any*/): Promise<InformationChat[]> {
+    getAllPublic(): Promise<InformationChat[]> {
         return (this.chatService.getAllPublic());
     }
 
     @UseGuards(JwtGuard)
     @Get('private')
-    async getAllPrivate(@Request() req: any/*,
-        @Query('id') id: Readonly<string>*/): Promise<InformationChat[]> {
+    async getAllPrivate(@Request() req: any): Promise<InformationChat[]> {
         const user: TokenUser = req.user;
         return (await this.chatService.getAllPrivate(user.userID));
     }

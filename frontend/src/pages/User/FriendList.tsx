@@ -107,10 +107,8 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
 			setUserInfo({ username: name, id: 0, bl: null, fl: null, avatarPath: null });
 	}
 	else {
-		//setUserId(0);
 		setUserInfo({ username: "", id: 0, bl: null, fl: null, avatarPath: null })
 	}
-	//setTop(parentNode.offsetTop);
 }
 
 type typeButtonsInfo = {
@@ -244,7 +242,9 @@ export const Display = (props: {
 		</Element>
 		<div className={chooseClassName} style={{ position: "relative" }}>
 			<label className="userInfo">{props.userInfo.username}</label>
-			<img src={"/" + props.userInfo.avatarPath} className="avatarList"
+			<img src={"/" + props.userInfo.avatarPath}
+				srcSet={"/" + props.userInfo.avatarPath + ' 2x'}
+				className="avatarList"
 				alt={"avatar " + props.userInfo.username}
 				onError={handleImgError}
 			/>

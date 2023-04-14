@@ -37,18 +37,16 @@ import { MatchMakingService } from './matchmaking.services';
   }
 })
 export class MatchMakingGateway
-  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
-{
+  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   @WebSocketServer() server: Server;
   afterInit(server: Server) { console.log('Matchmaking Gateway initialized'); }
 
   constructor(
     private readonly MMService: MatchMakingService,
-    ) {  }
+  ) { }
 
 
-  async handleConnection(client: Socket) 
-  {
+  async handleConnection(client: Socket) {
     console.log("client id: " + client.id + 'made a new connection Matchmaking Gateway');
     client.join(client.id);
   }
@@ -59,9 +57,9 @@ export class MatchMakingGateway
     try {
       console.log('queue in');
       const user = socket.user;
-      
+
       if (typeof user.userID != 'number') return false;
-      
+
       /*
       console.log(socket.rooms)
       socket.join('aRoom');
@@ -69,19 +67,19 @@ export class MatchMakingGateway
       console.log(socket.rooms)
       */
 
-//      console.log(this.server.sockets.adapter.rooms);
+      //      console.log(this.server.sockets.adapter.rooms);
 
       console.log("socket id: " + socket.id);
       this.server.to(socket.id).emit('matchmakingfailed', true);
       //this.server.emit('matchmakingfailed', {
       //    message: socket.id,
-//       });
-      
+      //       });
+
       this.MMService.queuein(user, socket, this.server);
     } catch (error) {
       console.log('matchmaking failed');
-   }
-   return { event: 'roomCreated', room: 'aRoom' };
+    }
+    return { event: 'roomCreated', room: 'aRoom' };
   }
 
   @UseGuards(JwtGuard)
@@ -149,7 +147,7 @@ export class MatchMakingGateway
       // leave the page? = leave queue
 
       const user = socket.user;
-      
+
     } catch (error) {
       console.log('disconnect MM failed');
       this.server.to(socket.user.room).emit('disconnect MM failed', {

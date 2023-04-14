@@ -38,3 +38,9 @@ img.avatarList {
 .element>.user {
     background-color: coral;
 }
+
+@media screen and (max-width: 600px) {
+    form>input {
+        width: 90%;
+    }
+}

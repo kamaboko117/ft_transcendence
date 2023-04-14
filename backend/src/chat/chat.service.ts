@@ -145,13 +145,6 @@ export class ChatService {
     /* Create private message part */
     async createPrivateMessage(userOne: Readonly<number>,
         userTwo: Readonly<string>): Promise<string> {
-        /*let newChat: {
-            id: number, name: string, accesstype: string
-        } = {
-            id: userOne + Number(userTwo),
-            name: String(userOne + userTwo),
-            accesstype: '4'
-        };*/
         /* create Private message channel */
         await this.chatsRepository.createQueryBuilder()
             .insert().into(Channel)
@@ -283,8 +276,8 @@ export class ChatService {
         const fl = this.blFrRepository.createQueryBuilder("t2").subQuery()
             .from(BlackFriendList, "t2")
             .select(["focus_id", "type_list"])
-            .where("owner_id = :ownerId"/*, { ownerId: userId }*/)
-            .andWhere("type_list = :type2"/*, { type2: 0 }*/)
+            .where("owner_id = :ownerId")
+            .andWhere("type_list = :type2")
 
         const arr: any = await this.listUserRepository
             .createQueryBuilder("list_user")

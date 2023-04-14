@@ -3,10 +3,6 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
-//type Code = {
-//  code: string
-//}
-
 @Injectable()
 export class FakeStrategy extends PassportStrategy(Strategy, "fake-custom") {
     constructor(private authService: AuthService) {

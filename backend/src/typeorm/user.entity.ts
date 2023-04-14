@@ -9,13 +9,6 @@ import { Stat } from './stat.entity';
 
 @Entity()
 export class User {
-  /* Possibilite de se servir de userID (42) comme cle primaire */
-  /*@PrimaryGeneratedColumn({
-    type: 'bigint',
-    name: 'id',
-  })
-  id: number;
-*/
   //the ID provided by 42
   @PrimaryColumn({
     type: 'bigint',
@@ -34,7 +27,6 @@ export class User {
   @Column({ nullable: true })
   avatarPath!: string;
 
-  /* Refresh token */
   @Column({
     nullable: false,
     default: '',
