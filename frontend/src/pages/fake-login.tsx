@@ -19,10 +19,8 @@ const CheckFa = (props: { userCtx, fa: boolean | undefined }) => {
   );
 }
 
-function FakeLogin(props: {jwt: string}) {
+function FakeLogin(props: { jwt: string }) {
   const userCtx: any = useContext(UserContext);
-  //const [jwt, setJwt] = useState<null | string>(null);
-  //const [userId, setUserId] = useState<number>(0);
   const [errorCode, setErrorCode] = useState<number>(200);
   const [fa, setFa] = useState<boolean | undefined>(undefined);
   useEffect(() => {
@@ -32,7 +30,7 @@ function FakeLogin(props: {jwt: string}) {
         if (response.ok)
           return (response.json());
         setErrorCode(response.status);
-      }).catch(e=>console.log(e)));
+      }).catch(e => console.log(e)));
     };
     getUser().then(res => {
       if (typeof res != "undefined") {
@@ -45,29 +43,10 @@ function FakeLogin(props: {jwt: string}) {
       }
     })
   }, []);
-  //const { setToken } = useContext(SocketContext);
-  /*useEffect(() => {
-    const login = async () => {
-      await userCtx.loginUser({
-        jwt: jwt,
-        username: "",
-        userId: String(userId)
-      });
-    }
-    login();
-    //setToken(jwt);
-  }, [jwt])*/
+
   if (errorCode >= 400)
     return (<FetchError code={errorCode} />);
-  /*if (typeof jwt != "undefined" && jwt != null) {
-    console.log(userCtx);
-    return (
-      <div>
-        <h1>Logged as</h1>
-        <UserItem jwt={jwt} /*userID={userCtx.user.userID} username={userCtx.user.username}*/// />
-   //   </div>
-   // );
-  //}
+
   return (<>
     <p>Logging user...</p>
     {props.jwt && <CheckFa userCtx={userCtx} fa={fa} />}
