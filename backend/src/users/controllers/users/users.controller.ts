@@ -374,7 +374,7 @@ export class UsersController {
 
     @Get('updateHistory')
     async updateHistoryfunc() {
-        this.userService.updateHistory('Simple', 2988219, 74133, 2988219);
+        // this.userService.updateHistory('Simple', 2988219, 74133, 2988219);
     }
 
 
