@@ -95,5 +95,16 @@ div.navbar-btn {
     span.navbar-line::after {
         top: 8px;
     }
+}
 
+@media screen and (max-width: 200px) {
+    .navbar {
+        align-items: inherit;
+    }
+}
+
+@media screen and (max-width: 130px) {
+    .navbar {
+        font-size: 10px;
+    }
 }
