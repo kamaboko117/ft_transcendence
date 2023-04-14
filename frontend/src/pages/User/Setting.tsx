@@ -25,6 +25,10 @@ type rawMH = {
 	t3_username: string
 }
 
+type nameAchivement = {
+	name: string
+}
+
 
 /* display default img if not img loaded */
 
@@ -164,7 +168,47 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
 	);
 }
 
-const rank_index = ['BRONZE', 'ARGENT', 'OR'];
+const rank_index = ['BRONZE', 'SILVER', 'GOLD'];
+
+export const Achivement_Raw = (props: {nameAchivement: Array<nameAchivement> | undefined}) => {
+	let i: number = 0;
+	return(<>
+		{props.nameAchivement && props.nameAchivement.map((val) => 
+			<tr key={++i}>
+				<td>{val.name}</td>
+			</tr>
+		)}
+	</>)
+}
+
+const LoadAchivement = (props: {jwt: string | null, setErrorCode}) => {
+	const [listAchivement, setList] = useState<Array<nameAchivement>>();
+	useEffect(() => {
+		if (props.jwt) {
+			fetch('https://' + location.host + '/api/users/achiv/', {headers: header(props.jwt)})
+			.then(res => {
+				if (res.ok)
+					return(res.json())
+				props.setErrorCode(res.status);
+			}).then((res) => {
+				setList(res);
+			})
+		}
+	}, [props.jwt])
+
+	return(
+		<table className="profile-table-2">
+			<thead>
+				<tr>
+					<th>Achivements</th>
+				</tr>
+			</thead>
+			<tbody>
+					< Achivement_Raw nameAchivement={listAchivement}/>
+			</tbody>
+		</table>
+	);
+}
 
 const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: string | null}) => {
 	const [vc, setVc] = useState<number>(0);
@@ -196,9 +240,9 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: s
 			})
 	}, [nb_g])
 
-	useEffect(() => {
-		fetch('https://' + location.host + '/api/users/updateHistory', {headers: header(props.jwt)})	
-	}, []);
+	//useEffect(() => {
+//		fetch('https://' + location.host + '/api/users/achiv', {headers: header(props.jwt)})	
+//	}, []);
 
 	return (<>
 		<ul>
@@ -256,6 +300,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 			<h1>{userCtx.getUsername()}</h1>
 			<article>
 				<LoadResultGame user={user} setErrorCode={setErrorCode} jwt={props.jwt} />
+				<LoadAchivement setErrorCode={setErrorCode} jwt={props.jwt}/>
 			</article>
 			<article>
 				{/*getLocation.pathname === "/Setting" && <label>Username: {userCtx.getUsername()}</label>*/}
