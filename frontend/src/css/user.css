@@ -39,8 +39,21 @@ img.avatarList {
     background-color: coral;
 }
 
+.profile-table {
+    margin: auto;
+}
+
+ul {
+    list-style-type: none;
+}
 @media screen and (max-width: 600px) {
     form>input {
         width: 90%;
+    }
+    h1 {
+        margin-left: 15px;
+    }
+    .profile-table {
+        width: 100%;
     }
 }

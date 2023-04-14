@@ -5,6 +5,8 @@ import { DataSource, Repository } from "typeorm";
 import { CreateUserDto } from "src/users/dto/users.dtos";
 import { Stat } from "src/typeorm/stat.entity";
 import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
+import { MatchHistory } from "src/typeorm/matchHistory.entity";
+import { identity } from "rxjs";
 
 const validateURL = "https://api.intra.42.fr/oauth/token"
 const infoURL = "https://api.intra.42.fr/oauth/token/info"
@@ -20,6 +22,8 @@ export class UsersService {
         private readonly statRepository: Repository<Stat>,
         @InjectRepository(BlackFriendList)
         private readonly blFrRepository: Repository<BlackFriendList>,
+        @InjectRepository(MatchHistory)
+        private readonly matchHistoryRepository: Repository<MatchHistory>,        
         private dataSource: DataSource,
     ) { }
 
@@ -27,12 +31,9 @@ export class UsersService {
         const newUser = this.userRepository.create(createUserDto);
         const stat = new Stat();
 
-        stat.defeat = 0;
         stat.level = 0;
-        stat.nb_games = 0;
         stat.rank = 0;
         stat.user = newUser;
-        stat.victory = 0;
         await this.statRepository.save(stat);
         return (newUser);
     }
@@ -153,28 +154,143 @@ export class UsersService {
         .getMany() OU getOne();
     */
 
-    async getUserProfile(id: number) {
-        const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
-            .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
-            .addSelect(["Stat.victory", "Stat.defeat",
-                "Stat.nb_games", "Stat.level", "Stat.rank"])//ici ajout les column des inner joins
-            .innerJoin('user.sstat', 'Stat')// utiliser l''alias a droite, obligatoire je crois
-            .where('user.user_id = :user') //:user = setParameters()
-            .setParameters({ user: id })//anti hack
-            .getOne();
-        return (user);
-    }
-
+        async getUserProfile(id: number) {
+            const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
+                .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
+                .addSelect(["Stat.level", "Stat.rank"])//ici ajout les column des inner joins
+                .innerJoin('user.sstat', 'Stat')// utiliser l''alias a droite, obligatoire je crois
+                .where('user.user_id = :user') //:user = setParameters()
+                .setParameters({ user: id })//anti hack
+                .getOne();
+             return (user);
+        }
+    
+    
+        /* Nombre de Partie joué(s)
+         * SELECT COUNT("player_one", "player_two") 
+         * FROM "match_history" 
+         * WHERE "player_two" = id OR "player_one" = id
+         */
+    
+        /* Nombre de Partie gangée(s)
+         * SELECT COUNT("user_victory")
+         * FROM "match_history"
+         * WHERE "user_victory" = id
+         */
+        async getVictoryNb(id: number) {
+            const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
+                .select(['user_victory'])
+                .where('user_victory = :user')
+                .setParameters({ user: id })//anti hack
+                .getCount();
+            return (ret_nb);
+        }
+    
+        async getGamesNb(id: number) {
+            const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
+                .select(['player_one', 'player_two'])
+                .where('player_one = :user OR player_two = :user')
+                .setParameters({user: id})
+                .getCount()
+            return(ret_nb);
+        }
+    /*
+     * 	select type_game, t1.username, t2.username, t3.username
+        from match_history
+        inner join "user" t1 on player_one = t1.user_id
+        inner join "user" t2 on player_two = t2.user_id
+        inner join "user" t3 on user_victory = t3.user_id
+        where (player_one = id OR player_two = id)
+     */
+    
+    // SELECT (type_game, player_one, player_two, user_victory) FROM match_history WHERE (player_one = 74133 OR player_two = 74133);
+        async getRawMH(id: number) {
+            const ret_raw = await this.matchHistoryRepository.createQueryBuilder("match")
+                .select(['type_game', 't1.username', 't2.username', 't3.username'])
+                .innerJoin("User", "t1", "player_one = t1.user_id")
+                .innerJoin("User", "t2", "player_two = t2.user_id")
+                .innerJoin("User", "t3", "user_victory = t3.user_id")
+                .where('player_one = :user OR player_two = :user')
+                .setParameters({user: id})
+                .getRawMany();
+            return(ret_raw);
+        }
+    
     async findUsersById(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
-            .addSelect(["Stat.victory", "Stat.defeat",
-                "Stat.nb_games", "Stat.level", "Stat.rank"])
+            .addSelect(["Stat.level", "Stat.rank"])
             .innerJoin('user.sstat', 'Stat')
             .where('user.user_id = :user')
             .setParameters({ user: id })
             .getOne();
         return (user);
+    }
+
+
+    async updateConsecutive(id:number, consecutive_nb: number) {
+            await this.statRepository.createQueryBuilder()
+            .update(Stat)
+            .set({consecutive: consecutive_nb})
+            .where('user_id = :id', {id})
+            .execute()
+    }
+
+    async updateRank(id: number, rk: number) {
+        this.statRepository.createQueryBuilder()
+        .update(Stat)
+        .set({rank: rk})
+        .where('user_id = :id', {id})
+        .execute()
+    }
+
+    async updateLevel(id: number, lvl: number) {
+        this.statRepository.createQueryBuilder()
+        .update(Stat)
+        .set({level: Math.floor(lvl / 3)})
+        .where('user_id = :id', {id})
+        .execute()
+    }
+
+    async updateHistory(typeGame: string,id1: number, id2: number, idVictory: number) {
+        if (id1 == id2)
+            return;
+        this.matchHistoryRepository.createQueryBuilder()
+            .insert()
+            .into(MatchHistory)
+            .values([{
+                type_game: typeGame, player_one: id1, player_two: id2, user_victory: idVictory
+            }])
+            .execute();
+        //we want rank et consecutive victory
+        const stat = await this.statRepository.createQueryBuilder("stat")
+        .select(['stat.consecutive', 'stat.rank'])
+        .where('stat.user_id = :id', {id: idVictory})
+        .getOne()
+        console.log(stat);
+        //update consecutive victory
+        let nb_consecutive = 0;
+        if (stat)
+            nb_consecutive = stat.consecutive + 1;
+        if (stat && id1 != idVictory) {
+            this.updateConsecutive(id1, 0);
+        } else if (stat && id2 != idVictory) {
+            this.updateConsecutive(id2, 0);
+        }
+        if (stat && stat.rank < 2)
+            this.updateConsecutive(idVictory, nb_consecutive);
+        //update victory rank
+        if (stat && nb_consecutive == 3) {
+            this.updateConsecutive(idVictory, 0);
+            if (stat.rank < 2) {
+                this.updateRank(idVictory, stat.rank + 1);
+            }
+        }
+        // taking nb_victory
+        const vc = await this.getVictoryNb(idVictory);
+        // updating level
+        if (vc)
+            this.updateLevel(idVictory, vc);
     }
 
     async findUserByIdForGuard(id: number) {
