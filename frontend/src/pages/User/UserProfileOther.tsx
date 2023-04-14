@@ -1,28 +1,34 @@
 import React, { useEffect, useState, useContext, MouseEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FetchError, header, headerPost } from '../../components/FetchError';
-import UserContext from '../../contexts/UserContext';
+import UserContext, { User } from '../../contexts/UserContext';
 import ContextDisplayChannel, { updateBlackFriendList } from '../../contexts/DisplayChatContext';
 import { inviteGame } from '../../components/Chat/ListUser';
-
+import { Match_History_Raw } from './Setting';
+import '../../css/user.css';
 
 /* useLocation recover values from url
 	useParams will get parameters id from url
 */
 
 type statInfo = {
-	victory: number,
-	defeat: number,
-	nb_games: number,
 	level: number,
 	rank: number
+}
+
+type rawMH = {
+	type_game: string,
+	t1_username: string,
+	t2_username: string,
+	t3_username: string
 }
 
 type userInfo = {
 	username: string,
 	userID: number,
 	avatarPath: string | null,
-	sstat: statInfo
+	sstat: statInfo,
+	match_h: rawMH
 }
 
 /* display default img if not img loaded */
@@ -160,6 +166,83 @@ const FriendBlockUser = (props: { userCtx, id, otherUser: userInfo | undefined, 
 	return (<></>);
 }
 
+const Match_History_Table = (props: Readonly<{ jwt: string | null , id: string}>) => {
+	const [raw_MH, setRaw] = useState<Array<rawMH>>();
+	const [errorCode, setErrorCode] = useState<number>(200);
+	if (props.jwt === null)
+		return (<div>Must be logged</div>);
+	useEffect(() => {
+		fetch('https://' + location.host + `/api/users/get_raw_mh_user/${props.id}`, {headers: header(props.jwt)})
+		.then(res => {
+			if (res.ok)
+				return(res.json());
+			setErrorCode(res.status);
+		}).then((res: Array<rawMH>) => {
+			if (res) {
+				setRaw(res);
+			}
+		})
+	}, [])
+	
+	return(
+		<table className="profile-table">
+			<thead>
+				<tr>
+					<th>Type Game</th>
+					<th>Player One</th>
+					<th>Player Two</th>
+					<th>Player Victory</th>
+				</tr>
+			</thead>
+			<tbody>
+					< Match_History_Raw rawMH={raw_MH}/>
+			</tbody>
+		</table>
+	);
+}
+
+const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | undefined, jwt: string}) => {
+	const [vc, setVC] = useState<number>(0);
+	const [nb_g, setNb_g] = useState<number>(0);
+	const [df, setDf] = useState<number>(0);
+	useEffect(() => {
+		fetch('https://' + location.host + `/api/users/get-games-nb-other/${props.id}`, {headers: header(props.jwt)})
+			.then(res => {
+				if (res.ok)
+					return(res.text())
+				props.setErrorCode(res.status);
+			}).then((res) => {
+				setNb_g(Number(res));
+			})
+	}, [])
+
+	useEffect(() => {
+		fetch('https://' + location.host + `/api/users/get-victory-nb-other/${props.id}`, {headers: header(props.jwt)})
+			.then(res => {
+				if (res.ok)
+					return (res.text())
+				props.setErrorCode(res.status);
+			}).then((res) => {
+				if (res) {
+					setVC(Number(res));
+					setDf(nb_g - vc);
+				}
+			})
+	}, [nb_g])
+	return(
+		<>
+			<ul>
+				<li>Nb_Games: {nb_g}</li>
+				<li>Victoire: {vc}</li>
+				<li>Défaite: {df}</li>
+				<li>Rang: {props.otherUser?.sstat.rank}</li>
+				<li>Niveau: {props.otherUser?.sstat.level}</li>
+			</ul>
+			< Match_History_Table jwt={props.jwt} id={props.id}/>
+		</>
+	);
+}
+
 /* Focus user profile */
 const UserProfileOther = (props: { jwt: string }) => {
 	const id = useParams().id as string;
@@ -184,6 +267,9 @@ const UserProfileOther = (props: { jwt: string }) => {
 			}).catch(err => console.log(err));
 	}, []);
 
+
+
+
 	if (errorCode >= 400)
 		return (< FetchError code={errorCode} />);
 	if (typeof otherUser != undefined && otherUser?.userID === 0)
@@ -198,12 +284,8 @@ const UserProfileOther = (props: { jwt: string }) => {
 				alt={"avatar " + otherUser?.username}
 				onError={handleImgError}
 			/>}
-			<ul>
-				<li>Victoire: {otherUser?.sstat.victory}</li>
-				<li>Défaite: {otherUser?.sstat.defeat}</li>
-				<li>Rang: {otherUser?.sstat.rank}</li>
-				<li>Niveau: {otherUser?.sstat.level}</li>
-			</ul>
+			<LoadResultGame id={id} setErrorCode={setErrorCode} jwt={props.jwt} otherUser={otherUser}/>
+
 			<FriendBlockUser userCtx={userCtx} id={id} otherUser={otherUser}
 				jwt={props.jwt} />
 
