@@ -58,6 +58,12 @@ ul {
     list-style-type: none;
 }
 
+.status {
+    display: flex;
+}
+.status > span {
+    margin-left: 15px;
+}
 @media screen and (max-width: 600px) {
     form>input {
         width: 90%;

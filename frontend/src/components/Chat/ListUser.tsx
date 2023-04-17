@@ -204,6 +204,8 @@ export const StatusUser = (props: { userId: number, jwt: string }) => {
     const { usrSocket } = useContext(SocketContext);
     const [status, setStatus] = useState<number>(0);
     useEffect(() => {
+        console.log("st")
+        console.log(props.userId)
         //emit ask user conneced/ig on map, then return reponse
         //.on connections and deconnections
         usrSocket?.emit("status", { userId: props.userId }, (res: { code: number }) => {
@@ -220,24 +222,24 @@ export const StatusUser = (props: { userId: number, jwt: string }) => {
             usrSocket?.off("currentStatus");
             setStatus(0);
         })
-    }, [props.userId, props.jwt]);
+    }, [props.userId, props.jwt, usrSocket]);
     return (<>
         {
-            status === 0 && <div>
-                <div style={{ width: "20px", backgroundColor: "grey" }}>
-                </div><span style={{ flex: "1" }}>Offline</span>
+            status === 0 && <div className='status'>
+                <div style={{ width: "20px", height: "20px", backgroundColor: "grey" }}>
+                </div><span>Offline</span>
             </div>
         }
         {
-            status === 1 && <div>
-                <div style={{ width: "20px", backgroundColor: "green" }}>
-                </div><span style={{ flex: "1" }}>Online</span>
+            status === 1 && <div className='status'>
+                <div style={{ width: "20px", height: "20px", backgroundColor: "green" }}>
+                </div><span>Online</span>
             </div>
         }
         {
-            status === 2 && <div>
-                <div style={{ width: "20px", backgroundColor: "orange" }}>
-                </div><span style={{ flex: "1" }}>In game</span>
+            status === 2 && <div className='status'>
+                <div style={{ width: "20px", height: "20px", backgroundColor: "orange" }}>
+                </div><span>In game</span>
             </div>
         }
     </>);
