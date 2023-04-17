@@ -471,6 +471,20 @@ export class UsersController {
     createUsers(@Body() createUserDto: CreateUserDto) {
         return this.userService.createUser(createUserDto);
     }
+    @Get('achiv')
+    async achiv(@Request() req: any) {
+        let user: TokenUser = req.user;
+        await this.userService.updateAchive(74133);
+        const resAchivement = await this.userService.getAchivementById(user.userID);
+        return (resAchivement);
+    }
+
+    @Get('achiv-other/:id')
+    async achivOther(@Param('id', ParseIntPipe) id: number) {
+        await this.userService.updateAchive(id);
+        const resAchivement = await this.userService.getAchivementById(id);
+        return (resAchivement);
+    }
 
     @Get(':id')
     async findUsersById(@Param('id', ParseIntPipe) id: number) {
@@ -479,4 +493,6 @@ export class UsersController {
             return ({ userID: 0, username: "", avatarPath: null, sstat: {} });
         return (user)
     }
+
+    
 }

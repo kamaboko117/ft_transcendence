@@ -71,7 +71,7 @@ export const ListMsg = (props: any) => {
                 props.lstMsg.slice(arrayLength, props.lstMsg.length).map((msg: msg) => (
                     <React.Fragment key={++i}>
                         <div style={{ border: "1px solid black" }}>
-                            {msg.user?.avatarPath != null && <img
+                            {<img
                                 className="chatBox"
                                 src={'/' + msg.user.avatarPath}
                                 srcSet={'/' + msg.user.avatarPath + ' 2x'}

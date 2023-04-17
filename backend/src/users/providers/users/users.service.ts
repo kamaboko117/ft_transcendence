@@ -7,6 +7,7 @@ import { Stat } from "src/typeorm/stat.entity";
 import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
 import { MatchHistory } from "src/typeorm/matchHistory.entity";
 import { identity } from "rxjs";
+import { Achievements } from "src/typeorm/achievement.entity";
 
 const validateURL = "https://api.intra.42.fr/oauth/token"
 const infoURL = "https://api.intra.42.fr/oauth/token/info"
@@ -25,6 +26,8 @@ export class UsersService {
         @InjectRepository(MatchHistory)
         private readonly matchHistoryRepository: Repository<MatchHistory>,        
         private dataSource: DataSource,
+        @InjectRepository(Achievements)
+        private readonly achivementRepository: Repository<Achievements>,   
     ) { }
 
     async createUser(createUserDto: CreateUserDto) {
@@ -185,6 +188,15 @@ export class UsersService {
                 .getCount();
             return (ret_nb);
         }
+
+        async getLevel(id: number) {
+            const ret_nb = await this.statRepository.createQueryBuilder("stat")
+                .select('stat.level')
+                .where('stat.user_id = :user')
+                .setParameters({ user: id })
+                .getOne();
+            return (ret_nb);
+        }
     
         async getGamesNb(id: number) {
             const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
@@ -267,7 +279,6 @@ export class UsersService {
         .select(['stat.consecutive', 'stat.rank'])
         .where('stat.user_id = :id', {id: idVictory})
         .getOne()
-        console.log(stat);
         //update consecutive victory
         let nb_consecutive = 0;
         if (stat)
@@ -291,6 +302,77 @@ export class UsersService {
         // updating level
         if (vc)
             this.updateLevel(idVictory, vc);
+    }
+
+    async insertAchivement(id: number, name: string) {
+        await this.achivementRepository.createQueryBuilder()
+        .insert()
+        .into(Achievements)
+        .values([{
+            name: name, user_id: id
+        }])
+        .execute();
+    }
+
+    async checkIfUserHaveAch(id: number) {
+        const check = await this.getAchivementById(id);
+        const achOk = {
+            fg: false,
+            fv: false,
+            fl: false,
+            sr: false,
+            gr: false
+        }
+
+        check.forEach(function(elem){
+            console.log(elem)
+            if (elem.name === "First game played !")
+                achOk.fg = true;
+            else if (elem.name === "First victory !")
+                achOk.fv = true;
+            else if (elem.name === "First Level !")
+                achOk.fl = true;
+            else if (elem.name === "SILVER rank !")
+                achOk.sr = true;
+            else if (elem.name === "GOLD rank !")
+                achOk.gr = true;
+        });
+        return (achOk);
+    }
+
+    async updateAchive(id: number) {
+        let typeAchivement = "";
+
+        const nbGame = await this.getGamesNb(id);
+        const nbVic = await this.getVictoryNb(id);
+        const stat = await this.statRepository.createQueryBuilder("stat")
+        .select(['stat.consecutive', 'stat.rank'])
+        .where('stat.user_id = :id', {id: id})
+        .getOne();
+        const getLvl = await this.getLevel(id);
+
+        const checkAchiv = await this.checkIfUserHaveAch(id);
+        console.log(checkAchiv)
+        console.log(nbGame)
+        console.log(getLvl)
+        if (nbGame == 1 && checkAchiv.fg == false)
+            await this.insertAchivement(id, "First game played !");
+        if (nbVic == 1 && checkAchiv.fv == false)
+            await this.insertAchivement(id, "First victory !");
+        if (getLvl && getLvl.level == 1 && checkAchiv.fl == false)
+            await this.insertAchivement(id, "First Level !");
+        if (stat?.rank == 1 && checkAchiv.sr == false)
+            await this.insertAchivement(id, "SILVER rank !");
+        if (stat?.rank == 2 && checkAchiv.gr == false)
+            await this.insertAchivement(id, "GOLD rank !");
+    }
+
+    async getAchivementById(id: number) {
+        const achiv = await this.achivementRepository.createQueryBuilder('ac')
+        .select('ac.name')
+        .where('ac.user_id = :id', {id: id})
+        .getMany()
+        return (achiv);
     }
 
     async findUserByIdForGuard(id: number) {
@@ -460,4 +542,6 @@ export class UsersService {
         }
     }
     /* end add remove friend - block unblock user part  */
+
+
 }
