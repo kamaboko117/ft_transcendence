@@ -1,4 +1,4 @@
-import { Controller, Request, Query, Get, Post, Body, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Request, Query, Get, Post, Body, HttpException, HttpStatus, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { InformationChat, TokenUser, DbChat } from './chat.interface';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { PswChat } from './psw-chat.dto';
@@ -118,7 +118,7 @@ export class ChatController {
     */
     @Get('private-messages')
     async openPrivateMessage(@Request() req: any,
-        @Query('id') id: string): Promise<{ asw: string | null | undefined }> {
+        @Query('id', ParseIntPipe) id: string): Promise<{ asw: string | null | undefined }> {
         const user: TokenUser = req.user;
 
         if (user.userID === Number(id))

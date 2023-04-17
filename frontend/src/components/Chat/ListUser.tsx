@@ -139,13 +139,13 @@ export const userProfile = (event: MouseEvent<HTMLButtonElement>,
 type aswType = {
     asw: string | null | undefined
 }
-export const directMessage = (event: MouseEvent<HTMLButtonElement>,
+export const directMessage = async (event: MouseEvent<HTMLButtonElement>,
     setDisplay: any, setId: React.Dispatch<React.SetStateAction<string>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-    userId: number, jwt: string): void => {
+    userId: number, jwt: string): Promise<void> => {
     event.preventDefault();
 
-    fetch('https://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
+    await fetch('https://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
         id: String(userId),
     }), { headers: header(jwt) })
         .then(res => {
@@ -154,6 +154,7 @@ export const directMessage = (event: MouseEvent<HTMLButtonElement>,
             setErrorCode(res.status)
         }).then((res: aswType) => {
             if (res) {
+                console.log(res)
                 setDisplay(true);
                 if (res.asw)
                     setId(res.asw);
