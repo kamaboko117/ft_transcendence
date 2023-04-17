@@ -23,6 +23,11 @@ label.userInfo {
     display: inline-flex;
 }
 
+.userInfoClick > img {
+    max-width: 60px;
+    margin: auto;
+}
+
 img.avatar {
     height: auto;
     max-width: 100px;
@@ -95,5 +100,8 @@ ul {
     th,
     td, li, label {
         font-size: 0.4em;
+    }
+    .userInfoClick {
+        width: 100% !important;
     }
 }
