@@ -44,6 +44,11 @@ img.avatarList {
     margin: auto;
 }
 
+.profile-table-2 {
+    margin: auto;
+    margin-top: 15px;
+}
+
 ul {
     list-style-type: none;
 }

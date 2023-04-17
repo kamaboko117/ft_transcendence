@@ -4,7 +4,7 @@ import { FetchError, header, headerPost } from '../../components/FetchError';
 import UserContext, { User } from '../../contexts/UserContext';
 import ContextDisplayChannel, { updateBlackFriendList } from '../../contexts/DisplayChatContext';
 import { inviteGame } from '../../components/Chat/ListUser';
-import { Match_History_Raw } from './Setting';
+import { Achivement_Raw, Match_History_Raw } from './Setting';
 import '../../css/user.css';
 
 /* useLocation recover values from url
@@ -29,6 +29,10 @@ type userInfo = {
 	avatarPath: string | null,
 	sstat: statInfo,
 	match_h: rawMH
+}
+
+type nameAchivement = {
+	name: string
 }
 
 /* display default img if not img loaded */
@@ -201,7 +205,36 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null , id: string}>
 	);
 }
 
-const rank_index = ['BRONZE', 'ARGENT', 'OR'];
+const rank_index = ['BRONZE', 'SILVER', 'GOLD'];
+
+const LoadAchivement = (props: {jwt: string | null, setErrorCode, id: string}) => {
+	const [listAchivement, setList] = useState<Array<nameAchivement>>();
+	useEffect(() => {
+		if (props.jwt) {
+			fetch('https://' + location.host + '/api/users/achiv-other/' + props.id, {headers: header(props.jwt)})
+			.then(res => {
+				if (res.ok)
+					return(res.json())
+				props.setErrorCode(res.status);
+			}).then((res) => {
+				setList(res);
+			})
+		}
+	}, [props.jwt])
+
+	return(
+		<table className="profile-table-2">
+			<thead>
+				<tr>
+					<th>Achivements</th>
+				</tr>
+			</thead>
+			<tbody>
+					< Achivement_Raw nameAchivement={listAchivement}/>
+			</tbody>
+		</table>
+	);
+}
 
 const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | undefined, jwt: string}) => {
 	const [vc, setVC] = useState<number>(0);
@@ -287,7 +320,7 @@ const UserProfileOther = (props: { jwt: string }) => {
 				onError={handleImgError}
 			/>}
 			<LoadResultGame id={id} setErrorCode={setErrorCode} jwt={props.jwt} otherUser={otherUser}/>
-
+			<LoadAchivement setErrorCode={setErrorCode} jwt={props.jwt} id={id}/>
 			<FriendBlockUser userCtx={userCtx} id={id} otherUser={otherUser}
 				jwt={props.jwt} />
 

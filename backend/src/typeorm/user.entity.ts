@@ -7,6 +7,7 @@ import { ListMute } from '../chat/lstmute.entity';
 import { BlackFriendList } from './blackFriendList.entity';
 import { Stat } from './stat.entity';
 import { MatchHistory } from './matchHistory.entity';
+import { Achievements } from './achievement.entity';
 
 @Entity()
 export class User {
@@ -83,4 +84,7 @@ export class User {
   @OneToMany(() => MatchHistory, (matchhistory) => matchhistory.victory_user)
   userVictory: MatchHistory[];
 
+  //One
+  @OneToMany(() => Achievements, (achievement) => achievement.user)
+  achievement: User[];
 }
