@@ -24,6 +24,9 @@ import { MatchHistory } from "src/typeorm/matchHistory.entity";
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import * as bcrypt from 'bcrypt';
+//convert into promise
+import { promisify } from "util"; 'util';
+const sizeOf = promisify(require ('image-size'));
 
 @Controller("users")
 export class UsersController {
@@ -129,8 +132,8 @@ export class UsersController {
         });
     }
 
-    checkUpdateUserError(ret_user: any, ret_user2: any,
-        body: any) {
+    async checkUpdateUserError(ret_user: any, ret_user2: any,
+        body: any, file: Express.Multer.File | undefined) {
         let err: string[] = [];
         const regex2 = /^[\w\d]{3,}$/;
         const regexRet2 = regex2.test(body.username);
@@ -149,6 +152,13 @@ export class UsersController {
         }
         if (regexRet2 === false)
             err.push("Username format is wrong, please use alphabet and numerics values");
+        let dimensions;
+        if (file)
+            dimensions = await sizeOf(file.path);
+        if (dimensions && typeof dimensions != "undefined" && 61 < dimensions.width)
+            err.push("Image size width must be below 60px.");
+        if (dimensions && typeof dimensions != "undefined" && 61 < dimensions.height)
+            err.push("Image size height must be below 60px.");    
         return (err);
     }
 
@@ -161,13 +171,14 @@ export class UsersController {
         ], fileIsRequired: false
     }),
     ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
-        console.log("Heheh");
+        console.log(file)
         let user: TokenUser = req.user;
         const ret_user = await this.userService.findUserByName(body.username);
         let ret_user2 = await this.userService.findUsersById(user.userID);
+    
         //check errors
-        let retErr = this.checkUpdateUserError(ret_user,
-            ret_user2, body);
+        let retErr = await this.checkUpdateUserError(ret_user,
+            ret_user2, body, file);
 
         if (retErr.length != 0)
             return ({ valid: false, err: retErr });
@@ -221,8 +232,8 @@ export class UsersController {
         const ret_user = await this.userService.getUserProfile(user.userID);
         const ret_user2 = await this.userService.findUserByName(body.username);
 
-        let retErr = this.checkUpdateUserError(ret_user2,
-            ret_user, body);
+        let retErr = await this.checkUpdateUserError(ret_user2,
+            ret_user, body, file);
 
         if (retErr.length != 0)
             return ({ valid: false, err: retErr });

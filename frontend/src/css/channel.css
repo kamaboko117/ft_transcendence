@@ -221,12 +221,15 @@ p.channel {
 
     input[type="text"] {
         margin-top: 20px;
-        /*width: 80%;*/
+        width: 80%;
     }
 
     label {
         text-align: left;
         width: 60%;
         flex-grow: 2;
+    }
+    form.channel {
+        width: 100%;
     }
 }

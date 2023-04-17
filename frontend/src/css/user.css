@@ -25,13 +25,13 @@ label.userInfo {
 
 img.avatar {
     height: auto;
-    max-width: 200px;
+    max-width: 100px;
     width: 100%;
 }
 
 img.avatarList {
     align-self: flex-start;
-    max-width: 50px;
+    max-width: 60px;
     width: 100%;
     margin: auto
 }
@@ -80,5 +80,20 @@ ul {
     th,
     td {
         font-size: 0.5em;
+    }
+}
+
+@media screen and (max-width: 110px) {
+    h1 {
+        font-size: 0.3em;
+    }
+
+    ul {
+        padding: 0;
+    }
+
+    th,
+    td, li, label {
+        font-size: 0.4em;
     }
 }
