@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { FetchError, header, headerPost } from '../../components/FetchError';
 import UserContext, { User } from '../../contexts/UserContext';
 import ContextDisplayChannel, { updateBlackFriendList } from '../../contexts/DisplayChatContext';
-import { inviteGame } from '../../components/Chat/ListUser';
+import { inviteGame, StatusUser } from '../../components/Chat/ListUser';
 import { Achivement_Raw, Match_History_Raw } from './Setting';
 import '../../css/user.css';
 
@@ -302,9 +302,6 @@ const UserProfileOther = (props: { jwt: string }) => {
 			}).catch(err => console.log(err));
 	}, []);
 
-
-
-
 	if (errorCode >= 400)
 		return (< FetchError code={errorCode} />);
 	if (typeof otherUser != undefined && otherUser?.userID === 0)
@@ -312,6 +309,7 @@ const UserProfileOther = (props: { jwt: string }) => {
 	return (
 		<>
 			<h1>Username: {otherUser?.username}</h1>
+			{!isNaN(Number(id)) && <StatusUser jwt={props.jwt} userId={Number(id)} />}
 			{otherUser?.avatarPath != null && <img
 				className="avatar"
 				src={'/' + otherUser.avatarPath}
