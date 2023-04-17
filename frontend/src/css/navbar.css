@@ -20,6 +20,7 @@ div.navbar_item {
 
 div.navbar_item_active {
     background-color: crimson;
+    align-self: center;
 
 }
 
