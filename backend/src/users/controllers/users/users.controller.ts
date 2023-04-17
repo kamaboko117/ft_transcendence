@@ -137,6 +137,7 @@ export class UsersController {
         let err: string[] = [];
         const regex2 = /^[\w\d]{3,}$/;
         const regexRet2 = regex2.test(body.username);
+        let dimensions;
 
         if (24 < body.username.length)
             err.push("Username is too long");
@@ -152,7 +153,7 @@ export class UsersController {
         }
         if (regexRet2 === false)
             err.push("Username format is wrong, please use alphabet and numerics values");
-        let dimensions;
+        
         if (file)
             dimensions = await sizeOf(file.path);
         if (dimensions && typeof dimensions != "undefined" && 61 < dimensions.width)
