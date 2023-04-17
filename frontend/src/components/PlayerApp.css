@@ -4,3 +4,9 @@
     left: 0;
     right: 0;
   }
+
+  @media screen and (max-width: 120px) {
+    .rhap_progress-section {
+      display: block !important;
+    }
+  }
