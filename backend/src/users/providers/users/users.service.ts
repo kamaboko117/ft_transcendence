@@ -24,10 +24,10 @@ export class UsersService {
         @InjectRepository(BlackFriendList)
         private readonly blFrRepository: Repository<BlackFriendList>,
         @InjectRepository(MatchHistory)
-        private readonly matchHistoryRepository: Repository<MatchHistory>,        
+        private readonly matchHistoryRepository: Repository<MatchHistory>,
         private dataSource: DataSource,
         @InjectRepository(Achievements)
-        private readonly achivementRepository: Repository<Achievements>,   
+        private readonly achivementRepository: Repository<Achievements>,
     ) { }
 
     async createUser(createUserDto: CreateUserDto) {
@@ -157,55 +157,55 @@ export class UsersService {
         .getMany() OU getOne();
     */
 
-        async getUserProfile(id: number) {
-            const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
-                .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
-                .addSelect(["Stat.level", "Stat.rank"])//ici ajout les column des inner joins
-                .innerJoin('user.sstat', 'Stat')// utiliser l''alias a droite, obligatoire je crois
-                .where('user.user_id = :user') //:user = setParameters()
-                .setParameters({ user: id })//anti hack
-                .getOne();
-             return (user);
-        }
-    
-    
-        /* Nombre de Partie joué(s)
-         * SELECT COUNT("player_one", "player_two") 
-         * FROM "match_history" 
-         * WHERE "player_two" = id OR "player_one" = id
-         */
-    
-        /* Nombre de Partie gangée(s)
-         * SELECT COUNT("user_victory")
-         * FROM "match_history"
-         * WHERE "user_victory" = id
-         */
-        async getVictoryNb(id: number) {
-            const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
-                .select(['user_victory'])
-                .where('user_victory = :user')
-                .setParameters({ user: id })//anti hack
-                .getCount();
-            return (ret_nb);
-        }
+    async getUserProfile(id: number) {
+        const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
+            .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
+            .addSelect(["Stat.level", "Stat.rank"])//ici ajout les column des inner joins
+            .innerJoin('user.sstat', 'Stat')// utiliser l''alias a droite, obligatoire je crois
+            .where('user.user_id = :user') //:user = setParameters()
+            .setParameters({ user: id })//anti hack
+            .getOne();
+        return (user);
+    }
 
-        async getLevel(id: number) {
-            const ret_nb = await this.statRepository.createQueryBuilder("stat")
-                .select('stat.level')
-                .where('stat.user_id = :user')
-                .setParameters({ user: id })
-                .getOne();
-            return (ret_nb);
-        }
-    
-        async getGamesNb(id: number) {
-            const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
-                .select(['player_one', 'player_two'])
-                .where('player_one = :user OR player_two = :user')
-                .setParameters({user: id})
-                .getCount()
-            return(ret_nb);
-        }
+
+    /* Nombre de Partie joué(s)
+     * SELECT COUNT("player_one", "player_two") 
+     * FROM "match_history" 
+     * WHERE "player_two" = id OR "player_one" = id
+     */
+
+    /* Nombre de Partie gangée(s)
+     * SELECT COUNT("user_victory")
+     * FROM "match_history"
+     * WHERE "user_victory" = id
+     */
+    async getVictoryNb(id: number) {
+        const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
+            .select(['user_victory'])
+            .where('user_victory = :user')
+            .setParameters({ user: id })//anti hack
+            .getCount();
+        return (ret_nb);
+    }
+
+    async getLevel(id: number) {
+        const ret_nb = await this.statRepository.createQueryBuilder("stat")
+            .select('stat.level')
+            .where('stat.user_id = :user')
+            .setParameters({ user: id })
+            .getOne();
+        return (ret_nb);
+    }
+
+    async getGamesNb(id: number) {
+        const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
+            .select(['player_one', 'player_two'])
+            .where('player_one = :user OR player_two = :user')
+            .setParameters({ user: id })
+            .getCount()
+        return (ret_nb);
+    }
     /*
      * 	select type_game, t1.username, t2.username, t3.username
         from match_history
@@ -214,20 +214,20 @@ export class UsersService {
         inner join "user" t3 on user_victory = t3.user_id
         where (player_one = id OR player_two = id)
      */
-    
+
     // SELECT (type_game, player_one, player_two, user_victory) FROM match_history WHERE (player_one = 74133 OR player_two = 74133);
-        async getRawMH(id: number) {
-            const ret_raw = await this.matchHistoryRepository.createQueryBuilder("match")
-                .select(['type_game', 't1.username', 't2.username', 't3.username'])
-                .innerJoin("User", "t1", "player_one = t1.user_id")
-                .innerJoin("User", "t2", "player_two = t2.user_id")
-                .innerJoin("User", "t3", "user_victory = t3.user_id")
-                .where('player_one = :user OR player_two = :user')
-                .setParameters({user: id})
-                .getRawMany();
-            return(ret_raw);
-        }
-    
+    async getRawMH(id: number) {
+        const ret_raw = await this.matchHistoryRepository.createQueryBuilder("match")
+            .select(['type_game', 't1.username', 't2.username', 't3.username'])
+            .innerJoin("User", "t1", "player_one = t1.user_id")
+            .innerJoin("User", "t2", "player_two = t2.user_id")
+            .innerJoin("User", "t3", "user_victory = t3.user_id")
+            .where('player_one = :user OR player_two = :user')
+            .setParameters({ user: id })
+            .getRawMany();
+        return (ret_raw);
+    }
+
     async findUsersById(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])
@@ -240,31 +240,31 @@ export class UsersService {
     }
 
 
-    async updateConsecutive(id:number, consecutive_nb: number) {
-            await this.statRepository.createQueryBuilder()
+    async updateConsecutive(id: number, consecutive_nb: number) {
+        await this.statRepository.createQueryBuilder()
             .update(Stat)
-            .set({consecutive: consecutive_nb})
-            .where('user_id = :id', {id})
+            .set({ consecutive: consecutive_nb })
+            .where('user_id = :id', { id })
             .execute()
     }
 
     async updateRank(id: number, rk: number) {
         this.statRepository.createQueryBuilder()
-        .update(Stat)
-        .set({rank: rk})
-        .where('user_id = :id', {id})
-        .execute()
+            .update(Stat)
+            .set({ rank: rk })
+            .where('user_id = :id', { id })
+            .execute()
     }
 
     async updateLevel(id: number, lvl: number) {
         this.statRepository.createQueryBuilder()
-        .update(Stat)
-        .set({level: Math.floor(lvl / 3)})
-        .where('user_id = :id', {id})
-        .execute()
+            .update(Stat)
+            .set({ level: Math.floor(lvl / 3) })
+            .where('user_id = :id', { id })
+            .execute()
     }
 
-    async updateHistory(typeGame: string,id1: number, id2: number, idVictory: number) {
+    async updateHistory(typeGame: string, id1: number, id2: number, idVictory: number) {
         if (id1 == id2)
             return;
         this.matchHistoryRepository.createQueryBuilder()
@@ -276,9 +276,9 @@ export class UsersService {
             .execute();
         //we want rank et consecutive victory
         const stat = await this.statRepository.createQueryBuilder("stat")
-        .select(['stat.consecutive', 'stat.rank'])
-        .where('stat.user_id = :id', {id: idVictory})
-        .getOne()
+            .select(['stat.consecutive', 'stat.rank'])
+            .where('stat.user_id = :id', { id: idVictory })
+            .getOne()
         //update consecutive victory
         let nb_consecutive = 0;
         if (stat)
@@ -306,15 +306,15 @@ export class UsersService {
 
     async insertAchivement(id: number, name: string) {
         await this.achivementRepository.createQueryBuilder()
-        .insert()
-        .into(Achievements)
-        .values([{
-            name: name, user_id: id
-        }])
-        .execute();
+            .insert()
+            .into(Achievements)
+            .values([{
+                name: name, user_id: id
+            }])
+            .execute();
     }
 
-    async checkIfUserHaveAch(id: number) {
+    private async checkIfUserHaveAch(id: number) {
         const check = await this.getAchivementById(id);
         const achOk = {
             fg: false,
@@ -324,7 +324,7 @@ export class UsersService {
             gr: false
         }
 
-        check.forEach(function(elem){
+        check.forEach(function (elem) {
             console.log(elem)
             if (elem.name === "First game played !")
                 achOk.fg = true;
@@ -346,9 +346,9 @@ export class UsersService {
         const nbGame = await this.getGamesNb(id);
         const nbVic = await this.getVictoryNb(id);
         const stat = await this.statRepository.createQueryBuilder("stat")
-        .select(['stat.consecutive', 'stat.rank'])
-        .where('stat.user_id = :id', {id: id})
-        .getOne();
+            .select(['stat.consecutive', 'stat.rank'])
+            .where('stat.user_id = :id', { id: id })
+            .getOne();
         const getLvl = await this.getLevel(id);
 
         const checkAchiv = await this.checkIfUserHaveAch(id);
@@ -369,9 +369,9 @@ export class UsersService {
 
     async getAchivementById(id: number) {
         const achiv = await this.achivementRepository.createQueryBuilder('ac')
-        .select('ac.name')
-        .where('ac.user_id = :id', {id: id})
-        .getMany()
+            .select('ac.name')
+            .where('ac.user_id = :id', { id: id })
+            .getMany()
         return (achiv);
     }
 

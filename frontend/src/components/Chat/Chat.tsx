@@ -278,7 +278,7 @@ const MainChat = (props: any) => {
         });
         return (() => { usrSocket?.off("sendBackMsg"); });
     }, [JSON.stringify(lstUserGlobal)])
-    const [msg, setMsg] = useState<null | string>(null);
+    const [msg, setMsg] = useState<null | string>("");
 
     if (online === "Ban")
         return (<article className='containerChat'>You are banned from this chat</article>)

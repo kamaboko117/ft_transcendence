@@ -26,7 +26,7 @@ import { toDataURL } from 'qrcode';
 import * as bcrypt from 'bcrypt';
 //convert into promise
 import { promisify } from "util"; 'util';
-const sizeOf = promisify(require ('image-size'));
+const sizeOf = promisify(require('image-size'));
 
 @Controller("users")
 export class UsersController {
@@ -132,7 +132,7 @@ export class UsersController {
         });
     }
 
-    async checkUpdateUserError(ret_user: any, ret_user2: any,
+    private async checkUpdateUserError(ret_user: any, ret_user2: any,
         body: any, file: Express.Multer.File | undefined) {
         let err: string[] = [];
         const regex2 = /^[\w\d]{3,}$/;
@@ -153,13 +153,13 @@ export class UsersController {
         }
         if (regexRet2 === false)
             err.push("Username format is wrong, please use alphabet and numerics values");
-        
+
         if (file)
             dimensions = await sizeOf(file.path);
         if (dimensions && typeof dimensions != "undefined" && 61 < dimensions.width)
             err.push("Image size width must be below 60px.");
         if (dimensions && typeof dimensions != "undefined" && 61 < dimensions.height)
-            err.push("Image size height must be below 60px.");    
+            err.push("Image size height must be below 60px.");
         return (err);
     }
 
@@ -176,7 +176,7 @@ export class UsersController {
         let user: TokenUser = req.user;
         const ret_user = await this.userService.findUserByName(body.username);
         let ret_user2 = await this.userService.findUsersById(user.userID);
-    
+
         //check errors
         let retErr = await this.checkUpdateUserError(ret_user,
             ret_user2, body, file);
@@ -347,11 +347,11 @@ export class UsersController {
         const ret_nb = await this.userService.getVictoryNb(id);
         return (ret_nb);
     }
-   
+
     @Get('get-games-nb-other/:id')
     async getNbGamesOther(@Param('id', ParseIntPipe) id: number) {
         const ret_nb = await this.userService.getGamesNb(id);
-        return(ret_nb);
+        return (ret_nb);
     }
 
 
@@ -359,7 +359,7 @@ export class UsersController {
     async getNbGames(@Request() req: any) {
         const user: TokenUser = req.user;
         const ret_nb = await this.userService.getGamesNb(user.userID);
-        return(ret_nb);
+        return (ret_nb);
     }
 
     @Get('get_raw_mh')
@@ -506,5 +506,5 @@ export class UsersController {
         return (user)
     }
 
-    
+
 }

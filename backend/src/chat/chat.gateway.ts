@@ -96,7 +96,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /* search list admin, and set one as new owner*/
-  async searchAndSetAdministratorsChannel(id: string) {
+  private async searchAndSetAdministratorsChannel(id: string) {
     let listUser: ListUser[] = await this.listUserRepository.createQueryBuilder("list_user")
       .select(["list_user.id", "list_user.user_id"])
       .where("list_user.chatid = :id")
@@ -127,7 +127,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /* Delete current owner, and try to set a new one */
-  async setNewOwner(userId: number, id: string, ownerId: string) {
+  private async setNewOwner(userId: number, id: string, ownerId: string) {
     const runner = this.dataSource.createQueryRunner();
 
     await runner.connect();
@@ -202,6 +202,24 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  private ret_error(data: any, user: TokenUser, getUser: any, txt: string) {
+    return ({
+      room: data.id,
+      user_id: user.userID,
+      user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
+      content: txt
+    });
+  }
+
+  private sendMsg(socket: any, data: SendMsg, user: TokenUser, getUser: any, txt: string) {
+    socket.to(data.id).emit(txt, {
+      room: data.id,
+      user_id: user.userID,
+      user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
+      content: data.content
+    });
+  }
+
   @UseGuards(JwtGuard)
   @SubscribeMessage('sendMsg')
   async newPostChat(@ConnectedSocket() socket: any,
@@ -211,13 +229,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (typeof user.userID != "number")
       return;
     const getUser = await this.chatService.getUserOnChannel(data.id, user.userID);
-    if (getUser === "Ban")
-      return ({
-        room: data.id,
-        user_id: user.userID,
-        user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
-        content: "You are banned from this channel"
-      });
+    console.log(typeof data.content)
+    if (typeof data.content != "string") {
+      return (this.ret_error(data, user, getUser, "Please send correct input type"));
+    }
+    if (getUser === "Ban") {
+      return (this.ret_error(data, user, getUser, "You are banned from this channel"));
+    }
     if (typeof getUser === "undefined" || getUser === null)
       return (undefined);
     const isMuted = await this.chatService.getUserMuted(data.id, user.userID);
@@ -238,25 +256,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         chatid: data.id
       }])
       .execute();
-
-    socket.to(data.id).emit("sendBackMsg", {
-      room: data.id,
-      user_id: user.userID,
-      user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
-      content: data.content
-    });
-    socket.to(data.id).emit("sendBackMsg2", {
-      room: data.id,
-      user_id: user.userID,
-      user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
-      content: data.content
-    });
+    this.sendMsg(socket, data, user, getUser, "sendBackMsg")
+    this.sendMsg(socket, data, user, getUser, "sendBackMsg2")
     return ({
       room: data.id,
       user_id: user.userID,
       user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
       content: data.content
-    })
+    });
   }
 
   @UseGuards(JwtGuard)
