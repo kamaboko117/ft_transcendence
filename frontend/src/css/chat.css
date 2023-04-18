@@ -19,6 +19,14 @@
     width: 100%;
 }
 
+.containerChat>p {
+    margin-left: 15px;
+}
+
+.containerChat>form {
+    margin: auto;
+}
+
 .fullBox {
     display: block !important;
     width: 100% !important;

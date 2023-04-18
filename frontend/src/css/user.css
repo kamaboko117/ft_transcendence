@@ -23,7 +23,7 @@ label.userInfo {
     display: inline-flex;
 }
 
-.userInfoClick > img {
+.userInfoClick>img {
     max-width: 60px;
     margin: auto;
 }
@@ -61,12 +61,14 @@ ul {
 .status {
     display: flex;
 }
-.status > span {
+
+.status>span {
     margin-left: 15px;
 }
+
 @media screen and (max-width: 600px) {
     form>input {
-        width: 90%;
+        width: 100%;
     }
 
     h1 {
@@ -104,9 +106,12 @@ ul {
     }
 
     th,
-    td, li, label {
+    td,
+    li,
+    label {
         font-size: 0.4em;
     }
+
     .userInfoClick {
         width: 100% !important;
     }
