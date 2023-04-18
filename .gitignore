@@ -1,4 +1,6 @@
 .env
 *node_modules/
 .vscode
-requirements/backend/srcs/dist/*
+requirements/backend/srcs/dist/**
+backend/dist/*
+.nfs*
