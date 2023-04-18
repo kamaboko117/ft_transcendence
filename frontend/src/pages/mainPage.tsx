@@ -25,7 +25,7 @@ function MainPage(props: {
         <LoadUserGlobal jwt={props.jwt} />
         <img
           src='./transcendence.png'
-          srcSet=' ./transcendence_3.png 101w, ./transcendence_2.png 203w, ./transcendence.png 406w,' 
+          srcSet='./transcendence_3.png 101w, ./transcendence_2.png 203w, ./transcendence.png 406w,'
           alt="transcendence picture"
           className='transcendence'
         />
@@ -37,7 +37,7 @@ function MainPage(props: {
     <div className="splash_middle">
       <img className='transcendence'
         src='./transcendence.png'
-        srcSet=' ./transcendence_3.png 101w, ./transcendence_2.png 203w, ./transcendence.png 406w,' 
+        srcSet='./transcendence_3.png 101w, ./transcendence_2.png 203w, ./transcendence.png 406w,'
         alt="transcendence picture"
       />
       <div className="splash_content">
