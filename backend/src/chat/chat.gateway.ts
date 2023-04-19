@@ -72,7 +72,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (typeof user.userID != "number")
       return (false);
-    console.log("join room chat")
     const channel: Channel | null = await this.chatsRepository.findOne({
       where: {
         id: data.id
@@ -81,7 +80,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (typeof channel != "undefined" && channel != null) {
       const getUser: any = await this.chatService.getUserOnChannel(data.id, user.userID);
-      console.log(getUser)
       if (channel.accesstype === '4' && !getUser)
         return (false)
       if (getUser === "Ban")
@@ -232,7 +230,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (typeof user.userID != "number")
       return;
     const getUser = await this.chatService.getUserOnChannel(data.id, user.userID);
-    console.log(typeof data.content)
     if (typeof data.content != "string") {
       return (this.ret_error(data, user, getUser, "Please send correct input type"));
     }

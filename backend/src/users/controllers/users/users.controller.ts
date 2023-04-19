@@ -172,7 +172,6 @@ export class UsersController {
         ], fileIsRequired: false
     }),
     ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
-        console.log(file)
         let user: TokenUser = req.user;
         const ret_user = await this.userService.findUserByName(body.username);
         let ret_user2 = await this.userService.findUsersById(user.userID);
@@ -339,13 +338,17 @@ export class UsersController {
     async getNbVictory(@Request() req: any) {
         const user: TokenUser = req.user;
         const ret_nb = await this.userService.getVictoryNb(user.userID);
-        return (ret_nb);
+        const rankDb = await this.userService.getRankUser(user.userID);
+
+        return ({nb: ret_nb, rankDb});
     }
 
     @Get('get-victory-nb-other/:id')
     async getNbVictoryOther(@Param('id', ParseIntPipe) id: number) {
         const ret_nb = await this.userService.getVictoryNb(id);
-        return (ret_nb);
+        const rankDb = await this.userService.getRankUser(id);
+
+        return ({nb: ret_nb, rankDb});
     }
 
     @Get('get-games-nb-other/:id')
