@@ -133,11 +133,13 @@ const FriendBlockUser = (props: { userCtx, id, otherUser: userInfo | undefined, 
 		);
 	}
 	useEffect(() => {
-		lstUserGlobal.forEach((value, key) => {
-			if (String(value.id) === props.id) {
-				setFrBl({ friend: value.fl, block: value.bl });
-			}
-		});
+		if (lstUserGlobal) {
+			lstUserGlobal.forEach((value, key) => {
+				if (String(value.id) === props.id) {
+					setFrBl({ friend: value.fl, block: value.bl });
+				}
+			});
+		}
 	}, [JSON.stringify(lstUserGlobal)]);
 	if (errorCode >= 400)
 		return (<FetchError code={errorCode} />);

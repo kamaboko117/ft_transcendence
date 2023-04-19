@@ -97,7 +97,7 @@ export const updateBlackFriendList = (
         return (found);
     }
 
-    if (search()) {
+    if (lstUserGlobal && search()) {
         //update array
         const newArr = lstUserGlobal.map((value) => {
             if (value && Number(value.id) === user.id) {
@@ -170,11 +170,12 @@ export const DisplayChatGlobalProvider = (props: {
 
     useEffect(() => {
         props.usrSocket?.on('inviteGame', (res: any) => {
-            let found = lstUserGlobal.find(elem => elem.id === res.user_id && elem.bl === 1);
-
-            if (!found) {
-                setInvitation(res.user_id);
-                setUid(res.idGame);
+            if (lstUserGlobal) {
+                let found = lstUserGlobal.find(elem => elem.id === res.user_id && elem.bl === 1);
+                if (!found) {
+                    setInvitation(res.user_id);
+                    setUid(res.idGame);
+                }
             }
         });
         return (() => {
