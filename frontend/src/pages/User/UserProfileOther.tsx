@@ -113,8 +113,6 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 	}).catch(err => console.log(err));
 }
 
-
-
 const FriendBlockUser = (props: { userCtx, id, otherUser: userInfo | undefined, jwt: string }) => {
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
