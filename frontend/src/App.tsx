@@ -197,7 +197,6 @@ function App() {
             <Route path="/error-page" element={<><NavBar click={click} setClick={setClick} /><ErrorPage /></>} />
             <Route path="*" element={<><ErrorPage /></>} />
           </Routes>
-
         </DisplayChatGlobalProvider>
       </SocketProvider>
     </>

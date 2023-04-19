@@ -325,7 +325,6 @@ export class UsersService {
         }
 
         check.forEach(function (elem) {
-            console.log(elem)
             if (elem.name === "First game played !")
                 achOk.fg = true;
             else if (elem.name === "First victory !")
@@ -352,9 +351,6 @@ export class UsersService {
         const getLvl = await this.getLevel(id);
 
         const checkAchiv = await this.checkIfUserHaveAch(id);
-        console.log(checkAchiv)
-        console.log(nbGame)
-        console.log(getLvl)
         if (nbGame == 1 && checkAchiv.fg == false)
             await this.insertAchivement(id, "First game played !");
         if (nbVic == 1 && checkAchiv.fv == false)
