@@ -181,12 +181,28 @@ export class UsersService {
      * WHERE "user_victory" = id
      */
     async getVictoryNb(id: number) {
-        const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
+      const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
             .select(['user_victory'])
             .where('user_victory = :user')
             .setParameters({ user: id })//anti hack
             .getCount();
         return (ret_nb);
+    }
+
+    async getRankUser(id: number) {
+        const rank = this.matchHistoryRepository.createQueryBuilder("match")
+            .subQuery()
+            .from(MatchHistory, "match")
+            .select(["match.user_victory", "rank() over (order by COUNT(match.user_victory) desc)"])
+            .addGroupBy("match.user_victory");
+        
+        const source = this.dataSource.createQueryBuilder()
+        .addSelect('rank')
+        .from(rank.getQuery(), "table")
+        .where('match_user_victory = :id')
+        .setParameters({id: id})
+        .getRawOne();
+        return (source)
     }
 
     async getLevel(id: number) {

@@ -214,6 +214,7 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: s
 	const [vc, setVc] = useState<number>(0);
 	const [df, setDf] = useState<number>(0);
 	const [nb_g, setNb_g] = useState<number>(0);
+	const [rank, setRank] = useState<number | undefined>();
 
 	useEffect(() => {
 		fetch('https://' + location.host + '/api/users/get-games-nb/', {headers: header(props.jwt)})
@@ -224,21 +225,23 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: s
 			}).then((res) => {
 				setNb_g(Number(res));
 			})
-	}, [])
+	}, []);
 
 	useEffect(() => {
 		fetch('https://' + location.host + '/api/users/get-victory-nb/', {headers: header(props.jwt)})
 			.then(res => {
 				if (res.ok)
-					return (res.text())
+					return (res.json())
 				props.setErrorCode(res.status);
 			}).then((res) => {
 				if (res) {
-					setVc(Number(res));
+					setVc(Number(res.nb));
 					setDf(nb_g - vc)
+					if (res.rankDb)
+						setRank(res.rankDb.rank);
 				}
 			})
-	}, [nb_g])
+	}, [nb_g]);
 
 	//useEffect(() => {
 //		fetch('https://' + location.host + '/api/users/achiv', {headers: header(props.jwt)})	
@@ -247,10 +250,11 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: s
 	return (<>
 		<ul>
 					<li>Nb_Games: {nb_g}</li>
-					<li>Victoire: {vc}</li>
-					<li>Défaite: {df}</li>
-					<li>Rang: {props.user && ((props.user?.sstat.rank < 2) ? rank_index[props.user?.sstat.rank] : props.user?.sstat.rank)}</li>
-					<li>Niveau: {props.user?.sstat.level}</li>
+					<li>Victory: {vc}</li>
+					<li>Defeat: {df}</li>
+					<li>Rank: {props.user && ((props.user?.sstat.rank < 2) ? rank_index[props.user?.sstat.rank] : props.user?.sstat.rank)}</li>
+					<li>Global rank : {(typeof rank === "undefined" ? "Not ranked yet" : rank)}</li>
+					<li>Level: {props.user?.sstat.level}</li>
 				</ul>
 				< Match_History_Table jwt={props.jwt} />
 	</>)
