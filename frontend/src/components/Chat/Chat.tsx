@@ -191,6 +191,7 @@ const MainChat = (props: any) => {
     const [online, setOnline] = useState<undefined | boolean | string>(undefined)
     const userCtx: any = useContext(UserContext);
     const { usrSocket } = useContext(SocketContext);
+    
     useEffect(() => {
         //subscribeChat
         usrSocket?.emit("joinRoomChat", {
@@ -226,6 +227,7 @@ const MainChat = (props: any) => {
     const { lstMsgChat, lstUserGlobal, setLstMsgChat, setLstMsgPm } = useContext(ContextDisplayChannel);
     const [chatName, setChatName] = useState<string>("");
 
+    //LOAD MESSAGES CHANNEL AND CHANNEL NAME
     useEffect(() => {
         const ft_lst = async () => {
             const res = await fetch('https://' + location.host + '/api/chat?' + new URLSearchParams({
@@ -249,6 +251,7 @@ const MainChat = (props: any) => {
         }
         if (online === true)
             ft_lst();
+        //LISTEN TO ACTION LIKE BAN AND KICK SENT BY BACKEND
         usrSocket?.on("actionOnUser", (res: any) => {
             if ((res.type === "Ban" || res.type === "Kick")
                 && userCtx.getUserId() === res.user_id
@@ -270,10 +273,12 @@ const MainChat = (props: any) => {
     useEffect(() => {
         usrSocket?.on("sendBackMsg", (res: any) => {
             //need to check if user is blocked
-            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id && elem.bl === 1);
-            if (!found) {
-                if (res.room === props.id)
-                    setLstMsgChat((lstMsg) => [...lstMsg, res]);
+            if (lstUserGlobal) {
+                let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id && elem.bl === 1);
+                if (!found) {
+                    if (res.room === props.id)
+                        setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                }
             }
         });
         return (() => { usrSocket?.off("sendBackMsg"); });
@@ -310,6 +315,7 @@ const MainChat = (props: any) => {
     </>);
 }
 
+//Validity password entry 
 const onSubmit = async (e: React.FormEvent<HTMLFormElement>
     , value: string | null, jwt: string | null, id: string,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>): Promise<boolean> => {
@@ -408,8 +414,6 @@ const Chat = (props: { jwt: string }) => {
     const id = useParams().id as string;
     const [errorCode, setErrorCode] = useState<number>(200);
     const [psw, setLoadPsw] = useState<boolean | undefined>(undefined);
-
-
 
     useEffect(() => {
         const hasPass: Promise<boolean> = hasPassword(id, props.jwt, setErrorCode);
