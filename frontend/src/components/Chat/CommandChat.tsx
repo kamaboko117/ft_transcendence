@@ -139,37 +139,9 @@ const isCmdValid = (cmd: string, length: number) => {
     we also import lstuserglobal, because we can't use react hook in non componant react function
 */
 
-export const commandChat = (jwt: string, obj: any, setErrorCode,
-    lstUserGlobal, lstUserChat,
-    setLstUserGlobal, setLstUserChat, navigate) => {
-    const cmd = obj.content;
-
-    const listHandle = (jwt: string,
-        setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-        type: number, userInfo: typeUserInfo): void => {
-
-        function updateUserInfo(username: string, id: number,
-            friend: number | null, block: number | null, avatarPath: string | null) {
-            updateBlackFriendList({
-                id: id,
-                fl: friend, bl: block,
-                User_username: username, User_avatarPath: avatarPath
-            }, lstUserGlobal, setLstUserGlobal);
-            if (lstUserChat.length > 0) {
-                const find = lstUserChat.find(elem => Number(elem.list_user_user_id) === id);
-                if (find) {
-                    const newArr = lstUserChat.map((value) => {
-                        if (value && Number(value.list_user_user_id) === id) {
-                            value.bl = block;
-                            value.fl = friend;
-                        }
-                        return (value);
-                    });
-                    setLstUserChat(newArr);
-                }
-            }
-        }
-        fetch("https://" + location.host + "/api/users/fr-bl-list", {
+const fetchBlackAndFriendList = (userInfo: typeUserInfo, jwt: string,
+    type: number, setErrorCode: React.Dispatch<React.SetStateAction<number>>, updateUserInfo) => {
+    fetch("https://" + location.host + "/api/users/fr-bl-list", {
             method: 'post',
             headers: headerPost(jwt),
             body: JSON.stringify({
@@ -200,6 +172,70 @@ export const commandChat = (jwt: string, obj: any, setErrorCode,
                 }
             }
         }).catch(e => console.log(e));
+}
+
+export const commandChat = (jwt: string, obj: any, setErrorCode,
+    lstUserGlobal, lstUserChat,
+    setLstUserGlobal, setLstUserChat, navigate) => {
+    const cmd = obj.content;
+
+    const listHandle = (jwt: string,
+        setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+        type: number, userInfo: typeUserInfo): void => {
+
+        function updateUserInfo(username: string, id: number,
+            friend: number | null, block: number | null, avatarPath: string | null) {
+            updateBlackFriendList({
+                id: id,
+                fl: friend, bl: block,
+                User_username: username, User_avatarPath: avatarPath
+            }, lstUserGlobal, setLstUserGlobal);
+            if (lstUserChat.length > 0) {
+                const find = lstUserChat.find(elem => Number(elem.list_user_user_id) === id);
+                if (find) {
+                    const newArr = lstUserChat.map((value) => {
+                        if (value && Number(value.list_user_user_id) === id) {
+                            value.bl = block;
+                            value.fl = friend;
+                        }
+                        return (value);
+                    });
+                    setLstUserChat(newArr);
+                }
+            }
+        }
+        fetchBlackAndFriendList(userInfo, jwt, type, setErrorCode, updateUserInfo);
+        /*fetch("https://" + location.host + "/api/users/fr-bl-list", {
+            method: 'post',
+            headers: headerPost(jwt),
+            body: JSON.stringify({
+                userId: Number(userInfo.id), type: type
+            })
+        }).then(res => {
+            if (res.ok)
+                return (res.json());
+            setErrorCode(res.status);
+        }).then((res: { add: boolean, type: number }) => {
+            if (res) {
+                if (res.add) {
+                    if (res.type === 1) {
+                        updateUserInfo(userInfo.User_username, Number(userInfo.id),
+                            userInfo.fl, res.type, userInfo.avatarPath);
+                    } else if (res.type === 2) {
+                        updateUserInfo(userInfo.User_username, Number(userInfo.id),
+                            res.type, userInfo.bl, userInfo.avatarPath);
+                    }
+                } else {
+                    if (res.type === 1) {
+                        updateUserInfo(userInfo.User_username, Number(userInfo.id),
+                            userInfo.fl, null, userInfo.avatarPath);
+                    } else if (res.type === 2) {
+                        updateUserInfo(userInfo.User_username, Number(userInfo.id),
+                            null, userInfo.bl, userInfo.avatarPath);
+                    }
+                }
+            }
+        }).catch(e => console.log(e));*/
     }
 
     function runUserCmd(jwt: string, firstPartCmd: string, secondPartCmd: string) {

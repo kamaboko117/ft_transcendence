@@ -146,11 +146,13 @@ export class ChatService {
     async createPrivateMessage(userOne: Readonly<number>,
         userTwo: Readonly<string>): Promise<string> {
         /* create Private message channel */
+        const concat = String(userOne).concat(userTwo);
+
         await this.chatsRepository.createQueryBuilder()
             .insert().into(Channel)
             .values({
-                id: String(userOne + userTwo),
-                name: String(userOne + userTwo),
+                id: concat,
+                name: concat,
                 accesstype: '4'
             })
             .execute();
@@ -158,15 +160,15 @@ export class ChatService {
         await this.listUserRepository.createQueryBuilder()
             .insert().into(ListUser)
             .values([
-                { user_id: userOne, chatid: String(userOne + userTwo) }
+                { user_id: userOne, chatid: concat }
             ]).execute();
         /* insert second user */
         await this.listUserRepository.createQueryBuilder()
             .insert().into(ListUser)
             .values([
-                { user_id: Number(userTwo), chatid: String(userOne + userTwo) }
+                { user_id: Number(userTwo), chatid: concat }
             ]).execute();
-        return (String(userOne) + userTwo);
+        return (concat);
     }
     /* END OF PRIVATE  */
 
