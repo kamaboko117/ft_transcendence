@@ -15,7 +15,7 @@ const handleChange = (event, setCode) => {
 }
 
 const handleSubmit = (event, code: number | null,
-    jwt: string, userId: number, userCtx,
+    jwt: string | null, userId: number, userCtx,
     setErrorCode, setValid) => {
     event.preventDefault();
     const target = event?.currentTarget;
@@ -54,7 +54,7 @@ const handleSubmit = (event, code: number | null,
     }
 }
 
-function FaCode(props: { jwt: string }) {
+function FaCode(props: { jwt: string | null }) {
     const userCtx: any = useContext(UserContext);
     const [valid, setValid] = useState<boolean | undefined>(undefined);
     const [code, setCode] = useState<number | null>(null);
@@ -75,10 +75,8 @@ function FaCode(props: { jwt: string }) {
             navigate("/");
         }
     }, [userCtx.getJwt(), valid]);
-
-    if (errorCode >= 401)
-        return (<FetchError code={errorCode} />);
     return (<>
+        {errorCode >= 401 && <FetchError code={errorCode} />}
         <span>Please enter the code from your authenticator</span>
         <form onSubmit={(e) => handleSubmit(e, code, props.jwt, userCtx.getUserId(), userCtx,
             setErrorCode, setValid)}>
