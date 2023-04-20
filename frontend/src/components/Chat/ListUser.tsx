@@ -115,9 +115,9 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 }
 
 export const inviteGame = (event: MouseEvent<HTMLButtonElement>,
-    userId: number, jwt: string, navigate, setErrorCode): void => {
+    userId: number, jwt: string | null, navigate, setErrorCode): void => {
     event.preventDefault();
-    if (event.target)
+    if (event.target && jwt)
         playPageInvite(jwt, setErrorCode,
             userId, navigate);
 }
@@ -142,10 +142,11 @@ type aswType = {
 export const directMessage = async (event: MouseEvent<HTMLButtonElement>,
     setDisplay: any, setId: React.Dispatch<React.SetStateAction<string>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-    userId: number, jwt: string): Promise<void> => {
+    userId: number, jwt: string | null): Promise<void> => {
     event.preventDefault();
 
-    await fetch('https://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
+    if (jwt) {
+        await fetch('https://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
         id: String(userId),
     }), { headers: header(jwt) })
         .then(res => {
@@ -159,6 +160,7 @@ export const directMessage = async (event: MouseEvent<HTMLButtonElement>,
                 }
             }
         }).catch(e => console.log(e));
+    }
 }
 
 const handleClick = (event: React.MouseEvent<HTMLDivElement>,
@@ -200,7 +202,7 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     1 === online
     2 === in game
 */
-export const StatusUser = (props: { userId: number, jwt: string }) => {
+export const StatusUser = (props: { userId: number, jwt: string | null }) => {
     const { usrSocket } = useContext(SocketContext);
     const [status, setStatus] = useState<number>(0);
     useEffect(() => {

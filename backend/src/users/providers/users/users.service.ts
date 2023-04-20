@@ -189,7 +189,8 @@ export class UsersService {
         return (ret_nb);
     }
 
-    async getRankUser(id: number) {
+    /* Get user ladder number from total win */
+    async getRankUserGlobalWin(id: number) {
         const rank = this.matchHistoryRepository.createQueryBuilder("match")
             .subQuery()
             .from(MatchHistory, "match")
@@ -198,6 +199,26 @@ export class UsersService {
         
         const source = this.dataSource.createQueryBuilder()
         .addSelect('rank')
+        .from(rank.getQuery(), "table")
+        .where('match_user_victory = :id')
+        .setParameters({id: id})
+        .getRawOne();
+        return (source)
+    }
+
+    /* get user ladder number from it's rank */
+    async getRankUserByRank(id: number) {
+        const rank = this.matchHistoryRepository.createQueryBuilder("match")
+            .subQuery()
+            .from(MatchHistory, "match")
+            .select(["match.user_victory", "rank() over (PARTITION BY Stat.rank order by COUNT(match.user_victory) desc) as gen"])
+            .innerJoin('match.victory_user', 'User')
+            .innerJoin('User.sstat', 'Stat')
+            .addGroupBy("match.user_victory")
+            .addGroupBy("Stat.id");
+        
+        const source = this.dataSource.createQueryBuilder()
+        .addSelect('gen')
         .from(rank.getQuery(), "table")
         .where('match_user_victory = :id')
         .setParameters({id: id})

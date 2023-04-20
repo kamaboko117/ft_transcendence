@@ -12,15 +12,17 @@ const SocketContext = createContext<typeSocket>({
     usrSocket: defaultValue,
 });
 
-export const SocketProvider = (props: { jwt: string, usrSocket: Socket<any, any> | undefined, children: any }) => {
+export const SocketProvider = (props: { jwt: string | null, usrSocket: Socket<any, any> | undefined, children: any }) => {
     const context: typeSocket = {
         usrSocket: props.usrSocket
     }
     const [errorCode, setErrorCode] = useState<number>(200);
 
     useEffect(() => {
-        if (props.jwt) {
-            props.usrSocket?.connect();
+        console.log("alll")
+        console.log(props.jwt)
+        console.log(props.usrSocket?.connected)
+        if (props.jwt && props.jwt != "") {
             props.usrSocket?.on('exception', (res) => {
                 if (res.status === "error" && res.message === "Token not valid") {
                     setErrorCode(403)
@@ -33,9 +35,10 @@ export const SocketProvider = (props: { jwt: string, usrSocket: Socket<any, any>
         return (() => {
             props.usrSocket?.off('inviteGame');
             props.usrSocket?.off('exception');
-            props.usrSocket?.disconnect();
+            //if (props.usrSocket?.connected === true)
+              //  props.usrSocket?.disconnect();
         });
-    }, [props.usrSocket]);
+    }, [props.usrSocket, props.jwt]);
 
     return (
         <SocketContext.Provider value={context}>

@@ -20,7 +20,6 @@ import { AuthService } from 'src/auth/auth.service';
 import { FileInterceptor } from "@nestjs/platform-express";
 import { TokenUser } from "src/chat/chat.interface";
 import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
-import { MatchHistory } from "src/typeorm/matchHistory.entity";
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import * as bcrypt from 'bcrypt';
@@ -338,17 +337,19 @@ export class UsersController {
     async getNbVictory(@Request() req: any) {
         const user: TokenUser = req.user;
         const ret_nb = await this.userService.getVictoryNb(user.userID);
-        const rankDb = await this.userService.getRankUser(user.userID);
+        const rankDbByWin = await this.userService.getRankUserGlobalWin(user.userID);
+        const rankByRankUser = await this.userService.getRankUserByRank(user.userID);
 
-        return ({nb: ret_nb, rankDb});
+        return ({nb: ret_nb, rankDbByWin, rankByRankUser});
     }
 
     @Get('get-victory-nb-other/:id')
     async getNbVictoryOther(@Param('id', ParseIntPipe) id: number) {
         const ret_nb = await this.userService.getVictoryNb(id);
-        const rankDb = await this.userService.getRankUser(id);
+        const rankDbByWin = await this.userService.getRankUserGlobalWin(id);
+        const rankByRankUser = await this.userService.getRankUserByRank(id);
 
-        return ({nb: ret_nb, rankDb});
+        return ({nb: ret_nb, rankDbByWin, rankByRankUser});
     }
 
     @Get('get-games-nb-other/:id')
@@ -489,14 +490,14 @@ export class UsersController {
     @Get('achiv')
     async achiv(@Request() req: any) {
         let user: TokenUser = req.user;
-        await this.userService.updateAchive(74133);
+        //await this.userService.updateAchive(74133);
         const resAchivement = await this.userService.getAchivementById(user.userID);
         return (resAchivement);
     }
 
     @Get('achiv-other/:id')
     async achivOther(@Param('id', ParseIntPipe) id: number) {
-        await this.userService.updateAchive(id);
+        //await this.userService.updateAchive(id);
         const resAchivement = await this.userService.getAchivementById(id);
         return (resAchivement);
     }

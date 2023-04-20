@@ -62,7 +62,7 @@ const ContextDisplayChannel = React.createContext<contextDisplay>({
     setLstUserGlobal: defaultValue
 });
 
-export const LoadUserGlobal = (props: { jwt: string }) => {
+export const LoadUserGlobal = (props: { jwt: string | null }) => {
     const { setLstUserGlobal } = useContext(ContextDisplayChannel);
     const [errorCode, setErrorCode] = useState<number>(200);
 
@@ -137,7 +137,7 @@ const InviteGame = (props: { userIdInvitation: number, uid: string | null, setIn
 }
 
 export const DisplayChatGlobalProvider = (props: {
-    jwt: string,
+    jwt: string | null,
     usrSocket: Socket<any, any> | undefined, children: any
 }) => {
     const [errorCode, setErrorCode] = useState<number>(200);
