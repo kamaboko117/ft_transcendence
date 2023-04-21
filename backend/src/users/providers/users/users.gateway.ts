@@ -29,10 +29,8 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   getStatusUser(@MessageBody() data: Info) {
     const map = this.mapSocket;
     const mapUserInGame = this.socketEvents.getMap();
-    console.log("st ga")
+
     for (let value of mapUserInGame.values()) {
-      console.log(value)
-      console.log(data.userId)
       if (Number(value) === data.userId) {
         //check if in game
         return ({ code: 2 });

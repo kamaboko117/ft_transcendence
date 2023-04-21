@@ -58,16 +58,28 @@ function App() {
   let jwt = userCtx.getJwt();
 
   useEffect(() => {
-    setUsrSocket(io("https://" + location.host, {
+    console.log(jwt)
+    console.log(usrSocket?.connected)
+    if (!jwt && usrSocket?.connected === true)
+      usrSocket.disconnect();
+    if (jwt) {
+      if (usrSocket?.connected === true)
+        usrSocket.disconnect();
+      setUsrSocket(io("https://" + location.host, {
       withCredentials: true,
       extraHeaders: {
         authorization: String(jwt)
       },
       autoConnect: false,
-      secure: true
-    }));
-  }, [userCtx.getJwt()]);
-
+      secure: true,
+      }));
+    }
+  }, [jwt]);
+  useEffect(() => {
+    if (usrSocket && usrSocket.connected === false) {
+      usrSocket.connect();
+    }
+  }, [usrSocket])
   return (
     <>
       <SocketProvider jwt={jwt} usrSocket={usrSocket}>
@@ -197,7 +209,6 @@ function App() {
             <Route path="/error-page" element={<><NavBar click={click} setClick={setClick} /><ErrorPage /></>} />
             <Route path="*" element={<><ErrorPage /></>} />
           </Routes>
-
         </DisplayChatGlobalProvider>
       </SocketProvider>
     </>

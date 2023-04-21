@@ -62,7 +62,7 @@ const ContextDisplayChannel = React.createContext<contextDisplay>({
     setLstUserGlobal: defaultValue
 });
 
-export const LoadUserGlobal = (props: { jwt: string }) => {
+export const LoadUserGlobal = (props: { jwt: string | null }) => {
     const { setLstUserGlobal } = useContext(ContextDisplayChannel);
     const [errorCode, setErrorCode] = useState<number>(200);
 
@@ -97,7 +97,7 @@ export const updateBlackFriendList = (
         return (found);
     }
 
-    if (search()) {
+    if (lstUserGlobal && search()) {
         //update array
         const newArr = lstUserGlobal.map((value) => {
             if (value && Number(value.id) === user.id) {
@@ -137,7 +137,7 @@ const InviteGame = (props: { userIdInvitation: number, uid: string | null, setIn
 }
 
 export const DisplayChatGlobalProvider = (props: {
-    jwt: string,
+    jwt: string | null,
     usrSocket: Socket<any, any> | undefined, children: any
 }) => {
     const [errorCode, setErrorCode] = useState<number>(200);
@@ -170,11 +170,12 @@ export const DisplayChatGlobalProvider = (props: {
 
     useEffect(() => {
         props.usrSocket?.on('inviteGame', (res: any) => {
-            let found = lstUserGlobal.find(elem => elem.id === res.user_id && elem.bl === 1);
-
-            if (!found) {
-                setInvitation(res.user_id);
-                setUid(res.idGame);
+            if (lstUserGlobal) {
+                let found = lstUserGlobal.find(elem => elem.id === res.user_id && elem.bl === 1);
+                if (!found) {
+                    setInvitation(res.user_id);
+                    setUid(res.idGame);
+                }
             }
         });
         return (() => {

@@ -13,7 +13,7 @@ const handleButton = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
     1 == no FA found on DB
     2 == QrCode loaded
 */
-function SettingFa(props: { jwt: string }) {
+function SettingFa(props: { jwt: string | null }) {
     const navigate = useNavigate();
     const [waitForFa, setWaitForFa] = useState<number>(0);
     const [url, setUrl] = useState<string | null>(null);
@@ -35,12 +35,11 @@ function SettingFa(props: { jwt: string }) {
             }).catch(e => console.log(e));
     }, []);
     const [click, setClick] = useState<boolean>(false);
-    if (errorCode >= 401)
-        return (<FetchError code={errorCode} />);
     if (waitForFa === 3)
         return (<><NavBar click={click} setClick={setClick} /><p>Not permitted to register the same qr code  again.</p></>);
     return (
         <section>
+            {errorCode >= 401 && <FetchError code={errorCode} />}
             <h1>Double Authentification</h1>
             <article>
                 <h2>Google Authenticator</h2>
