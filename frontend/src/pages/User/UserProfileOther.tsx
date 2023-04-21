@@ -81,7 +81,7 @@ function updateList(res: { add: boolean, type: number },
 	}
 }
 
-const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
+const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	type: number, id: string, otherUser: userInfo | undefined, frBl: frBl,
 	lstUserGlobal: {
@@ -113,15 +113,13 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 	}).catch(err => console.log(err));
 }
 
-
-
-const FriendBlockUser = (props: { userCtx, id, otherUser: userInfo | undefined, jwt: string }) => {
+const FriendBlockUser = (props: { userCtx, id, otherUser: userInfo | undefined, jwt: string | null }) => {
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
 	const [frBl, setFrBl] = useState<frBl>({ friend: null, block: null });
 	const navigate = useNavigate();
 
-	const Button = (props: { num: number, jwt: string, id, otherUser: userInfo | undefined }) => {
+	const Button = (props: { num: number, jwt: string | null, id, otherUser: userInfo | undefined }) => {
 		return (
 			<button onClick={(e) => {
 				listHandle(e, props.jwt, setErrorCode,
@@ -135,11 +133,13 @@ const FriendBlockUser = (props: { userCtx, id, otherUser: userInfo | undefined, 
 		);
 	}
 	useEffect(() => {
-		lstUserGlobal.forEach((value, key) => {
-			if (String(value.id) === props.id) {
-				setFrBl({ friend: value.fl, block: value.bl });
-			}
-		});
+		if (lstUserGlobal) {
+			lstUserGlobal.forEach((value, key) => {
+				if (String(value.id) === props.id) {
+					setFrBl({ friend: value.fl, block: value.bl });
+				}
+			});
+		}
 	}, [JSON.stringify(lstUserGlobal)]);
 	if (errorCode >= 400)
 		return (<FetchError code={errorCode} />);
@@ -236,10 +236,17 @@ const LoadAchivement = (props: {jwt: string | null, setErrorCode, id: string}) =
 	);
 }
 
-const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | undefined, jwt: string}) => {
+type rankWin = {
+	rankDbByWin: number | undefined,
+	rankByRankUser: number | undefined
+}
+
+const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | undefined, jwt: string | null}) => {
 	const [vc, setVC] = useState<number>(0);
 	const [nb_g, setNb_g] = useState<number>(0);
 	const [df, setDf] = useState<number>(0);
+	const [rank, setRank] = useState<rankWin>({rankByRankUser: undefined, rankDbByWin: undefined});
+
 	useEffect(() => {
 		fetch('https://' + location.host + `/api/users/get-games-nb-other/${props.id}`, {headers: header(props.jwt)})
 			.then(res => {
@@ -255,12 +262,22 @@ const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | 
 		fetch('https://' + location.host + `/api/users/get-victory-nb-other/${props.id}`, {headers: header(props.jwt)})
 			.then(res => {
 				if (res.ok)
-					return (res.text())
+					return (res.json())
 				props.setErrorCode(res.status);
 			}).then((res) => {
 				if (res) {
-					setVC(Number(res));
+					setVC(Number(res.nb));
 					setDf(nb_g - vc);
+					if (res.rankDbByWin)
+						setRank({
+							rankDbByWin: res.rankDbByWin.rank,
+							rankByRankUser: rank.rankByRankUser
+						});
+					if (res.rankByRankUser)
+						setRank({
+							rankDbByWin: rank.rankDbByWin,
+							rankByRankUser: res.rankByRankUser.gen
+						});
 				}
 			})
 	}, [nb_g])
@@ -268,10 +285,12 @@ const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | 
 		<>
 			<ul>
 				<li>Nb_Games: {nb_g}</li>
-				<li>Victoire: {vc}</li>
-				<li>Défaite: {df}</li>
-				<li>Rang: {props.otherUser && ((props.otherUser?.sstat.rank < 2) ? rank_index[props.otherUser?.sstat.rank] : props.otherUser?.sstat.rank)}</li>
-				<li>Niveau: {props.otherUser?.sstat.level}</li>
+				<li>Victory: {vc}</li>
+				<li>Defeat: {df}</li>
+				<li>Rank: {props.otherUser && ((props.otherUser?.sstat.rank <= 2) ? rank_index[props.otherUser?.sstat.rank] : props.otherUser?.sstat.rank)}</li>
+				<li>Ladder by game won : {(typeof rank.rankDbByWin === "undefined" ? "Not ranked yet" : rank.rankDbByWin)}</li>
+				<li>Ladder by rank : {(typeof rank.rankByRankUser === "undefined" ? "Not ranked yet" : rank.rankByRankUser)}</li>
+				<li>Level: {props.otherUser?.sstat.level}</li>
 			</ul>
 			< Match_History_Table jwt={props.jwt} id={props.id}/>
 		</>
@@ -279,7 +298,7 @@ const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | 
 }
 
 /* Focus user profile */
-const UserProfileOther = (props: { jwt: string }) => {
+const UserProfileOther = (props: { jwt: string | null }) => {
 	const id = useParams().id as string;
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [otherUser, setOtherUser] = useState<userInfo>();

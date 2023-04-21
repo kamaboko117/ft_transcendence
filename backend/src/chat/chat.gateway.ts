@@ -77,6 +77,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         id: data.id
       }
     });
+
     if (typeof channel != "undefined" && channel != null) {
       const getUser: any = await this.chatService.getUserOnChannel(data.id, user.userID);
       if (channel.accesstype === '4' && !getUser)
@@ -229,7 +230,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (typeof user.userID != "number")
       return;
     const getUser = await this.chatService.getUserOnChannel(data.id, user.userID);
-    console.log(typeof data.content)
     if (typeof data.content != "string") {
       return (this.ret_error(data, user, getUser, "Please send correct input type"));
     }

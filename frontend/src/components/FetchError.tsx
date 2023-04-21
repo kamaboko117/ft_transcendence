@@ -6,7 +6,7 @@ import ContextDisplayChannel from '../contexts/DisplayChatContext';
 export const FetchError = (props: { code: number }) => {
     const navigate = useNavigate();
     const userCtx: any = useContext(UserContext);
-    const { renderDirectMessage, userId, setDisplay, setUserId } = useContext(ContextDisplayChannel);
+    const { setDisplay } = useContext(ContextDisplayChannel);
     useEffect(() => {
         if (props.code === 403 || props.code === 401) {
             setDisplay(false);

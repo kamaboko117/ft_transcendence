@@ -23,7 +23,7 @@ type typeFlBl = {
 	User_avatarPath: string | null
 }
 
-export const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
+export const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	type: number,
 	userInfo: typeUserInfo,
@@ -112,7 +112,7 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
 }
 
 type typeButtonsInfo = {
-	jwt: string,
+	jwt: string | null,
 	userInfo: typeUserInfo
 	setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
@@ -192,7 +192,7 @@ const PrintArray = (props: { type: string, lstUserGlobal: Array<typeFlBl> }) => 
 
 function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 	setLstUserGlobal: React.Dispatch<React.SetStateAction<Array<typeFlBl>>>,
-	jwt: string, value: string | null,
+	jwt: string | null, value: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	lstUserGlobal: Array<typeFlBl>) {
 	e.preventDefault();
@@ -221,7 +221,7 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 }
 
 export const Display = (props: {
-	jwt: string, lstUserGlobal: Array<typeFlBl>,
+	jwt: string | null, lstUserGlobal: Array<typeFlBl>,
 	userInfo: typeUserInfo,
 	setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
@@ -255,7 +255,7 @@ export const Display = (props: {
 	)
 }
 
-export default function FriendList(props: { jwt: string }) {
+export default function FriendList(props: { jwt: string | null }) {
 	const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
 	const [userInfo, setUserInfo] = useState<typeUserInfo>({
 		username: "", id: 0, fl: null, bl: null, avatarPath: null

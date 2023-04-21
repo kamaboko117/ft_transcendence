@@ -181,12 +181,49 @@ export class UsersService {
      * WHERE "user_victory" = id
      */
     async getVictoryNb(id: number) {
-        const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
+      const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
             .select(['user_victory'])
             .where('user_victory = :user')
             .setParameters({ user: id })//anti hack
             .getCount();
         return (ret_nb);
+    }
+
+    /* Get user ladder number from total win */
+    async getRankUserGlobalWin(id: number) {
+        const rank = this.matchHistoryRepository.createQueryBuilder("match")
+            .subQuery()
+            .from(MatchHistory, "match")
+            .select(["match.user_victory", "rank() over (order by COUNT(match.user_victory) desc)"])
+            .addGroupBy("match.user_victory");
+        
+        const source = this.dataSource.createQueryBuilder()
+        .addSelect('rank')
+        .from(rank.getQuery(), "table")
+        .where('match_user_victory = :id')
+        .setParameters({id: id})
+        .getRawOne();
+        return (source)
+    }
+
+    /* get user ladder number from it's rank */
+    async getRankUserByRank(id: number) {
+        const rank = this.matchHistoryRepository.createQueryBuilder("match")
+            .subQuery()
+            .from(MatchHistory, "match")
+            .select(["match.user_victory", "rank() over (PARTITION BY Stat.rank order by COUNT(match.user_victory) desc) as gen"])
+            .innerJoin('match.victory_user', 'User')
+            .innerJoin('User.sstat', 'Stat')
+            .addGroupBy("match.user_victory")
+            .addGroupBy("Stat.id");
+        
+        const source = this.dataSource.createQueryBuilder()
+        .addSelect('gen')
+        .from(rank.getQuery(), "table")
+        .where('match_user_victory = :id')
+        .setParameters({id: id})
+        .getRawOne();
+        return (source)
     }
 
     async getLevel(id: number) {
@@ -325,7 +362,6 @@ export class UsersService {
         }
 
         check.forEach(function (elem) {
-            console.log(elem)
             if (elem.name === "First game played !")
                 achOk.fg = true;
             else if (elem.name === "First victory !")
@@ -352,9 +388,6 @@ export class UsersService {
         const getLvl = await this.getLevel(id);
 
         const checkAchiv = await this.checkIfUserHaveAch(id);
-        console.log(checkAchiv)
-        console.log(nbGame)
-        console.log(getLvl)
         if (nbGame == 1 && checkAchiv.fg == false)
             await this.insertAchivement(id, "First game played !");
         if (nbVic == 1 && checkAchiv.fv == false)

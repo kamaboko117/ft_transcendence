@@ -285,7 +285,10 @@ const PostMsg = (props: typePostMsg) => {
         }
     }
     return (
-        <div className='containerPost'>
+        <>
+        {props.id == "" && <div className='containerPost'>Please open a channel or private message<Button /></div>}
+        {props.id && props.id != "" &&
+            <div className='containerPost'>
             <textarea ref={refElem} id="submitArea"
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => props.setMsg(e.currentTarget.value)}
                 onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
@@ -308,6 +311,8 @@ const PostMsg = (props: typePostMsg) => {
             >Go</button>
             <Button />
         </div>
+        }
+        </>
     );
 }
 
@@ -402,10 +407,12 @@ const DiscussionBox = (props: {
         online, usrSocket]);
     useEffect(() => {
         usrSocket?.on("sendBackMsg2", (res: any) => {
-            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id && elem.bl === 1);
-            if (!found) {
-                if (res.room === props.id)
-                    setLstMsgPm((lstMsg) => [...lstMsg, res]);
+            if (lstUserGlobal) {
+                let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id && elem.bl === 1);
+                if (!found) {
+                    if (res.room === props.id)
+                        setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                }
             }
         });
         return (() => { usrSocket?.off("sendBackMsg2"); });
@@ -454,6 +461,7 @@ const updateChannel = (setChannel, setPm, jwt, setErrorCode) => {
 const Box = (props: settingBox) => {
     const [lstPm, setPm] = useState<listPm[]>([] as listPm[]);
     const [lstChannel, setChannel] = useState<listChan[]>([] as listChan[]);
+    const [isPrivate] = useState<boolean>(false);
 
     useEffect(() => {
         /* load channels */
@@ -461,9 +469,9 @@ const Box = (props: settingBox) => {
         return (() => {
             setPm([]);
             setChannel([]);
+            props.setId("");
         })
     }, [lstPm.keys, lstChannel.keys]);
-    const [isPrivate, setIsPrivate] = useState<boolean>(false);
     return (
         <article className='containerDirectMessage unfold' style={{
             maxWidth: props.width,

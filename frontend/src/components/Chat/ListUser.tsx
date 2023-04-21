@@ -115,9 +115,9 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 }
 
 export const inviteGame = (event: MouseEvent<HTMLButtonElement>,
-    userId: number, jwt: string, navigate, setErrorCode): void => {
+    userId: number, jwt: string | null, navigate, setErrorCode): void => {
     event.preventDefault();
-    if (event.target)
+    if (event.target && jwt)
         playPageInvite(jwt, setErrorCode,
             userId, navigate);
 }
@@ -142,10 +142,11 @@ type aswType = {
 export const directMessage = async (event: MouseEvent<HTMLButtonElement>,
     setDisplay: any, setId: React.Dispatch<React.SetStateAction<string>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-    userId: number, jwt: string): Promise<void> => {
+    userId: number, jwt: string | null): Promise<void> => {
     event.preventDefault();
 
-    await fetch('https://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
+    if (jwt) {
+        await fetch('https://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
         id: String(userId),
     }), { headers: header(jwt) })
         .then(res => {
@@ -154,12 +155,12 @@ export const directMessage = async (event: MouseEvent<HTMLButtonElement>,
             setErrorCode(res.status)
         }).then((res: aswType) => {
             if (res) {
-                console.log(res)
-                setDisplay(true);
-                if (res.asw)
+                if (res.asw){
                     setId(res.asw);
+                }
             }
         }).catch(e => console.log(e));
+    }
 }
 
 const handleClick = (event: React.MouseEvent<HTMLDivElement>,
@@ -201,21 +202,17 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     1 === online
     2 === in game
 */
-export const StatusUser = (props: { userId: number, jwt: string }) => {
+export const StatusUser = (props: { userId: number, jwt: string | null }) => {
     const { usrSocket } = useContext(SocketContext);
     const [status, setStatus] = useState<number>(0);
     useEffect(() => {
-        console.log("st")
-        console.log(props.userId)
         //emit ask user conneced/ig on map, then return reponse
         //.on connections and deconnections
         usrSocket?.emit("status", { userId: props.userId }, (res: { code: number }) => {
-            console.log(res)
             if (res)
                 setStatus(res.code);
         });
         usrSocket?.on('currentStatus', (res: { code: number, userId: string }) => {
-            console.log(res)
             if (res && props.userId === Number(res.userId))
                 setStatus(res.code);
         })
@@ -247,9 +244,13 @@ export const StatusUser = (props: { userId: number, jwt: string }) => {
 }
 
 const ButtonsInfos = (props: typeButtonsInfo) => {
-    const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
+    const { id, lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        if (id && id != "")
+            props.setDisplay(true);
+    }, [id]);
     return (<>
         <StatusUser jwt={props.jwt} userId={props.userInfo.id} />
         <button onClick={(e) =>
