@@ -20,7 +20,9 @@ export default defineConfig(({mode}) => {
       host: true,
       port: 5173,
       hmr: {
-        port: 5174, protocol: 'wss'
+        path: '/hmr/',
+        clientPort: 4000,
+        protocol: 'wss'
       }
     }
   });
