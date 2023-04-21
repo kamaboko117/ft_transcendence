@@ -4,6 +4,7 @@ if [ ! -d ./node_modules ];
 then
 	npm i -g npm@latest
 	npm i -g @nestjs/cli@latest
+	#npm i --package-lock-only
 	npm audit fix
 	npm install
 else
