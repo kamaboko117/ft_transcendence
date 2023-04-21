@@ -58,8 +58,6 @@ function App() {
   let jwt = userCtx.getJwt();
 
   useEffect(() => {
-    console.log(jwt)
-    console.log(usrSocket?.connected)
     if (!jwt && usrSocket?.connected === true)
       usrSocket.disconnect();
     if (jwt) {
