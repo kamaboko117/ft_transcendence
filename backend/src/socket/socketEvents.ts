@@ -10,6 +10,8 @@ import { RoomsService } from "src/rooms/services/rooms/rooms.service";
 import { Room } from "src/typeorm/room.entity";
 import { Inject, UseGuards, forwardRef } from "@nestjs/common";
 import { JwtGuard } from "src/auth/jwt.guard";
+import { TokenUser } from "src/chat/chat.interface";
+import { UsersService } from "src/users/providers/users/users.service";
 
 const FPS = 60;
 const CANVAS_WIDTH = 600;
@@ -123,7 +125,7 @@ function collision(player: IPlayer, ball: any) {
   );
 }
 
-function resetBall(ball : IBall) {
+function resetBall(ball: IBall) {
   ball.x = CANVAS_WIDTH / 2;
   ball.y = CANVAS_HEIGHT / 2;
   ball.speed = 5;
@@ -173,6 +175,7 @@ export class SocketEvents {
   constructor(
     @Inject(forwardRef(() => UsersGateway))
     private readonly userGateway: UsersGateway,
+    private readonly userService: UsersService,
     private readonly roomsService: RoomsService) {
     this.mapUserInGame = new Map();
   }
@@ -246,7 +249,7 @@ export class SocketEvents {
   @UseGuards(JwtGuard)
   @SubscribeMessage("join_game")
   async join(@MessageBody() data: any, @ConnectedSocket() client: any) {
-    const user = client.user;
+    const user: TokenUser = client.user;
     //await client.join(data.roomId);
     console.log("New user joining room: ", data);
     console.log(this.server.sockets.adapter.rooms)
@@ -261,21 +264,54 @@ export class SocketEvents {
     //si c pour trouver si deja en partie faut modifier
     if (/*socketRooms.length > 0
       || */(connectedSockets && connectedSockets?.size > 1)) {
-      client.emit("join_game_error", { error: "Room is full" });
+      client.to(data.roomId).emit("join_game_error", { error: "Room is full" });
       return;
     } else {
       await client.join(data.roomId);
-      this.mapUserInGame.set(client.id, user.userID);
+      this.mapUserInGame.set(client.id, user.userID.toString());
       if (room && room.private === true) {
         const result: boolean = this.checkIfUserFound(room, client.id);
-        console.log("result: " + result)
-        console.log(this.server.sockets.adapter.rooms.get(data.roomId))
+        //console.log("result: " + result)
+        //console.log(this.server.sockets.adapter.rooms.get(data.roomId))
         if (result === false) {
-          client.emit("join_game_error", { error: "You are spectactor" });
+          client.to(data.roomId).emit("join_game_error", { error: "You are spectactor" });
           return;
         }
       }
-      client.emit("join_game_success", { roomId: data.roomId });
+      /*console.log("lst id");
+      console.log(this.server.sockets.adapter.rooms.get(data.roomId));
+      console.log("map")
+      console.log(this.mapUserInGame);
+      console.log("nb client");
+      const nbClient = this.server.sockets.adapter.rooms.get(data.roomId)?.size;
+      
+      this.server.to(data.roomId).emit("join_game_success", {
+        roomId: data.roomId,
+        username: user.username,
+        nbClient: nbClient
+      });*/
+      console.log("--------")
+      console.log(this.server.sockets.adapter.rooms.get(data.roomId));
+      console.log(this.mapUserInGame);
+      const loop = this.server.sockets.adapter.rooms.get(data.roomId);
+      const nbClient = this.server.sockets.adapter.rooms.get(data.roomId)?.size;
+      let i: number = 1;
+      loop?.forEach((key) => {
+        console.log(key)
+        this.mapUserInGame.forEach(async (value2, key2) => {
+          if (key === key2) {
+            console.log("FOUND");
+            const userDb = await this.userService.findUsersById(Number(value2));
+            console.log(userDb)
+            this.server.to(data.roomId).emit("join_game_success", {
+              roomId: data.roomId,
+              username: userDb?.username,
+              nbClient: i
+            });
+            ++i;
+          }
+        });
+      })
       if (connectedSockets?.size === 2) {
         let newGame = new Game(data.roomId);
         let player1 = newGame.player1;
@@ -283,16 +319,16 @@ export class SocketEvents {
         let ball = newGame.ball;
         games.push(newGame);
         console.log("Starting game");
-        client.emit("start_game", { side: 1 });
+        client.to(data.roomId).emit("start_game", { side: 1 });
         client.to(data.roomId).emit("start_game", { side: 2 });
         setInterval(() => {
           update(newGame);
-          client.emit("on_game_update", {
+          client.to(data.roomId).emit("on_game_update", {
             player1,
             player2,
             ball,
           });
-          client.to(data.roomId).emit("on_game_update", {
+          client.to(data.roomId).to(data.roomId).emit("on_game_update", {
             player1,
             player2,
             ball,
