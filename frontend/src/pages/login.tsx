@@ -8,11 +8,11 @@ const redirect_uri = app_uri + "/validate";
 const state = "pouet2";
 const loginUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=${redirect_uri}&response_type=code&scope=public&state=${state}'`;
 
-function LoginPage(props: any) {
+function LoginPage(props: {jwt: string | null}) {
 
-  if (props.user) return <Navigate to="/" />;
   return (
     <>
+    {props.jwt && <Navigate to="/" />}
       <div>
         <h1>Please Log In</h1>
         <></>
