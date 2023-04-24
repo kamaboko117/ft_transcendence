@@ -243,7 +243,7 @@ type rankWin = {
 
 const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | undefined, jwt: string | null}) => {
 	const [vc, setVC] = useState<number>(0);
-	const [nb_g, setNb_g] = useState<number>(0);
+	const [nb_g, setNb_g] = useState<number | undefined>(undefined);
 	const [df, setDf] = useState<number>(0);
 	const [rank, setRank] = useState<rankWin>({rankByRankUser: undefined, rankDbByWin: undefined});
 
@@ -254,19 +254,25 @@ const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | 
 					return(res.text())
 				props.setErrorCode(res.status);
 			}).then((res) => {
+				console.log(res)
 				setNb_g(Number(res));
 			})
 	}, [])
 
 	useEffect(() => {
-		fetch('https://' + location.host + `/api/users/get-victory-nb-other/${props.id}`, {headers: header(props.jwt)})
+		if (typeof nb_g === 'number') {
+			fetch('https://' + location.host + `/api/users/get-victory-nb-other/${props.id}`, {headers: header(props.jwt)})
 			.then(res => {
 				if (res.ok)
 					return (res.json())
 				props.setErrorCode(res.status);
 			}).then((res) => {
 				if (res) {
+					console.log(res)
+					console.log("nb_g: " + nb_g);
+					//
 					setVC(Number(res.nb));
+					console.log("vc: " + vc)
 					setDf(nb_g - vc);
 					if (res.rankDbByWin)
 						setRank({
@@ -280,7 +286,8 @@ const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | 
 						});
 				}
 			})
-	}, [nb_g])
+		}
+	}, [nb_g, vc])
 	return(
 		<>
 			<ul>

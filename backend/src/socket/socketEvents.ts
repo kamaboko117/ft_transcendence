@@ -185,6 +185,7 @@ export class SocketEvents {
 
   handleDisconnect(client: Socket) {
     console.log("Client disconnected: ", client.id);
+    this.mapUserInGame.delete(client.id);
   }
 
   isUserConnected(id: string) {
