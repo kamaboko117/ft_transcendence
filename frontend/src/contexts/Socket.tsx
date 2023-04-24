@@ -19,7 +19,8 @@ export const SocketProvider = (props: { jwt: string | null, usrSocket: Socket<an
     const [errorCode, setErrorCode] = useState<number>(200);
 
     useEffect(() => {
-        if (props.jwt && props.jwt != "") {
+        if (props.jwt && props.jwt != ""
+            && props.usrSocket?.connected === true) {
             props.usrSocket?.on('exception', (res) => {
                 if (res.status === "error" && res.message === "Token not valid") {
                     setErrorCode(403)

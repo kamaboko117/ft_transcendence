@@ -208,16 +208,19 @@ export const StatusUser = (props: { userId: number, jwt: string | null }) => {
     useEffect(() => {
         //emit ask user conneced/ig on map, then return reponse
         //.on connections and deconnections
-        usrSocket?.emit("status", { userId: props.userId }, (res: { code: number }) => {
-            if (res)
-                setStatus(res.code);
-        });
-        usrSocket?.on('currentStatus', (res: { code: number, userId: string }) => {
+        console.log(usrSocket)
+        if (usrSocket?.connected === true) {
+            usrSocket?.emit("status", { userId: props.userId }, (res: { code: number }) => {
+                if (res)
+                    setStatus(res.code);
+            });
+            usrSocket?.on('currentStatus', (res: { code: number, userId: string }) => {
             if (res && props.userId === Number(res.userId))
                 setStatus(res.code);
         })
+        }
         return (() => {
-            usrSocket?.off("currentStatus");
+            usrSocket?.connected === true && usrSocket?.off("currentStatus");
             setStatus(0);
         })
     }, [props.userId, props.jwt, usrSocket]);
