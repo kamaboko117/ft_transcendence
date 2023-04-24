@@ -218,7 +218,7 @@ type rankWin = {
 const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: string | null}) => {
 	const [vc, setVc] = useState<number>(0);
 	const [df, setDf] = useState<number>(0);
-	const [nb_g, setNb_g] = useState<number>(0);
+	const [nb_g, setNb_g] = useState<number | undefined>(undefined);
 	const [rank, setRank] = useState<rankWin>({rankByRankUser: undefined, rankDbByWin: undefined});
 //
 	useEffect(() => {
@@ -233,7 +233,8 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: s
 	}, []);
 
 	useEffect(() => {
-		fetch('https://' + location.host + '/api/users/get-victory-nb/', {headers: header(props.jwt)})
+		if (typeof nb_g === 'number') {
+			fetch('https://' + location.host + '/api/users/get-victory-nb/', {headers: header(props.jwt)})
 			.then(res => {
 				if (res.ok)
 					return (res.json())
@@ -254,7 +255,8 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: s
 						});
 				}
 			})
-	}, [nb_g]);
+		}
+	}, [nb_g, vc]);
 
 	//useEffect(() => {
 //		fetch('https://' + location.host + '/api/users/achiv', {headers: header(props.jwt)})	

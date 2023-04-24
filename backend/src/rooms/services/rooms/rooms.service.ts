@@ -10,7 +10,9 @@ export class RoomsService {
     @InjectRepository(Room)
     private readonly roomRepository: Repository<Room>
   ) { }
-
+  onModuleInit() {
+    console.log("COUCOU ICI ROOM MODULE")
+  }
   createRoom(CreateRoomDto: CreateRoomDto) {
     const newRoom = this.roomRepository.create(CreateRoomDto);
     newRoom.Capacity = 1;
