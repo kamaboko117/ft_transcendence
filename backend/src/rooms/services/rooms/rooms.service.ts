@@ -11,6 +11,7 @@ export class RoomsService {
     private readonly roomRepository: Repository<Room>
   ) { }
   onModuleInit() {
+    const room = this.roomRepository.delete({});
     console.log("COUCOU ICI ROOM MODULE")
   }
   createRoom(CreateRoomDto: CreateRoomDto) {
