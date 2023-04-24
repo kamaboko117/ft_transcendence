@@ -362,6 +362,7 @@ export class UsersService {
         }
 
         check.forEach(function (elem) {
+            console.log(elem)
             if (elem.name === "First game played !")
                 achOk.fg = true;
             else if (elem.name === "First victory !")
@@ -377,8 +378,8 @@ export class UsersService {
     }
 
     async updateAchive(id: number) {
-        let typeAchivement = "";
-
+        //let typeAchivement = "";
+        console.log(id)
         const nbGame = await this.getGamesNb(id);
         const nbVic = await this.getVictoryNb(id);
         const stat = await this.statRepository.createQueryBuilder("stat")

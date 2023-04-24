@@ -37,6 +37,13 @@ class GameService {
     console.log("start_game log loaded")
     socket.on("start_game", callback);
   }
+
+  public async onGameEnd(
+    socket: Socket,
+    callback: (data: any) => void
+  ): Promise<void> {
+    socket.on("end_game", callback);
+  }
 }
 
 export default new GameService();
