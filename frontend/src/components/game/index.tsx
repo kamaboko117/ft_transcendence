@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import gameService from "../../services/gameService";
+import SettingGame from "./SettingGame";
 //import socketService from "../../services/socketService";
 
 const FPS = 60;
@@ -7,8 +8,8 @@ const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
 
 
-export default function Game(props: {id: string, usrSocket}) {
-  let socketService = {socket: props.usrSocket}
+export default function Game(props: { id: string, usrSocket }) {
+  let socketService = { socket: props.usrSocket }
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   interface IPlayer {
@@ -171,7 +172,7 @@ export default function Game(props: {id: string, usrSocket}) {
       gameService.updatePlayerPosition(socketService.socket, { side: side, y: player.y });
   }
 
-  useEffect(() => {
+  /*useEffect(() => {
     console.log(socketService.socket)
     if (socketService.socket) {
       console.log("socketed")
@@ -189,13 +190,13 @@ export default function Game(props: {id: string, usrSocket}) {
     console.log("Game room mounting");
     return (() => {
       console.log("Game room unmount");
-      socketService.socket?.emit("leave_game", {roomId: props.id});
+      socketService.socket?.emit("leave_game", { roomId: props.id });
       socketService.socket?.off("join_game_success");
       socketService.socket?.off("join_game_error");
     });
-  }, [socketService.socket]);
+  }, [socketService.socket]);*/
 
-  useEffect(() => {
+  /*useEffect(() => {
     handleGameStart();
     const canvas = canvasRef.current;
     //if (!canvas) {
@@ -223,7 +224,7 @@ export default function Game(props: {id: string, usrSocket}) {
       socketService.socket?.off("on_game_update");
       socketService.socket?.off("onGameStart");
     });
-  }, [isGameStarted, socketService.socket]);
+  }, [isGameStarted, socketService.socket]);*/
 
   const handleGameStart = async () => {
     if (socketService.socket) {
@@ -237,14 +238,11 @@ export default function Game(props: {id: string, usrSocket}) {
     }
   };
 
-  if (!isGameStarted) {
-    return (
-      <div className="game">
-        <h1 className="room_name">Game</h1>
-        {(errorCode != 1 ?<h1>waiting for opponent</h1>: <h1>Room is full, you are spectator</h1>)}
-      </div>
-    );
-  }
+  //if (!isGameStarted) {
+  return (
+    <SettingGame id={props.id} socketService={socketService} />
+  );
+  //}
 
   return (
     <div className="game">

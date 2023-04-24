@@ -120,21 +120,31 @@ const PostMsg = (props: typePostMsg) => {
     const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
         obj: any, ref: any) => {
         e.preventDefault();
+        let cmdIsValid = true;
 
         if (obj.content && obj.content === "/help") {
             setLstMsgChat((lstMsg) => [...lstMsg, helper]);
         }
-        else if (obj.content && obj.content[0] === '/')
-            commandChat(jwt, obj, props.setErrorCode,
+        else if (obj.content && obj.content[0] === '/') {
+            cmdIsValid = commandChat(jwt, obj, props.setErrorCode,
                 lstUserGlobal, lstUserChat,
                 setLstUserGlobal, setLstUserChat, navigate);
+            if (cmdIsValid === false) {
+                props.usrSocket.emit('sendMsg', obj, (res) => {
+                    if (res.room === obj.id)
+                        setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                    if (res.room === obj.id && obj.id == obj.idBox)
+                        setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                });
+            }
+        }
         else {
             props.usrSocket.emit('sendMsg', obj, (res) => {
                 if (res.room === obj.id)
                     setLstMsgChat((lstMsg) => [...lstMsg, res]);
                 if (res.room === obj.id && obj.id == obj.idBox)
                     setLstMsgPm((lstMsg) => [...lstMsg, res]);
-            })
+            });
         }
         props.setMsg("");
         ref.current.value = "";
@@ -142,22 +152,32 @@ const PostMsg = (props: typePostMsg) => {
 
     const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
         obj: any, ref: any) => {
+        let cmdIsValid = true;
+
         if (e.key === "Enter" && e.shiftKey === false) {
             e.preventDefault();
             if (obj.content && obj.content === "/help") {
                 setLstMsgChat((lstMsg) => [...lstMsg, helper]);
             }
             else if (obj.content && obj.content[0] === '/') {
-                commandChat(jwt, obj, props.setErrorCode,
+                cmdIsValid = commandChat(jwt, obj, props.setErrorCode,
                     lstUserGlobal, lstUserChat, setLstUserGlobal,
                     setLstUserChat, navigate);
+                if (cmdIsValid === false) {
+                    props.usrSocket.emit('sendMsg', obj, (res) => {
+                        if (res.room === obj.id)
+                            setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                        if (res.room === obj.id && obj.id == obj.idBox)
+                            setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                    });
+                }
             } else {
                 props.usrSocket.emit('sendMsg', obj, (res) => {
                     if (res.room === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res.room === obj.id && obj.id == obj.idBox)
                         setLstMsgPm((lstMsg) => [...lstMsg, res]);
-                })
+                });
             }
             props.setMsg("");
             ref.current.value = "";
@@ -191,7 +211,7 @@ const MainChat = (props: any) => {
     const [online, setOnline] = useState<undefined | boolean | string>(undefined)
     const userCtx: any = useContext(UserContext);
     const { usrSocket } = useContext(SocketContext);
-    
+
     useEffect(() => {
         //subscribeChat
         usrSocket?.emit("joinRoomChat", {
