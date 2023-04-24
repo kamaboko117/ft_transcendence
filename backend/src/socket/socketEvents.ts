@@ -14,6 +14,7 @@ import { JwtGuard } from "src/auth/jwt.guard";
 const FPS = 60;
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
+let games = [] as Game[];
 
 interface IPlayer {
   x: number;
@@ -28,39 +29,80 @@ interface IPlayer {
   right: number;
 }
 
-const player1 = {
-  x: 0,
-  y: CANVAS_HEIGHT / 2 - 100 / 2,
-  width: 10,
-  height: 100,
-  color: "WHITE",
-  score: 0,
-  top: 0,
-  bottom: 0,
-  left: 0,
-  right: 0,
-};
-const player2 = {
-  x: CANVAS_WIDTH - 10,
-  y: CANVAS_HEIGHT / 2 - 100 / 2,
-  width: 10,
-  height: 100,
-  color: "WHITE",
-  score: 0,
-  top: 0,
-  bottom: 0,
-  left: 0,
-  right: 0,
-};
-const ball = {
-  x: CANVAS_WIDTH / 2,
-  y: CANVAS_HEIGHT / 2,
-  radius: 10,
-  speed: 5,
-  velocityX: 5,
-  velocityY: 5,
-  color: "WHITE",
-};
+interface IBall {
+  x: number;
+  y: number;
+  radius: number;
+  speed: number;
+  velocityX: number;
+  velocityY: number;
+  color: string;
+}
+
+interface IGame {
+  id: string;
+  player1: IPlayer;
+  player2: IPlayer;
+  ball: IBall;
+}
+
+class Player implements IPlayer {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: string;
+  score: number;
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+    this.width = 10;
+    this.height = 100;
+    this.color = "WHITE";
+    this.score = 0;
+    this.top = 0;
+    this.bottom = 0;
+    this.left = 0;
+    this.right = 0;
+  }
+}
+
+class Ball implements IBall {
+  x: number;
+  y: number;
+  radius: number;
+  speed: number;
+  velocityX: number;
+  velocityY: number;
+  color: string;
+  constructor() {
+    this.x = CANVAS_WIDTH / 2;
+    this.y = CANVAS_HEIGHT / 2;
+    this.radius = 10;
+    this.speed = 5;
+    this.velocityX = 5;
+    this.velocityY = 5;
+    this.color = "WHITE";
+  }
+}
+
+class Game implements IGame {
+  id: string;
+  player1: IPlayer;
+  player2: IPlayer;
+  ball: IBall;
+  constructor(id: string) {
+    this.id = id;
+    this.player1 = new Player(0, CANVAS_HEIGHT / 2 - 100 / 2);
+    this.player2 = new Player(CANVAS_WIDTH - 10, CANVAS_HEIGHT / 2 - 100 / 2);
+    this.ball = new Ball();
+  }
+}
 
 function collision(player: IPlayer, ball: any) {
   player.top = player.y;
@@ -81,7 +123,7 @@ function collision(player: IPlayer, ball: any) {
   );
 }
 
-function resetBall() {
+function resetBall(ball : IBall) {
   ball.x = CANVAS_WIDTH / 2;
   ball.y = CANVAS_HEIGHT / 2;
   ball.speed = 5;
@@ -96,28 +138,28 @@ function resetBall() {
   console.log("velocityX: ", ball.velocityX);
 }
 
-function update() {
-  ball.x += ball.velocityX;
-  ball.y += ball.velocityY;
-  if (ball.y + ball.radius > CANVAS_HEIGHT || ball.y - ball.radius < 0) {
-    ball.velocityY = -ball.velocityY;
+function update(game: IGame) {
+  game.ball.x += game.ball.velocityX;
+  game.ball.y += game.ball.velocityY;
+  if (game.ball.y + game.ball.radius > CANVAS_HEIGHT || game.ball.y - game.ball.radius < 0) {
+    game.ball.velocityY = -game.ball.velocityY;
   }
-  let player = ball.x < CANVAS_WIDTH / 2 ? player1 : player2;
-  if (collision(player, ball)) {
-    let collidePoint = ball.y - (player.y + player.height / 2);
+  let player = game.ball.x < CANVAS_WIDTH / 2 ? game.player1 : game.player2;
+  if (collision(player, game.ball)) {
+    let collidePoint = game.ball.y - (player.y + player.height / 2);
     collidePoint = collidePoint / (player.height / 2);
     let angleRad = (Math.PI / 4) * collidePoint;
-    let direction = ball.x + ball.radius < CANVAS_WIDTH / 2 ? 1 : -1;
-    ball.velocityX = direction * ball.speed * Math.cos(angleRad);
-    ball.velocityY = ball.speed * Math.sin(angleRad);
-    ball.speed += 0.1;
+    let direction = game.ball.x + game.ball.radius < CANVAS_WIDTH / 2 ? 1 : -1;
+    game.ball.velocityX = direction * game.ball.speed * Math.cos(angleRad);
+    game.ball.velocityY = game.ball.speed * Math.sin(angleRad);
+    game.ball.speed += 0.1;
   }
-  if (ball.x - ball.radius < 0) {
-    player2.score++;
-    resetBall();
-  } else if (ball.x + ball.radius > CANVAS_WIDTH) {
-    player1.score++;
-    resetBall();
+  if (game.ball.x - game.ball.radius < 0) {
+    game.player2.score++;
+    resetBall(game.ball);
+  } else if (game.ball.x + game.ball.radius > CANVAS_WIDTH) {
+    game.player1.score++;
+    resetBall(game.ball);
   }
 }
 
@@ -234,11 +276,16 @@ export class SocketEvents {
       }
       client.emit("join_game_success", { roomId: data.roomId });
       if (connectedSockets?.size === 2) {
+        let newGame = new Game(data.roomId);
+        let player1 = newGame.player1;
+        let player2 = newGame.player2;
+        let ball = newGame.ball;
+        games.push(newGame);
         console.log("Starting game");
         client.emit("start_game", { side: 1 });
         client.to(data.roomId).emit("start_game", { side: 2 });
         setInterval(() => {
-          update();
+          update(newGame);
           client.emit("on_game_update", {
             player1,
             player2,
@@ -266,11 +313,19 @@ export class SocketEvents {
     @ConnectedSocket() client: Socket
   ) {
     const gameRoom: any = this.getSocketGameRoom(client);
-    if (data.side === 1) {
-      player1.y = data.y;
-    } else {
-      player2.y = data.y;
+    let game = games.find((g) => g.id === gameRoom);
+    if (!game) {
+      return;
     }
+    if (data.side === 1) {
+      game.player1.y = data.y;
+    } else {
+      game.player2.y = data.y;
+    }
+    let player1 = game.player1;
+    let player2 = game.player2;
+    let ball = game.ball;
+    console.log(`default player1: ${player1.x} ${player1.y}`);
     client.to(gameRoom).emit("on_game_update", { player1, player2, ball });
   }
 
