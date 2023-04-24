@@ -10,6 +10,7 @@ import { RoomsService } from "src/rooms/services/rooms/rooms.service";
 import { Room } from "src/typeorm/room.entity";
 import { Inject, UseGuards, forwardRef } from "@nestjs/common";
 import { JwtGuard } from "src/auth/jwt.guard";
+import { UsersService } from "src/users/providers/users/users.service";
 
 const FPS = 60;
 const CANVAS_WIDTH = 600;
@@ -17,6 +18,7 @@ const CANVAS_HEIGHT = 400;
 let games = [] as Game[];
 
 interface IPlayer {
+  socketId: string;
   x: number;
   y: number;
   width: number;
@@ -41,12 +43,15 @@ interface IBall {
 
 interface IGame {
   id: string;
+  intervalId: any;
+  type: string;
   player1: IPlayer;
   player2: IPlayer;
   ball: IBall;
 }
 
 class Player implements IPlayer {
+  socketId: string;
   x: number;
   y: number;
   width: number;
@@ -58,7 +63,8 @@ class Player implements IPlayer {
   left: number;
   right: number;
 
-  constructor(x: number, y: number) {
+  constructor(x: number, y: number, id: string) {
+    this.socketId = id;
     this.x = x;
     this.y = y;
     this.width = 10;
@@ -93,13 +99,16 @@ class Ball implements IBall {
 
 class Game implements IGame {
   id: string;
+  intervalId: any;
+  type: string;
   player1: IPlayer;
   player2: IPlayer;
   ball: IBall;
-  constructor(id: string) {
+  constructor(id: string, player1id: string, player2id: string) {
     this.id = id;
-    this.player1 = new Player(0, CANVAS_HEIGHT / 2 - 100 / 2);
-    this.player2 = new Player(CANVAS_WIDTH - 10, CANVAS_HEIGHT / 2 - 100 / 2);
+    this.type = "classic";
+    this.player1 = new Player(0, CANVAS_HEIGHT / 2 - 100 / 2, player1id);
+    this.player2 = new Player(CANVAS_WIDTH - 10, CANVAS_HEIGHT / 2 - 100 / 2, player2id);
     this.ball = new Ball();
   }
 }
@@ -135,7 +144,6 @@ function resetBall(ball : IBall) {
     ball.velocityX = newVelocityX;
     ball.velocityY = newVelocityY;
   }, 1500);
-  console.log("velocityX: ", ball.velocityX);
 }
 
 function update(game: IGame) {
@@ -169,11 +177,12 @@ function update(game: IGame) {
   }
 })
 export class SocketEvents {
-  private readonly mapUserInGame: Map<string, string>;
+  private readonly mapUserInGame: Map<string, number>;
   constructor(
     @Inject(forwardRef(() => UsersGateway))
     private readonly userGateway: UsersGateway,
-    private readonly roomsService: RoomsService) {
+    private readonly roomsService: RoomsService,
+    private readonly usersService: UsersService) {
     this.mapUserInGame = new Map();
   }
   @WebSocketServer()
@@ -183,9 +192,46 @@ export class SocketEvents {
     console.log("Client connected: ", client.id);
   }
 
-  handleDisconnect(client: Socket) {
+  async endGame(game: IGame, winnerSocketId: string, loserSocketId: string) {
+    let winnerId = this.mapUserInGame.get(winnerSocketId);
+    let loserId = this.mapUserInGame.get(loserSocketId);
+
+    console.log(`winnerId: ${winnerId}, loserId: ${loserId}`)
+    if (winnerId && loserId) {
+      await this.usersService.updateHistory(game.type, winnerId, loserId, winnerId);
+      await this.usersService.updateAchive(winnerId);
+      await this.usersService.updateAchive(loserId);
+    }
+    this.server.to(game.id).emit('end_game', { winnerId: winnerId, loserId: loserId });
+    clearInterval(game.intervalId);
+    games = games.filter(g => g.id !== game.id);
+    this.mapUserInGame.delete(winnerSocketId);
+    this.mapUserInGame.delete(loserSocketId);
+    this.roomsService.deleteRoom(game.id);
+
+  }
+
+  findGameByConnectedSocket(socketId: string) : null | IGame{
+    let game = null;
+    games.forEach(g => {
+      if (g.player1.socketId === socketId || g.player2.socketId === socketId) {
+        game = g;
+      }
+    });
+    return game;
+  }
+
+  async handleDisconnect(client: Socket) {
     console.log("Client disconnected: ", client.id);
-    this.mapUserInGame.delete(client.id);
+    let game = this.findGameByConnectedSocket(client.id);
+    if (game) {
+      if (game.player1.socketId === client.id) {
+        this.endGame(game, game.player2.socketId, game.player1.socketId);
+      } else {
+        this.endGame(game, game.player1.socketId, game.player2.socketId);
+      }
+      // games = games.filter(g => g.id !== game.id);
+    }
   }
 
   isUserConnected(id: string) {
@@ -230,9 +276,7 @@ export class SocketEvents {
   /* search if user is in private room */
   checkIfUserFound(room: Room, clientId: string) {
     const map = this.userGateway.getMap();
-    console.log(room);
     const split = room?.roomName.split('|');
-    console.log(split)
     if (split) {
       for (let [key, value] of map.entries()) {
         if (key === clientId) {
@@ -249,14 +293,13 @@ export class SocketEvents {
     const user = client.user;
     //await client.join(data.roomId);
     console.log("New user joining room: ", data);
-    console.log(this.server.sockets.adapter.rooms)
+    console.log(`user: ${user.userID} is joining room: ${data.roomId}`)
 
     const connectedSockets = this.server.sockets.adapter.rooms.get(data.roomId);
     const socketRooms = Array.from(client.rooms.values()).filter(
       (r) => r !== client.id
     );
     const room = await this.roomsService.findRoomById(data.roomId);
-    console.log(connectedSockets?.size)
     //j'enleve ca car le find fonctionne mal, il cherche sur toutes les rooms chat compris, 
     //si c pour trouver si deja en partie faut modifier
     if (/*socketRooms.length > 0
@@ -277,7 +320,8 @@ export class SocketEvents {
       }
       client.emit("join_game_success", { roomId: data.roomId });
       if (connectedSockets?.size === 2) {
-        let newGame = new Game(data.roomId);
+        let socket2 = connectedSockets?.values().next().value;
+        let newGame = new Game(data.roomId, client.id, socket2);
         let player1 = newGame.player1;
         let player2 = newGame.player2;
         let ball = newGame.ball;
@@ -285,7 +329,7 @@ export class SocketEvents {
         console.log("Starting game");
         client.emit("start_game", { side: 1 });
         client.to(data.roomId).emit("start_game", { side: 2 });
-        setInterval(() => {
+        newGame.intervalId = setInterval(() => {
           update(newGame);
           client.emit("on_game_update", {
             player1,
@@ -326,7 +370,6 @@ export class SocketEvents {
     let player1 = game.player1;
     let player2 = game.player2;
     let ball = game.ball;
-    console.log(`default player1: ${player1.x} ${player1.y}`);
     client.to(gameRoom).emit("on_game_update", { player1, player2, ball });
   }
 

@@ -26,6 +26,8 @@ export default function Game(props: {id: string, usrSocket}) {
 
   const [side, setSide] = React.useState(1);
   const [isGameStarted, setIsGameStarted] = React.useState(false);
+  const [isGameEnded, setIsGameEnded] = React.useState(false);
+  const [winner, setWinner] = React.useState<string>("");
   const [errorCode, setErrorCode] = React.useState<number>(200);
 
   function drawRect(
@@ -150,7 +152,6 @@ export default function Game(props: {id: string, usrSocket}) {
     let player = side === 1 ? player2 : player1;
     if (socketService.socket) {
       gameService.onGameUpdate(socketService.socket, (data: any) => {
-        console.log(data);
         player.y = side === 1 ? data.player2.y : data.player1.y;
         player1.score = data.player1.score;
         player2.score = data.player2.score;
@@ -158,6 +159,13 @@ export default function Game(props: {id: string, usrSocket}) {
         ball.y = data.ball.y;
         ball.velocityX = data.ball.velocityX;
         ball.velocityY = data.ball.velocityY;
+      });
+      gameService.onGameEnd(socketService.socket, (data: any) => {
+        console.log("Game ended");
+        console.log(data);
+        setIsGameStarted(false);
+        setIsGameEnded(true);
+        setWinner(data.winnerId);
       });
     }
   };
@@ -236,6 +244,16 @@ export default function Game(props: {id: string, usrSocket}) {
       });
     }
   };
+
+  if (isGameEnded) {
+    return (
+      <div className="game">
+        <h1 className="room_name">Game</h1>
+        <h1>Game ended</h1> 
+        <h2>{winner} won !</h2>
+      </div>
+    );
+  }
 
   if (!isGameStarted) {
     return (
