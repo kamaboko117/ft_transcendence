@@ -12,7 +12,6 @@ export class RoomsService {
   ) { }
   onModuleInit() {
     const room = this.roomRepository.delete({});
-    console.log("COUCOU ICI ROOM MODULE")
   }
   createRoom(CreateRoomDto: CreateRoomDto) {
     const newRoom = this.roomRepository.create(CreateRoomDto);
