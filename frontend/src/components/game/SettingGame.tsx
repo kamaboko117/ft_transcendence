@@ -1,14 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import gameService from "../../services/gameService";
 
-const ButtonIsCustom = () => {
+const ButtonIsCustom = (props: { usrSocket, id: string }) => {
     const [custom, setCustom] = useState<boolean>(false);
-
     const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (e && e.target)
             setCustom(prev => !prev);
     }
-    return (<button onClick={handleRdy}>{(custom === false ? "Click to transform into custom game" : "Click to disable custom game")}</button>);
+
+    useEffect(() => {
+        props.usrSocket.on("updateTypeGameFromServer", (res: { type: boolean }) => {
+            setCustom(res.type);
+        });
+        return (() => {
+            props.usrSocket.off("updateTypeGameFromServer");
+        });
+    }, []);
+    useEffect(() => {
+        props.usrSocket.emit("updateTypeGame", { type: custom, roomId: props.id }, ((res: { type: boolean }) => {
+            setCustom(res.type);
+        }));
+    }, [custom]);
+    return (<button onClick={handleRdy}>{
+        (custom === false ? "Click to transform into custom game" : "Click to disable custom game")
+    }</button>);
 }
 
 const ButtonRdy = () => {
@@ -32,7 +47,9 @@ const SettingGame = (props: { socketService: { socket: any }, id: string }) => {
     const [errorCode, setErrorCode] = useState<number>(200);
     const [usr1, setUsr1] = useState<string>("");
     const [usr2, setUsr2] = useState<string>("");
+
     useEffect(() => {
+        console.log(props.id)
         console.log(props.socketService.socket)
         if (props.socketService.socket) {
             console.log("socketed")
@@ -49,6 +66,7 @@ const SettingGame = (props: { socketService: { socket: any }, id: string }) => {
             }
             game();
             console.log("joined from game component");
+
         }
         console.log("Game room mounting");
         return (() => {
@@ -59,12 +77,27 @@ const SettingGame = (props: { socketService: { socket: any }, id: string }) => {
         });
     }, [props.socketService.socket]);
 
+    useEffect(() => {
+        props.socketService.socket.on("user_leave_room", (res: { username: string }) => {
+            console.log(res)
+            if (res.username === usr1) {
+                setUsr1("");
+            }
+            if (res.username === usr2) {
+                setUsr2("");
+            }
+        });
+        return (() => {
+            props.socketService.socket?.off("user_leave_room");
+        });
+    }, [usr1, usr2])
+
     return (
         <div className="createParty">
             <h1 className="room_name">Game</h1>
             {(errorCode != 1 ? <h1>waiting for opponent</h1> : <h1>Room is full, you are spectator</h1>)}
             <ListUser usr1={usr1} usr2={usr2} />
-            <ButtonIsCustom />
+            <ButtonIsCustom usrSocket={props.socketService.socket} id={props.id} />
             <br />
             <ButtonRdy />
         </div>
