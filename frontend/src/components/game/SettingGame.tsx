@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import gameService from "../../services/gameService";
 
+const CANVAS_WIDTH = 600;
+const CANVAS_HEIGHT = 400;
+
 const ButtonIsCustom = (props: { usrSocket, id: string }) => {
     const [custom, setCustom] = useState<boolean>(false);
     const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -26,13 +29,32 @@ const ButtonIsCustom = (props: { usrSocket, id: string }) => {
     }</button>);
 }
 
-const ButtonRdy = () => {
+const ButtonRdy = (props: { usrSocket, uid: string, usr1: string, usr2: string }) => {
     const [rdy, setRdy] = useState<boolean>(false);
 
     const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
-        if (e && e.target)
+        if (e && e.target) {
             setRdy(prev => !prev);
+        }
     }
+
+    useEffect(() => {
+        props.usrSocket.on("updateUserRdy", () => {
+            setRdy(false);
+        });
+        return (() => {
+            props.usrSocket.off("updateUserRdy");
+        });
+    });
+
+    useEffect(() => {
+        props.usrSocket.emit("userIsRdy", {
+            uid: props.uid,
+            usr1: props.usr1,
+            usr2: props.usr2,
+            rdy: rdy
+        });
+    }, [rdy]);
     return (<button onClick={handleRdy}>{(rdy === false ? "Click to be ready" : "Stop ready")}</button>);
 }
 
@@ -43,7 +65,12 @@ const ListUser = (props: { usr1: string, usr2: string }) => {
     </div>);
 }
 
-const SettingGame = (props: { socketService: { socket: any }, id: string }) => {
+const SettingGame = (props: {
+    socketService: { socket: any },
+    id: string,
+    canvasRef: React.MutableRefObject<HTMLCanvasElement | null>,
+    isGameStarted: boolean
+}) => {
     const [errorCode, setErrorCode] = useState<number>(200);
     const [usr1, setUsr1] = useState<string>("");
     const [usr2, setUsr2] = useState<string>("");
@@ -66,7 +93,6 @@ const SettingGame = (props: { socketService: { socket: any }, id: string }) => {
             }
             game();
             console.log("joined from game component");
-
         }
         console.log("Game room mounting");
         return (() => {
@@ -90,18 +116,34 @@ const SettingGame = (props: { socketService: { socket: any }, id: string }) => {
         return (() => {
             props.socketService.socket?.off("user_leave_room");
         });
-    }, [usr1, usr2])
+    }, [usr1, usr2]);
 
-    return (
-        <div className="createParty">
-            <h1 className="room_name">Game</h1>
-            {(errorCode != 1 ? <h1>waiting for opponent</h1> : <h1>Room is full, you are spectator</h1>)}
-            <ListUser usr1={usr1} usr2={usr2} />
-            <ButtonIsCustom usrSocket={props.socketService.socket} id={props.id} />
-            <br />
-            <ButtonRdy />
-        </div>
-    );
+    if (!props.isGameStarted) {
+        return (
+            <div className="createParty">
+                <h1 className="room_name">Game</h1>
+                {(errorCode != 1 ? <h1>waiting for opponent</h1> : <h1>Room is full, you are spectator</h1>)}
+                <ListUser usr1={usr1} usr2={usr2} />
+                <ButtonIsCustom usrSocket={props.socketService.socket} id={props.id} />
+                <br />
+                <ButtonRdy usrSocket={props.socketService.socket}
+                    uid={props.id} usr1={usr1} usr2={usr2} />
+            </div>
+        );
+    } else {
+        return (
+            <div className="game">
+                <h1 className="room_name">Game</h1>
+                <canvas
+                    ref={props.canvasRef}
+                    className="game_canvas"
+                    id="pong"
+                    width={CANVAS_WIDTH}
+                    height={CANVAS_HEIGHT}
+                ></canvas>
+            </div>
+        );
+    }
 }
 
 export default SettingGame
