@@ -6,9 +6,12 @@ const FPS = 60;
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
 
-
-export default function Game(props: {id: string, usrSocket}) {
-  let socketService = {socket: props.usrSocket}
+export default function Game(props: {
+  id: string;
+  usrSocket;
+  roomName: string;
+}) {
+  let socketService = { socket: props.usrSocket };
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   interface IPlayer {
@@ -165,7 +168,7 @@ export default function Game(props: {id: string, usrSocket}) {
         console.log(data);
         setIsGameStarted(false);
         setIsGameEnded(true);
-        setWinner(data.winnerId);
+        setWinner(data.winner);
       });
     }
   };
@@ -176,13 +179,16 @@ export default function Game(props: {id: string, usrSocket}) {
     if (!rect) return;
     player.y = e.clientY - rect.top - player.height / 2;
     if (socketService.socket)
-      gameService.updatePlayerPosition(socketService.socket, { side: side, y: player.y });
+      gameService.updatePlayerPosition(socketService.socket, {
+        side: side,
+        y: player.y,
+      });
   }
 
   useEffect(() => {
-    console.log(socketService.socket)
+    console.log(socketService.socket);
     if (socketService.socket) {
-      console.log("socketed")
+      console.log("socketed");
       const game = async () => {
         await gameService
           .joinGameRoom(socketService.socket, props.id)
@@ -190,17 +196,17 @@ export default function Game(props: {id: string, usrSocket}) {
             console.log("joining room " + err);
             setErrorCode(1);
           });
-      }
+      };
       game();
     }
     console.log("joined from game component");
     console.log("Game room mounting");
-    return (() => {
+    return () => {
       console.log("Game room unmount");
-      socketService.socket?.emit("leave_game", {roomId: props.id});
+      socketService.socket?.emit("leave_game", { roomId: props.id });
       socketService.socket?.off("join_game_success");
       socketService.socket?.off("join_game_error");
-    });
+    };
   }, [socketService.socket]);
 
   useEffect(() => {
@@ -209,9 +215,9 @@ export default function Game(props: {id: string, usrSocket}) {
     //if (!canvas) {
     //  return;
     //}
-    console.log("canvas")
-    console.log(canvas)
-    console.log(isGameStarted)
+    console.log("canvas");
+    console.log(canvas);
+    console.log(isGameStarted);
     if (canvas) {
       const ctx = canvas.getContext("2d");
       if (!ctx) {
@@ -221,23 +227,22 @@ export default function Game(props: {id: string, usrSocket}) {
         if (!ctx) return;
         render(ctx, player1, player2);
       }
-      console.log("d");
       canvas.addEventListener("mousemove", movePaddle);
       setInterval(game, 1000 / FPS);
       handleReceivedUpdate();
     }
-    return (() => {
-      console.log("canvas unmount")
+    return () => {
+      console.log("canvas unmount");
       socketService.socket?.off("on_game_update");
       socketService.socket?.off("onGameStart");
-    });
+    };
   }, [isGameStarted, socketService.socket]);
 
   const handleGameStart = async () => {
     if (socketService.socket) {
       await gameService.onGameStart(socketService.socket, (data: any) => {
-        console.log("data")
-        console.log(data)
+        console.log("data");
+        console.log(data);
         setSide(data.side);
         setIsGameStarted(true);
         console.log("start");
@@ -248,9 +253,9 @@ export default function Game(props: {id: string, usrSocket}) {
   if (isGameEnded) {
     return (
       <div className="game">
-        <h1 className="room_name">Game</h1>
-        <h1>Game ended</h1> 
-        <h2>{winner} won !</h2>
+        <h1 className="room_name">{props.roomName}</h1>
+        <h1 className="room_description">Game ended</h1>
+        <h2 className="room_text">{winner} won !</h2>
       </div>
     );
   }
@@ -258,15 +263,19 @@ export default function Game(props: {id: string, usrSocket}) {
   if (!isGameStarted) {
     return (
       <div className="game">
-        <h1 className="room_name">Game</h1>
-        {(errorCode != 1 ?<h1>waiting for opponent</h1>: <h1>Room is full, you are spectator</h1>)}
+        <h1 className="room_name">{props.roomName}</h1>
+        {errorCode != 1 ? (
+          <h1 className="room_content">waiting for opponent</h1>
+        ) : (
+          <h1 className="room_description">Room is full, you are spectator</h1>
+        )}
       </div>
     );
   }
 
   return (
     <div className="game">
-      <h1 className="room_name">Game</h1>
+      <h1 className="room_name">{props.roomName}</h1>
       <canvas
         ref={canvasRef}
         className="game_canvas"

@@ -16,7 +16,6 @@ export default function RoomList(props: IRoomProps) {
             key={item.id}
             uid={item.uid}
             roomName={item.roomName}
-            roomCapacity={item.Capacity}
             join={props.join}
           />
         ))}
