@@ -22,12 +22,17 @@ export class RoomsService {
 
   createRoomPrivate(name: string) {
     const newRoom =
-      this.roomRepository.create({roomName: name, Capacity: 1, private: true});
+      this.roomRepository.create({ roomName: name, Capacity: 1, private: true });
     return this.roomRepository.save(newRoom);
   }
 
-  getRooms() {
-    return this.roomRepository.find();
+  async getRooms() {
+    const rooms = this.roomRepository.createQueryBuilder("room")
+      .where("room.private = :type")
+      .setParameters({ type: false })
+      .getMany();
+    return (await rooms);
+    //return this.roomRepository.find();
   }
 
   findRoomById(uid: string) {
