@@ -12,6 +12,7 @@ import { Inject, UseGuards, forwardRef } from "@nestjs/common";
 import { JwtGuard } from "src/auth/jwt.guard";
 import { TokenUser } from "src/chat/chat.interface";
 import { UsersService } from "src/users/providers/users/users.service";
+import { UpdateTypeRoom } from "./dto";
 
 const FPS = 60;
 const CANVAS_WIDTH = 600;
@@ -186,12 +187,24 @@ export class SocketEvents {
     console.log("Client connected: ", client.id);
   }
 
-  handleDisconnect(client: Socket) {
+  //PEUT ETRE FAIRE UN USEGUARD POUR SUPPRIMER LA ROOM ICI, QUAND LES 2 USERS ONT QUITTES,
+  //  car le client semble plus etre dans la room ici
+  async handleDisconnect(client: Socket) {
+    const gameRoom: any = this.getSocketGameRoom(client);
+    console.log("room on disconnection: " + gameRoom);
     console.log("Client disconnected: ", client.id);
+
+    for (let [key, value] of this.mapUserInGame.entries()) {
+      if (client.id === key) {
+        const userDb = await this.userService.findUsersById(Number(value));
+        this.server.emit("user_leave_room", { username: userDb?.username });
+      }
+    }
     this.mapUserInGame.delete(client.id);
+
   }
 
-  isUserConnected(id: string) {
+  public isUserConnected(id: string) {
     const map = this.userGateway.getMap();
 
     for (let [key, value] of map.entries()) {
@@ -202,7 +215,7 @@ export class SocketEvents {
     return (false);
   }
 
-  inviteUserToGame(userId: string, userIdFocus: string, idGame: string) {
+  public inviteUserToGame(userId: string, userIdFocus: string, idGame: string) {
     const map = this.userGateway.getMap();
 
     for (let [key, value] of map.entries()) {
@@ -221,9 +234,16 @@ export class SocketEvents {
   }
 
   @SubscribeMessage("leave_game")
-  leave(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
+  async leave(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
     console.log("client id: " + client.id + "is leaving room");
     if (data) {
+      for (let [key, value] of this.mapUserInGame.entries()) {
+        if (client.id === key) {
+          const userDb = await this.userService.findUsersById(Number(value));
+          console.log(userDb)
+          this.server.to(data.roomId).emit("user_leave_room", { username: userDb?.username });
+        }
+      }
       client.leave(data.roomId);
       this.mapUserInGame.delete(client.id);
     }
@@ -255,9 +275,9 @@ export class SocketEvents {
     console.log(this.server.sockets.adapter.rooms)
 
     const connectedSockets = this.server.sockets.adapter.rooms.get(data.roomId);
-    const socketRooms = Array.from(client.rooms.values()).filter(
-      (r) => r !== client.id
-    );
+    //const socketRooms = Array.from(client.rooms.values()).filter(
+    //  (r) => r !== client.id
+    //);
     const room = await this.roomsService.findRoomById(data.roomId);
     console.log(connectedSockets?.size)
     //j'enleve ca car le find fonctionne mal, il cherche sur toutes les rooms chat compris, 
@@ -267,6 +287,7 @@ export class SocketEvents {
       client.to(data.roomId).emit("join_game_error", { error: "Room is full" });
       return;
     } else {
+      console.log(typeof data.roomId)
       await client.join(data.roomId);
       this.mapUserInGame.set(client.id, user.userID.toString());
       if (room && room.private === true) {
@@ -369,4 +390,14 @@ export class SocketEvents {
   getMap() {
     return (this.mapUserInGame);
   }
+
+  @UseGuards(JwtGuard)
+  @SubscribeMessage("updateTypeGame")
+  updateTypeGame(@MessageBody() data: UpdateTypeRoom, @ConnectedSocket() client: Socket) {
+    //client.to().emit()
+    console.log("data")
+    console.log(data)
+    client.to(data.roomId).emit("updateTypeGameFromServer", { type: data.type });
+  }
+
 }
