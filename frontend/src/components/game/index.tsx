@@ -171,32 +171,32 @@ export default function Game(props: { id: string, usrSocket }) {
     if (socketService.socket)
       gameService.updatePlayerPosition(socketService.socket, { side: side, y: player.y });
   }
-
-  /*useEffect(() => {
-    console.log(socketService.socket)
-    if (socketService.socket) {
-      console.log("socketed")
-      const game = async () => {
-        await gameService
-          .joinGameRoom(socketService.socket, props.id)
-          .catch((err) => {
-            console.log("joining room " + err);
-            setErrorCode(1);
-          });
+  /*
+    useEffect(() => {
+      console.log(socketService.socket)
+      if (socketService.socket) {
+        console.log("socketed")
+        const game = async () => {
+          await gameService
+            .joinGameRoom(socketService.socket, props.id, 0, 0)
+            .catch((err) => {
+              console.log("joining room " + err);
+              setErrorCode(1);
+            });
+        }
+        game();
       }
-      game();
-    }
-    console.log("joined from game component");
-    console.log("Game room mounting");
-    return (() => {
-      console.log("Game room unmount");
-      socketService.socket?.emit("leave_game", { roomId: props.id });
-      socketService.socket?.off("join_game_success");
-      socketService.socket?.off("join_game_error");
-    });
-  }, [socketService.socket]);*/
+      console.log("joined from game component");
+      console.log("Game room mounting");
+      return (() => {
+        console.log("Game room unmount");
+        socketService.socket?.emit("leave_game", { roomId: props.id });
+        socketService.socket?.off("join_game_success");
+        socketService.socket?.off("join_game_error");
+      });
+    }, [socketService.socket]);*/
 
-  /*useEffect(() => {
+  useEffect(() => {
     handleGameStart();
     const canvas = canvasRef.current;
     //if (!canvas) {
@@ -224,7 +224,7 @@ export default function Game(props: { id: string, usrSocket }) {
       socketService.socket?.off("on_game_update");
       socketService.socket?.off("onGameStart");
     });
-  }, [isGameStarted, socketService.socket]);*/
+  }, [isGameStarted, socketService.socket]);
 
   const handleGameStart = async () => {
     if (socketService.socket) {
@@ -237,14 +237,15 @@ export default function Game(props: { id: string, usrSocket }) {
       });
     }
   };
-
+  //if (!isGameStarted)
+  //  return (<></>)
   //if (!isGameStarted) {
   return (
-    <SettingGame id={props.id} socketService={socketService} />
+    <SettingGame id={props.id} socketService={socketService} canvasRef={canvasRef} isGameStarted={isGameStarted} />
   );
   //}
 
-  return (
+  /*return (
     <div className="game">
       <h1 className="room_name">Game</h1>
       <canvas
@@ -256,4 +257,5 @@ export default function Game(props: { id: string, usrSocket }) {
       ></canvas>
     </div>
   );
+  */
 }
