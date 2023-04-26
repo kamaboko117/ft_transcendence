@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import gameService from "../../services/gameService";
+import ActivePowerUpsList from "./ActivePowerUpsList";
 //import socketService from "../../services/socketService";
 
 const FPS = 60;
@@ -27,6 +28,19 @@ export default function Game(props: {
     right: number;
   }
 
+  interface IPowerUp {
+    type: string;
+    imageURL: string;
+    x: number;
+    y: number;
+    radius: number;
+    color: string;
+    active: boolean;
+    lifespan: number;
+  }
+
+  let powerUps: IPowerUp[] = [];
+  const [powerUpList, setPowerUpList] = React.useState<IPowerUp[]>([]);
   const [side, setSide] = React.useState(1);
   const [isGameStarted, setIsGameStarted] = React.useState(false);
   const [isGameEnded, setIsGameEnded] = React.useState(false);
@@ -71,10 +85,39 @@ export default function Game(props: {
     ctx.fillText(text, x, y);
   }
 
+  function drawPowerUps(ctx: CanvasRenderingContext2D) {
+    for (const powerUp of powerUps) {
+      if (!powerUp.active) {
+        drawCircle(ctx, powerUp.x, powerUp.y, powerUp.radius, powerUp.color);
+        let powerUpImage = new Image();
+        powerUpImage.src = powerUp.imageURL;
+        drawImageResized(
+          ctx,
+          powerUpImage,
+          powerUp.x - powerUp.radius,
+          powerUp.y - powerUp.radius,
+          powerUp.radius * 2,
+          powerUp.radius * 2
+        );
+      }
+    }
+  }
+
   function drawNet(ctx: CanvasRenderingContext2D) {
     for (let i = 0; i <= CANVAS_HEIGHT; i += 15) {
       drawRect(ctx, CANVAS_WIDTH / 2 - 1, i, 2, 10, "WHITE");
     }
+  }
+
+  function drawImageResized(
+    ctx: CanvasRenderingContext2D,
+    img: HTMLImageElement,
+    x: number,
+    y: number,
+    w: number,
+    h: number
+  ) {
+    ctx.drawImage(img, x, y, w, h);
   }
 
   const player1 = {
@@ -117,6 +160,7 @@ export default function Game(props: {
     player2: IPlayer
   ) {
     drawRect(ctx, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT, "BLACK");
+    drawPowerUps(ctx);
     drawText(
       ctx,
       `${player1.score}`,
@@ -158,10 +202,16 @@ export default function Game(props: {
         player.y = side === 1 ? data.player2.y : data.player1.y;
         player1.score = data.player1.score;
         player2.score = data.player2.score;
+        player1.height = data.player1.height;
+        player2.height = data.player2.height;
         ball.x = data.ball.x;
         ball.y = data.ball.y;
+        ball.radius = data.ball.radius;
+        ball.color = data.ball.color;
         ball.velocityX = data.ball.velocityX;
         ball.velocityY = data.ball.velocityY;
+        powerUps = data.powerUps;
+        setPowerUpList(data.powerUps);
       });
       gameService.onGameEnd(socketService.socket, (data: any) => {
         console.log("Game ended");
@@ -252,7 +302,7 @@ export default function Game(props: {
 
   if (isGameEnded) {
     return (
-      <div className="game">
+      <div className="game_container">
         <h1 className="room_name">{props.roomName}</h1>
         <h1 className="room_description">Game ended</h1>
         <h2 className="room_text">{winner} won !</h2>
@@ -262,7 +312,7 @@ export default function Game(props: {
 
   if (!isGameStarted) {
     return (
-      <div className="game">
+      <div className="game_container">
         <h1 className="room_name">{props.roomName}</h1>
         {errorCode != 1 ? (
           <h1 className="room_content">waiting for opponent</h1>
@@ -274,15 +324,18 @@ export default function Game(props: {
   }
 
   return (
-    <div className="game">
+    <div className="game_container">
       <h1 className="room_name">{props.roomName}</h1>
-      <canvas
-        ref={canvasRef}
-        className="game_canvas"
-        id="pong"
-        width={CANVAS_WIDTH}
-        height={CANVAS_HEIGHT}
-      ></canvas>
+      <div className="game">
+        <canvas
+          ref={canvasRef}
+          className="game_canvas"
+          id="pong"
+          width={CANVAS_WIDTH}
+          height={CANVAS_HEIGHT}
+        ></canvas>
+        <ActivePowerUpsList powerUps={powerUpList} side={side} />
+      </div>
     </div>
   );
 }
