@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import gameService from "../../services/gameService";
+import { FetchError, header } from "../FetchError";
 import SettingGame from "./SettingGame";
 //import socketService from "../../services/socketService";
 
@@ -8,7 +10,7 @@ const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
 
 
-export default function Game(props: { id: string, usrSocket }) {
+export default function Game(props: { id: string, usrSocket, jwt: string | null }) {
   let socketService = { socket: props.usrSocket }
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -25,8 +27,32 @@ export default function Game(props: { id: string, usrSocket }) {
     right: number;
   }
 
+  const navigate = useNavigate();
+  useEffect(() => {
+    const ft_fetch = async () => {
+        await fetch('https://' + location.host + '/api/rooms/get?' + new URLSearchParams({
+            id: props.id,
+        }),
+            { headers: header(props.jwt) })
+            .then(res => {
+                if (res.ok)
+                    return (res.json());
+                setErrorCode(res.status);
+            })
+            .then((res: {exist: boolean}) => {
+                if (res) {
+                    if (res.exist === false)
+                        navigate("/");
+                }
+            })
+            .catch(e => console.log(e));
+    }
+    ft_fetch();
+}, [props.jwt]);
+
   const [side, setSide] = React.useState(1);
   const [isGameStarted, setIsGameStarted] = React.useState(false);
+  const [typeGame, setTypeGame] = React.useState<string>("normal")
   const [errorCode, setErrorCode] = React.useState<number>(200);
 
   function drawRect(
@@ -240,8 +266,14 @@ export default function Game(props: { id: string, usrSocket }) {
   //if (!isGameStarted)
   //  return (<></>)
   //if (!isGameStarted) {
+  
   return (
-    <SettingGame id={props.id} socketService={socketService} canvasRef={canvasRef} isGameStarted={isGameStarted} />
+    <>
+      {errorCode >= 400 && <FetchError code={errorCode} />}
+      <SettingGame id={props.id} socketService={socketService}
+        canvasRef={canvasRef} isGameStarted={isGameStarted}
+        typeGame={typeGame} setTypeGame={setTypeGame} />
+    </>
   );
   //}
 

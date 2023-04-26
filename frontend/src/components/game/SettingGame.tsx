@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import gameService from "../../services/gameService";
+import { FetchError } from '../FetchError';
 
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
 
-const ButtonIsCustom = (props: { usrSocket, id: string }) => {
+const ButtonIsCustom = (props: { usrSocket, id: string,
+    setTypeGame: React.Dispatch<React.SetStateAction<string>> }) => {
     const [custom, setCustom] = useState<boolean>(false);
     const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (e && e.target)
@@ -14,6 +16,7 @@ const ButtonIsCustom = (props: { usrSocket, id: string }) => {
     useEffect(() => {
         props.usrSocket.on("updateTypeGameFromServer", (res: { type: boolean }) => {
             setCustom(res.type);
+            props.setTypeGame("Custom");
         });
         return (() => {
             props.usrSocket.off("updateTypeGameFromServer");
@@ -69,7 +72,7 @@ const SettingGame = (props: {
     socketService: { socket: any },
     id: string,
     canvasRef: React.MutableRefObject<HTMLCanvasElement | null>,
-    isGameStarted: boolean
+    isGameStarted: boolean, typeGame: string, setTypeGame: React.Dispatch<React.SetStateAction<string>>
 }) => {
     const [errorCode, setErrorCode] = useState<number>(200);
     const [usr1, setUsr1] = useState<string>("");
@@ -120,28 +123,35 @@ const SettingGame = (props: {
 
     if (!props.isGameStarted) {
         return (
-            <div className="createParty">
-                <h1 className="room_name">Game</h1>
-                {(errorCode != 1 ? <h1>waiting for opponent</h1> : <h1>Room is full, you are spectator</h1>)}
-                <ListUser usr1={usr1} usr2={usr2} />
-                <ButtonIsCustom usrSocket={props.socketService.socket} id={props.id} />
-                <br />
-                <ButtonRdy usrSocket={props.socketService.socket}
-                    uid={props.id} usr1={usr1} usr2={usr2} />
-            </div>
+            <>
+                {errorCode >= 400 && <FetchError code={errorCode} />}
+                <div className="createParty">
+                    <h1 className="room_name">Game</h1>
+                    {(errorCode != 1 ? <h1>waiting for opponent</h1> : <h1>Room is full, you are spectator</h1>)}
+                    <ListUser usr1={usr1} usr2={usr2} />
+                    <ButtonIsCustom usrSocket={props.socketService.socket}
+                        id={props.id} setTypeGame={props.setTypeGame} />
+                    <br />
+                    <ButtonRdy usrSocket={props.socketService.socket}
+                        uid={props.id} usr1={usr1} usr2={usr2} />
+                </div>
+            </>
         );
     } else {
         return (
-            <div className="game">
-                <h1 className="room_name">Game</h1>
-                <canvas
-                    ref={props.canvasRef}
-                    className="game_canvas"
-                    id="pong"
-                    width={CANVAS_WIDTH}
-                    height={CANVAS_HEIGHT}
-                ></canvas>
-            </div>
+            <>
+                {errorCode >= 400 && <FetchError code={errorCode} />}
+                <div className="game">
+                    <h1 className="room_name">Game</h1>
+                    <canvas
+                        ref={props.canvasRef}
+                        className="game_canvas"
+                        id="pong"
+                        width={CANVAS_WIDTH}
+                        height={CANVAS_HEIGHT}
+                    ></canvas>
+                </div>
+            </>
         );
     }
 }
