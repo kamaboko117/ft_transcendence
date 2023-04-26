@@ -17,6 +17,292 @@ const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
 let games = [] as Game[];
 
+interface IPowerUp {
+  type: string;
+  side: string;
+  user: string;
+  imageURL: string;
+  x: number;
+  y: number;
+  radius: number;
+  color: string;
+  active: boolean;
+  lifespan: number;
+  //a function that modifies the game
+  effect: (dest: IGame | IPlayer) => void;
+  cancelEffect: (dest: IGame | IPlayer) => void;
+}
+
+class powerUp implements IPowerUp {
+  type: string;
+  side: string;
+  user: string;
+  imageURL: string;
+  x: number;
+  y: number;
+  radius: number;
+  color: string;
+  active: boolean;
+  lifespan: number;
+  effect: (dest: IGame | IPlayer) => void;
+  cancelEffect: (dest: IGame | IPlayer) => void;
+  constructor(x: number, y: number, type: string) {
+    switch (type) {
+      case "ballSpeedUp":
+        return new PUBallSpeedUp(x, y);
+      case "ballSpeedDown":
+        return new PUBallSpeedDown(x, y);
+      case "ballGrow":
+        return new PUBallGrow(x, y);
+      case "ballShrink":
+        return new PUBallShrink(x, y);
+      case "paddleGrow":
+        return new PUPaddleGrow(x, y);
+      case "paddleShrink":
+        return new PUPaddleShrink(x, y);
+      case "ballSpeedUpPlayer":
+        return new PUBallSpeedUpPlayer(x, y);
+      case "ballSpeedDownPlayer":
+        return new PUBallSpeedDownPlayer(x, y);
+      default:
+        throw new Error("Invalid power up type");
+    }
+  }
+}
+
+class PUNeutral implements IPowerUp {
+  type: string;
+  side: string;
+  user: string;
+  imageURL: string;
+  x: number;
+  y: number;
+  radius: number;
+  color: string;
+  active: boolean;
+  lifespan: number;
+  effect: (game: IGame) => void;
+  cancelEffect: (game: IGame) => void;
+  constructor(x: number, y: number) {
+    this.type = "";
+    this.side = "neutral";
+    this.user = "";
+    this.x = x;
+    this.y = y;
+    this.radius = 4;
+    this.color = "BLUE";
+    this.active = false;
+    this.lifespan = 4;
+    this.effect = (game: IGame) => {};
+    this.cancelEffect = (game: IGame) => {};
+  }
+}
+
+class PUBonus implements IPowerUp {
+  type: string;
+  side: string;
+  user: string;
+  target: IPlayer;
+  imageURL: string;
+  x: number;
+  y: number;
+  radius: number;
+  color: string;
+  active: boolean;
+  lifespan: number;
+  effect: (player: IPlayer) => void;
+  cancelEffect: () => void;
+  constructor(x: number, y: number) {
+    this.type = "";
+    this.side = "bonus";
+    this.user = "";
+    this.x = x;
+    this.y = y;
+    this.radius = 10;
+    this.color = "GREEN";
+    this.active = false;
+    this.lifespan = 4;
+    this.effect = (player: IPlayer) => {};
+    this.cancelEffect = () => {};
+  }
+}
+
+class PUMalus implements IPowerUp {
+  type: string;
+  side: string;
+  user: string;
+  target: IPlayer;
+  imageURL: string;
+  x: number;
+  y: number;
+  radius: number;
+  color: string;
+  active: boolean;
+  lifespan: number;
+  effect: (player: IPlayer) => void;
+  cancelEffect: () => void;
+  constructor(x: number, y: number) {
+    this.type = "";
+    this.side = "malus";
+    this.user = "";
+    this.x = x;
+    this.y = y;
+    this.radius = 10;
+    this.color = "RED";
+    this.active = false;
+    this.lifespan = 4;
+    this.effect = (player: IPlayer) => {};
+    this.cancelEffect = () => {};
+  }
+}
+
+class PUBallSpeedUp extends PUNeutral {
+  constructor(x: number, y: number) {
+    super(x, y);
+    this.type = "ballSpeedUp";
+    this.imageURL =
+      "https://cdn.discordapp.com/attachments/1036599465429172244/1100807862529314886/ballSpeed.png";
+    this.effect = (game: IGame) => {
+      game.ball.velocityX *= 1.5;
+      game.ball.velocityY *= 1.5;
+      game.ball.speed *= 1.5;
+    };
+    this.cancelEffect = (game: IGame) => {
+      game.ball.velocityX /= 1.5;
+      game.ball.velocityY /= 1.5;
+      game.ball.speed /= 1.5;
+    };
+  }
+}
+
+class PUBallSpeedDown extends PUNeutral {
+  constructor(x: number, y: number) {
+    super(x, y);
+    this.type = "ballSpeedDown";
+    this.imageURL =
+      "https://cdn.discordapp.com/attachments/1036599465429172244/1100812835052851270/BallSlow.png";
+    this.effect = (game: IGame) => {
+      game.ball.velocityX /= 1.5;
+      game.ball.velocityY /= 1.5;
+      game.ball.speed /= 1.5;
+    };
+    this.cancelEffect = (game: IGame) => {
+      game.ball.velocityX *= 1.5;
+      game.ball.velocityY *= 1.5;
+      game.ball.speed *= 1.5;
+    };
+  }
+}
+
+class PUBallGrow extends PUNeutral {
+  constructor(x: number, y: number) {
+    super(x, y);
+    this.type = "ballGrow";
+    this.imageURL =
+      "https://cdn.discordapp.com/attachments/1036599465429172244/1100811538039853178/BallGrow.png";
+    this.effect = (game: IGame) => {
+      game.ball.radius *= 2;
+    };
+    this.cancelEffect = (game: IGame) => {
+      game.ball.radius /= 2;
+    };
+  }
+}
+
+class PUBallShrink extends PUNeutral {
+  constructor(x: number, y: number) {
+    super(x, y);
+    this.type = "ballShrink";
+    this.imageURL =
+      "https://cdn.discordapp.com/attachments/1036599465429172244/1100811538224398437/BallShrink.png";
+    this.effect = (game: IGame) => {
+      game.ball.radius /= 2;
+    };
+    this.cancelEffect = (game: IGame) => {
+      game.ball.radius *= 2;
+    };
+  }
+}
+
+class PUPaddleGrow extends PUBonus {
+  constructor(x: number, y: number) {
+    super(x, y);
+    this.type = "paddleGrow";
+    this.imageURL =
+      "https://cdn.discordapp.com/attachments/1036599465429172244/1100807862768386190/PlayerGrow.png";
+    this.effect = (player: IPlayer) => {
+      this.target = player;
+      player.height *= 1.5;
+    };
+    this.cancelEffect = () => {
+      this.target.height /= 1.5;
+    };
+  }
+}
+
+class PUBallSpeedUpPlayer extends PUBonus {
+  constructor(x: number, y: number) {
+    super(x, y);
+    this.type = "ballSpeedUpPlayer";
+    this.imageURL =
+      "https://cdn.discordapp.com/attachments/1036599465429172244/1100807862529314886/ballSpeed.png";
+    this.effect = (player: IPlayer) => {
+      this.target = player;
+      player.speedMultiplier *= 1.5;
+    };
+    this.cancelEffect = () => {
+      this.target.speedMultiplier /= 1.5;
+    };
+  }
+}
+
+class PUPaddleShrink extends PUMalus {
+  constructor(x: number, y: number) {
+    super(x, y);
+    this.type = "paddleShrink";
+    this.imageURL =
+      "https://cdn.discordapp.com/attachments/1036599465429172244/1100807863061970996/PlayerShrink.png";
+    this.effect = (player: IPlayer) => {
+      this.target = player;
+      player.height /= 1.5;
+    };
+    this.cancelEffect = () => {
+      this.target.height *= 1.5;
+    };
+  }
+}
+
+class PUBallSpeedDownPlayer extends PUMalus {
+  constructor(x: number, y: number) {
+    super(x, y);
+    this.type = "ballSpeedDownPlayer";
+    this.imageURL =
+      "https://cdn.discordapp.com/attachments/1036599465429172244/1100812835052851270/BallSlow.png";
+    this.effect = (player: IPlayer) => {
+      this.target = player;
+      player.speedMultiplier /= 1.5;
+    };
+    this.cancelEffect = () => {
+      this.target.speedMultiplier *= 1.5;
+    };
+  }
+}
+
+const neutralPowerUpTypes = [
+  "ballSpeedUp",
+  "ballSpeedDown",
+  "ballGrow",
+  "ballShrink",
+  "paddleGrow",
+  "paddleShrink",
+  "ballSpeedUpPlayer",
+  "ballSpeedDownPlayer",
+] as string[];
+
+const bonusPowerUpTypes = ["paddleGrow", "ballSpeedUpPlayer"] as string[];
+
+const malusPowerUpTypes = ["paddleShrink", "ballSpeedDownPlayer"] as string[];
+
 interface IPlayer {
   socketId: string;
   x: number;
@@ -29,6 +315,7 @@ interface IPlayer {
   bottom: number;
   left: number;
   right: number;
+  speedMultiplier: number;
 }
 
 interface IBall {
@@ -39,6 +326,7 @@ interface IBall {
   velocityX: number;
   velocityY: number;
   color: string;
+  acceleration: number;
 }
 
 interface IGame {
@@ -49,6 +337,7 @@ interface IGame {
   player2: IPlayer;
   ball: IBall;
   goal: number;
+  powerUps: IPowerUp[];
 }
 
 class Player implements IPlayer {
@@ -63,6 +352,7 @@ class Player implements IPlayer {
   bottom: number;
   left: number;
   right: number;
+  speedMultiplier: number;
 
   constructor(x: number, y: number, id: string) {
     this.socketId = id;
@@ -76,6 +366,7 @@ class Player implements IPlayer {
     this.bottom = 0;
     this.left = 0;
     this.right = 0;
+    this.speedMultiplier = 1;
   }
 }
 
@@ -87,14 +378,21 @@ class Ball implements IBall {
   velocityX: number;
   velocityY: number;
   color: string;
-  constructor() {
+  acceleration: number;
+  constructor(
+    radius: number = 10,
+    speed: number = 5,
+    color: string = "WHITE",
+    acceleration: number = 0.1
+  ) {
     this.x = CANVAS_WIDTH / 2;
     this.y = CANVAS_HEIGHT / 2;
-    this.radius = 10;
-    this.speed = 5;
+    this.radius = radius;
+    this.speed = speed;
     this.velocityX = 5;
     this.velocityY = 5;
-    this.color = "WHITE";
+    this.color = color;
+    this.acceleration = acceleration;
   }
 }
 
@@ -106,6 +404,7 @@ class Game implements IGame {
   player2: IPlayer;
   ball: IBall;
   goal: number;
+  powerUps: IPowerUp[];
   constructor(id: string, player1id: string, player2id: string, goal: number) {
     this.id = id;
     this.type = "classic";
@@ -117,6 +416,7 @@ class Game implements IGame {
     );
     this.ball = new Ball();
     this.goal = goal;
+    this.powerUps = [];
   }
 }
 
@@ -139,12 +439,74 @@ function collision(player: IPlayer, ball: any) {
   );
 }
 
-function resetBall(ball: IBall) {
+function generatePowerUps(game: IGame) {
+  let powerUpSide = Math.floor(Math.random() * 3);
+  let PU = {} as IPowerUp;
+  const x = Math.random() * CANVAS_WIDTH;
+  const y = Math.random() * CANVAS_HEIGHT;
+  switch (powerUpSide) {
+    case 0: //neutral
+      var type =
+        neutralPowerUpTypes[
+          Math.floor(Math.random() * neutralPowerUpTypes.length)
+        ];
+      PU = new powerUp(x, y, type);
+      break;
+    case 1: //bonus
+      var type =
+        bonusPowerUpTypes[Math.floor(Math.random() * bonusPowerUpTypes.length)];
+      PU = new powerUp(x, y, type);
+      break;
+    case 2: //malus
+      var type =
+        malusPowerUpTypes[Math.floor(Math.random() * malusPowerUpTypes.length)];
+      PU = new powerUp(x, y, type);
+      break;
+  }
+  game.powerUps.push(PU);
+}
+
+function checkPowerUpCollision(ball: IBall, powerUp: IPowerUp) {
+  if (powerUp.active) return false;
+  let distance = Math.sqrt(
+    (ball.x - powerUp.x) * (ball.x - powerUp.x) +
+      (ball.y - powerUp.y) * (ball.y - powerUp.y)
+  );
+  if (distance < ball.radius + powerUp.radius) {
+    powerUp.user = ball.velocityX < 0 ? "player2" : "player1";
+    return true;
+  }
+  return false;
+}
+
+function handleRound(game: IGame) {
+  for (const powerUp of game.powerUps) {
+    if (!powerUp.active) {
+      powerUp.radius += 10;
+    } else {
+      powerUp.lifespan--;
+      if (powerUp.lifespan === 0) {
+        powerUp.cancelEffect(game);
+        //remove power up from array
+        game.powerUps.splice(game.powerUps.indexOf(powerUp), 1);
+      }
+    }
+  }
+  //generate a power up randomly with a 1/5 chance
+  if (Math.floor(Math.random() * 5) === 0) {
+    generatePowerUps(game);
+  }
+}
+
+function resetBall(ball: IBall, game: IGame) {
+  handleRound(game);
   ball.x = CANVAS_WIDTH / 2;
   ball.y = CANVAS_HEIGHT / 2;
   ball.speed = 5;
-  let newVelocityX = -ball.velocityX;
-  let newVelocityY = -ball.velocityY;
+  // get ball direction before reset
+  let angle = Math.atan2(ball.velocityY, ball.velocityX);
+  let newVelocityX = -ball.speed * Math.cos(angle);
+  let newVelocityY = -ball.speed * Math.sin(angle);
   ball.velocityX = 0;
   ball.velocityY = 0;
   setTimeout(() => {
@@ -180,8 +542,9 @@ export class SocketEvents {
     game.ball.x += game.ball.velocityX;
     game.ball.y += game.ball.velocityY;
     if (
-      game.ball.y + game.ball.radius > CANVAS_HEIGHT ||
-      game.ball.y - game.ball.radius < 0
+      (game.ball.y + game.ball.radius > CANVAS_HEIGHT &&
+        game.ball.velocityY > 0) ||
+      (game.ball.y - game.ball.radius < 0 && game.ball.velocityY < 0)
     ) {
       game.ball.velocityY = -game.ball.velocityY;
     }
@@ -192,16 +555,37 @@ export class SocketEvents {
       let angleRad = (Math.PI / 4) * collidePoint;
       let direction =
         game.ball.x + game.ball.radius < CANVAS_WIDTH / 2 ? 1 : -1;
-      game.ball.velocityX = direction * game.ball.speed * Math.cos(angleRad);
-      game.ball.velocityY = game.ball.speed * Math.sin(angleRad);
-      game.ball.speed += 0.1;
+      game.ball.speed += game.ball.acceleration;
+      game.ball.velocityX =
+        direction *
+        game.ball.speed *
+        Math.cos(angleRad) *
+        player.speedMultiplier;
+      game.ball.velocityY =
+        game.ball.speed * Math.sin(angleRad) * player.speedMultiplier;
+      handleRound(game);
+    }
+    //check if ball has collided with any power up
+    for (const powerUp of game.powerUps) {
+      if (checkPowerUpCollision(game.ball, powerUp) && !powerUp.active) {
+        powerUp.active = true;
+        if (powerUp.side === "neutral") {
+          powerUp.effect(game);
+        } else if (powerUp.side === "bonus") {
+          let dest = game.ball.velocityX < 0 ? game.player2 : game.player1;
+          powerUp.effect(dest);
+        } else {
+          let dest = game.ball.velocityX < 0 ? game.player1 : game.player2;
+          powerUp.effect(dest);
+        }
+      }
     }
     if (game.ball.x - game.ball.radius < 0) {
       game.player2.score++;
-      resetBall(game.ball);
+      resetBall(game.ball, game);
     } else if (game.ball.x + game.ball.radius > CANVAS_WIDTH) {
       game.player1.score++;
-      resetBall(game.ball);
+      resetBall(game.ball, game);
     }
     if (game.player1.score === game.goal) {
       this.endGame(game, game.player1.socketId, game.player2.socketId);
@@ -357,6 +741,7 @@ export class SocketEvents {
         let player1 = newGame.player1;
         let player2 = newGame.player2;
         let ball = newGame.ball;
+        let powerUps = newGame.powerUps;
         games.push(newGame);
         console.log("Starting game");
         client.emit("start_game", { side: 1 });
@@ -367,11 +752,13 @@ export class SocketEvents {
             player1,
             player2,
             ball,
+            powerUps,
           });
           client.to(data.roomId).emit("on_game_update", {
             player1,
             player2,
             ball,
+            powerUps,
           });
         }, 1000 / FPS);
       }
@@ -402,7 +789,12 @@ export class SocketEvents {
     let player1 = game.player1;
     let player2 = game.player2;
     let ball = game.ball;
-    client.to(gameRoom).emit("on_game_update", { player1, player2, ball });
+    client.to(gameRoom).emit("on_game_update", {
+      player1,
+      player2,
+      ball,
+      powerUps: game.powerUps,
+    });
   }
 
   getMap() {
