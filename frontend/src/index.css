@@ -80,29 +80,31 @@ button:focus-visible {
 
 .btn {
   /*font: inherit;*/
-  padding: 0.5rem 1.5rem;
+  padding: 10px 10px;
   cursor: pointer;
   border-radius: 4px;
-  background-color: #800040;
+  background-color: crimson;
   /* color: white;*/
-  border: 1px solid #800040;
-  margin: 0 1rem;
+  border: 1px solid crimson;
+  margin: auto;
+  margin-top: 15px;
+  margin-bottom: 15px;
 }
 
 .btn:hover {
-  background-color: #9c1458;
-  /*border-color: #9c1458;*/
+  background-color: darkred;
+  /*border-color: darkred;*/
 }
 
-.btn--alt {
+.btn-second {
   background-color: transparent;
-  color: #800040;
+  color: crimson;
 }
 
-.btn--alt:hover {
+.btn-second:hover {
   background-color: #f8dae9;
 }
-
+/*
 .card {
   background-color: white;
   border-radius: 4px;
@@ -110,59 +112,73 @@ button:focus-visible {
   padding: 1rem;
   width: 20rem;
 }
-
+*/
 .room_item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  /*display: flex;*/
+  /*flex-direction: column;*/
+  /*align-items: center;*/
   background-color: #2b2927;
   border-radius: 4px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  padding: 1rem;
-  width: 20rem;
-  margin: 1rem;
+  /*box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);*/
+  padding: 40px;
+  /*width: 20rem;*/
+  margin: 5px;
+  word-break: break-all;
 }
 
 .room_item:hover {
+  cursor: pointer;
   background-color: #333333;
 }
 
 .room_name {
-  color: #9c1458;
-  font-size: 1.5rem;
+  color: darkred;
+  font-size: 24px;
   margin: 0.5rem 0;
 }
 
 /* room items are set up in a grid */
 .room_list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
-  grid-gap: 1rem;
-  padding: 1rem;
+  /*display: grid;*/
+  /*grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));*/
+  /*grid-gap: 1rem;*/
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  /*padding: 1rem;*/
   background-color: #333333;
+  justify-content: center;
 }
 
 .room_list_container {
   background-color: #333333;
-  padding: 1rem;
-  margin: 1rem;
+  padding: 5px;
+  margin: 5px;
 }
 
 .actions {
   text-align: right;
 }
 
+
+/* translate will reposition the element in the center screen,
+-50% will move the box on -50% from current */
 .modal {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
+  border-radius: 4px;
   background-color: white;
-  padding: 1rem;
+  padding: 10px;
   text-align: center;
-  width: 30rem;
-  z-index: 10;
+  /*width: 30rem;*/
+  max-width: 500px;
+  
+  z-index: 3;
   position: fixed;
-  top: 20vh;
-  left: calc(50% - 15rem);
+  /*top: 20vh;*/
+  /*left: calc(50% - 15rem);*/
+  margin: auto;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, 0);
 }
 
 .game {
@@ -190,6 +206,27 @@ button:focus-visible {
   left: 0;
 }
 
+@media screen and (max-width: 600px) {
+  .room_list {
+    flex-direction: column;
+  }
+  .room_name {
+    font-size: 1em;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .room_item {
+    padding: 20px;
+  }
+}
+
+@media screen and (max-width: 250px) {
+  .room_item {
+    padding: 0;
+  }
+}
+
 @media screen and (max-width: 200px) {
 
   h1,
@@ -200,7 +237,10 @@ button:focus-visible {
   h6 {
     font-size: 1em;
   }
-
+  .btn {
+    padding: 5px 5px;
+  }
+}
   /*
 @media (prefers-color-scheme: light) {
   :root {

@@ -127,7 +127,7 @@ const InviteGame = (props: { userIdInvitation: number, uid: string | null, setIn
 
     if (props.userIdInvitation != 0 && !isNaN(props.userIdInvitation)) {
         return (<div className="invite-game">
-            <span>Accepte invitation</span>
+            <span>Accept invitation</span>
             <br></br>
             <button onClick={handleYes} className="left">Yes</button>
             <button onClick={handleNo} className="right">No</button>
