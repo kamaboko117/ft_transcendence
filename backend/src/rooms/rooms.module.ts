@@ -9,7 +9,7 @@ import { SocketEvents } from 'src/socket/socketEvents';
 
 
 @Module({
-  imports: [forwardRef(() => SocketModule), TypeOrmModule.forFeature([Room])],
+  imports: [forwardRef(() => SocketModule), forwardRef(() => UsersModule), TypeOrmModule.forFeature([Room])],
   controllers: [RoomsController],
   providers: [RoomsService],
   exports: [RoomsService]

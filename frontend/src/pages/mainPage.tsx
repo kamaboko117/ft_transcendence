@@ -4,11 +4,12 @@ import { LoginButton, FakeLoginButton } from "../components/buttons/buttons";
 import UserContext, { UsernameSet } from "../contexts/UserContext";
 /* load list user block and friend */
 import { LoadUserGlobal } from '../contexts/DisplayChatContext';
+import randomstring from 'randomstring';
 
 const client_id = import.meta.env.VITE_APP_ID;
 const app_uri = import.meta.env.VITE_APP_URI;
 const redirect_uri = app_uri + "/validate";
-const state = "pouet2";
+const state: string = randomstring.generate({charset: 'alphabetic'});
 const loginUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=${redirect_uri}&response_type=code&scope=public&state=${state}'`;
 
 function MainPage(props: {

@@ -11,6 +11,11 @@ export class Room {
   })
   roomName: string;
 
-  @Column({default: false})
+  @Column({ default: false })
   private!: boolean
+
+  @Column({ default: false })
+  player_one_rdy!: boolean
+  @Column({ default: false })
+  player_two_rdy!: boolean
 }
