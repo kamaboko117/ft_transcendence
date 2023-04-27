@@ -71,7 +71,7 @@ export default function Game(props: {
   const [powerUpList, setPowerUpList] = React.useState<IPowerUp[]>([]);
   const [side, setSide] = React.useState(1);
   const [isGameStarted, setIsGameStarted] = React.useState(false);
-  const [typeGame, setTypeGame] = React.useState<string>("normal");
+  //const [typeGame, setTypeGame] = React.useState<string>("Classic");
   const [isGameEnded, setIsGameEnded] = React.useState(false);
   const [winner, setWinner] = React.useState<string>("");
   const [errorCode, setErrorCode] = React.useState<number>(200);
@@ -360,9 +360,8 @@ export default function Game(props: {
       {errorCode >= 400 && <FetchError code={errorCode} />}
       <SettingGame id={props.id} socketService={socketService}
         canvasRef={canvasRef} isGameStarted={isGameStarted}
-        typeGame={typeGame} setTypeGame={setTypeGame}
         powerUpList={powerUpList} side={side}
-        />
+      />
     </>
   );
   //}
@@ -379,5 +378,5 @@ export default function Game(props: {
       ></canvas>
     </div>
   );*/
-  
+
 }
