@@ -1,6 +1,9 @@
 import React, { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import gameService from "../../services/gameService";
 import ActivePowerUpsList from "./ActivePowerUpsList";
+import { FetchError, header } from "../FetchError";
+import SettingGame from "./SettingGame";
 //import socketService from "../../services/socketService";
 
 const FPS = 60;
@@ -11,6 +14,7 @@ export default function Game(props: {
   id: string;
   usrSocket;
   roomName: string;
+  jwt: string | null;
 }) {
   let socketService = { socket: props.usrSocket };
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -28,8 +32,32 @@ export default function Game(props: {
     right: number;
   }
 
+  const navigate = useNavigate();
+  useEffect(() => {
+    const ft_fetch = async () => {
+      await fetch('https://' + location.host + '/api/rooms/get?' + new URLSearchParams({
+        id: props.id,
+      }),
+        { headers: header(props.jwt) })
+        .then(res => {
+          if (res.ok)
+            return (res.json());
+          setErrorCode(res.status);
+        })
+        .then((res: { exist: boolean }) => {
+          if (res) {
+            if (res.exist === false)
+              navigate("/");
+          }
+        })
+        .catch(e => console.log(e));
+    }
+    ft_fetch();
+  }, [props.jwt]);
+
   interface IPowerUp {
     type: string;
+    user: string;
     imageURL: string;
     x: number;
     y: number;
@@ -43,6 +71,7 @@ export default function Game(props: {
   const [powerUpList, setPowerUpList] = React.useState<IPowerUp[]>([]);
   const [side, setSide] = React.useState(1);
   const [isGameStarted, setIsGameStarted] = React.useState(false);
+  const [typeGame, setTypeGame] = React.useState<string>("normal");
   const [isGameEnded, setIsGameEnded] = React.useState(false);
   const [winner, setWinner] = React.useState<string>("");
   const [errorCode, setErrorCode] = React.useState<number>(200);
@@ -81,7 +110,7 @@ export default function Game(props: {
     color: string
   ) {
     ctx.fillStyle = color;
-    ctx.font = "75px fantasy";
+    ctx.font = "75px arial";
     ctx.fillText(text, x, y);
   }
 
@@ -218,6 +247,7 @@ export default function Game(props: {
         console.log(data);
         setIsGameStarted(false);
         setIsGameEnded(true);
+        // console.log(`winner is ${data.winner}`)
         setWinner(data.winner);
       });
     }
@@ -234,32 +264,33 @@ export default function Game(props: {
         y: player.y,
       });
   }
+  /*
+    useEffect(() => {
+      console.log(socketService.socket)
+      if (socketService.socket) {
+        console.log("socketed")
+        const game = async () => {
+          await gameService
+            .joinGameRoom(socketService.socket, props.id, 0, 0)
+            .catch((err) => {
+              console.log("joining room " + err);
+              setErrorCode(1);
+            });
+        }
+        game();
+      }
+      console.log("joined from game component");
+      console.log("Game room mounting");
+      return (() => {
+        console.log("Game room unmount");
+        socketService.socket?.emit("leave_game", { roomId: props.id });
+        socketService.socket?.off("join_game_success");
+        socketService.socket?.off("join_game_error");
+      });
+    }, [socketService.socket]);*/
 
   useEffect(() => {
-    console.log(socketService.socket);
-    if (socketService.socket) {
-      console.log("socketed");
-      const game = async () => {
-        await gameService
-          .joinGameRoom(socketService.socket, props.id)
-          .catch((err) => {
-            console.log("joining room " + err);
-            setErrorCode(1);
-          });
-      };
-      game();
-    }
-    console.log("joined from game component");
-    console.log("Game room mounting");
-    return () => {
-      console.log("Game room unmount");
-      socketService.socket?.emit("leave_game", { roomId: props.id });
-      socketService.socket?.off("join_game_success");
-      socketService.socket?.off("join_game_error");
-    };
-  }, [socketService.socket]);
 
-  useEffect(() => {
     handleGameStart();
     const canvas = canvasRef.current;
     //if (!canvas) {
@@ -286,10 +317,11 @@ export default function Game(props: {
       socketService.socket?.off("on_game_update");
       socketService.socket?.off("onGameStart");
     };
-  }, [isGameStarted, socketService.socket]);
+  }, [isGameStarted, socketService.socket?.connected]);
 
   const handleGameStart = async () => {
     if (socketService.socket) {
+      console.log("game start HANDL:E")
       await gameService.onGameStart(socketService.socket, (data: any) => {
         console.log("data");
         console.log(data);
@@ -310,32 +342,42 @@ export default function Game(props: {
     );
   }
 
-  if (!isGameStarted) {
-    return (
-      <div className="game_container">
-        <h1 className="room_name">{props.roomName}</h1>
-        {errorCode != 1 ? (
-          <h1 className="room_content">waiting for opponent</h1>
-        ) : (
-          <h1 className="room_description">Room is full, you are spectator</h1>
-        )}
-      </div>
-    );
-  }
+  // if (!isGameStarted) {
+  //   return (
+  //     <div className="game_container">
+  //       <h1 className="room_name">{props.roomName}</h1>
+  //       {errorCode != 1 ? (
+  //         <h1 className="room_content">waiting for opponent</h1>
+  //       ) : (
+  //         <h1 className="room_description">Room is full, you are spectator</h1>
+  //       )}
+  //     </div>
+  //   );
+  // }
 
   return (
-    <div className="game_container">
-      <h1 className="room_name">{props.roomName}</h1>
-      <div className="game">
-        <canvas
-          ref={canvasRef}
-          className="game_canvas"
-          id="pong"
-          width={CANVAS_WIDTH}
-          height={CANVAS_HEIGHT}
-        ></canvas>
-        <ActivePowerUpsList powerUps={powerUpList} side={side} />
-      </div>
-    </div>
+    <>
+      {errorCode >= 400 && <FetchError code={errorCode} />}
+      <SettingGame id={props.id} socketService={socketService}
+        canvasRef={canvasRef} isGameStarted={isGameStarted}
+        typeGame={typeGame} setTypeGame={setTypeGame}
+        powerUpList={powerUpList} side={side}
+        />
+    </>
   );
+  //}
+
+  /*return (
+    <div className="game">
+      <h1 className="room_name">Game</h1>
+      <canvas
+        ref={canvasRef}
+        className="game_canvas"
+        id="pong"
+        width={CANVAS_WIDTH}
+        height={CANVAS_HEIGHT}
+      ></canvas>
+    </div>
+  );*/
+  
 }

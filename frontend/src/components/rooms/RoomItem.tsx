@@ -13,7 +13,7 @@ function RoomItem(props: RoomProps) {
 
   return (
     <div className="room_item" onClick={joinRoom}>
-      <h3 className="room_name">{props.roomName}</h3>
+      <span className="room_name">{props.roomName}</span>
     </div>
   );
 }

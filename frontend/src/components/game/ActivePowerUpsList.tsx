@@ -1,8 +1,20 @@
 import React from "react";
 import ActivePowerUpItem from "./ActivePowerUpItem";
 
+interface IPowerUp {
+  type: string;
+  user: string;
+  imageURL: string;
+  x: number;
+  y: number;
+  radius: number;
+  color: string;
+  active: boolean;
+  lifespan: number;
+}
+
 export default function ActivePowerUpsList(props: {
-  powerUps: any[];
+  powerUps: IPowerUp[];
   side: number;
 }) {
   function generateRandomkey() {

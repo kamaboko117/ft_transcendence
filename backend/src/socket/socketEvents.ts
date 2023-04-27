@@ -10,7 +10,9 @@ import { RoomsService } from "src/rooms/services/rooms/rooms.service";
 import { Room } from "src/typeorm/room.entity";
 import { Inject, UseGuards, forwardRef } from "@nestjs/common";
 import { JwtGuard } from "src/auth/jwt.guard";
+import { TokenUser } from "src/chat/chat.interface";
 import { UsersService } from "src/users/providers/users/users.service";
+import { UpdateTypeRoom, UserIdRdy } from "./dto";
 
 const FPS = 60;
 const CANVAS_WIDTH = 600;
@@ -527,7 +529,7 @@ export class SocketEvents {
     @Inject(forwardRef(() => UsersGateway))
     private readonly userGateway: UsersGateway,
     private readonly roomsService: RoomsService,
-    private readonly usersService: UsersService
+    private readonly userService: UsersService
   ) {
     this.mapUserInGame = new Map();
   }
@@ -536,6 +538,16 @@ export class SocketEvents {
 
   handleConnection(client: Socket) {
     console.log("Client connected: ", client.id);
+    client.on("disconnecting", () => {
+      client.rooms.forEach(async (key) => {
+        const size = this.server.sockets.adapter.rooms.get(key)?.size;
+        if (size === 1) {
+          const room = await this.roomsService.getRoom(key);
+          if (room)
+            this.roomsService.deleteRoom(key);
+        }
+      });
+    });
   }
 
   update(game: IGame) {
@@ -595,27 +607,30 @@ export class SocketEvents {
   }
 
   async endGame(game: IGame, winnerSocketId: string, loserSocketId: string) {
+    console.log(`winenrsocketid: ${winnerSocketId}, loserSocketId: ${loserSocketId}`)
     const winnerId = this.mapUserInGame.get(winnerSocketId);
     const loserId = this.mapUserInGame.get(loserSocketId);
     let winner = "";
     let loser = "";
-
+    console.log("END GAMEEEEEEEEEEEEEEEEEEEEEE")
     console.log(`winnerId: ${winnerId}, loserId: ${loserId}`);
     if (winnerId && loserId) {
-      await this.usersService.findUsersById(winnerId).then((user) => {
+      await this.userService.findUsersById(winnerId).then((user) => {
+        console.log("winner user: ", user)
         if (user) winner = user.username;
       });
-      await this.usersService.findUsersById(loserId).then((user) => {
+      await this.userService.findUsersById(loserId).then((user) => {
+        console.log("looser user: ", user)
         if (user) loser = user.username;
       });
-      await this.usersService.updateHistory(
+      await this.userService.updateHistory(
         game.type,
         winnerId,
         loserId,
         winnerId
       );
-      await this.usersService.updateAchive(winnerId);
-      await this.usersService.updateAchive(loserId);
+      await this.userService.updateAchive(winnerId);
+      await this.userService.updateAchive(loserId);
     }
     this.server.to(game.id).emit("end_game", { winner: winner, loser: loser });
     clearInterval(game.intervalId);
@@ -644,11 +659,12 @@ export class SocketEvents {
       } else {
         this.endGame(game, game.player1.socketId, game.player2.socketId);
       }
-      // games = games.filter(g => g.id !== game.id);
+      games = games.filter(g => g.id !== game?.id);
     }
+    this.mapUserInGame.delete(client.id);
   }
 
-  isUserConnected(id: string) {
+  public isUserConnected(id: string) {
     const map = this.userGateway.getMap();
 
     for (let [key, value] of map.entries()) {
@@ -659,7 +675,7 @@ export class SocketEvents {
     return false;
   }
 
-  inviteUserToGame(userId: string, userIdFocus: string, idGame: string) {
+  public inviteUserToGame(userId: string, userIdFocus: string, idGame: string) {
     const map = this.userGateway.getMap();
 
     for (let [key, value] of map.entries()) {
@@ -679,11 +695,36 @@ export class SocketEvents {
   }
 
   @SubscribeMessage("leave_game")
-  leave(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
+  async leave(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
     console.log("client id: " + client.id + "is leaving room");
     if (data) {
+      for (let [key, value] of this.mapUserInGame.entries()) {
+        if (client.id === key) {
+          const userDb = await this.userService.findUsersById(Number(value));
+          console.log(userDb)
+          this.server.to(data.roomId).emit("user_leave_room", { username: userDb?.username });
+        }
+      }
+      console.log("J AI LEAVE LA GAME DEPUIS ON LEAVE GAME")
       client.leave(data.roomId);
+      //this.mapUserInGame.delete(client.id);
+      
+      const game = this.findGameByConnectedSocket(client.id);
+      if (game) {
+        console.log()
+        console.log(game)
+        if (game.player1.socketId === client.id) {
+          this.endGame(game, game.player2.socketId, game.player1.socketId);
+        } else {
+          this.endGame(game, game.player1.socketId, game.player2.socketId);
+        }
+        games = games.filter(g => g.id !== game?.id);
+      }
       this.mapUserInGame.delete(client.id);
+      const nbClient = this.server.sockets.adapter.rooms.get(data.roomId)?.size;
+      if (!nbClient) {
+        this.roomsService.deleteRoom(data.roomId);
+      }
     }
   }
 
@@ -700,68 +741,121 @@ export class SocketEvents {
     }
     return false;
   }
+
   @UseGuards(JwtGuard)
   @SubscribeMessage("join_game")
   async join(@MessageBody() data: any, @ConnectedSocket() client: any) {
-    const user = client.user;
+    const user: TokenUser = client.user;
     //await client.join(data.roomId);
     console.log("New user joining room: ", data);
-    console.log(`user: ${user.userID} is joining room: ${data.roomId}`);
-
+    const userId: number = user.userID;
+    //let findInMap: boolean = false;
+    /*this.mapUserInGame.forEach((value, key) => {
+      if (value === userIdString) {
+        findInMap = true;
+        return;
+      }
+    });*/
+    for (let [key, value] of this.mapUserInGame.entries()) {
+      if (value === userId) {
+        this.server.to(client.id).emit("join_game_error", { error: "You are already in a party" });
+        return;
+      }
+    }
+    /*if (findInMap === true) {
+      this.server.to(client.id).emit("join_game_error", { error: "You are already in a party" });
+      return;
+    }*/
     const connectedSockets = this.server.sockets.adapter.rooms.get(data.roomId);
-    const socketRooms = Array.from(client.rooms.values()).filter(
-      (r) => r !== client.id
-    );
+    //const socketRooms = Array.from(client.rooms.values()).filter(
+    //  (r) => r !== client.id
+    //);
     const room = await this.roomsService.findRoomById(data.roomId);
     //j'enleve ca car le find fonctionne mal, il cherche sur toutes les rooms chat compris,
     //si c pour trouver si deja en partie faut modifier
-    if (
-      /*socketRooms.length > 0
-      || */ connectedSockets &&
-      connectedSockets?.size > 1
-    ) {
-      client.emit("join_game_error", { error: "Room is full" });
+    console.log(this.mapUserInGame)
+
+    //check if user is in a party
+
+    if (/*socketRooms.length > 0
+      || */(connectedSockets && connectedSockets?.size > 1)) {
+      this.server.to(client.id).emit("join_game_error", { error: "Room is full" });
       return;
     } else {
+      console.log(typeof data.roomId)
       await client.join(data.roomId);
-      this.mapUserInGame.set(client.id, user.userID);
+      this.roomsService.updateRoomReady(data.roomId, false, true, true)
+      this.mapUserInGame.set(client.id, userId);
       if (room && room.private === true) {
         const result: boolean = this.checkIfUserFound(room, client.id);
-        console.log("result: " + result);
-        console.log(this.server.sockets.adapter.rooms.get(data.roomId));
+        //console.log("result: " + result)
+        //console.log(this.server.sockets.adapter.rooms.get(data.roomId))
         if (result === false) {
-          client.emit("join_game_error", { error: "You are spectactor" });
+          this.server.to(client.id).emit("join_game_error", { error: "You are spectactor" });
           return;
         }
       }
-      client.emit("join_game_success", { roomId: data.roomId });
-      if (connectedSockets?.size === 2) {
-        let socket2 = connectedSockets?.values().next().value;
-        let newGame = new Game(data.roomId, client.id, socket2, 11);
+      /*console.log("lst id");
+      console.log(this.server.sockets.adapter.rooms.get(data.roomId));
+      console.log("map")
+      console.log(this.mapUserInGame);
+      console.log("nb client");
+      const nbClient = this.server.sockets.adapter.rooms.get(data.roomId)?.size;
+      
+      this.server.to(data.roomId).emit("join_game_success", {
+        roomId: data.roomId,
+        username: user.username,
+        nbClient: nbClient
+      });*/
+      console.log("--------")
+      console.log(this.server.sockets.adapter.rooms.get(data.roomId));
+      console.log(this.mapUserInGame);
+      client.to(data.roomId).emit("updateUserRdy");
+      const loop = this.server.sockets.adapter.rooms.get(data.roomId);
+      //const nbClient = this.server.sockets.adapter.rooms.get(data.roomId)?.size;
+      let i: number = 1;
+      loop?.forEach((key) => {
+        console.log(key)
+        this.mapUserInGame.forEach(async (value2, key2) => {
+          if (key === key2) {
+            console.log("FOUND");
+            const userDb = await this.userService.findUsersById(Number(value2));
+            console.log(userDb)
+            this.server.to(data.roomId).emit("join_game_success", {
+              roomId: data.roomId,
+              username: userDb?.username,
+              nbClient: i
+            });
+            ++i;
+          }
+        });
+      });
+      /*if (connectedSockets?.size === 2) {
+        let newGame = new Game(data.roomId);
         let player1 = newGame.player1;
         let player2 = newGame.player2;
         let ball = newGame.ball;
         let powerUps = newGame.powerUps;
         games.push(newGame);
         console.log("Starting game");
-        client.emit("start_game", { side: 1 });
+        client.to(data.roomId).emit("start_game", { side: 1 });
         client.to(data.roomId).emit("start_game", { side: 2 });
-        newGame.intervalId = setInterval(() => {
-          this.update(newGame);
-          client.emit("on_game_update", {
-            player1,
-            player2,
-            ball,
-            powerUps,
-          });
+        setInterval(() => {
+          update(newGame);
           client.to(data.roomId).emit("on_game_update", {
             player1,
             player2,
             ball,
             powerUps,
           });
+          client.to(data.roomId).to(data.roomId).emit("on_game_update", {
+            player1,
+            player2,
+            ball,
+            powerUps,
+          });
         }, 1000 / FPS);
-      }
+      }*/
     }
   }
 
@@ -799,5 +893,69 @@ export class SocketEvents {
 
   getMap() {
     return this.mapUserInGame;
+  }
+
+  @UseGuards(JwtGuard)
+  @SubscribeMessage("updateTypeGame")
+  updateTypeGame(@MessageBody() data: UpdateTypeRoom, @ConnectedSocket() client: Socket) {
+    //client.to().emit()
+    console.log("data")
+    console.log(data)
+    client.to(data.roomId).emit("updateTypeGameFromServer", { type: data.type });
+  }
+
+  @UseGuards(JwtGuard)
+  @SubscribeMessage("userIsRdy")
+  async gameIsRdy(@MessageBody() data: UserIdRdy, @ConnectedSocket() client: any) {
+    const user: TokenUser = client.user;
+    const connectedSockets = this.server.sockets.adapter.rooms.get(data.uid);
+
+    console.log("data rdy")
+    console.log(data)
+    console.log("user")
+    console.log(user)
+    if (user.username === data.usr1)
+      await this.roomsService.updateRoomReady(data.uid, data.rdy, true, false);
+    else if (user.username === data.usr2)
+      await this.roomsService.updateRoomReady(data.uid, data.rdy, false, true);
+    //when two user are connected, and both are rdy, game must start
+    const getRoom = await this.roomsService.getRoom(data.uid);
+    if (connectedSockets?.size === 2
+      && getRoom?.player_one_rdy === true
+      && getRoom.player_two_rdy === true) {
+      // console.log(connectedSockets)
+      //let socket2 = connectedSockets?.values().next().value;
+      let socket2: string | undefined = undefined;
+      connectedSockets?.forEach((key) => {
+        if (key !== client.id)
+          socket2 = key;
+      });
+      if (socket2 === undefined)
+        return ;
+      let newGame = new Game(data.uid, client.id, socket2, 11);
+      let powerUps = newGame.powerUps;
+      let player1 = newGame.player1;
+      let player2 = newGame.player2;
+      let ball = newGame.ball;
+      games.push(newGame);
+      console.log("Starting game");
+      client.emit("start_game", { side: 1 });
+      client.to(data.uid).emit("start_game", { side: 2 });
+      setInterval(() => {
+        this.update(newGame);
+        client.emit("on_game_update", {
+          player1,
+          player2,
+          ball,
+          powerUps
+        });
+        client.to(data.uid).to(data.uid).emit("on_game_update", {
+          player1,
+          player2,
+          ball,
+          powerUps
+        });
+      }, 1000 / FPS);
+    }
   }
 }

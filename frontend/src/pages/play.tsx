@@ -8,7 +8,7 @@ import Game from "../components/game";
 import SocketContext from "../contexts/Socket";
 import { FetchError, header } from "../components/FetchError";
 
-export default function PlayPage(props: { jwt: string }) {
+export default function PlayPage(props: { jwt: string | null }) {
   /*const connectSocket = async () => {
     const socket = await socketService
       .connect("http://localhost:5000")
@@ -114,7 +114,7 @@ export default function PlayPage(props: { jwt: string }) {
   }
 
   if (isInRoom) {
-    return <Game id={idRoom} usrSocket={usrSocket} roomName={roomName} />;
+    return <Game id={idRoom} usrSocket={usrSocket} roomName={roomName} jwt={props.jwt} />;
   }
 
   return (
