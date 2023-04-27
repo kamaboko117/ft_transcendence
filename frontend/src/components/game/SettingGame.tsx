@@ -64,9 +64,6 @@ const Custom_size_ball = (props: {usrSocket, id: string}) => {
             if (!isNaN(Number(target.value)) && Number(target.value)) {
                 props.usrSocket.emit("updateSizeBall", {size: size, roomId: props.id});
             }
-            return (() => {
-                props.usrSocket.off("updateTypeGameFromServer");
-            });
         }
     }
     useEffect(() => {
