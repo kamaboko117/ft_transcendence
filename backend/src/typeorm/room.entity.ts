@@ -11,12 +11,6 @@ export class Room {
   })
   roomName: string;
 
-  @Column({
-    type: 'bigint',
-    default: 1,
-  })
-  Capacity: number;
-
   @Column({ default: false })
   private!: boolean
 

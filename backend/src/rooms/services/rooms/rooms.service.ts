@@ -16,13 +16,12 @@ export class RoomsService {
   }
   createRoom(CreateRoomDto: CreateRoomDto) {
     const newRoom = this.roomRepository.create(CreateRoomDto);
-    newRoom.Capacity = 1;
     return this.roomRepository.save(newRoom);
   }
 
   createRoomPrivate(name: string) {
     const newRoom =
-      this.roomRepository.create({ roomName: name, Capacity: 1, private: true });
+      this.roomRepository.create({roomName: name, private: true});
     return this.roomRepository.save(newRoom);
   }
 
