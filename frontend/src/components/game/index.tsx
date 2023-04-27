@@ -35,23 +35,26 @@ export default function Game(props: {
   const navigate = useNavigate();
   useEffect(() => {
     const ft_fetch = async () => {
-      await fetch('https://' + location.host + '/api/rooms/get?' + new URLSearchParams({
-        id: props.id,
-      }),
-        { headers: header(props.jwt) })
-        .then(res => {
-          if (res.ok)
-            return (res.json());
+      await fetch(
+        "https://" +
+          location.host +
+          "/api/rooms/get?" +
+          new URLSearchParams({
+            id: props.id,
+          }),
+        { headers: header(props.jwt) }
+      )
+        .then((res) => {
+          if (res.ok) return res.json();
           setErrorCode(res.status);
         })
         .then((res: { exist: boolean }) => {
           if (res) {
-            if (res.exist === false)
-              navigate("/");
+            if (res.exist === false) navigate("/");
           }
         })
-        .catch(e => console.log(e));
-    }
+        .catch((e) => console.log(e));
+    };
     ft_fetch();
   }, [props.jwt]);
 
@@ -69,6 +72,7 @@ export default function Game(props: {
 
   let powerUps: IPowerUp[] = [];
   const [powerUpList, setPowerUpList] = React.useState<IPowerUp[]>([]);
+  const [intervalID, setIntervalID] = React.useState<number | null>(null);
   const [side, setSide] = React.useState(1);
   const [isGameStarted, setIsGameStarted] = React.useState(false);
   const [typeGame, setTypeGame] = React.useState<string>("normal");
@@ -290,7 +294,6 @@ export default function Game(props: {
     }, [socketService.socket]);*/
 
   useEffect(() => {
-
     handleGameStart();
     const canvas = canvasRef.current;
     //if (!canvas) {
@@ -309,11 +312,15 @@ export default function Game(props: {
         render(ctx, player1, player2);
       }
       canvas.addEventListener("mousemove", movePaddle);
-      setInterval(game, 1000 / FPS);
+      setIntervalID(setInterval(game, 1000 / FPS));
       handleReceivedUpdate();
     }
     return () => {
       console.log("canvas unmount");
+      if (intervalID) {
+        clearInterval(intervalID);
+      }
+      canvas?.removeEventListener("mousemove", movePaddle);
       socketService.socket?.off("on_game_update");
       socketService.socket?.off("onGameStart");
     };
@@ -321,7 +328,7 @@ export default function Game(props: {
 
   const handleGameStart = async () => {
     if (socketService.socket) {
-      console.log("game start HANDL:E")
+      console.log("game start HANDL:E");
       await gameService.onGameStart(socketService.socket, (data: any) => {
         console.log("data");
         console.log(data);
@@ -358,11 +365,16 @@ export default function Game(props: {
   return (
     <>
       {errorCode >= 400 && <FetchError code={errorCode} />}
-      <SettingGame id={props.id} socketService={socketService}
-        canvasRef={canvasRef} isGameStarted={isGameStarted}
-        typeGame={typeGame} setTypeGame={setTypeGame}
-        powerUpList={powerUpList} side={side}
-        />
+      <SettingGame
+        id={props.id}
+        socketService={socketService}
+        canvasRef={canvasRef}
+        isGameStarted={isGameStarted}
+        typeGame={typeGame}
+        setTypeGame={setTypeGame}
+        powerUpList={powerUpList}
+        side={side}
+      />
     </>
   );
   //}
@@ -379,5 +391,4 @@ export default function Game(props: {
       ></canvas>
     </div>
   );*/
-  
 }
