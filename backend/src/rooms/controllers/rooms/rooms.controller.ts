@@ -28,10 +28,10 @@ export class RoomsController {
         if (!resultRegex) {
             return { err: "true", uid: "" }
         }
-        const userIdString: string = String(user.userID);
+        const userId = user.userID;
         //let findInMap: boolean = false;
         for (let [key, value] of this.socketEvents.getMap().entries()) {
-            if (value === userIdString) {
+            if (value === userId) {
                 return { err: "You are already in a party", uid: "" }
             }
         }
@@ -65,9 +65,9 @@ export class RoomsController {
         if (!isUserConnected)
             return ({ roomName: '', Capacity: '0', private: false, uid: '' });
         //let findInMap: boolean = false;
-        const userIdString: string = String(user.userID);
+        const userId = user.userID;
         for (let [key, value] of this.socketEvents.getMap().entries()) {
-            if (value === userIdString) {
+            if (value === userId) {
                 return ({ roomName: '', Capacity: '0', private: false, uid: '' });
             }
         }
@@ -90,5 +90,16 @@ export class RoomsController {
     @Get()
     getRooms() {
         return this.roomsService.getRooms();
+    }
+
+    @Get(":id")
+    async getRoomById(@Request() req: any) {
+      const user: TokenUser = req.user;
+      const isUserConnected = this.socketEvents.isUserConnected(
+        String(user.userID)
+      );
+      if (!isUserConnected)
+        return { roomName: "", Capacity: "0", private: false, uid: "" };
+      return this.roomsService.findRoomById(req.params.id);
     }
 }
