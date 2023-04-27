@@ -95,8 +95,8 @@ class PUNeutral implements IPowerUp {
     this.color = "BLUE";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (game: IGame) => {};
-    this.cancelEffect = (game: IGame) => {};
+    this.effect = (game: IGame) => { };
+    this.cancelEffect = (game: IGame) => { };
   }
 }
 
@@ -124,8 +124,8 @@ class PUBonus implements IPowerUp {
     this.color = "GREEN";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => {};
-    this.cancelEffect = () => {};
+    this.effect = (player: IPlayer) => { };
+    this.cancelEffect = () => { };
   }
 }
 
@@ -153,8 +153,8 @@ class PUMalus implements IPowerUp {
     this.color = "RED";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => {};
-    this.cancelEffect = () => {};
+    this.effect = (player: IPlayer) => { };
+    this.cancelEffect = () => { };
   }
 }
 
@@ -450,7 +450,7 @@ function generatePowerUps(game: IGame) {
     case 0: //neutral
       var type =
         neutralPowerUpTypes[
-          Math.floor(Math.random() * neutralPowerUpTypes.length)
+        Math.floor(Math.random() * neutralPowerUpTypes.length)
         ];
       PU = new powerUp(x, y, type);
       break;
@@ -472,7 +472,7 @@ function checkPowerUpCollision(ball: IBall, powerUp: IPowerUp) {
   if (powerUp.active) return false;
   let distance = Math.sqrt(
     (ball.x - powerUp.x) * (ball.x - powerUp.x) +
-      (ball.y - powerUp.y) * (ball.y - powerUp.y)
+    (ball.y - powerUp.y) * (ball.y - powerUp.y)
   );
   if (distance < ball.radius + powerUp.radius) {
     powerUp.user = ball.velocityX < 0 ? "player2" : "player1";
@@ -708,7 +708,7 @@ export class SocketEvents {
       console.log("J AI LEAVE LA GAME DEPUIS ON LEAVE GAME")
       client.leave(data.roomId);
       //this.mapUserInGame.delete(client.id);
-      
+
       const game = this.findGameByConnectedSocket(client.id);
       if (game) {
         console.log()
@@ -898,9 +898,6 @@ export class SocketEvents {
   @UseGuards(JwtGuard)
   @SubscribeMessage("updateTypeGame")
   updateTypeGame(@MessageBody() data: UpdateTypeRoom, @ConnectedSocket() client: Socket) {
-    //client.to().emit()
-    console.log("data")
-    console.log(data)
     client.to(data.roomId).emit("updateTypeGameFromServer", { type: data.type });
   }
 
@@ -914,15 +911,22 @@ export class SocketEvents {
     console.log(data)
     console.log("user")
     console.log(user)
-    if (user.username === data.usr1)
+    if (user.username === data.usr1) {
       await this.roomsService.updateRoomReady(data.uid, data.rdy, true, false);
-    else if (user.username === data.usr2)
+      await this.roomsService.updateRoomTypeGame(data.uid, true, false, data.custom);
+    }
+    else if (user.username === data.usr2) {
       await this.roomsService.updateRoomReady(data.uid, data.rdy, false, true);
+      await this.roomsService.updateRoomTypeGame(data.uid, false, true, data.custom);
+    }
     //when two user are connected, and both are rdy, game must start
     const getRoom = await this.roomsService.getRoom(data.uid);
     if (connectedSockets?.size === 2
       && getRoom?.player_one_rdy === true
       && getRoom.player_two_rdy === true) {
+      const getRoom = await this.roomsService.getRoom(data.uid);
+      if (getRoom?.player_one_type_game != getRoom?.player_two_type_game)
+        return { err: "Room type from both users not synchronized" };
       // console.log(connectedSockets)
       //let socket2 = connectedSockets?.values().next().value;
       let socket2: string | undefined = undefined;
@@ -930,8 +934,9 @@ export class SocketEvents {
         if (key !== client.id)
           socket2 = key;
       });
-      if (socket2 === undefined)
-        return ;
+      if (socket2 === undefined) {
+        return { err: "no socket second player found" };
+      }
       let newGame = new Game(data.uid, client.id, socket2, 11);
       let powerUps = newGame.powerUps;
       let player1 = newGame.player1;
