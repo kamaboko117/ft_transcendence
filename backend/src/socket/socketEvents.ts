@@ -456,11 +456,11 @@ export class SocketEvents {
       let ball = newGame.ball;
       games.push(newGame);
       console.log("Starting game");
-      client.to(data.uid).emit("start_game", { side: 1 });
+      client.emit("start_game", { side: 1 });
       client.to(data.uid).emit("start_game", { side: 2 });
       setInterval(() => {
         update(newGame);
-        client.to(data.uid).emit("on_game_update", {
+        client.emit("on_game_update", {
           player1,
           player2,
           ball,
