@@ -12,7 +12,7 @@ import { Inject, UseGuards, forwardRef } from "@nestjs/common";
 import { JwtGuard } from "src/auth/jwt.guard";
 import { TokenUser } from "src/chat/chat.interface";
 import { UsersService } from "src/users/providers/users/users.service";
-import { UpdateTypeRoom } from "./dto";
+import { SizeBall, UpdateTypeRoom } from "./dto";
 
 const FPS = 60;
 const CANVAS_WIDTH = 600;
@@ -398,6 +398,30 @@ export class SocketEvents {
     console.log("data")
     console.log(data)
     client.to(data.roomId).emit("updateTypeGameFromServer", { type: data.type });
+  }
+
+  @SubscribeMessage("updateSizeBall")
+  updateSizeBall(@MessageBody() data: SizeBall, @ConnectedSocket() client: Socket) {
+    console.log("Totototot.roomId: " + data.roomId);
+    console.log("Totototot.size: " + data.size);
+    //
+    if (isNaN(Number(data.size)))
+      return ({isValid: false});
+    const size: number = Number(data.size);
+    
+    switch (size) {
+      case 1 :
+        client.to(data.roomId).emit("SizeBallFromServer", {size: size});
+        break;
+      case 2 :
+        client.to(data.roomId).emit("SizeBallFromServer", {size: size});
+        break;
+      case 3 :
+        client.to(data.roomId).emit("SizeBallFromServer", {size: size});
+        break;
+      default:
+        break;
+    }
   }
 
 }

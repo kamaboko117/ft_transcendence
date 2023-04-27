@@ -1,4 +1,4 @@
-import { IsBoolean, IsDefined, IsString } from "class-validator";
+import { IsBoolean, IsDefined, IsNumber, IsString } from "class-validator";
 
 export class UpdateTypeRoom {
     @IsBoolean()
@@ -7,3 +7,12 @@ export class UpdateTypeRoom {
     @IsString()
     roomId: string;
 }
+
+export class SizeBall {
+    @IsNumber()
+    size: string;
+    @IsDefined()
+    @IsString()
+    roomId: string;
+}
+
