@@ -89,7 +89,7 @@ export default function Game(props: { id: string, usrSocket, jwt: string | null 
     color: string
   ) {
     ctx.fillStyle = color;
-    ctx.font = "75px fantasy";
+    ctx.font = "75px arial";
     ctx.fillText(text, x, y);
   }
 
@@ -223,6 +223,7 @@ export default function Game(props: { id: string, usrSocket, jwt: string | null 
     }, [socketService.socket]);*/
 
   useEffect(() => {
+
     handleGameStart();
     const canvas = canvasRef.current;
     //if (!canvas) {
@@ -254,8 +255,9 @@ export default function Game(props: { id: string, usrSocket, jwt: string | null 
 
   const handleGameStart = async () => {
     if (socketService.socket) {
+      console.log("game start HANDL:E")
       await gameService.onGameStart(socketService.socket, (data: any) => {
-        console.log("data")
+        console.log("dataaaaaaaaaaaaaaaa")
         console.log(data)
         setSide(data.side);
         setIsGameStarted(true);
