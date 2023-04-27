@@ -11,7 +11,7 @@ export class RoomsController {
         private readonly socketEvents: SocketEvents,
         private readonly userService: UsersService) { }
 
-    
+
 
     @Post("create")
     @UsePipes(ValidationPipe)
@@ -22,12 +22,30 @@ export class RoomsController {
         const regex = /^[\wàâéêèäÉÊÈÇç]+(?: [\wàâéêèäÉÊÈÇç]+)*$/;
         const resultRegex = regex.exec(createRoomDto.roomName);
 
-        if (24 < createRoomDto.roomName.length){
-            return {err: "true", uid: ""}
+        if (24 < createRoomDto.roomName.length) {
+            return { err: "true", uid: "" }
         }
-        if (!resultRegex){
-            return {err: "true", uid: ""}
+        if (!resultRegex) {
+            return { err: "true", uid: "" }
         }
+        const userIdString: string = String(user.userID);
+        //let findInMap: boolean = false;
+        for (let [key, value] of this.socketEvents.getMap().entries()) {
+            if (value === userIdString) {
+                return { err: "You are already in a party", uid: "" }
+            }
+        }
+        /*const userIdString: string = String(user.userID);
+        this.socketEvents.getMap().forEach((value, key) => {
+            if (value === userIdString) {
+                findInMap = true;
+                return;
+            }
+        });
+        console.log("find: " + findInMap)
+        if (findInMap === true) {
+            return { err: "Already in a party", uid: "" }
+        }*/
         return this.roomsService.createRoom(createRoomDto);
     }
 
@@ -37,29 +55,36 @@ export class RoomsController {
         @Body() createRoomDto: CreateRoomPrivate) {
         const user: TokenUser = req.user;
         const name: string = String(user.userID) + '|' + String(createRoomDto.id);
-        if (user.userID === createRoomDto.id){
-            return ({roomName: '', Capacity: '0', private: false, uid: ''});
+        if (user.userID === createRoomDto.id) {
+            return ({ roomName: '', Capacity: '0', private: false, uid: '' });
         }
         const userExist = await this.userService.findUsersById(createRoomDto.id)
         if (!userExist)
-            return ({roomName: '', Capacity: '0', private: false, uid: ''});
+            return ({ roomName: '', Capacity: '0', private: false, uid: '' });
         const isUserConnected = this.socketEvents.isUserConnected(String(createRoomDto.id));
         if (!isUserConnected)
-            return ({roomName: '', Capacity: '0', private: false, uid: ''});
+            return ({ roomName: '', Capacity: '0', private: false, uid: '' });
+        //let findInMap: boolean = false;
+        const userIdString: string = String(user.userID);
+        for (let [key, value] of this.socketEvents.getMap().entries()) {
+            if (value === userIdString) {
+                return ({ roomName: '', Capacity: '0', private: false, uid: '' });
+            }
+        }
         const itm = await this.roomsService.createRoomPrivate(name);
         console.log(itm);
         this.socketEvents.inviteUserToGame(String(user.userID), String(createRoomDto.id), itm.uid);
         return (itm);
     }
-    
+
     @Get('get')
     async getRoom(@Request() req: any,
         @Query('id') id: string) {
         const room = await this.roomsService.getRoom(id);
 
         if (!room)
-            return ({exist: false});
-        return ({exist: true});
+            return ({ exist: false });
+        return ({ exist: true });
     }
 
     @Get()
