@@ -21,14 +21,18 @@ function NewRoomModal(props: any) {
             })
             .then((data) => {
                 console.log(data);
-                if (data && data.err){
+                if (data && data.err === "true") {
                     setErrorCode(1);
                     return ("");
                 }
-                if (data){
+                if (data && data.err && data.err !== "true") {
+                    console.log("ddddddddddd")
+                    setErrorCode(2);
+                    return ("");
+                }
+                if (data && !data.err && data.uid) {
                     room = data.uid;
                 }
-                    
             }).catch(err => console.log(err));
         return room;
     }
@@ -36,7 +40,7 @@ function NewRoomModal(props: any) {
     async function submitHandler(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!roomNameInputRef.current) {
-            return ;
+            return;
         }
         const roomName = roomNameInputRef.current.value;
         const room = await createRoomHandler(roomName);
@@ -52,10 +56,10 @@ function NewRoomModal(props: any) {
 
     return (
         <>
-            {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}
+            {errorCode && errorCode >= 401 && <FetchError code={errorCode} />}
             <div className='modal'>
                 <form onSubmit={submitHandler}>
-                    <p style={{"color": "black"}}>Create new room</p>
+                    <p style={{ "color": "black" }}>Create new room</p>
                     <input
                         type="text"
                         placeholder="room name"
@@ -64,7 +68,9 @@ function NewRoomModal(props: any) {
                     <button className="btn" type="submit">Create</button>
                     <button className="btn btn-second" onClick={cancelHandler}>Cancel</button>
                 </form>
-                {errorCode === 1 && <p style={{"color": "red"}}>room name length too big, too little, or use alpha-numeric name format</p>}
+                {errorCode === 1 && <p style={{ "color": "red" }}>room name length too big, too little, or use alpha-numeric name format</p>}
+                {errorCode === 2 && <p style={{ "color": "red" }}>You are already in a game.</p>}
+                {errorCode === 400 && <p style={{ "color": "red" }}>Please enter a correct name format, at least 3 characters</p>}
             </div>
         </>
     );

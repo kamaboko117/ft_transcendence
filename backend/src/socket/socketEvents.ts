@@ -198,7 +198,7 @@ export class SocketEvents {
   }
 
   async handleDisconnect(client: Socket) {
-    const gameRoom: any = this.getSocketGameRoom(client);
+    //const gameRoom: any = this.getSocketGameRoom(client);
     console.log("Client disconnected: ", client.id);
     for (let [key, value] of this.mapUserInGame.entries()) {
       if (client.id === key) {
@@ -274,14 +274,31 @@ export class SocketEvents {
     }
     return (false);
   }
+
   @UseGuards(JwtGuard)
   @SubscribeMessage("join_game")
   async join(@MessageBody() data: any, @ConnectedSocket() client: any) {
     const user: TokenUser = client.user;
     //await client.join(data.roomId);
     console.log("New user joining room: ", data);
-    console.log(this.server.sockets.adapter.rooms)
-
+    const userIdString: string = String(user.userID);
+    //let findInMap: boolean = false;
+    /*this.mapUserInGame.forEach((value, key) => {
+      if (value === userIdString) {
+        findInMap = true;
+        return;
+      }
+    });*/
+    for (let [key, value] of this.mapUserInGame.entries()) {
+      if (value === userIdString) {
+        this.server.to(client.id).emit("join_game_error", { error: "You are already in a party" });
+        return;
+      }
+    }
+    /*if (findInMap === true) {
+      this.server.to(client.id).emit("join_game_error", { error: "You are already in a party" });
+      return;
+    }*/
     const connectedSockets = this.server.sockets.adapter.rooms.get(data.roomId);
     //const socketRooms = Array.from(client.rooms.values()).filter(
     //  (r) => r !== client.id
@@ -290,21 +307,25 @@ export class SocketEvents {
     console.log(connectedSockets?.size)
     //j'enleve ca car le find fonctionne mal, il cherche sur toutes les rooms chat compris, 
     //si c pour trouver si deja en partie faut modifier
+    console.log(this.mapUserInGame)
+
+    //check if user is in a party
+
     if (/*socketRooms.length > 0
       || */(connectedSockets && connectedSockets?.size > 1)) {
-      client.to(data.roomId).emit("join_game_error", { error: "Room is full" });
+      this.server.to(client.id).emit("join_game_error", { error: "Room is full" });
       return;
     } else {
       console.log(typeof data.roomId)
       await client.join(data.roomId);
       this.roomsService.updateRoomReady(data.roomId, false, true, true)
-      this.mapUserInGame.set(client.id, user.userID.toString());
+      this.mapUserInGame.set(client.id, userIdString);
       if (room && room.private === true) {
         const result: boolean = this.checkIfUserFound(room, client.id);
         //console.log("result: " + result)
         //console.log(this.server.sockets.adapter.rooms.get(data.roomId))
         if (result === false) {
-          client.to(data.roomId).emit("join_game_error", { error: "You are spectactor" });
+          this.server.to(client.id).emit("join_game_error", { error: "You are spectactor" });
           return;
         }
       }
@@ -325,7 +346,7 @@ export class SocketEvents {
       console.log(this.mapUserInGame);
       client.to(data.roomId).emit("updateUserRdy");
       const loop = this.server.sockets.adapter.rooms.get(data.roomId);
-      const nbClient = this.server.sockets.adapter.rooms.get(data.roomId)?.size;
+      //const nbClient = this.server.sockets.adapter.rooms.get(data.roomId)?.size;
       let i: number = 1;
       loop?.forEach((key) => {
         console.log(key)

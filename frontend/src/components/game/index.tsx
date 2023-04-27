@@ -30,29 +30,29 @@ export default function Game(props: { id: string, usrSocket, jwt: string | null 
   const navigate = useNavigate();
   useEffect(() => {
     const ft_fetch = async () => {
-        await fetch('https://' + location.host + '/api/rooms/get?' + new URLSearchParams({
-            id: props.id,
-        }),
-            { headers: header(props.jwt) })
-            .then(res => {
-                if (res.ok)
-                    return (res.json());
-                setErrorCode(res.status);
-            })
-            .then((res: {exist: boolean}) => {
-                if (res) {
-                    if (res.exist === false)
-                        navigate("/");
-                }
-            })
-            .catch(e => console.log(e));
+      await fetch('https://' + location.host + '/api/rooms/get?' + new URLSearchParams({
+        id: props.id,
+      }),
+        { headers: header(props.jwt) })
+        .then(res => {
+          if (res.ok)
+            return (res.json());
+          setErrorCode(res.status);
+        })
+        .then((res: { exist: boolean }) => {
+          if (res) {
+            if (res.exist === false)
+              navigate("/");
+          }
+        })
+        .catch(e => console.log(e));
     }
     ft_fetch();
-}, [props.jwt]);
+  }, [props.jwt]);
 
   const [side, setSide] = React.useState(1);
   const [isGameStarted, setIsGameStarted] = React.useState(false);
-  const [typeGame, setTypeGame] = React.useState<string>("normal")
+  const [typeGame, setTypeGame] = React.useState<string>("normal");
   const [errorCode, setErrorCode] = React.useState<number>(200);
 
   function drawRect(
@@ -266,7 +266,7 @@ export default function Game(props: { id: string, usrSocket, jwt: string | null 
   //if (!isGameStarted)
   //  return (<></>)
   //if (!isGameStarted) {
-  
+
   return (
     <>
       {errorCode >= 400 && <FetchError code={errorCode} />}

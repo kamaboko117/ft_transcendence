@@ -14,7 +14,7 @@ const SocketContext = createContext<typeSocket>({
 });
 
 export const SocketProvider = (props: { jwt: string | null, usrSocket: Socket<any, any> | undefined, children: any }) => {
-    const navigate = useNavigate();
+    //const navigate = useNavigate();
     const context: typeSocket = {
         usrSocket: props.usrSocket
     }
@@ -23,7 +23,7 @@ export const SocketProvider = (props: { jwt: string | null, usrSocket: Socket<an
     useEffect(() => {
         console.log(props.usrSocket?.connected)
         //if (props.jwt && props.jwt != "" && props.usrSocket && props.usrSocket.connected === false)
-         //   navigate("/logout");
+        //   navigate("/logout");
         if (props.jwt && props.jwt != ""
             && props.usrSocket?.connected === true) {
             props.usrSocket?.on('exception', (res: any) => {
@@ -39,7 +39,7 @@ export const SocketProvider = (props: { jwt: string | null, usrSocket: Socket<an
             props.usrSocket?.off('inviteGame');
             props.usrSocket?.off('exception');
             //if (props.usrSocket?.connected === true)
-              //  props.usrSocket?.disconnect();
+            //  props.usrSocket?.disconnect();
         });
     }, [props.usrSocket?.connected, props.jwt]);
 

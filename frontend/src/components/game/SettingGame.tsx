@@ -5,8 +5,10 @@ import { FetchError } from '../FetchError';
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
 
-const ButtonIsCustom = (props: { usrSocket, id: string,
-    setTypeGame: React.Dispatch<React.SetStateAction<string>> }) => {
+const ButtonIsCustom = (props: {
+    usrSocket, id: string,
+    setTypeGame: React.Dispatch<React.SetStateAction<string>>
+}) => {
     const [custom, setCustom] = useState<boolean>(false);
     const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (e && e.target)
@@ -77,10 +79,10 @@ const SettingGame = (props: {
     const [errorCode, setErrorCode] = useState<number>(200);
     const [usr1, setUsr1] = useState<string>("");
     const [usr2, setUsr2] = useState<string>("");
-
+    const [errorText, setErrorText] = useState<string>("");
     useEffect(() => {
-        console.log(props.id)
-        console.log(props.socketService.socket)
+        console.log(props.id);
+        console.log(props.socketService.socket);
         if (props.socketService.socket) {
             console.log("socketed")
             const game = async () => {
@@ -89,9 +91,11 @@ const SettingGame = (props: {
                     .then((res) => {
                         console.log(res);
                     })
-                    .catch((err) => {
+                    .catch((err: string) => {
+                        setErrorText(err)
                         console.log("joining room " + err);
                         setErrorCode(1);
+                        props.socketService.socket?.off("join_game_success");
                     });
             }
             game();
@@ -127,13 +131,14 @@ const SettingGame = (props: {
                 {errorCode >= 400 && <FetchError code={errorCode} />}
                 <div className="createParty">
                     <h1 className="room_name">Game</h1>
-                    {(errorCode != 1 ? <h1>waiting for opponent</h1> : <h1>Room is full, you are spectator</h1>)}
-                    <ListUser usr1={usr1} usr2={usr2} />
-                    <ButtonIsCustom usrSocket={props.socketService.socket}
-                        id={props.id} setTypeGame={props.setTypeGame} />
-                    <br />
-                    <ButtonRdy usrSocket={props.socketService.socket}
-                        uid={props.id} usr1={usr1} usr2={usr2} />
+                    {(errorCode != 1 ? <h1>waiting for opponent</h1> : <h1>Error : {errorText}</h1>)}
+                    {errorCode != 1 && <><ListUser usr1={usr1} usr2={usr2} />
+                        <ButtonIsCustom usrSocket={props.socketService.socket}
+                            id={props.id} setTypeGame={props.setTypeGame} />
+                        <br />
+                        <ButtonRdy usrSocket={props.socketService.socket}
+                            uid={props.id} usr1={usr1} usr2={usr2} /></>}
+
                 </div>
             </>
         );
