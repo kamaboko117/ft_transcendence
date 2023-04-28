@@ -701,6 +701,22 @@ export class SocketEvents {
     }
   }
 
+  
+  MatchmakeUserToGame(userId: string, userIdFocus: string, idGame: string) {
+    const map = this.userGateway.getMap();
+
+    for (let [key, value] of map.entries()) {
+      if (value === userIdFocus) {
+        this.server.to(key).emit('matchmakeGame',
+          {idGame: idGame, user_id: userId});
+      }
+      if (value === userId) {
+        this.server.to(key).emit('matchmakeGame',
+          {idGame: idGame, user_id: userId});
+      }
+    }
+  }
+
   private getSocketGameRoom(socket: Socket): string | undefined {
     const socketRooms = Array.from(socket.rooms.values()).filter(
       (r) => r !== socket.id
