@@ -115,9 +115,9 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 }
 
 export const inviteGame = (event: MouseEvent<HTMLButtonElement>,
-    userId: number, jwt: string, navigate, setErrorCode): void => {
+    userId: number, jwt: string | null, navigate, setErrorCode): void => {
     event.preventDefault();
-    if (event.target)
+    if (event.target && jwt)
         playPageInvite(jwt, setErrorCode,
             userId, navigate);
 }
@@ -139,13 +139,14 @@ export const userProfile = (event: MouseEvent<HTMLButtonElement>,
 type aswType = {
     asw: string | null | undefined
 }
-export const directMessage = (event: MouseEvent<HTMLButtonElement>,
+export const directMessage = async (event: MouseEvent<HTMLButtonElement>,
     setDisplay: any, setId: React.Dispatch<React.SetStateAction<string>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-    userId: number, jwt: string): void => {
+    userId: number, jwt: string | null): Promise<void> => {
     event.preventDefault();
 
-    fetch('https://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
+    if (jwt) {
+        await fetch('https://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
         id: String(userId),
     }), { headers: header(jwt) })
         .then(res => {
@@ -154,11 +155,12 @@ export const directMessage = (event: MouseEvent<HTMLButtonElement>,
             setErrorCode(res.status)
         }).then((res: aswType) => {
             if (res) {
-                setDisplay(true);
-                if (res.asw)
+                if (res.asw){
                     setId(res.asw);
+                }
             }
         }).catch(e => console.log(e));
+    }
 }
 
 const handleClick = (event: React.MouseEvent<HTMLDivElement>,
@@ -200,53 +202,58 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
     1 === online
     2 === in game
 */
-export const StatusUser = (props: { userId: number, jwt: string }) => {
+export const StatusUser = (props: { userId: number, jwt: string | null }) => {
     const { usrSocket } = useContext(SocketContext);
     const [status, setStatus] = useState<number>(0);
     useEffect(() => {
         //emit ask user conneced/ig on map, then return reponse
         //.on connections and deconnections
-        usrSocket?.emit("status", { userId: props.userId }, (res: { code: number }) => {
-            console.log(res)
-            if (res)
-                setStatus(res.code);
-        });
-        usrSocket?.on('currentStatus', (res: { code: number, userId: string }) => {
-            console.log(res)
+        if (usrSocket && usrSocket?.connected === true) {
+            usrSocket.emit("status", { userId: props.userId }, (res: { code: number }) => {
+                if (res)
+                    setStatus(res.code);
+            });
+            usrSocket.on('currentStatus', (res: { code: number, userId: string }) => {
             if (res && props.userId === Number(res.userId))
                 setStatus(res.code);
-        })
+            });
+        }
         return (() => {
-            usrSocket?.off("currentStatus");
+            if (usrSocket && usrSocket?.connected === true)
+                usrSocket?.off("currentStatus");
             setStatus(0);
         })
-    }, [props.userId, props.jwt]);
+    }, [props.userId, props.jwt, usrSocket?.connected]);
     return (<>
         {
-            status === 0 && <div>
-                <div style={{ width: "20px", backgroundColor: "grey" }}>
-                </div><span style={{ flex: "1" }}>Offline</span>
+            status === 0 && <div className='status'>
+                <div style={{ width: "20px", height: "20px", backgroundColor: "grey" }}>
+                </div><span>Offline</span>
             </div>
         }
         {
-            status === 1 && <div>
-                <div style={{ width: "20px", backgroundColor: "green" }}>
-                </div><span style={{ flex: "1" }}>Online</span>
+            status === 1 && <div className='status'>
+                <div style={{ width: "20px", height: "20px", backgroundColor: "green" }}>
+                </div><span>Online</span>
             </div>
         }
         {
-            status === 2 && <div>
-                <div style={{ width: "20px", backgroundColor: "orange" }}>
-                </div><span style={{ flex: "1" }}>In game</span>
+            status === 2 && <div className='status'>
+                <div style={{ width: "20px", height: "20px", backgroundColor: "orange" }}>
+                </div><span>In game</span>
             </div>
         }
     </>);
 }
 
 const ButtonsInfos = (props: typeButtonsInfo) => {
-    const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
+    const { id, lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        if (id && id != "")
+            props.setDisplay(true);
+    }, [id]);
     return (<>
         <StatusUser jwt={props.jwt} userId={props.userInfo.id} />
         <button onClick={(e) =>
@@ -280,6 +287,7 @@ export const handleImgError = (e) => {
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
     if (target) {
+        target.srcset = "/upload_avatar/default.png 2x";
         target.src = "/upload_avatar/default.png";
     }
 }
@@ -371,7 +379,8 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
             </Element >
             <div className={chooseClassName} style={{ top: offsetTop }}>
                 <label className="userInfo">{userInfo.username}</label>
-                <img src={"/" + userInfo.avatarPath} className="avatarList"
+                <img src={"/" + userInfo.avatarPath}
+                    srcSet={"/" + userInfo.avatarPath + ' 2x'}
                     alt={"avatar " + userInfo.username}
                     onError={handleImgError}
                 />

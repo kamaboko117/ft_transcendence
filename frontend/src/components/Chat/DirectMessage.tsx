@@ -241,21 +241,31 @@ const PostMsg = (props: typePostMsg) => {
     const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
         obj: any, ref: any) => {
         e.preventDefault();
+        let cmdIsValid = true;
 
         if (obj.content && obj.content === "/help") {
             setLstMsgPm((lstMsg) => [...lstMsg, helper]);
         }
-        else if (obj.content && obj.content[0] === '/')
-            commandChat(jwt, obj, props.setErrorCode,
+        else if (obj.content && obj.content[0] === '/') {
+            cmdIsValid = commandChat(jwt, obj, props.setErrorCode,
                 lstUserGlobal, lstUserChat, setLstUserGlobal,
                 setLstUserChat, navigate);
+            if (cmdIsValid === false) {
+                props.usrSocket.emit('sendMsg', obj, (res) => {
+                    if (res.room === obj.id && obj.idBox === obj.id)
+                        setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                    if (res.room === obj.id)
+                        setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                });
+            }
+        }
         else {
             props.usrSocket.emit('sendMsg', obj, (res) => {
                 if (res.room === obj.id && obj.idBox === obj.id)
                     setLstMsgChat((lstMsg) => [...lstMsg, res]);
                 if (res.room === obj.id)
                     setLstMsgPm((lstMsg) => [...lstMsg, res]);
-            })
+            });
         }
         props.setMsg("");
         ref.current.value = "";
@@ -263,51 +273,66 @@ const PostMsg = (props: typePostMsg) => {
 
     const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
         obj: any, ref: any) => {
+        let cmdIsValid = true;
+
         if (e.key === "Enter" && e.shiftKey === false) {
             e.preventDefault();
             if (obj.content && obj.content === "/help") {
                 setLstMsgPm((lstMsg) => [...lstMsg, helper]);
             }
             else if (obj.content && obj.content[0] === '/') {
-                commandChat(jwt, obj, props.setErrorCode,
+                cmdIsValid = commandChat(jwt, obj, props.setErrorCode,
                     lstUserGlobal, lstUserChat, setLstUserGlobal,
                     setLstUserChat, navigate);
+                if (cmdIsValid === false) {
+                    props.usrSocket.emit('sendMsg', obj, (res) => {
+                        if (res.room === obj.id && obj.idBox === obj.id)
+                            setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                        if (res.room === obj.id)
+                            setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                    });
+                }
             } else {
                 props.usrSocket.emit('sendMsg', obj, (res) => {
                     if (res.room === obj.id && obj.idBox === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res.room === obj.id)
                         setLstMsgPm((lstMsg) => [...lstMsg, res]);
-                })
+                });
             }
             props.setMsg("");
             ref.current.value = "";
         }
     }
     return (
-        <div className='containerPost'>
-            <textarea ref={refElem} id="submitArea"
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => props.setMsg(e.currentTarget.value)}
-                onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
-                    handleSubmitArea(e,
+        <>
+            {props.id == "" && <div className='containerPost'>Please open a channel or private message<Button /></div>}
+            {props.id && props.id != "" &&
+                <div className='containerPost'>
+                    <textarea ref={refElem} id="submitArea"
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => props.setMsg(e.currentTarget.value)}
+                        onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
+                            handleSubmitArea(e,
+                                {
+                                    id: props.id,
+                                    idBox: props.idBox,
+                                    content: props.msg,
+                                    isPm: props.isPrivate,
+                                }, refElem
+                            )}
+                        className="chatBox" name="msg"></textarea>
+                    <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmitButton(e,
                         {
                             id: props.id,
                             idBox: props.idBox,
                             content: props.msg,
                             isPm: props.isPrivate,
-                        }, refElem
-                    )}
-                className="chatBox" name="msg"></textarea>
-            <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmitButton(e,
-                {
-                    id: props.id,
-                    idBox: props.idBox,
-                    content: props.msg,
-                    isPm: props.isPrivate,
-                }, refElem)}
-            >Go</button>
-            <Button />
-        </div>
+                        }, refElem)}
+                    >Go</button>
+                    <Button />
+                </div>
+            }
+        </>
     );
 }
 
@@ -402,10 +427,12 @@ const DiscussionBox = (props: {
         online, usrSocket]);
     useEffect(() => {
         usrSocket?.on("sendBackMsg2", (res: any) => {
-            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id && elem.bl === 1);
-            if (!found) {
-                if (res.room === props.id)
-                    setLstMsgPm((lstMsg) => [...lstMsg, res]);
+            if (lstUserGlobal) {
+                let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id && elem.bl === 1);
+                if (!found) {
+                    if (res.room === props.id)
+                        setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                }
             }
         });
         return (() => { usrSocket?.off("sendBackMsg2"); });
@@ -454,6 +481,7 @@ const updateChannel = (setChannel, setPm, jwt, setErrorCode) => {
 const Box = (props: settingBox) => {
     const [lstPm, setPm] = useState<listPm[]>([] as listPm[]);
     const [lstChannel, setChannel] = useState<listChan[]>([] as listChan[]);
+    const [isPrivate] = useState<boolean>(false);
 
     useEffect(() => {
         /* load channels */
@@ -461,9 +489,9 @@ const Box = (props: settingBox) => {
         return (() => {
             setPm([]);
             setChannel([]);
+            props.setId("");
         })
     }, [lstPm.keys, lstChannel.keys]);
-    const [isPrivate, setIsPrivate] = useState<boolean>(false);
     return (
         <article className='containerDirectMessage unfold' style={{
             maxWidth: props.width,

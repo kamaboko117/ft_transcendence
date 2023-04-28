@@ -46,6 +46,7 @@ const handleImgError = (e) => {
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
     if (target) {
+        target.srcset = "/upload_avatar/default.png 2x";
         target.src = "/upload_avatar/default.png";
     }
 }
@@ -70,10 +71,13 @@ export const ListMsg = (props: any) => {
                 props.lstMsg.slice(arrayLength, props.lstMsg.length).map((msg: msg) => (
                     <React.Fragment key={++i}>
                         <div style={{ border: "1px solid black" }}>
-                            <img src={"/" + msg.user.avatarPath} className="chatBox"
-                                alt={"avatar " + msg.user.username}
+                            {<img
+                                className="chatBox"
+                                src={'/' + msg.user.avatarPath}
+                                srcSet={'/' + msg.user.avatarPath + ' 2x'}
+                                alt={"avatar " + msg.user?.username}
                                 onError={handleImgError}
-                            />
+                            />}
                             <label className="chatBox">{msg.user.username}</label>
                         </div>
                         <span className="chatBox" style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</span>
@@ -116,21 +120,31 @@ const PostMsg = (props: typePostMsg) => {
     const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
         obj: any, ref: any) => {
         e.preventDefault();
+        let cmdIsValid = true;
 
         if (obj.content && obj.content === "/help") {
             setLstMsgChat((lstMsg) => [...lstMsg, helper]);
         }
-        else if (obj.content && obj.content[0] === '/')
-            commandChat(jwt, obj, props.setErrorCode,
+        else if (obj.content && obj.content[0] === '/') {
+            cmdIsValid = commandChat(jwt, obj, props.setErrorCode,
                 lstUserGlobal, lstUserChat,
                 setLstUserGlobal, setLstUserChat, navigate);
+            if (cmdIsValid === false) {
+                props.usrSocket.emit('sendMsg', obj, (res) => {
+                    if (res.room === obj.id)
+                        setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                    if (res.room === obj.id && obj.id == obj.idBox)
+                        setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                });
+            }
+        }
         else {
             props.usrSocket.emit('sendMsg', obj, (res) => {
                 if (res.room === obj.id)
                     setLstMsgChat((lstMsg) => [...lstMsg, res]);
                 if (res.room === obj.id && obj.id == obj.idBox)
                     setLstMsgPm((lstMsg) => [...lstMsg, res]);
-            })
+            });
         }
         props.setMsg("");
         ref.current.value = "";
@@ -138,22 +152,32 @@ const PostMsg = (props: typePostMsg) => {
 
     const handleSubmitArea = (e: React.KeyboardEvent<HTMLTextAreaElement>,
         obj: any, ref: any) => {
+        let cmdIsValid = true;
+
         if (e.key === "Enter" && e.shiftKey === false) {
             e.preventDefault();
             if (obj.content && obj.content === "/help") {
                 setLstMsgChat((lstMsg) => [...lstMsg, helper]);
             }
             else if (obj.content && obj.content[0] === '/') {
-                commandChat(jwt, obj, props.setErrorCode,
+                cmdIsValid = commandChat(jwt, obj, props.setErrorCode,
                     lstUserGlobal, lstUserChat, setLstUserGlobal,
                     setLstUserChat, navigate);
+                if (cmdIsValid === false) {
+                    props.usrSocket.emit('sendMsg', obj, (res) => {
+                        if (res.room === obj.id)
+                            setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                        if (res.room === obj.id && obj.id == obj.idBox)
+                            setLstMsgPm((lstMsg) => [...lstMsg, res]);
+                    });
+                }
             } else {
                 props.usrSocket.emit('sendMsg', obj, (res) => {
                     if (res.room === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res.room === obj.id && obj.id == obj.idBox)
                         setLstMsgPm((lstMsg) => [...lstMsg, res]);
-                })
+                });
             }
             props.setMsg("");
             ref.current.value = "";
@@ -187,6 +211,7 @@ const MainChat = (props: any) => {
     const [online, setOnline] = useState<undefined | boolean | string>(undefined)
     const userCtx: any = useContext(UserContext);
     const { usrSocket } = useContext(SocketContext);
+
     useEffect(() => {
         //subscribeChat
         usrSocket?.emit("joinRoomChat", {
@@ -222,6 +247,7 @@ const MainChat = (props: any) => {
     const { lstMsgChat, lstUserGlobal, setLstMsgChat, setLstMsgPm } = useContext(ContextDisplayChannel);
     const [chatName, setChatName] = useState<string>("");
 
+    //LOAD MESSAGES CHANNEL AND CHANNEL NAME
     useEffect(() => {
         const ft_lst = async () => {
             const res = await fetch('https://' + location.host + '/api/chat?' + new URLSearchParams({
@@ -245,6 +271,7 @@ const MainChat = (props: any) => {
         }
         if (online === true)
             ft_lst();
+        //LISTEN TO ACTION LIKE BAN AND KICK SENT BY BACKEND
         usrSocket?.on("actionOnUser", (res: any) => {
             if ((res.type === "Ban" || res.type === "Kick")
                 && userCtx.getUserId() === res.user_id
@@ -254,32 +281,30 @@ const MainChat = (props: any) => {
             }
             if (res.room === props.id)
                 setLstMsgChat((lstMsg) => [...lstMsg, res]);
-            //if (res.room === props.id && props.id == id)
-            //    setLstMsgPm((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
             usrSocket?.off("actionOnUser");
             setLstMsgChat([]);
             setChatName("");
         });
-    }, [lstMsgChat.keys, props.id, /*JSON.stringify(lstUserChat),*/ JSON.stringify(lstUserGlobal),
+    }, [lstMsgChat.keys, props.id, JSON.stringify(lstUserGlobal),
         online, usrSocket]);
     /* Get message from backend, must reload properly when lstUser is updated */
     useEffect(() => {
         usrSocket?.on("sendBackMsg", (res: any) => {
             //need to check if user is blocked
-            let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id && elem.bl === 1);
-            if (!found) {
-                if (res.room === props.id)
-                    setLstMsgChat((lstMsg) => [...lstMsg, res]);
-                //if (res.room === props.id && props.id == id)
-                //    setLstMsgPm((lstMsg) => [...lstMsg, res]);
+            if (lstUserGlobal) {
+                let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id && elem.bl === 1);
+                if (!found) {
+                    if (res.room === props.id)
+                        setLstMsgChat((lstMsg) => [...lstMsg, res]);
+                }
             }
         });
         return (() => { usrSocket?.off("sendBackMsg"); });
     }, [JSON.stringify(lstUserGlobal)])
-    const [msg, setMsg] = useState<null | string>(null);
-    //const [lstUser, setLstUser] = useState<typeListUser["listUser"]>(Array);
+    const [msg, setMsg] = useState<null | string>("");
+
     if (online === "Ban")
         return (<article className='containerChat'>You are banned from this chat</article>)
     else if (online === false)
@@ -310,6 +335,7 @@ const MainChat = (props: any) => {
     </>);
 }
 
+//Validity password entry 
 const onSubmit = async (e: React.FormEvent<HTMLFormElement>
     , value: string | null, jwt: string | null, id: string,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>): Promise<boolean> => {
@@ -409,16 +435,14 @@ const Chat = (props: { jwt: string }) => {
     const [errorCode, setErrorCode] = useState<number>(200);
     const [psw, setLoadPsw] = useState<boolean | undefined>(undefined);
 
-    if (errorCode >= 400)
-        return (<FetchError code={errorCode} />);
-
     useEffect(() => {
         const hasPass: Promise<boolean> = hasPassword(id, props.jwt, setErrorCode);
         hasPass.then(res => {
             setLoadPsw(res);
         }).catch(e => console.log(e));
     }, []);
-
+    if (errorCode >= 400)
+        return (<FetchError code={errorCode} />);
     return (<BlockChat id={id} getLocation={getLocation}
         setErrorCode={setErrorCode} jwt={props.jwt}
         hasPsw={psw} />);

@@ -1,6 +1,7 @@
 import { Socket } from 'socket.io-client';
 import React, { createContext, useEffect, useState } from 'react';
 import { FetchError } from '../components/FetchError';
+import { useNavigate } from 'react-router-dom';
 
 type typeSocket = {
     usrSocket: Socket<any, any> | undefined,
@@ -12,16 +13,20 @@ const SocketContext = createContext<typeSocket>({
     usrSocket: defaultValue,
 });
 
-export const SocketProvider = (props: { jwt: string, usrSocket: Socket<any, any> | undefined, children: any }) => {
+export const SocketProvider = (props: { jwt: string | null, usrSocket: Socket<any, any> | undefined, children: any }) => {
+    //const navigate = useNavigate();
     const context: typeSocket = {
         usrSocket: props.usrSocket
     }
     const [errorCode, setErrorCode] = useState<number>(200);
 
     useEffect(() => {
-        if (props.jwt) {
-            props.usrSocket?.connect();
-            props.usrSocket?.on('exception', (res) => {
+        console.log(props.usrSocket?.connected)
+        //if (props.jwt && props.jwt != "" && props.usrSocket && props.usrSocket.connected === false)
+        //   navigate("/logout");
+        if (props.jwt && props.jwt != ""
+            && props.usrSocket?.connected === true) {
+            props.usrSocket?.on('exception', (res: any) => {
                 if (res.status === "error" && res.message === "Token not valid") {
                     setErrorCode(403)
                 }
@@ -31,11 +36,12 @@ export const SocketProvider = (props: { jwt: string, usrSocket: Socket<any, any>
             });
         }
         return (() => {
-            props.usrSocket?.off('inviteGame');
+            //props.usrSocket?.off('inviteGame');
             props.usrSocket?.off('exception');
-            props.usrSocket?.disconnect();
+            //if (props.usrSocket?.connected === true)
+            //  props.usrSocket?.disconnect();
         });
-    }, [/*props.jwt, */props.usrSocket]);
+    }, [props.usrSocket?.connected, props.jwt]);
 
     return (
         <SocketContext.Provider value={context}>

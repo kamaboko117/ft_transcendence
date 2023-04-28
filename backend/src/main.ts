@@ -16,12 +16,12 @@ async function bootstrap() {
     cert: certP,
   }
   const app = await NestFactory.create(AppModule, { httpsOptions });
+  //app.use(helmet());
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors();
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));
-  //app.use(helmet());
   await app.listen(3000);
 }
 bootstrap();

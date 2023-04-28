@@ -4,11 +4,14 @@ import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
 // https://vitejs.dev/guide/api-javascript.html#loadenv
-
+// global, package randomstring need it
 export default defineConfig(({mode}) => {
   process.env = Object.assign(process.env, loadEnv(mode, process.cwd()))
   return ({
     plugins: [react()],
+    define: {
+      global: {}
+    },
     server: {
       watch: {
         usePolling: true
@@ -20,7 +23,9 @@ export default defineConfig(({mode}) => {
       host: true,
       port: 5173,
       hmr: {
-        port: 5174, protocol: 'wss'
+        path: '/hmr/',
+        clientPort: 4000,
+        protocol: 'wss'
       }
     }
   });

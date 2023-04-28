@@ -6,16 +6,11 @@ import { ListBan } from '../chat/lstban.entity';
 import { ListMute } from '../chat/lstmute.entity';
 import { BlackFriendList } from './blackFriendList.entity';
 import { Stat } from './stat.entity';
+import { MatchHistory } from './matchHistory.entity';
+import { Achievements } from './achievement.entity';
 
 @Entity()
 export class User {
-  /* Possibilite de se servir de userID (42) comme cle primaire */
-  /*@PrimaryGeneratedColumn({
-    type: 'bigint',
-    name: 'id',
-  })
-  id: number;
-*/
   //the ID provided by 42
   @PrimaryColumn({
     type: 'bigint',
@@ -34,7 +29,6 @@ export class User {
   @Column({ nullable: true })
   avatarPath!: string;
 
-  /* Refresh token */
   @Column({
     nullable: false,
     default: '',
@@ -78,7 +72,19 @@ export class User {
   lstBlackFriendOwner: BlackFriendList[];
   @OneToMany(() => BlackFriendList, (blackfriendlist) => blackfriendlist.userFocus)
   lstBlackFriendFocus: BlackFriendList[];
+
   @OneToOne(() => Stat, (stat) => stat.user)
   sstat: Stat[]
 
+    //OneToMany vers MatchHistory
+  @OneToMany(() => MatchHistory, (matchhistory) => matchhistory.MP1)
+  matchPlayerOne: MatchHistory[];
+  @OneToMany(() => MatchHistory, (matchhistory) => matchhistory.MP2)
+  matchPlayerTwo: MatchHistory[];
+  @OneToMany(() => MatchHistory, (matchhistory) => matchhistory.victory_user)
+  userVictory: MatchHistory[];
+
+  //One
+  @OneToMany(() => Achievements, (achievement) => achievement.user)
+  achievement: User[];
 }

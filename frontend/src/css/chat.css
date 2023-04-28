@@ -19,6 +19,14 @@
     width: 100%;
 }
 
+.containerChat>p {
+    margin-left: 15px;
+}
+
+.containerChat>form {
+    margin: auto;
+}
+
 .fullBox {
     display: block !important;
     width: 100% !important;
@@ -69,10 +77,12 @@ span.chatBox {
 }
 
 img.chatBox {
-    align-self: flex-start;
-    max-width: 50px;
-    width: 100%;
+    /*align-self: flex-start;*/
+    max-width: 60px;
+    /*width: 100%;*/
+    height: auto;
     margin-left: 10px;
+
 }
 
 .chatName {
@@ -82,7 +92,6 @@ img.chatBox {
 textarea.chatBox {
     width: 85%;
     resize: initial;
-    /*font: 2em;*/
     margin-left: 10px;
     margin-bottom: 10px;
     margin-right: 10px;
@@ -105,7 +114,7 @@ article.right {
     margin-top: 30px;
     max-width: 450px;
     width: 450px;
-    min-width: 150px;
+    /*min-width: 150px;*/
     background-color: crimson;
 }
 
@@ -168,5 +177,11 @@ table.tableInfo {
     span.chatBox {
         margin: 0;
         width: 100%;
+    }
+}
+
+@media screen and (max-width: 319px) {
+    div.chatName {
+        flex-direction: column;
     }
 }

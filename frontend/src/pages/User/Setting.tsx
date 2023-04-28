@@ -1,13 +1,10 @@
-import React, { useEffect, useState, ChangeEvent, FormEvent, useContext } from "react";
+import React, { useEffect, useState, ChangeEvent, FormEvent, useContext, useRef } from "react";
 import { FetchError, header } from "../../components/FetchError";
 import { useLocation, useNavigate } from "react-router-dom";
 import UserContext from "../../contexts/UserContext";
 import '../../css/user.css';
 
 type statInfo = {
-	victory: number,
-	defeat: number,
-	nb_games: number,
 	level: number,
 	rank: number
 }
@@ -21,12 +18,25 @@ type userInfo = {
 	sstat: statInfo
 }
 
+type rawMH = {
+	type_game: string,
+	t1_username: string,
+	t2_username: string,
+	t3_username: string
+}
+
+type nameAchivement = {
+	name: string
+}
+
+
 /* display default img if not img loaded */
 
 const handleImgError = (e) => {
 	const target: HTMLImageElement = e.target as HTMLImageElement;
 
 	if (target) {
+		target.srcset = "/upload_avatar/default.png 2x";
 		target.src = "/upload_avatar/default.png";
 	}
 }
@@ -109,9 +119,164 @@ const ErrorSubmit = (props: { lstErr: [] }) => {
 	</>);
 }
 
-function Setting(props: Readonly<{
-	jwt: string | null
-}>) {
+export const Match_History_Raw = (props: {rawMH: Array<rawMH> | undefined}) => {
+	let i: number = 0;
+	return(<>
+		{props.rawMH && props.rawMH.map((val) => 
+			<tr key={++i}>
+				<td>{val.type_game}</td>
+				<td>{val.t1_username}</td>
+				<td>{val.t2_username}</td>
+				<td>{val.t3_username}</td>
+			</tr>
+		)}
+	</>)
+}
+
+const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
+	const [raw_MH, setRaw] = useState<Array<rawMH>>();
+	const [errorCode, setErrorCode] = useState<number>(200);
+	if (props.jwt === null)
+		return (<div>Must be logged</div>);
+	useEffect(() => {
+		fetch('https://' + location.host + '/api/users/get_raw_mh', {headers: header(props.jwt)})
+		.then(res => {
+			if (res.ok)
+				return(res.json());
+			setErrorCode(res.status);
+		}).then((res: Array<rawMH>) => {
+			if (res) {
+				setRaw(res);
+			}
+		})
+	}, [])
+	
+	return(
+		<table className="profile-table">
+			<thead>
+				<tr>
+					<th>Type Game</th>
+					<th>Player One</th>
+					<th>Player Two</th>
+					<th>Player Victory</th>
+				</tr>
+			</thead>
+			<tbody>
+					< Match_History_Raw rawMH={raw_MH}/>
+			</tbody>
+		</table>
+	);
+}
+
+const rank_index = ['BRONZE', 'SILVER', 'GOLD'];
+
+export const Achivement_Raw = (props: {nameAchivement: Array<nameAchivement> | undefined}) => {
+	let i: number = 0;
+	return(<>
+		{props.nameAchivement && props.nameAchivement.map((val) => 
+			<tr key={++i}>
+				<td>{val.name}</td>
+			</tr>
+		)}
+	</>)
+}
+
+const LoadAchivement = (props: {jwt: string | null, setErrorCode}) => {
+	const [listAchivement, setList] = useState<Array<nameAchivement>>();
+	useEffect(() => {
+		if (props.jwt) {
+			fetch('https://' + location.host + '/api/users/achiv/', {headers: header(props.jwt)})
+			.then(res => {
+				if (res.ok)
+					return(res.json())
+				props.setErrorCode(res.status);
+			}).then((res) => {
+				setList(res);
+			})
+		}
+	}, [props.jwt])
+
+	return(
+		<table className="profile-table-2">
+			<thead>
+				<tr>
+					<th>Achivements</th>
+				</tr>
+			</thead>
+			<tbody>
+					< Achivement_Raw nameAchivement={listAchivement}/>
+			</tbody>
+		</table>
+	);
+}
+
+type rankWin = {
+	rankDbByWin: number | undefined,
+	rankByRankUser: number | undefined
+}
+
+const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: string | null}) => {
+	const [vc, setVc] = useState<number>(0);
+	const [df, setDf] = useState<number>(0);
+	const [nb_g, setNb_g] = useState<number | undefined>(undefined);
+	const [rank, setRank] = useState<rankWin>({rankByRankUser: undefined, rankDbByWin: undefined});
+//
+	useEffect(() => {
+		fetch('https://' + location.host + '/api/users/get-games-nb/', {headers: header(props.jwt)})
+			.then(res => {
+				if (res.ok)
+					return(res.text())
+				props.setErrorCode(res.status);
+			}).then((res) => {
+				setNb_g(Number(res));
+			})
+	}, []);
+
+	useEffect(() => {
+		if (typeof nb_g === 'number') {
+			fetch('https://' + location.host + '/api/users/get-victory-nb/', {headers: header(props.jwt)})
+			.then(res => {
+				if (res.ok)
+					return (res.json())
+				props.setErrorCode(res.status);
+			}).then((res) => {
+				if (res) {
+					setVc(Number(res.nb));
+					setDf(nb_g - vc)
+					if (res.rankDbByWin)
+						setRank({
+							rankDbByWin: res.rankDbByWin.rank,
+							rankByRankUser: res?.rankByRankUser.gen
+						});
+					if (res.rankByRankUser)
+						setRank({
+							rankDbByWin: res.rankDbByWin.rank,
+							rankByRankUser: res?.rankByRankUser.gen
+						});
+				}
+			})
+		}
+	}, [nb_g, vc]);
+
+	//useEffect(() => {
+//		fetch('https://' + location.host + '/api/users/achiv', {headers: header(props.jwt)})	
+//	}, []);
+
+	return (<>
+		<ul>
+					<li>Nb_Games: {nb_g}</li>
+					<li>Victory: {vc}</li>
+					<li>Defeat: {df}</li>
+					<li>Rank: {props.user && ((props.user?.sstat.rank <= 2) ? rank_index[props.user?.sstat.rank] : props.user?.sstat.rank)}</li>
+					<li>Ladder by game won : {(typeof rank.rankDbByWin === "undefined" ? "Not ranked yet" : rank.rankDbByWin)}</li>
+					<li>Ladder by rank : {(typeof rank.rankByRankUser === "undefined" ? "Not ranked yet" : rank.rankByRankUser)}</li>
+					<li>Level: {props.user?.sstat.level}</li>
+				</ul>
+				< Match_History_Table jwt={props.jwt} />
+	</>)
+}
+
+function Setting(props: Readonly<{ jwt: string | null }>) {
 	const [user, setUser] = useState<userInfo>();
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [lstErr, setLstErr] = useState<[]>([]);
@@ -147,19 +312,15 @@ function Setting(props: Readonly<{
 			navigate("/fa-activate");
 		setOldFa(FA);
 	}, [userCtx.getJwt()]);
-
+	
 	if (errorCode >= 401 && errorCode != 413)
 		return (<FetchError code={errorCode} />);
 	return (
 		<section>
-			<h1>Username: [{userCtx.getUsername()}]</h1>
+			<h1>{userCtx.getUsername()}</h1>
 			<article>
-				<ul>
-					<li>Victoire: {user?.sstat.victory}</li>
-					<li>Défaite: {user?.sstat.defeat}</li>
-					<li>Rang: {user?.sstat.rank}</li>
-					<li>Niveau: {user?.sstat.level}</li>
-				</ul>
+				<LoadResultGame user={user} setErrorCode={setErrorCode} jwt={props.jwt} />
+				<LoadAchivement setErrorCode={setErrorCode} jwt={props.jwt}/>
 			</article>
 			<article>
 				{/*getLocation.pathname === "/Setting" && <label>Username: {userCtx.getUsername()}</label>*/}
@@ -190,6 +351,7 @@ function Setting(props: Readonly<{
 					{avatarPath != null && <><br /><img
 						className="avatar"
 						src={avatarPath}
+						srcSet={avatarPath + ' 2x'}
 						alt={"avatar " + user?.username}
 						onError={handleImgError}
 					/></>}
@@ -206,6 +368,7 @@ function Setting(props: Readonly<{
 						Image is too large, please upload a size inferior to 1MB.
 					</p>
 				}
+				
 			</article>
 		</section>);
 }

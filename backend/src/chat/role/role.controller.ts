@@ -15,7 +15,7 @@ type typeGetRole = {
 export class RoleController {
     constructor(private roleService: RoleService) { }
 
-    async getRole(userId: Readonly<number>,
+    private async getRole(userId: Readonly<number>,
         channelId: Readonly<string>): Promise<typeGetRole> {
         if (!channelId || !userId)
             return ({ role: "", userId: undefined });
@@ -37,7 +37,7 @@ export class RoleController {
     }
 
     /*  grant user to administrator */
-    async grantUser(idFromRequest: Readonly<number>, getRoleRequest: Readonly<typeGetRole>,
+    private async grantUser(idFromRequest: Readonly<number>, getRoleRequest: Readonly<typeGetRole>,
         userId: Readonly<number>, id: Readonly<string>, newRole: Readonly<string>) {
         if (getRoleRequest.role === "Owner"
             && Number(getRoleRequest.userId) === idFromRequest) {
@@ -45,7 +45,7 @@ export class RoleController {
         }
     }
 
-    banUser(id: Readonly<string>, userId: Readonly<number>,
+    private banUser(id: Readonly<string>, userId: Readonly<number>,
         time: Readonly<number>, role: Readonly<string>) {
         if (time < 0)
             return;
@@ -53,21 +53,21 @@ export class RoleController {
             this.roleService.banUser(id, userId, time);
     }
 
-    unBanUser(id: Readonly<string>, userId: Readonly<number>,
+    private unBanUser(id: Readonly<string>, userId: Readonly<number>,
         role: Readonly<string>) {
         if (role === "Administrator" || role === "Owner") {
             this.roleService.unBanUser(id, userId);
         }
     }
 
-    unMuteUser(id: Readonly<string>, userId: Readonly<number>,
+    private unMuteUser(id: Readonly<string>, userId: Readonly<number>,
         role: Readonly<string>) {
         if (role === "Administrator" || role === "Owner") {
             this.roleService.unMuteUser(id, userId);
         }
     }
 
-    muteUser(id: Readonly<string>, userId: Readonly<number>,
+    private muteUser(id: Readonly<string>, userId: Readonly<number>,
         time: Readonly<number>, role: Readonly<string>) {
         if (time < 0)
             return;
@@ -75,19 +75,19 @@ export class RoleController {
             this.roleService.muteUser(id, userId, time);
     }
 
-    kickUser(id: Readonly<string>, userId: Readonly<number>,
+    private kickUser(id: Readonly<string>, userId: Readonly<number>,
         role: Readonly<string>) {
         if (role === "Administrator" || role === "Owner")
             this.roleService.kickUser(id, userId);
     }
 
-    setPsw(id: Readonly<string>,
+    private setPsw(id: Readonly<string>,
         role: Readonly<string>, psw: Readonly<string>) {
         if (role === "Owner")
             this.roleService.setPsw(id, psw);
     }
 
-    unSetPsw(id: Readonly<string>,
+    private unSetPsw(id: Readonly<string>,
         role: Readonly<string>) {
         if (role === "Owner")
             this.roleService.unSetPsw(id);

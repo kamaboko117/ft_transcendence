@@ -11,12 +11,17 @@ export class Room {
   })
   roomName: string;
 
-  @Column({
-    type: 'bigint',
-    default: 1,
-  })
-  Capacity: number;
-
-  @Column({default: false})
+  @Column({ default: false })
   private!: boolean
+
+  @Column({ default: false })
+  player_one_rdy!: boolean
+  @Column({ default: false })
+  player_two_rdy!: boolean
+
+  @Column({ nullable: false, default: 'Classic' })
+  player_one_type_game: string;
+
+  @Column({ nullable: false, default: 'Classic' })
+  player_two_type_game: string;
 }

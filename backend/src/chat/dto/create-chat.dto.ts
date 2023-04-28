@@ -2,22 +2,6 @@ import { IsString, IsInt, IsArray, ValidateNested, IsObject, IsDefined, IsNumber
 import { Type } from 'class-transformer';
 
 /* Pair for ban and mute */
-/*class Pair {
-    @IsString()
-    key: string;
-    @IsNumber()
-    value: number
-}*/
-/*@IsDefined()
- @IsObject()
- @ValidateNested()
- @Type(() => Pair)
- setMute: Pair;
- @IsDefined()
- @IsObject()
- @ValidateNested()
- @Type(() => Pair)
- setBan: Pair;*/
 
 export class Owner {
     @IsString()
@@ -31,13 +15,6 @@ export class CreateChatDto {
     id: string;
     @IsString()
     name: string;
-    //@IsInt()
-    //owner: number;
-    //@IsObject()
-    //@IsDefined()
-    //@ValidateNested()
-    //@Type(() => Owner)
-    //owner: Owner;
     @IsString()
     accesstype: string;
     @IsString()
@@ -45,7 +22,7 @@ export class CreateChatDto {
     @IsArray()
     lstMsg: Array<{
         user_id: number,
-        username: string, //à enlever pour un find dans repository
+        username: string,
         content: string
     }>;
     @IsDefined()
