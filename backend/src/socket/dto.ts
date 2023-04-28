@@ -23,4 +23,7 @@ export class UserIdRdy {
     @IsDefined()
     @IsString()
     usr2: string;
+
+    @IsBoolean()
+    custom: boolean;
 }

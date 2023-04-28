@@ -95,8 +95,8 @@ class PUNeutral implements IPowerUp {
     this.color = "BLUE";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (game: IGame) => {};
-    this.cancelEffect = (game: IGame) => {};
+    this.effect = (game: IGame) => { };
+    this.cancelEffect = (game: IGame) => { };
   }
 }
 
@@ -124,8 +124,8 @@ class PUBonus implements IPowerUp {
     this.color = "GREEN";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => {};
-    this.cancelEffect = () => {};
+    this.effect = (player: IPlayer) => { };
+    this.cancelEffect = () => { };
   }
 }
 
@@ -153,8 +153,8 @@ class PUMalus implements IPowerUp {
     this.color = "RED";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => {};
-    this.cancelEffect = () => {};
+    this.effect = (player: IPlayer) => { };
+    this.cancelEffect = () => { };
   }
 }
 
@@ -450,7 +450,7 @@ function generatePowerUps(game: IGame) {
     case 0: //neutral
       var type =
         neutralPowerUpTypes[
-          Math.floor(Math.random() * neutralPowerUpTypes.length)
+        Math.floor(Math.random() * neutralPowerUpTypes.length)
         ];
       PU = new powerUp(x, y, type);
       break;
@@ -472,7 +472,7 @@ function checkPowerUpCollision(ball: IBall, powerUp: IPowerUp) {
   if (powerUp.active) return false;
   let distance = Math.sqrt(
     (ball.x - powerUp.x) * (ball.x - powerUp.x) +
-      (ball.y - powerUp.y) * (ball.y - powerUp.y)
+    (ball.y - powerUp.y) * (ball.y - powerUp.y)
   );
   if (distance < ball.radius + powerUp.radius) {
     powerUp.user = ball.velocityX < 0 ? "player2" : "player1";
@@ -536,14 +536,23 @@ export class SocketEvents {
   @WebSocketServer()
   server: Server;
 
-  handleConnection(client: Socket) {
+
+  handleConnection(client: any) {
+    const user: TokenUser = client.user;
     console.log("Client connected: ", client.id);
     client.on("disconnecting", () => {
-      client.rooms.forEach(async (key) => {
-        const size = this.server.sockets.adapter.rooms.get(key)?.size;
-        if (size === 1) {
-          const room = await this.roomsService.getRoom(key);
-          if (room) this.roomsService.deleteRoom(key);
+      client.rooms.forEach(async (key: string) => {
+        const room = this.server.sockets.adapter.rooms.get(key);
+        const size = room?.size;
+        //to make user leave room in db, need to know he is the only one in,
+        //and make sure that, he is in the room 
+        if (size === 1 && room) {
+          const iterator = room?.values();
+          if (room && client.id === iterator?.next().value) {
+            const room = await this.roomsService.getRoom(key);
+            if (room)
+              this.roomsService.deleteRoom(key);
+          }
         }
       });
     });
@@ -656,7 +665,17 @@ export class SocketEvents {
       }
       games = games.filter((g) => g.id !== game?.id);
     }
-    this.mapUserInGame.delete(client.id);
+    else {
+      const clientId = client.id;
+      const map = this.mapUserInGame
+      for (let [key, value] of map.entries()) {
+        if (key === clientId) {
+          const user = await this.userService.findUsersById(value);
+          this.server.emit("user_leave_room", { username: user?.username });
+        }
+      }
+      map.delete(client.id);
+    }
   }
 
   public isUserConnected(id: string) {
@@ -678,6 +697,22 @@ export class SocketEvents {
         this.server
           .to(key)
           .emit("inviteGame", { idGame: idGame, user_id: userId });
+      }
+    }
+  }
+
+  
+  MatchmakeUserToGame(userId: string, userIdFocus: string, idGame: string) {
+    const map = this.userGateway.getMap();
+
+    for (let [key, value] of map.entries()) {
+      if (value === userIdFocus) {
+        this.server.to(key).emit('matchmakeGame',
+          {idGame: idGame, user_id: userId});
+      }
+      if (value === userId) {
+        this.server.to(key).emit('matchmakeGame',
+          {idGame: idGame, user_id: userId});
       }
     }
   }
@@ -789,6 +824,7 @@ export class SocketEvents {
       console.log(typeof data.roomId);
       await client.join(data.roomId);
       this.roomsService.updateRoomReady(data.roomId, false, true, true);
+      this.roomsService.updateRoomTypeGame(data.roomId, true, true, false);
       this.mapUserInGame.set(client.id, userId);
       if (room && room.private === true) {
         const result: boolean = this.checkIfUserFound(room, client.id);
@@ -907,9 +943,6 @@ export class SocketEvents {
     @MessageBody() data: UpdateTypeRoom,
     @ConnectedSocket() client: Socket
   ) {
-    //client.to().emit()
-    console.log("data");
-    console.log(data);
     client
       .to(data.roomId)
       .emit("updateTypeGameFromServer", { type: data.type });
@@ -924,28 +957,31 @@ export class SocketEvents {
     const user: TokenUser = client.user;
     const connectedSockets = this.server.sockets.adapter.rooms.get(data.uid);
 
-    console.log("data rdy");
-    console.log(data);
-    console.log("user");
-    console.log(user);
-    if (user.username === data.usr1)
+    if (user.username === data.usr1) {
       await this.roomsService.updateRoomReady(data.uid, data.rdy, true, false);
-    else if (user.username === data.usr2)
+      await this.roomsService.updateRoomTypeGame(data.uid, true, false, data.custom);
+    }
+    else if (user.username === data.usr2) {
       await this.roomsService.updateRoomReady(data.uid, data.rdy, false, true);
+      await this.roomsService.updateRoomTypeGame(data.uid, false, true, data.custom);
+    }
     //when two user are connected, and both are rdy, game must start
     const getRoom = await this.roomsService.getRoom(data.uid);
-    if (
-      connectedSockets?.size === 2 &&
-      getRoom?.player_one_rdy === true &&
-      getRoom.player_two_rdy === true
-    ) {
+    if (connectedSockets?.size === 2
+      && getRoom?.player_one_rdy === true
+      && getRoom.player_two_rdy === true) {
+      const getRoom = await this.roomsService.getRoom(data.uid);
+      if (getRoom?.player_one_type_game != getRoom?.player_two_type_game)
+        return { err: "Room type from both users not synchronized" };
       // console.log(connectedSockets)
       //let socket2 = connectedSockets?.values().next().value;
       let socket2: string | undefined = undefined;
       connectedSockets?.forEach((key) => {
         if (key !== client.id) socket2 = key;
       });
-      if (socket2 === undefined) return;
+      if (socket2 === undefined) {
+        return { err: "no socket second player found" };
+      }
       let newGame = new Game(data.uid, client.id, socket2, 11);
       let powerUps = newGame.powerUps;
       let player1 = newGame.player1;
