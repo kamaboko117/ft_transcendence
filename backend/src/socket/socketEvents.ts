@@ -536,15 +536,23 @@ export class SocketEvents {
   @WebSocketServer()
   server: Server;
 
-  handleConnection(client: Socket) {
+
+  handleConnection(client: any) {
+    const user: TokenUser = client.user;
     console.log("Client connected: ", client.id);
     client.on("disconnecting", () => {
-      client.rooms.forEach(async (key) => {
-        const size = this.server.sockets.adapter.rooms.get(key)?.size;
-        if (size === 1) {
-          const room = await this.roomsService.getRoom(key);
-          if (room)
-            this.roomsService.deleteRoom(key);
+      client.rooms.forEach(async (key: string) => {
+        const room = this.server.sockets.adapter.rooms.get(key);
+        const size = room?.size;
+        //to make user leave room in db, need to know he is the only one in,
+        //and make sure that, he is in the room 
+        if (size === 1 && room) {
+          const iterator = room?.values();
+          if (room && client.id === iterator?.next().value) {
+            const room = await this.roomsService.getRoom(key);
+            if (room)
+              this.roomsService.deleteRoom(key);
+          }
         }
       });
     });
@@ -661,7 +669,17 @@ export class SocketEvents {
       }
       games = games.filter(g => g.id !== game?.id);
     }
-    this.mapUserInGame.delete(client.id);
+    else {
+      const clientId = client.id;
+      const map = this.mapUserInGame
+      for (let [key, value] of map.entries()) {
+        if (key === clientId) {
+          const user = await this.userService.findUsersById(value);
+          this.server.emit("user_leave_room", { username: user?.username });
+        }
+      }
+      map.delete(client.id);
+    }
   }
 
   public isUserConnected(id: string) {
@@ -784,7 +802,8 @@ export class SocketEvents {
     } else {
       console.log(typeof data.roomId)
       await client.join(data.roomId);
-      this.roomsService.updateRoomReady(data.roomId, false, true, true)
+      this.roomsService.updateRoomReady(data.roomId, false, true, true);
+      this.roomsService.updateRoomTypeGame(data.roomId, true, true, false);
       this.mapUserInGame.set(client.id, userId);
       if (room && room.private === true) {
         const result: boolean = this.checkIfUserFound(room, client.id);
