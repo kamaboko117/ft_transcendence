@@ -328,10 +328,7 @@ export default function Game(props: {
 
   const handleGameStart = async () => {
     if (socketService.socket) {
-      console.log("game start HANDL:E");
       await gameService.onGameStart(socketService.socket, (data: any) => {
-        console.log("data");
-        console.log(data);
         setSide(data.side);
         setIsGameStarted(true);
         console.log("start");
@@ -372,6 +369,7 @@ export default function Game(props: {
         isGameStarted={isGameStarted}
         powerUpList={powerUpList}
         side={side}
+        roomName={props.roomName}
       />
     </>
   );
