@@ -82,7 +82,8 @@ export class RoomsService {
           .where('uid = :uid', { uid: uid })
           .execute();
       }
-    } else if (p2) {
+    }
+    if (p2) {
       if (custom === true) {
         await this.roomRepository.createQueryBuilder()
           .update(Room)

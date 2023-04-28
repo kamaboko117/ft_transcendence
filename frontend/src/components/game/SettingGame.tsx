@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import gameService from "../../services/gameService";
 import { FetchError } from "../FetchError";
 import ActivePowerUpsList from "./ActivePowerUpsList";
+import { useParams } from "react-router-dom";
 
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
@@ -70,6 +71,7 @@ const ButtonRdy = (props: {
   useEffect(() => {
     props.usrSocket.on("updateUserRdy", () => {
       props.setRdy(false);
+      props.setCustom(false);
     });
     return () => {
       props.usrSocket.off("updateUserRdy");
@@ -128,6 +130,10 @@ const SettingGame = (props: {
   const [usr1, setUsr1] = useState<string>("");
   const [usr2, setUsr2] = useState<string>("");
   const [errorText, setErrorText] = useState<string>("");
+  const url = useParams().id as string;
+  console.log(useParams())
+  //console.log(useParams())
+  //console.log(url)
   useEffect(() => {
     console.log(props.id);
     console.log(props.socketService.socket);
@@ -148,6 +154,8 @@ const SettingGame = (props: {
       };
       game();
       console.log("joined from game component");
+      console.log("url")
+      console.log(url)
     }
     console.log("Game room mounting");
     return () => {
@@ -156,7 +164,7 @@ const SettingGame = (props: {
       props.socketService.socket?.off("join_game_success");
       props.socketService.socket?.off("join_game_error");
     };
-  }, [props.socketService.socket]);
+  }, [props.socketService.socket, url]);
 
   useEffect(() => {
     props.socketService.socket.on(
@@ -174,7 +182,7 @@ const SettingGame = (props: {
     return () => {
       props.socketService.socket?.off("user_leave_room");
     };
-  }, [usr1, usr2]);
+  }, [usr1, usr2, url]);
 
   const [custom, setCustom] = useState<boolean>(false);
   const [rdy, setRdy] = useState<boolean>(false);
