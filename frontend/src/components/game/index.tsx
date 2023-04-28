@@ -311,7 +311,7 @@ export default function Game(props: {
         if (!ctx) return;
         render(ctx, player1, player2);
       }
-      canvas.addEventListener("mousemove", movePaddle);
+      window.addEventListener("mousemove", movePaddle);
       setIntervalID(setInterval(game, 1000 / FPS));
       handleReceivedUpdate();
     }
@@ -320,7 +320,7 @@ export default function Game(props: {
       if (intervalID) {
         clearInterval(intervalID);
       }
-      canvas?.removeEventListener("mousemove", movePaddle);
+      window?.removeEventListener("mousemove", movePaddle);
       socketService.socket?.off("on_game_update");
       socketService.socket?.off("onGameStart");
     };
@@ -328,10 +328,7 @@ export default function Game(props: {
 
   const handleGameStart = async () => {
     if (socketService.socket) {
-      console.log("game start HANDL:E");
       await gameService.onGameStart(socketService.socket, (data: any) => {
-        console.log("data");
-        console.log(data);
         setSide(data.side);
         setIsGameStarted(true);
         console.log("start");
@@ -372,6 +369,7 @@ export default function Game(props: {
         isGameStarted={isGameStarted}
         powerUpList={powerUpList}
         side={side}
+        roomName={props.roomName}
       />
     </>
   );
