@@ -67,9 +67,11 @@ export default function MatchmakingPage() {
     });
   };
 
+
+  //I force queue out the user in the situations I throw the toast so they can requeue without issue
   const toastFailedQueue = () => {
 
-    toast("🦄 Matchmaking failed! \n Please ensure you're not already in a queue or a game", {
+    toast("🦄 Matchmaking failed due to already being in queue! \n You've been queued out, please try the matchmaking again", {
       position: "top-right",
       toastId: "toastFailedQueue",
       autoClose: 5000,
