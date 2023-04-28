@@ -43,7 +43,6 @@ services:
       - ft_transcendence
     expose:
       - "5173"
-      - "5174"
     volumes:
       - ./frontend:/var/www/html
       - ./frontend/public/upload_avatar:/var/www/html/public/upload_avatar
@@ -128,7 +127,6 @@ services:
       - nginx:/etc/nginx/:rw
     ports:
       - "4000:443"
-      - "5174:5174"
     depends_on:
       - frontend_tr
       - backend

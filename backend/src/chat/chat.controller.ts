@@ -1,4 +1,4 @@
-import { Controller, Request, Query, Get, Post, Body, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Request, Query, Get, Post, Body, HttpException, HttpStatus, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { InformationChat, TokenUser, DbChat } from './chat.interface';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { PswChat } from './psw-chat.dto';
@@ -17,20 +17,19 @@ type Channel_ret = {
 
 @Controller('chat')
 export class ChatController {
-    constructor(/*private chatGateway: ChatGateway, */private chatService: ChatService,
+    constructor(private chatService: ChatService,
         private userService: UsersService) { }
 
     /* Get part */
     @UseGuards(JwtGuard)
     @Get('public')
-    getAllPublic(/*@Request() req: any*/): Promise<InformationChat[]> {
+    getAllPublic(): Promise<InformationChat[]> {
         return (this.chatService.getAllPublic());
     }
 
     @UseGuards(JwtGuard)
     @Get('private')
-    async getAllPrivate(@Request() req: any/*,
-        @Query('id') id: Readonly<string>*/): Promise<InformationChat[]> {
+    async getAllPrivate(@Request() req: any): Promise<InformationChat[]> {
         const user: TokenUser = req.user;
         return (await this.chatService.getAllPrivate(user.userID));
     }
@@ -63,7 +62,7 @@ export class ChatController {
     }
 
     /* find and create if needed a private message */
-    async findPm(user_id: number, id: string): Promise<string> {
+    private async findPm(user_id: number, id: string): Promise<string> {
         await this.chatService.findDuplicateAndDelete(String(user_id));
         await this.chatService.findDuplicateAndDelete(id);
         const list_user: Channel_ret | undefined
@@ -119,7 +118,7 @@ export class ChatController {
     */
     @Get('private-messages')
     async openPrivateMessage(@Request() req: any,
-        @Query('id') id: string): Promise<{ asw: string | null | undefined }> {
+        @Query('id', ParseIntPipe) id: string): Promise<{ asw: string | null | undefined }> {
         const user: TokenUser = req.user;
 
         if (user.userID === Number(id))

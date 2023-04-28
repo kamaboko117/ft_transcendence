@@ -5,8 +5,8 @@ function NewRoomModal(props: any) {
     const roomNameInputRef = useRef<HTMLInputElement>(null);
     const [errorCode, setErrorCode] = useState<number>(200);
 
-    async function AddRoomHandler(roomname: string) {
-        let room;
+    async function createRoomHandler(roomname: string) {
+        let room: string = "";
         await fetch("https://" + location.host + "/api/rooms/create", {
             method: "POST",
             body: JSON.stringify({
@@ -20,20 +20,34 @@ function NewRoomModal(props: any) {
                 setErrorCode(response.status);
             })
             .then((data) => {
-                if (data)
+                console.log(data);
+                if (data && data.err === "true") {
+                    setErrorCode(1);
+                    return ("");
+                }
+                if (data && data.err && data.err !== "true") {
+                    console.log("ddddddddddd")
+                    setErrorCode(2);
+                    return ("");
+                }
+                if (data && !data.err && data.uid) {
                     room = data.uid;
+                }
             }).catch(err => console.log(err));
         return room;
     }
 
     async function submitHandler(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        const roomName = roomNameInputRef.current!.value;
+        if (!roomNameInputRef.current) {
+            return;
+        }
+        const roomName = roomNameInputRef.current.value;
+        const room = await createRoomHandler(roomName);
 
-        const room = await AddRoomHandler(roomName);
         props.onSubmit(room);
-        props.onCancel();
-
+        if (room && room != "")
+            props.onCancel();
     }
 
     function cancelHandler() {
@@ -42,18 +56,21 @@ function NewRoomModal(props: any) {
 
     return (
         <>
-            {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}
+            {errorCode && errorCode >= 401 && <FetchError code={errorCode} />}
             <div className='modal'>
                 <form onSubmit={submitHandler}>
-                    <p>Create new room</p>
+                    <p style={{ "color": "black" }}>Create new room</p>
                     <input
                         type="text"
                         placeholder="room name"
                         ref={roomNameInputRef}
                     />
                     <button className="btn" type="submit">Create</button>
-                    <button className="btn btn--alt" onClick={cancelHandler}>Cancel</button>
+                    <button className="btn btn-second" onClick={cancelHandler}>Cancel</button>
                 </form>
+                {errorCode === 1 && <p style={{ "color": "red" }}>room name length too big, too little, or use alpha-numeric name format</p>}
+                {errorCode === 2 && <p style={{ "color": "red" }}>You are already in a game.</p>}
+                {errorCode === 400 && <p style={{ "color": "red" }}>Please enter a correct name format, at least 3 characters</p>}
             </div>
         </>
     );

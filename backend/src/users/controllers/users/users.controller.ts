@@ -23,6 +23,9 @@ import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import * as bcrypt from 'bcrypt';
+//convert into promise
+import { promisify } from "util"; 'util';
+const sizeOf = promisify(require('image-size'));
 
 @Controller("users")
 export class UsersController {
@@ -117,29 +120,23 @@ export class UsersController {
     @Public()
     @UseGuards(FakeAuthGuard)
     @Get('fake-login')
-    async fakeLogin(@Request() req: any, @Res({ passthrough: true }) response: any) {
+    async fakeLogin(@Request() req: any) {
         let user: TokenUser = req.user;
         user.fa_code = "";
         const access_token = await this.authService.login(user);
-        const refresh = await this.authService.refresh(user);
 
-        response.cookie('refresh_token', refresh.refresh_token,
-            {
-                maxAge: 300000,
-                httpOnly: true,
-                sameSite: 'Strict',
-            });
         return ({
             token: access_token, user_id: req.user.userID,
             username: user.username, fa: user.fa
         });
     }
 
-    checkUpdateUserError(ret_user: any, ret_user2: any,
-        body: any) {
+    private async checkUpdateUserError(ret_user: any, ret_user2: any,
+        body: any, file: Express.Multer.File | undefined) {
         let err: string[] = [];
         const regex2 = /^[\w\d]{3,}$/;
         const regexRet2 = regex2.test(body.username);
+        let dimensions;
 
         if (24 < body.username.length)
             err.push("Username is too long");
@@ -155,6 +152,13 @@ export class UsersController {
         }
         if (regexRet2 === false)
             err.push("Username format is wrong, please use alphabet and numerics values");
+
+        if (file)
+            dimensions = await sizeOf(file.path);
+        if (dimensions && typeof dimensions != "undefined" && 61 < dimensions.width)
+            err.push("Image size width must be below 60px.");
+        if (dimensions && typeof dimensions != "undefined" && 61 < dimensions.height)
+            err.push("Image size height must be below 60px.");
         return (err);
     }
 
@@ -170,9 +174,10 @@ export class UsersController {
         let user: TokenUser = req.user;
         const ret_user = await this.userService.findUserByName(body.username);
         let ret_user2 = await this.userService.findUsersById(user.userID);
+
         //check errors
-        let retErr = this.checkUpdateUserError(ret_user,
-            ret_user2, body);
+        let retErr = await this.checkUpdateUserError(ret_user,
+            ret_user2, body, file);
 
         if (retErr.length != 0)
             return ({ valid: false, err: retErr });
@@ -226,8 +231,8 @@ export class UsersController {
         const ret_user = await this.userService.getUserProfile(user.userID);
         const ret_user2 = await this.userService.findUserByName(body.username);
 
-        let retErr = this.checkUpdateUserError(ret_user2,
-            ret_user, body);
+        let retErr = await this.checkUpdateUserError(ret_user2,
+            ret_user, body, file);
 
         if (retErr.length != 0)
             return ({ valid: false, err: retErr });
@@ -328,6 +333,59 @@ export class UsersController {
         return (ret_user);
     }
 
+    @Get('get-victory-nb')
+    async getNbVictory(@Request() req: any) {
+        const user: TokenUser = req.user;
+        const ret_nb = await this.userService.getVictoryNb(user.userID);
+        const rankDbByWin = await this.userService.getRankUserGlobalWin(user.userID);
+        const rankByRankUser = await this.userService.getRankUserByRank(user.userID);
+
+        return ({nb: ret_nb, rankDbByWin, rankByRankUser});
+    }
+
+    @Get('get-victory-nb-other/:id')
+    async getNbVictoryOther(@Param('id', ParseIntPipe) id: number) {
+        const ret_nb = await this.userService.getVictoryNb(id);
+        const rankDbByWin = await this.userService.getRankUserGlobalWin(id);
+        const rankByRankUser = await this.userService.getRankUserByRank(id);
+
+        return ({nb: ret_nb, rankDbByWin, rankByRankUser});
+    }
+
+    @Get('get-games-nb-other/:id')
+    async getNbGamesOther(@Param('id', ParseIntPipe) id: number) {
+        const ret_nb = await this.userService.getGamesNb(id);
+        return (ret_nb);
+    }
+
+
+    @Get('get-games-nb')
+    async getNbGames(@Request() req: any) {
+        const user: TokenUser = req.user;
+        const ret_nb = await this.userService.getGamesNb(user.userID);
+        return (ret_nb);
+    }
+
+    @Get('get_raw_mh')
+    async getMHRaw(@Request() req: any) {
+        const user: TokenUser = req.user;
+        const ret_raw = await this.userService.getRawMH(user.userID);
+        return (ret_raw);
+    }
+
+    @Get('get_raw_mh_user/:id')
+    async getMHRawTwo(@Param('id', ParseIntPipe) id: number) {
+        const ret_raw = await this.userService.getRawMH(id);
+        return (ret_raw);
+    }
+
+    @Get('updateHistory')
+    async updateHistoryfunc() {
+        // this.userService.updateHistory('Simple', 2988219, 74133, 2988219);
+    }
+
+
+
     /* 0 = user not found */
     /* 1 = already added in friend list */
     /* 2 = user is self */
@@ -413,18 +471,11 @@ export class UsersController {
     @Public()
     @UseGuards(CustomAuthGuard)
     @Post('login')
-    async login(@Request() req: any, @Res({ passthrough: true }) response: any) {
+    async login(@Request() req: any) {
         let user: TokenUser = req.user;
         user.fa_code = "";
         const access_token = await this.authService.login(user);
-        const refresh = await this.authService.refresh(user);
 
-        response.cookie('refresh_token', refresh.refresh_token,
-            {
-                maxAge: 300000,
-                httpOnly: true,
-                sameSite: 'Strict',
-            });
         return ({
             token: access_token, user_id: req.user.userID,
             username: user.username, fa: user.fa
@@ -436,13 +487,28 @@ export class UsersController {
     createUsers(@Body() createUserDto: CreateUserDto) {
         return this.userService.createUser(createUserDto);
     }
+    @Get('achiv')
+    async achiv(@Request() req: any) {
+        let user: TokenUser = req.user;
+        //await this.userService.updateAchive(74133);
+        const resAchivement = await this.userService.getAchivementById(user.userID);
+        return (resAchivement);
+    }
+
+    @Get('achiv-other/:id')
+    async achivOther(@Param('id', ParseIntPipe) id: number) {
+        //await this.userService.updateAchive(id);
+        const resAchivement = await this.userService.getAchivementById(id);
+        return (resAchivement);
+    }
 
     @Get(':id')
     async findUsersById(@Param('id', ParseIntPipe) id: number) {
         const user = await this.userService.findUsersById(id);
-
         if (!user)
             return ({ userID: 0, username: "", avatarPath: null, sstat: {} });
         return (user)
     }
+
+
 }

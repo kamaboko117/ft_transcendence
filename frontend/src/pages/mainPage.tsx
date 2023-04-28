@@ -4,11 +4,12 @@ import { LoginButton, FakeLoginButton } from "../components/buttons/buttons";
 import UserContext, { UsernameSet } from "../contexts/UserContext";
 /* load list user block and friend */
 import { LoadUserGlobal } from '../contexts/DisplayChatContext';
+import randomstring from 'randomstring';
 
 const client_id = import.meta.env.VITE_APP_ID;
 const app_uri = import.meta.env.VITE_APP_URI;
 const redirect_uri = app_uri + "/validate";
-const state = "pouet2";
+const state: string = randomstring.generate({charset: 'alphabetic'});
 const loginUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=${redirect_uri}&response_type=code&scope=public&state=${state}'`;
 
 function MainPage(props: {
@@ -25,6 +26,7 @@ function MainPage(props: {
         <LoadUserGlobal jwt={props.jwt} />
         <img
           src='./transcendence.png'
+          srcSet='./transcendence_3.png 101w, ./transcendence_2.png 203w, ./transcendence.png 406w,'
           alt="transcendence picture"
           className='transcendence'
         />
@@ -36,6 +38,7 @@ function MainPage(props: {
     <div className="splash_middle">
       <img className='transcendence'
         src='./transcendence.png'
+        srcSet='./transcendence_3.png 101w, ./transcendence_2.png 203w, ./transcendence.png 406w,'
         alt="transcendence picture"
       />
       <div className="splash_content">

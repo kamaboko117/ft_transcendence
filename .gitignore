@@ -3,3 +3,4 @@
 .vscode
 requirements/backend/srcs/dist/**
 backend/dist/*
+.nfs*

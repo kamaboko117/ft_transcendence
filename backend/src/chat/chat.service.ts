@@ -145,19 +145,14 @@ export class ChatService {
     /* Create private message part */
     async createPrivateMessage(userOne: Readonly<number>,
         userTwo: Readonly<string>): Promise<string> {
-        /*let newChat: {
-            id: number, name: string, accesstype: string
-        } = {
-            id: userOne + Number(userTwo),
-            name: String(userOne + userTwo),
-            accesstype: '4'
-        };*/
         /* create Private message channel */
+        const concat = String(userOne).concat(userTwo);
+
         await this.chatsRepository.createQueryBuilder()
             .insert().into(Channel)
             .values({
-                id: String(userOne + userTwo),
-                name: String(userOne + userTwo),
+                id: concat,
+                name: concat,
                 accesstype: '4'
             })
             .execute();
@@ -165,15 +160,15 @@ export class ChatService {
         await this.listUserRepository.createQueryBuilder()
             .insert().into(ListUser)
             .values([
-                { user_id: userOne, chatid: String(userOne + userTwo) }
+                { user_id: userOne, chatid: concat }
             ]).execute();
         /* insert second user */
         await this.listUserRepository.createQueryBuilder()
             .insert().into(ListUser)
             .values([
-                { user_id: Number(userTwo), chatid: String(userOne + userTwo) }
+                { user_id: Number(userTwo), chatid: concat }
             ]).execute();
-        return (String(userOne) + userTwo);
+        return (concat);
     }
     /* END OF PRIVATE  */
 
@@ -283,8 +278,8 @@ export class ChatService {
         const fl = this.blFrRepository.createQueryBuilder("t2").subQuery()
             .from(BlackFriendList, "t2")
             .select(["focus_id", "type_list"])
-            .where("owner_id = :ownerId"/*, { ownerId: userId }*/)
-            .andWhere("type_list = :type2"/*, { type2: 0 }*/)
+            .where("owner_id = :ownerId")
+            .andWhere("type_list = :type2")
 
         const arr: any = await this.listUserRepository
             .createQueryBuilder("list_user")

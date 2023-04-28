@@ -48,8 +48,7 @@ type Match = {
 })
 
 export class MatchMakingGateway
-  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
-{
+  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   @WebSocketServer() server: Server;
   afterInit(server: Server) {
     console.log('Matchmaking Gateway initialized');

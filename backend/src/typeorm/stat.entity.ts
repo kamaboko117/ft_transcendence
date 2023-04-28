@@ -7,24 +7,17 @@ export class Stat {
 	id: number;
 
 	@Column()
-	victory: number;
-
-	@Column()
-	defeat: number;
-
-	@Column()
-	nb_games: number;
-
-	@Column()
 	level: number;
 
 	@Column()
 	rank: number;
+
+	@Column({default: 0})
+	consecutive: number;
 
 	@OneToOne(() => User, (user) => user.sstat, { nullable: false, cascade: true, onDelete: 'CASCADE' })
 	@JoinColumn({name: 'user_id'})
 	user: User;
 	@Column({nullable: false})
 	user_id: string
-
 }

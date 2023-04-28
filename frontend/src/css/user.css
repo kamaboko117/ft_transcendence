@@ -23,18 +23,96 @@ label.userInfo {
     display: inline-flex;
 }
 
+.userInfoClick>img {
+    max-width: 60px;
+    margin: auto;
+}
+
 img.avatar {
-    height: 50%;
-    max-width: 200px;
+    height: auto;
+    max-width: 100px;
+    width: 100%;
 }
 
 img.avatarList {
     align-self: flex-start;
-    max-width: 50px;
+    max-width: 60px;
     width: 100%;
     margin: auto
 }
 
 .element>.user {
     background-color: coral;
+}
+
+.profile-table {
+    margin: auto;
+}
+
+.profile-table-2 {
+    margin: auto;
+    margin-top: 15px;
+}
+
+ul {
+    list-style-type: none;
+}
+
+.status {
+    display: flex;
+}
+
+.status>span {
+    margin-left: 15px;
+}
+
+@media screen and (max-width: 600px) {
+    form>input {
+        width: 95%;
+    }
+
+    h1 {
+        font-size: 2em;
+        margin-left: 15px;
+    }
+
+    .profile-table {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 200px) {
+    h1 {
+        font-size: 1em;
+    }
+
+    ul {
+        padding: 0;
+    }
+
+    th,
+    td {
+        font-size: 0.5em;
+    }
+}
+
+@media screen and (max-width: 110px) {
+    h1 {
+        font-size: 0.3em;
+    }
+
+    ul {
+        padding: 0;
+    }
+
+    th,
+    td,
+    li,
+    label {
+        font-size: 0.4em;
+    }
+
+    .userInfoClick {
+        width: 100% !important;
+    }
 }

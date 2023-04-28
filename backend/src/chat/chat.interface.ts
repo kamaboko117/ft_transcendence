@@ -1,7 +1,6 @@
 export interface InformationChat {
     channel_id: string,
     channel_name: string,
-    //owner: number,
     User_username: string,
     channel_accesstype: string,
 }
@@ -22,7 +21,7 @@ export interface Chat {
     password: string,
     lstMsg: Array<{
         user_id: number,
-        username: string, //à enlever pour un find dans repository
+        username: string
         content: string
     }>,
     lstUsr: Map<number | string, string>,

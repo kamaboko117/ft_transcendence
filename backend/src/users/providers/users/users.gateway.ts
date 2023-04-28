@@ -31,8 +31,6 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const mapUserInGame = this.socketEvents.getMap();
 
     for (let value of mapUserInGame.values()) {
-      console.log(value)
-      console.log(data.userId)
       if (Number(value) === data.userId) {
         //check if in game
         return ({ code: 2 });
@@ -66,19 +64,6 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(JwtGuard)
   async handleDisconnect(client: Socket) {
-    /*console.log("USER GATEWAY disconnect client id: " + client.id);
-    const bearer = client.handshake.headers.authorization;
-    console.log(bearer)
-    if (bearer) {
-      const user: any = await this.authService.verifyToken(bearer);
-      console.log(user)
-      if (!user)
-        return;
-      this.mapSocket.forEach((value, key) => {
-        this.server.to(key).emit("currentStatus", {
-          code: 0, userId: user.userID
-        });
-      })*/
     let found: undefined | string = undefined
     for (let [key, value] of this.mapSocket.entries()) {
       if (key === client.id) {
@@ -93,9 +78,6 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
       })
       this.mapSocket.delete(client.id);
     }
-    //if (user)
-
-    //}
   }
 
   getMap() {
