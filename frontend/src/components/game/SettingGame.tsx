@@ -125,13 +125,14 @@ const SettingGame = (props: {
   /*setTypeGame: React.Dispatch<React.SetStateAction<string>>;*/
   powerUpList: IPowerUp[];
   side: number;
+  roomName: string;
 }) => {
   const [errorCode, setErrorCode] = useState<number>(200);
   const [usr1, setUsr1] = useState<string>("");
   const [usr2, setUsr2] = useState<string>("");
   const [errorText, setErrorText] = useState<string>("");
   const url = useParams().id as string;
-  console.log(useParams())
+  // console.log(useParams())
   //console.log(useParams())
   //console.log(url)
   useEffect(() => {
@@ -191,7 +192,7 @@ const SettingGame = (props: {
       <>
         {errorCode >= 400 && <FetchError code={errorCode} />}
         <div className="createParty">
-          <h1 className="room_name">Game</h1>
+          <h1 className="room_name">{props.roomName}</h1>
           {errorCode != 1 ? (
             <h1>waiting for opponent</h1>
           ) : (
@@ -228,7 +229,7 @@ const SettingGame = (props: {
       <>
         {errorCode >= 400 && <FetchError code={errorCode} />}
         <div className="game_container">
-          <h1 className="room_name">Game</h1>
+          <h1 className="room_name">{props.roomName}</h1>
           <div className="game">
             <canvas
               ref={props.canvasRef}
