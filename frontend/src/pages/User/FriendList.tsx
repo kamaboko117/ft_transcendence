@@ -23,7 +23,7 @@ type typeFlBl = {
 	User_avatarPath: string | null
 }
 
-export const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
+export const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	type: number,
 	userInfo: typeUserInfo,
@@ -107,14 +107,12 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
 			setUserInfo({ username: name, id: 0, bl: null, fl: null, avatarPath: null });
 	}
 	else {
-		//setUserId(0);
 		setUserInfo({ username: "", id: 0, bl: null, fl: null, avatarPath: null })
 	}
-	//setTop(parentNode.offsetTop);
 }
 
 type typeButtonsInfo = {
-	jwt: string,
+	jwt: string | null,
 	userInfo: typeUserInfo
 	setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
@@ -194,7 +192,7 @@ const PrintArray = (props: { type: string, lstUserGlobal: Array<typeFlBl> }) => 
 
 function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 	setLstUserGlobal: React.Dispatch<React.SetStateAction<Array<typeFlBl>>>,
-	jwt: string, value: string | null,
+	jwt: string | null, value: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	lstUserGlobal: Array<typeFlBl>) {
 	e.preventDefault();
@@ -223,7 +221,7 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 }
 
 export const Display = (props: {
-	jwt: string, lstUserGlobal: Array<typeFlBl>,
+	jwt: string | null, lstUserGlobal: Array<typeFlBl>,
 	userInfo: typeUserInfo,
 	setUserInfo: React.Dispatch<React.SetStateAction<typeUserInfo>>,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
@@ -244,7 +242,9 @@ export const Display = (props: {
 		</Element>
 		<div className={chooseClassName} style={{ position: "relative" }}>
 			<label className="userInfo">{props.userInfo.username}</label>
-			<img src={"/" + props.userInfo.avatarPath} className="avatarList"
+			<img src={"/" + props.userInfo.avatarPath}
+				srcSet={"/" + props.userInfo.avatarPath + ' 2x'}
+				className="avatarList"
 				alt={"avatar " + props.userInfo.username}
 				onError={handleImgError}
 			/>
@@ -255,7 +255,7 @@ export const Display = (props: {
 	)
 }
 
-export default function FriendList(props: { jwt: string }) {
+export default function FriendList(props: { jwt: string | null }) {
 	const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
 	const [userInfo, setUserInfo] = useState<typeUserInfo>({
 		username: "", id: 0, fl: null, bl: null, avatarPath: null

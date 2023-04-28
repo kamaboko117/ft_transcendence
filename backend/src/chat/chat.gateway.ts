@@ -35,7 +35,6 @@ class SendMsg {
   middleware nestjs socket
   https://github.com/nestjs/nest/issues/637
   avec react context socket query token
-  BONUS part https://dev.to/bravemaster619/how-to-use-socket-io-client-correctly-in-react-app-o65
 */
 
 @WebSocketGateway({
@@ -46,7 +45,6 @@ class SendMsg {
 
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
-  //afterInit(server: Server) { }
   @InjectRepository(Channel)
   private chatsRepository: Repository<Channel>;
   @InjectRepository(ListUser)
@@ -79,7 +77,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         id: data.id
       }
     });
-    //const getName = channel?.name;
+
     if (typeof channel != "undefined" && channel != null) {
       const getUser: any = await this.chatService.getUserOnChannel(data.id, user.userID);
       if (channel.accesstype === '4' && !getUser)
@@ -99,7 +97,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /* search list admin, and set one as new owner*/
-  async searchAndSetAdministratorsChannel(id: string) {
+  private async searchAndSetAdministratorsChannel(id: string) {
     let listUser: ListUser[] = await this.listUserRepository.createQueryBuilder("list_user")
       .select(["list_user.id", "list_user.user_id"])
       .where("list_user.chatid = :id")
@@ -130,7 +128,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /* Delete current owner, and try to set a new one */
-  async setNewOwner(userId: number, id: string, ownerId: string) {
+  private async setNewOwner(userId: number, id: string, ownerId: string) {
     const runner = this.dataSource.createQueryRunner();
 
     await runner.connect();
@@ -180,7 +178,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return ("No user found");
     const channel = await this.setNewOwner(user.userID, data.id, getUser.user_id);
     const [listUsr, count]: any = await this.listUserRepository.findAndCountBy({ chatid: data.id });
-    //const getName = channel?.name;
     socket.leave(data.id);
     this.server.to(data.id).emit("updateListChat", true);
     if (channel != undefined && channel != null && count === 0)
@@ -206,6 +203,24 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  private ret_error(data: any, user: TokenUser, getUser: any, txt: string) {
+    return ({
+      room: data.id,
+      user_id: user.userID,
+      user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
+      content: txt
+    });
+  }
+
+  private sendMsg(socket: any, data: SendMsg, user: TokenUser, getUser: any, txt: string) {
+    socket.to(data.id).emit(txt, {
+      room: data.id,
+      user_id: user.userID,
+      user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
+      content: data.content
+    });
+  }
+
   @UseGuards(JwtGuard)
   @SubscribeMessage('sendMsg')
   async newPostChat(@ConnectedSocket() socket: any,
@@ -215,13 +230,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (typeof user.userID != "number")
       return;
     const getUser = await this.chatService.getUserOnChannel(data.id, user.userID);
-    if (getUser === "Ban")
-      return ({
-        room: data.id,
-        user_id: user.userID,
-        user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
-        content: "You are banned from this channel"
-      });
+    if (typeof data.content != "string") {
+      return (this.ret_error(data, user, getUser, "Please send correct input type"));
+    }
+    if (getUser === "Ban") {
+      return (this.ret_error(data, user, getUser, "You are banned from this channel"));
+    }
     if (typeof getUser === "undefined" || getUser === null)
       return (undefined);
     const isMuted = await this.chatService.getUserMuted(data.id, user.userID);
@@ -242,25 +256,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         chatid: data.id
       }])
       .execute();
-
-    socket.to(data.id).emit("sendBackMsg", {
-      room: data.id,
-      user_id: user.userID,
-      user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
-      content: data.content
-    });
-    socket.to(data.id).emit("sendBackMsg2", {
-      room: data.id,
-      user_id: user.userID,
-      user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
-      content: data.content
-    });
+    this.sendMsg(socket, data, user, getUser, "sendBackMsg")
+    this.sendMsg(socket, data, user, getUser, "sendBackMsg2")
     return ({
       room: data.id,
       user_id: user.userID,
       user: { username: getUser.User_username, avatarPath: getUser.User_avatarPath },
       content: data.content
-    })
+    });
   }
 
   @UseGuards(JwtGuard)
@@ -268,11 +271,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const bearer = client.handshake.headers.authorization;
     if (bearer) {
       const user: any = await this.authService.verifyToken(bearer);
-      /*this.mapSocket.forEach((value, key) => {
-        this.server.to(key).emit("currentStatus", {
-          code: 1, userId: user.userID
-        });
-      })*/
       if (user)
         this.mapSocket.set(client.id, user.userID);
     }
@@ -283,11 +281,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const bearer = client.handshake.headers.authorization;
     if (bearer) {
       const user: any = await this.authService.verifyToken(bearer);
-      /*this.mapSocket.forEach((value, key) => {
-        this.server.to(key).emit("currentStatus", {
-          code: 0, userId: user.userID
-        });
-      })*/
       if (user)
         this.mapSocket.delete(client.id);
     }

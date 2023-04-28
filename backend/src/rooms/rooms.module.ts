@@ -6,11 +6,10 @@ import { Room } from 'src/typeorm/room.entity';
 import { UsersModule } from 'src/users/users.module';
 import { SocketModule } from 'src/socket/socket.module';
 import { SocketEvents } from 'src/socket/socketEvents';
-//import { Room } from 'src/typeorm';
 
 
 @Module({
-  imports: [forwardRef(() => SocketModule), TypeOrmModule.forFeature([Room])],
+  imports: [forwardRef(() => SocketModule), forwardRef(() => UsersModule), TypeOrmModule.forFeature([Room])],
   controllers: [RoomsController],
   providers: [RoomsService],
   exports: [RoomsService]

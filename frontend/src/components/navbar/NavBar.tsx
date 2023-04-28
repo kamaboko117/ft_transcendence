@@ -39,7 +39,6 @@ export default function NavBar(props: {
 				<NavBarLink to="/">Home</NavBarLink>
 				<NavBarLink to="/FriendList">FriendList</NavBarLink>
 				<NavBarLink to="/BlackList">BlackList</NavBarLink>
-				<NavBarLink to="/Setting">Setting</NavBarLink>
 				<NavBarLink to="/channels">Channels</NavBarLink>
 				<NavBarLink to="/matchmaking">Matchmaking</NavBarLink>
 				<NavBarLink to="/play">Play</NavBarLink>
