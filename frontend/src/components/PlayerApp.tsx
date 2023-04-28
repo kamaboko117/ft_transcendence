@@ -62,8 +62,8 @@ const PlayerApp = () => {
           onEnded={handleEnd}
           onClickPrevious={handleClickPrevious}
           onPlayError	= {e => console.log("onPlayError", e)}
-          autoPlay={true}
-          //autoPlay works; logging in/logging out resets it
+          //autoPlay={true}
+          //autoPlay works; logging in/logging out resets it but browsers show a warning they don't like an autoplay
           // Try other props!
         />
       </div>
