@@ -311,7 +311,7 @@ export default function Game(props: {
         if (!ctx) return;
         render(ctx, player1, player2);
       }
-      canvas.addEventListener("mousemove", movePaddle);
+      window.addEventListener("mousemove", movePaddle);
       setIntervalID(setInterval(game, 1000 / FPS));
       handleReceivedUpdate();
     }
@@ -320,7 +320,7 @@ export default function Game(props: {
       if (intervalID) {
         clearInterval(intervalID);
       }
-      canvas?.removeEventListener("mousemove", movePaddle);
+      window?.removeEventListener("mousemove", movePaddle);
       socketService.socket?.off("on_game_update");
       socketService.socket?.off("onGameStart");
     };

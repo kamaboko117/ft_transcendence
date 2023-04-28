@@ -737,7 +737,6 @@ export class SocketEvents {
             .emit("user_leave_room", { username: userDb?.username });
         }
       }
-      console.log("J AI LEAVE LA GAME DEPUIS ON LEAVE GAME");
       client.leave(data.roomId);
       //this.mapUserInGame.delete(client.id);
 
