@@ -31,7 +31,7 @@ export default function ActivePowerUpsList(props: {
   return (
     <div className="game_powerups_container">
       <div className="game_powerups_container_text">Active Power Ups</div>
-      <div>
+      <div className="game_powerups_lists">
         Yours
         <div className="game_powerups_list">
           {alliedPowerUps.map((powerUp) => (
