@@ -110,6 +110,7 @@ button:focus-visible {
 .btn-second:hover {
   background-color: #f8dae9;
 }
+
 /*
 .card {
   background-color: white;
@@ -186,7 +187,7 @@ button:focus-visible {
   text-align: center;
   /*width: 30rem;*/
   max-width: 500px;
-  
+
   z-index: 3;
   position: fixed;
   /*top: 20vh;*/
@@ -240,7 +241,8 @@ button:focus-visible {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  align-items: left;
+  /*align-items: left;*/
+  justify-content: left;
   background-color: #333333;
   border-radius: 4px;
   padding: 1rem;
@@ -279,7 +281,7 @@ button:focus-visible {
   width: 2rem;
   height: 2rem;
   margin: 0rem;
-  background-color:steelblue;
+  background-color: steelblue;
   border-radius: 50%;
 }
 
@@ -297,6 +299,7 @@ button:focus-visible {
   .room_list {
     flex-direction: column;
   }
+
   .room_name {
     font-size: 1em;
   }
@@ -324,11 +327,13 @@ button:focus-visible {
   h6 {
     font-size: 1em;
   }
+
   .btn {
     padding: 5px 5px;
   }
 }
-  /*
+
+/*
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
