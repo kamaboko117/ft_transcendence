@@ -12,6 +12,10 @@ import {
 } from "@chakra-ui/react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import logo from "../assets/MMlogo.gif";
+import MMchallenger from "../assets/newchallenjour.jpg";
+import notmariodontsuemenintendo from "../assets/nostalgiamario.png";
+
 
 //import {MMClass} from "../components/matchmaking/matchmakingsocket";
 import { FetchError, header, headerPost } from "../components/FetchError";
@@ -162,20 +166,16 @@ export default function MatchmakingPage() {
                 ? "Finding a worthy challenger... Click again to cancel"
                 : "Play Pong!"}
             </Box>
-            {Queue && (
-              <Box>
-                <Spinner
-                  thickness="5px"
-                  speed="0.40s"
-                  emptyColor="red"
-                  color="blue"
-                  size="xl"
-                  boxSize={30}
-                />
-              </Box>
-            )}
           </Flex>
         </Button>
+        <br></br>
+        {Queue && (
+                <div>
+                 <img style={{ backgroundColor: 'transparent', alignSelf: 'center', width: 50, height: 50 }} src={notmariodontsuemenintendo} alt="loading..." />
+                 <img style={{ alignSelf: 'center', width: 50, height: 50 }} src={logo} alt="loading..." />
+                 <img style={{ alignSelf: 'center', width: 150, height: 50 }} src={MMchallenger} alt="loading..." />
+                </div>
+           )}
         <ToastContainer
           position="top-right"
           autoClose={5000}
