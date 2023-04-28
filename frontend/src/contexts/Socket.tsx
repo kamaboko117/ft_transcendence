@@ -36,7 +36,7 @@ export const SocketProvider = (props: { jwt: string | null, usrSocket: Socket<an
             });
         }
         return (() => {
-            props.usrSocket?.off('inviteGame');
+            //props.usrSocket?.off('inviteGame');
             props.usrSocket?.off('exception');
             //if (props.usrSocket?.connected === true)
             //  props.usrSocket?.disconnect();
