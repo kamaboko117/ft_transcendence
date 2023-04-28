@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import gameService from "../../services/gameService";
 import { FetchError } from "../FetchError";
 import ActivePowerUpsList from "./ActivePowerUpsList";
+import { useParams } from "react-router-dom";
 
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
@@ -9,19 +10,20 @@ const CANVAS_HEIGHT = 400;
 const ButtonIsCustom = (props: {
   usrSocket,
   id: string,
-  setTypeGame: React.Dispatch<React.SetStateAction<string>>,
-  setRdy: React.Dispatch<React.SetStateAction<boolean>>
+  setRdy: React.Dispatch<React.SetStateAction<boolean>>,
+  custom: boolean,
+  setCustom: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
-  const [custom, setCustom] = useState<boolean>(false);
+  //const [custom, setCustom] = useState<boolean>(false);
   const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (e && e.target) setCustom((prev) => !prev);
+    if (e && e.target) props.setCustom((prev) => !prev);
   };
 
   useEffect(() => {
     props.usrSocket.on("updateTypeGameFromServer", (res: { type: boolean }) => {
-        props.setRdy(false);
-      setCustom(res.type);
-      props.setTypeGame("Custom");
+      props.setRdy(false);
+      props.setCustom(res.type);
+      console.log(res.type)
     });
     return () => {
       props.usrSocket.off("updateTypeGameFromServer");
@@ -30,16 +32,18 @@ const ButtonIsCustom = (props: {
   useEffect(() => {
     props.usrSocket.emit(
       "updateTypeGame",
-      { type: custom, roomId: props.id },
+      { type: props.custom, roomId: props.id },
       (res: { type: boolean }) => {
+        console.log(res.type)
         props.setRdy(false);
-        setCustom(res.type);
+        props.setCustom(res.type);
       }
     );
-  }, [custom]);
+  }, [props.custom]);
+
   return (
     <button onClick={handleRdy}>
-      {custom === false
+      {props.custom === false
         ? "Click to transform into custom game"
         : "Click to disable custom game"}
     </button>
@@ -52,7 +56,9 @@ const ButtonRdy = (props: {
   usr1: string,
   usr2: string,
   rdy: boolean,
-  setRdy: React.Dispatch<React.SetStateAction<boolean>>
+  setRdy: React.Dispatch<React.SetStateAction<boolean>>,
+  custom: boolean,
+  setCustom: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
   //const [rdy, setRdy] = useState<boolean>(false);
 
@@ -65,6 +71,7 @@ const ButtonRdy = (props: {
   useEffect(() => {
     props.usrSocket.on("updateUserRdy", () => {
       props.setRdy(false);
+      props.setCustom(false);
     });
     return () => {
       props.usrSocket.off("updateUserRdy");
@@ -77,6 +84,7 @@ const ButtonRdy = (props: {
       usr1: props.usr1,
       usr2: props.usr2,
       rdy: props.rdy,
+      custom: props.custom
     });
   }, [props.rdy]);
   return (
@@ -113,8 +121,8 @@ const SettingGame = (props: {
   id: string;
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   isGameStarted: boolean;
-  typeGame: string;
-  setTypeGame: React.Dispatch<React.SetStateAction<string>>;
+  /*typeGame: string;*/
+  /*setTypeGame: React.Dispatch<React.SetStateAction<string>>;*/
   powerUpList: IPowerUp[];
   side: number;
 }) => {
@@ -122,6 +130,10 @@ const SettingGame = (props: {
   const [usr1, setUsr1] = useState<string>("");
   const [usr2, setUsr2] = useState<string>("");
   const [errorText, setErrorText] = useState<string>("");
+  const url = useParams().id as string;
+  console.log(useParams())
+  //console.log(useParams())
+  //console.log(url)
   useEffect(() => {
     console.log(props.id);
     console.log(props.socketService.socket);
@@ -142,6 +154,8 @@ const SettingGame = (props: {
       };
       game();
       console.log("joined from game component");
+      console.log("url")
+      console.log(url)
     }
     console.log("Game room mounting");
     return () => {
@@ -150,7 +164,7 @@ const SettingGame = (props: {
       props.socketService.socket?.off("join_game_success");
       props.socketService.socket?.off("join_game_error");
     };
-  }, [props.socketService.socket]);
+  }, [props.socketService.socket, url]);
 
   useEffect(() => {
     props.socketService.socket.on(
@@ -168,7 +182,9 @@ const SettingGame = (props: {
     return () => {
       props.socketService.socket?.off("user_leave_room");
     };
-  }, [usr1, usr2]);
+  }, [usr1, usr2, url]);
+
+  const [custom, setCustom] = useState<boolean>(false);
   const [rdy, setRdy] = useState<boolean>(false);
   if (!props.isGameStarted) {
     return (
@@ -187,8 +203,9 @@ const SettingGame = (props: {
               <ButtonIsCustom
                 usrSocket={props.socketService.socket}
                 id={props.id}
-                setTypeGame={props.setTypeGame}
                 setRdy={setRdy}
+                custom={custom}
+                setCustom={setCustom}
               />
               <br />
               <ButtonRdy
@@ -198,6 +215,8 @@ const SettingGame = (props: {
                 usr2={usr2}
                 rdy={rdy}
                 setRdy={setRdy}
+                custom={custom}
+                setCustom={setCustom}
               />
             </>
           )}
