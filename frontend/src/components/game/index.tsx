@@ -37,11 +37,11 @@ export default function Game(props: {
     const ft_fetch = async () => {
       await fetch(
         "https://" +
-          location.host +
-          "/api/rooms/get?" +
-          new URLSearchParams({
-            id: props.id,
-          }),
+        location.host +
+        "/api/rooms/get?" +
+        new URLSearchParams({
+          id: props.id,
+        }),
         { headers: header(props.jwt) }
       )
         .then((res) => {
@@ -75,7 +75,7 @@ export default function Game(props: {
   const [intervalID, setIntervalID] = React.useState<number | null>(null);
   const [side, setSide] = React.useState(1);
   const [isGameStarted, setIsGameStarted] = React.useState(false);
-  const [typeGame, setTypeGame] = React.useState<string>("normal");
+  //const [typeGame, setTypeGame] = React.useState<string>("Classic");
   const [isGameEnded, setIsGameEnded] = React.useState(false);
   const [winner, setWinner] = React.useState<string>("");
   const [errorCode, setErrorCode] = React.useState<number>(200);
@@ -370,8 +370,6 @@ export default function Game(props: {
         socketService={socketService}
         canvasRef={canvasRef}
         isGameStarted={isGameStarted}
-        typeGame={typeGame}
-        setTypeGame={setTypeGame}
         powerUpList={powerUpList}
         side={side}
       />

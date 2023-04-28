@@ -21,7 +21,7 @@ export class RoomsService {
 
   createRoomPrivate(name: string) {
     const newRoom =
-      this.roomRepository.create({roomName: name, private: true});
+      this.roomRepository.create({ roomName: name, private: true });
     return this.roomRepository.save(newRoom);
   }
 
@@ -64,6 +64,39 @@ export class RoomsService {
         .set({ player_two_rdy: rdy })
         .where('uid = :uid', { uid: uid })
         .execute();
+    }
+  }
+
+  async updateRoomTypeGame(uid: string, p1: boolean, p2: boolean, custom: boolean) {
+    if (p1) {
+      if (custom === true) {
+        await this.roomRepository.createQueryBuilder()
+          .update(Room)
+          .set({ player_one_type_game: 'Custom' })
+          .where('uid = :uid', { uid: uid })
+          .execute();
+      } else if (custom === false) {
+        await this.roomRepository.createQueryBuilder()
+          .update(Room)
+          .set({ player_one_type_game: 'Classic' })
+          .where('uid = :uid', { uid: uid })
+          .execute();
+      }
+    }
+    if (p2) {
+      if (custom === true) {
+        await this.roomRepository.createQueryBuilder()
+          .update(Room)
+          .set({ player_two_type_game: 'Custom' })
+          .where('uid = :uid', { uid: uid })
+          .execute();
+      } else if (custom === false) {
+        await this.roomRepository.createQueryBuilder()
+          .update(Room)
+          .set({ player_two_type_game: 'Classic' })
+          .where('uid = :uid', { uid: uid })
+          .execute();
+      }
     }
   }
 
