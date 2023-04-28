@@ -440,7 +440,7 @@ const Chat = (props: { jwt: string }) => {
         hasPass.then(res => {
             setLoadPsw(res);
         }).catch(e => console.log(e));
-    }, []);
+    }, [id]);
     if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
     return (<BlockChat id={id} getLocation={getLocation}
