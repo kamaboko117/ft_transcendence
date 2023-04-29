@@ -336,6 +336,8 @@ export class ChatService {
         if (channel.password != '' && channel.password != null) {
             if (data.psw === "" || data.psw === null)
                 return (undefined)
+            if (!data.psw)
+                return (undefined)
             const comp = bcrypt.compareSync(data.psw, channel.password);
             if (comp === false)
                 return (undefined)
