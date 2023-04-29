@@ -24,7 +24,9 @@ import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import * as bcrypt from 'bcrypt';
 //convert into promise
-import { promisify } from "util"; 'util';
+import { promisify } from "util";
+import { unlink } from 'fs';
+
 const sizeOf = promisify(require('image-size'));
 
 @Controller("users")
@@ -137,7 +139,7 @@ export class UsersController {
         const regex2 = /^[\w\d]{3,}$/;
         const regexRet2 = regex2.test(body.username);
         let dimensions;
-
+            console.log(file)
         if (24 < body.username.length)
             err.push("Username is too long");
         if (body.username.length === 0)
@@ -155,10 +157,20 @@ export class UsersController {
 
         if (file)
             dimensions = await sizeOf(file.path);
-        if (dimensions && typeof dimensions != "undefined" && 61 < dimensions.width)
+        console.log(dimensions)
+        if (file && dimensions
+            && typeof dimensions != "undefined"
+            && 61 <= dimensions.width){
+            unlink(file.path, (res) => {console.log(res)} );
             err.push("Image size width must be below 60px.");
-        if (dimensions && typeof dimensions != "undefined" && 61 < dimensions.height)
+        }
+        if (file
+            && dimensions && typeof dimensions != "undefined"
+            && 61 <= dimensions.height)
+        {
+            unlink(file.path, (res) => {console.log(res)} );
             err.push("Image size height must be below 60px.");
+        }
         return (err);
     }
 
