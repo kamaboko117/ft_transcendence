@@ -81,7 +81,7 @@ th {
     background-color: crimson;
 }
 
-tr:hover {
+tbody > tr:hover {
 
     opacity: 0.9;
 }

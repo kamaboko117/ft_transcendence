@@ -252,18 +252,18 @@ const PostMsg = (props: typePostMsg) => {
                 setLstUserChat, navigate);
             if (cmdIsValid === false) {
                 props.usrSocket.emit('sendMsg', obj, (res) => {
-                    if (res.room === obj.id && obj.idBox === obj.id)
+                    if (res && res.room === obj.id && obj.idBox === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
-                    if (res.room === obj.id)
+                    if (res && res.room === obj.id)
                         setLstMsgPm((lstMsg) => [...lstMsg, res]);
                 });
             }
         }
         else {
             props.usrSocket.emit('sendMsg', obj, (res) => {
-                if (res.room === obj.id && obj.idBox === obj.id)
+                if (res && res.room === obj.id && obj.idBox === obj.id)
                     setLstMsgChat((lstMsg) => [...lstMsg, res]);
-                if (res.room === obj.id)
+                if (res && res.room === obj.id)
                     setLstMsgPm((lstMsg) => [...lstMsg, res]);
             });
         }
@@ -286,17 +286,17 @@ const PostMsg = (props: typePostMsg) => {
                     setLstUserChat, navigate);
                 if (cmdIsValid === false) {
                     props.usrSocket.emit('sendMsg', obj, (res) => {
-                        if (res.room === obj.id && obj.idBox === obj.id)
+                        if (res && res.room === obj.id && obj.idBox === obj.id)
                             setLstMsgChat((lstMsg) => [...lstMsg, res]);
-                        if (res.room === obj.id)
+                        if (res && res.room === obj.id)
                             setLstMsgPm((lstMsg) => [...lstMsg, res]);
                     });
                 }
             } else {
                 props.usrSocket.emit('sendMsg', obj, (res) => {
-                    if (res.room === obj.id && obj.idBox === obj.id)
+                    if (res && res.room === obj.id && obj.idBox === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
-                    if (res.room === obj.id)
+                    if (res && res.room === obj.id)
                         setLstMsgPm((lstMsg) => [...lstMsg, res]);
                 });
             }
@@ -362,7 +362,7 @@ const DiscussionBox = (props: {
             usrSocket?.emit("joinRoomChat", {
                 id: props.id,
             }, (res: any) => {
-                if (res.ban === true)
+                if (res && res.ban === true)
                     setOnline("Ban");
                 else {
                     if (res === true)
@@ -374,7 +374,7 @@ const DiscussionBox = (props: {
         }
         //listen to exception sent by backend
         usrSocket?.on('exception', (res) => {
-            if (res.status === "error" && res.message === "Token not valid")
+            if (res && res.status === "error" && res.message === "Token not valid")
                 props.setErrorCode(403);
             else
                 props.setErrorCode(500);
@@ -427,7 +427,7 @@ const DiscussionBox = (props: {
         online, usrSocket]);
     useEffect(() => {
         usrSocket?.on("sendBackMsg2", (res: any) => {
-            if (lstUserGlobal) {
+            if (lstUserGlobal && res) {
                 let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id && elem.bl === 1);
                 if (!found) {
                     if (res.room === props.id)
@@ -474,7 +474,8 @@ const updateChannel = (setChannel, setPm, jwt, setErrorCode) => {
                 return (res.json());
             setErrorCode(res.status);
         }).then(res => {
-            setChannel(res);
+            if (res)
+                setChannel(res);
         }).catch(e => console.log(e))
 }
 

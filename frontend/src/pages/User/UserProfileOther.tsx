@@ -217,7 +217,8 @@ const LoadAchivement = (props: {jwt: string | null, setErrorCode, id: string}) =
 					return(res.json())
 				props.setErrorCode(res.status);
 			}).then((res) => {
-				setList(res);
+				if (res)
+					setList(res);
 			})
 		}
 	}, [props.jwt])
@@ -268,11 +269,7 @@ const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | 
 				props.setErrorCode(res.status);
 			}).then((res) => {
 				if (res) {
-					console.log(res)
-					console.log("nb_g: " + nb_g);
-					//
 					setVC(Number(res.nb));
-					console.log("vc: " + vc)
 					setDf(nb_g - vc);
 					if (res.rankDbByWin)
 						setRank({
