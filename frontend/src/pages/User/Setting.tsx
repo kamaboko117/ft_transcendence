@@ -71,10 +71,11 @@ async function update(event: FormEvent<HTMLFormElement>, username: string | unde
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	setAvatarPath: React.Dispatch<React.SetStateAction<string | null>>,
-	setLstErr: React.Dispatch<React.SetStateAction<[]>>, userCtx) {
+	setLstErr: React.Dispatch<React.SetStateAction<[]>>, userCtx,
+	setTimer, timerOk: boolean) {
 	event.preventDefault();
 
-	if (!username)
+	if (!username || timerOk)
 		return ;
 	const formData = new FormData();
 	if (fileSet) {
@@ -105,6 +106,8 @@ async function update(event: FormEvent<HTMLFormElement>, username: string | unde
 					userId: userId
 				});
 				setLstErr([]);
+				setTimer(true);
+				setTimeout(() => setTimer(false), 3000);
 			}
 			else if (res.valid === false) {
 				setLstErr(res.err);
@@ -287,7 +290,8 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 	const [oldFa, setOldFa] = useState<boolean>(false);
 	const [file, setFile] = useState<File | undefined>();
 	const userCtx: any = useContext(UserContext);
-	const [username, setUsername] = useState<string | undefined>(undefined);
+	const [username, setUsername] = useState<string | undefined>("");
+	const [timerOk, setTimer] = useState<boolean>(false);
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -305,6 +309,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 					setUser(res);
 					setFA(res.fa);
 					setOldFa(res.fa);
+					setUsername(userCtx.getUsername());
 				}
 			}).catch(e => console.log(e));
 	}, []);
@@ -330,7 +335,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 					update(event, username,
 						user?.userID, file, FA, props.jwt,
 						setErrorCode, setAvatarPath, setLstErr,
-						userCtx)}>
+						userCtx, setTimer, timerOk)}>
 					<label>Username</label>
 					<input
 						type="text"
@@ -357,7 +362,8 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 						alt={"avatar " + user?.username}
 						onError={handleImgError}
 					/></>}
-					<input type="submit" value="Submit" />
+					{timerOk === false && <input type="submit" value="Submit" />}
+					{timerOk === true && <input type="submit" value="Updating again in 3 seconds..." />}
 				</form>
 				<ErrorSubmit lstErr={lstErr} />
 				{errorCode === 400
