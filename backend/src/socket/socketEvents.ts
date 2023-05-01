@@ -35,6 +35,16 @@ interface IPowerUp {
   cancelEffect: (dest: IGame | IPlayer) => void;
 }
 
+interface IGameSettings {
+  powerUps: boolean;
+  type: string;
+  goal: number;
+  speed: number;
+  acceleration: number;
+  ballSize: number;
+  ballColor: string;
+}
+
 class powerUp implements IPowerUp {
   type: string;
   side: string;
@@ -95,8 +105,8 @@ class PUNeutral implements IPowerUp {
     this.color = "BLUE";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (game: IGame) => { };
-    this.cancelEffect = (game: IGame) => { };
+    this.effect = (game: IGame) => {};
+    this.cancelEffect = (game: IGame) => {};
   }
 }
 
@@ -124,8 +134,8 @@ class PUBonus implements IPowerUp {
     this.color = "GREEN";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => { };
-    this.cancelEffect = () => { };
+    this.effect = (player: IPlayer) => {};
+    this.cancelEffect = () => {};
   }
 }
 
@@ -153,8 +163,8 @@ class PUMalus implements IPowerUp {
     this.color = "RED";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => { };
-    this.cancelEffect = () => { };
+    this.effect = (player: IPlayer) => {};
+    this.cancelEffect = () => {};
   }
 }
 
@@ -340,6 +350,7 @@ interface IGame {
   ball: IBall;
   goal: number;
   powerUps: IPowerUp[];
+  settings: IGameSettings;
 }
 
 class Player implements IPlayer {
@@ -407,9 +418,9 @@ class Game implements IGame {
   ball: IBall;
   goal: number;
   powerUps: IPowerUp[];
+  settings: IGameSettings;
   constructor(id: string, player1id: string, player2id: string, goal: number) {
     this.id = id;
-    this.type = "classic";
     this.player1 = new Player(0, CANVAS_HEIGHT / 2 - 100 / 2, player1id);
     this.player2 = new Player(
       CANVAS_WIDTH - 10,
@@ -419,6 +430,15 @@ class Game implements IGame {
     this.ball = new Ball();
     this.goal = goal;
     this.powerUps = [];
+    this.settings = {
+      powerUps: false,
+      type: "classic",
+      goal: 11,
+      speed: 5,
+      acceleration: 0.1,
+      ballSize: 10,
+      ballColor: "WHITE",
+    };
   }
 }
 
@@ -450,7 +470,7 @@ function generatePowerUps(game: IGame) {
     case 0: //neutral
       var type =
         neutralPowerUpTypes[
-        Math.floor(Math.random() * neutralPowerUpTypes.length)
+          Math.floor(Math.random() * neutralPowerUpTypes.length)
         ];
       PU = new powerUp(x, y, type);
       break;
@@ -472,7 +492,7 @@ function checkPowerUpCollision(ball: IBall, powerUp: IPowerUp) {
   if (powerUp.active) return false;
   let distance = Math.sqrt(
     (ball.x - powerUp.x) * (ball.x - powerUp.x) +
-    (ball.y - powerUp.y) * (ball.y - powerUp.y)
+      (ball.y - powerUp.y) * (ball.y - powerUp.y)
   );
   if (distance < ball.radius + powerUp.radius) {
     powerUp.user = ball.velocityX < 0 ? "player2" : "player1";
@@ -536,7 +556,6 @@ export class SocketEvents {
   @WebSocketServer()
   server: Server;
 
-
   handleConnection(client: any) {
     const user: TokenUser = client.user;
     console.log("Client connected: ", client.id);
@@ -545,13 +564,12 @@ export class SocketEvents {
         const room = this.server.sockets.adapter.rooms.get(key);
         const size = room?.size;
         //to make user leave room in db, need to know he is the only one in,
-        //and make sure that, he is in the room 
+        //and make sure that, he is in the room
         if (size === 1 && room) {
           const iterator = room?.values();
           if (room && client.id === iterator?.next().value) {
             const room = await this.roomsService.getRoom(key);
-            if (room)
-              this.roomsService.deleteRoom(key);
+            if (room) this.roomsService.deleteRoom(key);
           }
         }
       });
@@ -664,10 +682,9 @@ export class SocketEvents {
         this.endGame(game, game.player1.socketId, game.player2.socketId);
       }
       games = games.filter((g) => g.id !== game?.id);
-    }
-    else {
+    } else {
       const clientId = client.id;
-      const map = this.mapUserInGame
+      const map = this.mapUserInGame;
       for (let [key, value] of map.entries()) {
         if (key === clientId) {
           const user = await this.userService.findUsersById(value);
@@ -701,18 +718,19 @@ export class SocketEvents {
     }
   }
 
-  
   MatchmakeUserToGame(userId: string, userIdFocus: string, idGame: string) {
     const map = this.userGateway.getMap();
 
     for (let [key, value] of map.entries()) {
       if (value === userIdFocus) {
-        this.server.to(key).emit('matchmakeGame',
-          {idGame: idGame, user_id: userId});
+        this.server
+          .to(key)
+          .emit("matchmakeGame", { idGame: idGame, user_id: userId });
       }
       if (value === userId) {
-        this.server.to(key).emit('matchmakeGame',
-          {idGame: idGame, user_id: userId});
+        this.server
+          .to(key)
+          .emit("matchmakeGame", { idGame: idGame, user_id: userId });
       }
     }
   }
@@ -755,6 +773,22 @@ export class SocketEvents {
       const nbClient = this.server.sockets.adapter.rooms.get(data.roomId)?.size;
       if (!nbClient) {
         this.roomsService.deleteRoom(data.roomId);
+      }
+    }
+  }
+
+  @SubscribeMessage("edit_settings")
+  async editSettings(
+    @MessageBody() data: IGameSettings,
+    @ConnectedSocket() client: Socket
+  ) {
+    const roomID = this.getSocketGameRoom(client);
+    if (roomID) {
+      let room = await this.roomsService.findRoomById(roomID);
+      if (room) {
+        room.settings = data;
+        this.roomsService.updateRoomSettings(roomID, data);
+        this.server.to(roomID).emit("edit_settings", data);
       }
     }
   }
@@ -958,17 +992,28 @@ export class SocketEvents {
 
     if (user.username === data.usr1) {
       await this.roomsService.updateRoomReady(data.uid, data.rdy, true, false);
-      await this.roomsService.updateRoomTypeGame(data.uid, true, false, data.custom);
-    }
-    else if (user.username === data.usr2) {
+      await this.roomsService.updateRoomTypeGame(
+        data.uid,
+        true,
+        false,
+        data.custom
+      );
+    } else if (user.username === data.usr2) {
       await this.roomsService.updateRoomReady(data.uid, data.rdy, false, true);
-      await this.roomsService.updateRoomTypeGame(data.uid, false, true, data.custom);
+      await this.roomsService.updateRoomTypeGame(
+        data.uid,
+        false,
+        true,
+        data.custom
+      );
     }
     //when two user are connected, and both are rdy, game must start
     const getRoom = await this.roomsService.getRoom(data.uid);
-    if (connectedSockets?.size === 2
-      && getRoom?.player_one_rdy === true
-      && getRoom.player_two_rdy === true) {
+    if (
+      connectedSockets?.size === 2 &&
+      getRoom?.player_one_rdy === true &&
+      getRoom.player_two_rdy === true
+    ) {
       const getRoom = await this.roomsService.getRoom(data.uid);
       if (getRoom?.player_one_type_game != getRoom?.player_two_type_game)
         return { err: "Room type from both users not synchronized" };
