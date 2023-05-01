@@ -11,6 +11,16 @@ interface IGameSettings {
   ballColor: string;
 }
 
+const globalSettings: IGameSettings = {
+    powerUps: false,
+    type: "classic",
+    goal: 11,
+    speed: 5,
+    acceleration: 0.1,
+    ballSize: 10,
+    ballColor: "WHITE",
+};
+
 const ButtonIsCustom = (props: { usrSocket; id: string }) => {
   const [custom, setCustom] = useState<boolean>(false);
   //const [customForm, setCustomForm] = useState<custom_form>();
@@ -53,6 +63,7 @@ const Custom_size_ball = (props: { usrSocket; id: string }) => {
     if (e && e.target) {
       const target: HTMLInputElement = e.target as HTMLInputElement;
       setSize(e.target.value);
+      globalSettings.ballSize = Number(e.target.value);
       if (!isNaN(Number(e.target.value)) && Number(e.target.value)) {
         props.usrSocket.emit("updateSizeBall", {
           size: e.target.value,
@@ -62,9 +73,9 @@ const Custom_size_ball = (props: { usrSocket; id: string }) => {
     }
   };
   useEffect(() => {
-    props.usrSocket.on("SizeBallFromServer", (res: { size: number }) => {
-      console.log("size: " + res.size);
-      setSize(res.size.toString());
+    props.usrSocket.on("SizeBallFromServer", (res: IGameSettings) => {
+      console.log("size: " + res.ballSize);
+      setSize(res.ballSize.toString());
     });
   }, []);
   return (
@@ -75,7 +86,7 @@ const Custom_size_ball = (props: { usrSocket; id: string }) => {
       <input
         onChange={handleChange}
         type="radio"
-        value="1"
+        value={1}
         name="size_ball"
         checked={size === "1"}
       />
@@ -83,7 +94,7 @@ const Custom_size_ball = (props: { usrSocket; id: string }) => {
       <input
         onChange={handleChange}
         type="radio"
-        value="2"
+        value={2}
         name="size_ball"
         checked={size === "2"}
       />
@@ -91,7 +102,7 @@ const Custom_size_ball = (props: { usrSocket; id: string }) => {
       <input
         onChange={handleChange}
         type="radio"
-        value="3"
+        value={3}
         name="size_ball"
         checked={size === "3"}
       />
