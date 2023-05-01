@@ -788,10 +788,11 @@ export class SocketEvents {
       if (room) {
         room.settings = data;
         this.roomsService.updateRoomSettings(roomID, data);
-        this.server.to(roomID).emit("edit_settings", data);
+        client.to(roomID).emit("edit_settings", data);
       }
     }
   }
+  //
 
   /* search if user is in private room */
   checkIfUserFound(room: Room, clientId: string) {
