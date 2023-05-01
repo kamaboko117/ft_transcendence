@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ObjectId, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Room {
@@ -25,6 +25,14 @@ export class Room {
   @Column({ nullable: false, default: "Classic" })
   player_two_type_game: string;
 
-  @Column({ nullable: true, default: null })
-  settings: object;
+  @Column("simple-json")
+  settings: {
+    powerUps: boolean;
+    type: string;
+    goal: number;
+    speed: number;
+    acceleration: number;
+    ballSize: number;
+    ballColor: string;
+  }
 }
