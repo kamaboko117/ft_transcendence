@@ -138,7 +138,7 @@ function resetBall(ball: IBall) {
     ball.velocityX = newVelocityX;
     ball.velocityY = newVelocityY;
   }, 1500);
-  console.log("velocityX: ", ball.velocityX);
+  //console.log("velocityX: ", ball.velocityX);
 }
 
 function update(game: IGame) {
@@ -402,8 +402,8 @@ export class SocketEvents {
 
   @SubscribeMessage("updateSizeBall")
   updateSizeBall(@MessageBody() data: SizeBall, @ConnectedSocket() client: Socket) {
-    console.log("Totototot.roomId: " + data.roomId);
-    console.log("Totototot.size: " + data.size);
+    console.log("UpdateSizeBall.roomId: " + data.roomId);
+    console.log("UpdateSizeBall.size: " + data.size);
     //
     if (isNaN(Number(data.size)))
       return ({isValid: false});

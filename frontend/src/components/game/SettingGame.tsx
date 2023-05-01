@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import gameService from "../../services/gameService";
 
-type custom_form = {
-    ballSize: number,
-    ballSpeed: number,
-    ballColor: string,
-    powerUp: boolean,
+interface IGameSettings {
+	powerUps: boolean;
+	type: string;
+	goal: number;
+	speed: number;
+	acceleration: number;
+	ballSize: number;
+	ballColor: string;
 }
 
 const ButtonIsCustom = (props: { usrSocket, id: string }) => {
     const [custom, setCustom] = useState<boolean>(false);
-    const [customForm, setCustomForm] = useState<custom_form>();
+    //const [customForm, setCustomForm] = useState<custom_form>();
     const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (e && e.target)
             setCustom(prev => !prev);
@@ -38,50 +41,34 @@ const ButtonIsCustom = (props: { usrSocket, id: string }) => {
     );
 }
 
-/**
- * 
- * @param props Chaque div radio = un event => usestate
- *   * chaque click = un event
- * @returns 
- */
-
-// (props: { usrSocket, id: string })
-
-// Value number
-// usrSocket emit backend => updateTypeGame
-
-
-
 const Custom_size_ball = (props: {usrSocket, id: string}) => {
     const [size, setSize] = useState<string>("2");
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        console.log(e);
         if (e && e.target) {
             const target: HTMLInputElement = e.target as HTMLInputElement;
-            const value: string = target.value;
-            console.log(target.value);
-            setSize(value)
-            if (!isNaN(Number(target.value)) && Number(target.value)) {
-                props.usrSocket.emit("updateSizeBall", {size: size, roomId: props.id});
+			setSize(e.target.value);
+            if (!isNaN(Number(e.target.value)) && Number(e.target.value)) {
+                props.usrSocket.emit("updateSizeBall", {size: e.target.value, roomId: props.id});
             }
         }
     }
     useEffect(() => {
           props.usrSocket.on("SizeBallFromServer", (res: {size: number}) => {
-            setSize(String(res.size));
+            console.log("size: " + res.size);
+			setSize(res.size.toString());
           })
     }, []);
-    return (
-        <div>
-            <label><b>Taille de la balle</b></label>
-            <input onChange={handleChange} type="radio" value='1' name="size_ball" checked={size === '1'}/>
-            <label>Small</label>
-            <input onChange={handleChange} type="radio" value='2' name="size_ball" checked={size === '2'}/>
-            <label>Normal</label>
-            <input onChange={handleChange} type="radio" value='3' name="size_ball" checked={size === '3'}/>
-            <label>Big</label>
-        </div>
-    );
+		return (
+			<div>
+				<label><b>Taille de la balle</b></label>
+				<input onChange={handleChange} type="radio" value='1' name="size_ball" checked={size === '1'}/>
+				<label>Small</label>
+				<input onChange={handleChange} type="radio" value='2' name="size_ball" checked={size === '2'}/>
+				<label>Normal</label>
+				<input onChange={handleChange} type="radio" value='3' name="size_ball" checked={size === '3'}/>
+				<label>Big</label>
+			</div>
+		);
 }
 
 const Custom_speed_ball = () => {

@@ -15,4 +15,3 @@ export class SizeBall {
     @IsString()
     roomId: string;
 }
-
