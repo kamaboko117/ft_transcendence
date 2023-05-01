@@ -1,12 +1,30 @@
 import { IsNotEmpty, IsNumber, MinLength } from "class-validator";
 
 export class CreateRoomDto {
-    @IsNotEmpty()
-    @MinLength(3)
-    roomName: string;
+  @IsNotEmpty()
+  @MinLength(3)
+  roomName: string;
+  settings: {
+    powerUps: boolean;
+    type: string;
+    goal: number;
+    speed: number;
+    acceleration: number;
+    ballSize: number;
+    ballColor: string;
+  };
 }
 
 export class CreateRoomPrivate {
-    @IsNumber()
-    id: number;
+  @IsNumber()
+  settings: {
+    powerUps: boolean;
+    type: string;
+    goal: number;
+    speed: number;
+    acceleration: number;
+    ballSize: number;
+    ballColor: string;
+  };
+  id: number;
 }

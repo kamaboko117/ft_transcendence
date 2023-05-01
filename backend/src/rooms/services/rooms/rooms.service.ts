@@ -23,6 +23,15 @@ export class RoomsService {
     const newRoom = this.roomRepository.create({
       roomName: name,
       private: true,
+      settings: {
+        powerUps: false,
+        type: "classic",
+        goal: 11,
+        speed: 5,
+        acceleration: 0.1,
+        ballSize: 10,
+        ballColor: "WHITE",
+      },
     });
     return this.roomRepository.save(newRoom);
   }
