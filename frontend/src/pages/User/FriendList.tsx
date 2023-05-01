@@ -1,4 +1,4 @@
-import React, { useState, useContext, MouseEvent } from "react";
+import React, { useState, useContext, MouseEvent, useEffect } from "react";
 import ContextDisplayChannel, { LoadUserGlobal, updateBlackFriendList } from "../../contexts/DisplayChatContext";
 import scroll from 'react-scroll';
 import { useEventListenerUserInfo } from "../../useHook/useEventListener";
@@ -121,13 +121,18 @@ type typeButtonsInfo = {
 
 const ButtonsInfos = (props: typeButtonsInfo) => {
 	const navigate = useNavigate();
-	const { setDisplay, setId } = useContext(ContextDisplayChannel);
+	const { id, setDisplay, setId } = useContext(ContextDisplayChannel);
 	const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
 	let type = 0;
 	if (props.type === "block")
 		type = 1;
 	else if (props.type === "friend")
 		type = 2;
+
+	useEffect(() => {
+		if (id && id != "")
+			setDisplay(true);
+	}, [id]);
 
 	return (<>
 		<StatusUser jwt={props.jwt} userId={props.userInfo.id} />

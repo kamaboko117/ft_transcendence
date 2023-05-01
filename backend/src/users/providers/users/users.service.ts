@@ -286,7 +286,7 @@ export class UsersService {
     }
 
     async updateRank(id: number, rk: number) {
-        this.statRepository.createQueryBuilder()
+        await this.statRepository.createQueryBuilder()
             .update(Stat)
             .set({ rank: rk })
             .where('user_id = :id', { id })
@@ -294,7 +294,7 @@ export class UsersService {
     }
 
     async updateLevel(id: number, lvl: number) {
-        this.statRepository.createQueryBuilder()
+        await this.statRepository.createQueryBuilder()
             .update(Stat)
             .set({ level: Math.floor(lvl / 3) })
             .where('user_id = :id', { id })
@@ -304,7 +304,7 @@ export class UsersService {
     async updateHistory(typeGame: string, id1: number, id2: number, idVictory: number) {
         if (id1 == id2)
             return;
-        this.matchHistoryRepository.createQueryBuilder()
+       await  this.matchHistoryRepository.createQueryBuilder()
             .insert()
             .into(MatchHistory)
             .values([{
@@ -321,24 +321,24 @@ export class UsersService {
         if (stat)
             nb_consecutive = stat.consecutive + 1;
         if (stat && id1 != idVictory) {
-            this.updateConsecutive(id1, 0);
+            await this.updateConsecutive(id1, 0);
         } else if (stat && id2 != idVictory) {
-            this.updateConsecutive(id2, 0);
+            await this.updateConsecutive(id2, 0);
         }
         if (stat && stat.rank < 2)
-            this.updateConsecutive(idVictory, nb_consecutive);
+            await this.updateConsecutive(idVictory, nb_consecutive);
         //update victory rank
         if (stat && nb_consecutive == 3) {
-            this.updateConsecutive(idVictory, 0);
+            await this.updateConsecutive(idVictory, 0);
             if (stat.rank < 2) {
-                this.updateRank(idVictory, stat.rank + 1);
+                await this.updateRank(idVictory, stat.rank + 1);
             }
         }
         // taking nb_victory
         const vc = await this.getVictoryNb(idVictory);
         // updating level
         if (vc)
-            this.updateLevel(idVictory, vc);
+            await this.updateLevel(idVictory, vc);
     }
 
     async insertAchivement(id: number, name: string) {
@@ -362,6 +362,7 @@ export class UsersService {
         }
 
         check.forEach(function (elem) {
+            console.log(elem)
             if (elem.name === "First game played !")
                 achOk.fg = true;
             else if (elem.name === "First victory !")
@@ -377,8 +378,8 @@ export class UsersService {
     }
 
     async updateAchive(id: number) {
-        let typeAchivement = "";
-
+        //let typeAchivement = "";
+        console.log(id)
         const nbGame = await this.getGamesNb(id);
         const nbVic = await this.getVictoryNb(id);
         const stat = await this.statRepository.createQueryBuilder("stat")

@@ -1,8 +1,8 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Game from "../components/game";
 import SocketContext from '../contexts/Socket';
-import { headerPost } from '../components/FetchError';
-import { useParams } from "react-router-dom";
+import { FetchError, header, headerPost } from '../components/FetchError';
+import { useParams, useNavigate } from "react-router-dom";
 
 export function playPageInvite(jwt: string, setErrorCode,
     focusUserId: number, navigate) {
@@ -32,15 +32,46 @@ export function playPageInvite(jwt: string, setErrorCode,
     addRoomHandler(jwt, setErrorCode, focusUserId);
 }
 
-function PlayPageInvite(props: { jwt: string }) {
+function PlayPageInvite(props: { jwt: string | null }) {
     const [errorCode, setErrorCode] = useState<number>(200);
     const id = useParams().id as string;
     const { usrSocket } = useContext(SocketContext);
+    const navigate = useNavigate();
+    const [loadParty, setLoadParty] = useState<boolean>(false);
 
-    if (id && id != "") {
-        return <Game id={id} usrSocket={usrSocket} />;
-    }
-    return (<span>Wrong room...</span>);
+    useEffect(() => {
+        const ft_fetch = async () => {
+            await fetch('https://' + location.host + '/api/rooms/get?' + new URLSearchParams({
+                id: id,
+            }),
+                { headers: header(props.jwt) })
+                .then(res => {
+                    if (res.ok)
+                        return (res.json());
+                    setErrorCode(res.status);
+                })
+                .then((res: { exist: boolean }) => {
+                    if (res) {
+                        if (res.exist === false)
+                            navigate("/");
+                        else if (res.exist === true)
+                            setLoadParty(true);
+                    }
+                })
+                .catch(e => console.log(e));
+        }
+        ft_fetch();
+        return (() => {
+            usrSocket?.emit("leave_game", { roomId: id });
+            setLoadParty(false);
+        });
+    }, [props.jwt, id]);
+    return (<>
+        {loadParty === false && <div>Loading room...</div>}
+        {errorCode >= 400 && <FetchError code={errorCode} />}
+        {id && id != "" && loadParty === true && <Game id={id} usrSocket={usrSocket} jwt={props.jwt} roomName="" />}
+    </>
+    );
 }
 
 export default PlayPageInvite

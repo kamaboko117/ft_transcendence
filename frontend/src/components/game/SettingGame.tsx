@@ -1,36 +1,29 @@
 import React, { useEffect, useState } from "react";
 import gameService from "../../services/gameService";
+import { FetchError } from "../FetchError";
+import ActivePowerUpsList from "./ActivePowerUpsList";
+import { useParams } from "react-router-dom";
 
-interface IGameSettings {
-  powerUps: boolean;
-  type: string;
-  goal: number;
-  speed: number;
-  acceleration: number;
-  ballSize: number;
-  ballColor: string;
-}
+const CANVAS_WIDTH = 600;
+const CANVAS_HEIGHT = 400;
 
-const globalSettings: IGameSettings = {
-    powerUps: false,
-    type: "classic",
-    goal: 11,
-    speed: 5,
-    acceleration: 0.1,
-    ballSize: 10,
-    ballColor: "WHITE",
-};
-
-const ButtonIsCustom = (props: { usrSocket; id: string }) => {
-  const [custom, setCustom] = useState<boolean>(false);
-  //const [customForm, setCustomForm] = useState<custom_form>();
+const ButtonIsCustom = (props: {
+  usrSocket,
+  id: string,
+  setRdy: React.Dispatch<React.SetStateAction<boolean>>,
+  custom: boolean,
+  setCustom: React.Dispatch<React.SetStateAction<boolean>>
+}) => {
+  //const [custom, setCustom] = useState<boolean>(false);
   const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (e && e.target) setCustom((prev) => !prev);
+    if (e && e.target) props.setCustom((prev) => !prev);
   };
 
   useEffect(() => {
     props.usrSocket.on("updateTypeGameFromServer", (res: { type: boolean }) => {
-      setCustom(res.type);
+      props.setRdy(false);
+      props.setCustom(res.type);
+      console.log(res.type)
     });
     return () => {
       props.usrSocket.off("updateTypeGameFromServer");
@@ -39,171 +32,64 @@ const ButtonIsCustom = (props: { usrSocket; id: string }) => {
   useEffect(() => {
     props.usrSocket.emit(
       "updateTypeGame",
-      { type: custom, roomId: props.id },
+      { type: props.custom, roomId: props.id },
       (res: { type: boolean }) => {
-        setCustom(res.type);
+        console.log(res.type)
+        props.setRdy(false);
+        props.setCustom(res.type);
       }
     );
-  }, [custom]);
-  return (
-    <>
-      <button onClick={handleRdy}>
-        {custom === false
-          ? "Click to transform into custom game"
-          : "Click to disable custom game"}
-      </button>
-      <Custom_setting cst={custom} usrSocket={props.usrSocket} id={props.id} />
-    </>
-  );
-};
+  }, [props.custom]);
 
-const Custom_size_ball = (props: { usrSocket; id: string }) => {
-  const [size, setSize] = useState<string>("2");
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e && e.target) {
-      const target: HTMLInputElement = e.target as HTMLInputElement;
-      setSize(e.target.value);
-      globalSettings.ballSize = Number(e.target.value);
-      if (!isNaN(Number(e.target.value)) && Number(e.target.value)) {
-        props.usrSocket.emit("updateSizeBall", {
-          size: e.target.value,
-          roomId: props.id,
-        });
-      }
-    }
-  };
-  useEffect(() => {
-    props.usrSocket.on("SizeBallFromServer", (res: IGameSettings) => {
-      console.log("size: " + res.ballSize);
-      setSize(res.ballSize.toString());
-    });
-  }, []);
-  return (
-    <div>
-      <label>
-        <b>Taille de la balle</b>
-      </label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={1}
-        name="size_ball"
-        checked={size === "1"}
-      />
-      <label>Small</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={2}
-        name="size_ball"
-        checked={size === "2"}
-      />
-      <label>Normal</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={3}
-        name="size_ball"
-        checked={size === "3"}
-      />
-      <label>Big</label>
-    </div>
-  );
-};
-
-const Custom_speed_ball = () => {
-  return (
-    <div>
-      <label>
-        <b>Vitesse de la balle</b>
-      </label>
-      <input type="radio" value="1" id="normalBall" name="speed_ball" checked />
-      <label>Slow</label>
-      <input
-        type="radio"
-        value="2"
-        id="averageBall"
-        name="speed_ball"
-        checked
-      />
-      <label>Average</label>
-      <input type="radio" value="3" id="fastBall" name="speed_ball" checked />
-      <label>Fast</label>
-    </div>
-  );
-};
-
-const Custom_color_ball = () => {
-  return (
-    <div>
-      <label>
-        <b>Couleur de la balle</b>
-      </label>
-      <input type="radio" value="red" id="redBall" name="color_ball" checked />
-      <label>Red</label>
-      <input
-        type="radio"
-        value="blue"
-        id="blueBall"
-        name="color_ball"
-        checked
-      />
-      <label>Blue</label>
-      <input
-        type="radio"
-        value="green"
-        id="greenBall"
-        name="color_ball"
-        checked
-      />
-      <label>Green</label>
-    </div>
-  );
-};
-
-const Custom_power_up = () => {
-  return (
-    <div>
-      <label>
-        <b>Power Up</b>
-      </label>
-      <input type="checkbox" name="Power_Up" value="powerUp" />
-    </div>
-  );
-};
-
-const Custom_setting = (props: { cst: boolean; usrSocket; id: string }) => {
-  if (props.cst === true) {
-    return (
-      <>
-        <br />
-        <label>Custom game</label>
-        <br />
-        <br />
-        <Custom_size_ball usrSocket={props.usrSocket} id={props.id} />
-        <br />
-        <br />
-
-        <br />
-        <br />
-
-        <br />
-      </>
-    );
-  } else {
-    return <></>;
-  }
-};
-
-const ButtonRdy = () => {
-  const [rdy, setRdy] = useState<boolean>(false);
-
-  const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (e && e.target) setRdy((prev) => !prev);
-  };
   return (
     <button onClick={handleRdy}>
-      {rdy === false ? "Click to be ready" : "Stop ready"}
+      {props.custom === false
+        ? "Click to transform into custom game"
+        : "Click to disable custom game"}
+    </button>
+  );
+};
+
+const ButtonRdy = (props: {
+  usrSocket,
+  uid: string,
+  usr1: string,
+  usr2: string,
+  rdy: boolean,
+  setRdy: React.Dispatch<React.SetStateAction<boolean>>,
+  custom: boolean,
+  setCustom: React.Dispatch<React.SetStateAction<boolean>>
+}) => {
+  //const [rdy, setRdy] = useState<boolean>(false);
+
+  const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (e && e.target) {
+      props.setRdy((prev) => !prev);
+    }
+  };
+
+  useEffect(() => {
+    props.usrSocket.on("updateUserRdy", () => {
+      props.setRdy(false);
+      props.setCustom(false);
+    });
+    return () => {
+      props.usrSocket.off("updateUserRdy");
+    };
+  });
+
+  useEffect(() => {
+    props.usrSocket.emit("userIsRdy", {
+      uid: props.uid,
+      usr1: props.usr1,
+      usr2: props.usr2,
+      rdy: props.rdy,
+      custom: props.custom
+    });
+  }, [props.rdy]);
+  return (
+    <button onClick={handleRdy}>
+      {props.rdy === false ? "Click to be ready" : "Stop ready"}
     </button>
   );
 };
@@ -218,11 +104,37 @@ const ListUser = (props: { usr1: string; usr2: string }) => {
   );
 };
 
-const SettingGame = (props: { socketService: { socket: any }; id: string }) => {
+interface IPowerUp {
+  type: string;
+  user: string;
+  imageURL: string;
+  x: number;
+  y: number;
+  radius: number;
+  color: string;
+  active: boolean;
+  lifespan: number;
+}
+
+const SettingGame = (props: {
+  socketService: { socket: any };
+  id: string;
+  canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
+  isGameStarted: boolean;
+  /*typeGame: string;*/
+  /*setTypeGame: React.Dispatch<React.SetStateAction<string>>;*/
+  powerUpList: IPowerUp[];
+  side: number;
+  roomName: string;
+}) => {
   const [errorCode, setErrorCode] = useState<number>(200);
   const [usr1, setUsr1] = useState<string>("");
   const [usr2, setUsr2] = useState<string>("");
-
+  const [errorText, setErrorText] = useState<string>("");
+  const url = useParams().id as string;
+  // console.log(useParams())
+  //console.log(useParams())
+  //console.log(url)
   useEffect(() => {
     console.log(props.id);
     console.log(props.socketService.socket);
@@ -234,13 +146,17 @@ const SettingGame = (props: { socketService: { socket: any }; id: string }) => {
           .then((res) => {
             console.log(res);
           })
-          .catch((err) => {
+          .catch((err: string) => {
+            setErrorText(err);
             console.log("joining room " + err);
             setErrorCode(1);
+            props.socketService.socket?.off("join_game_success");
           });
       };
       game();
       console.log("joined from game component");
+      console.log("url")
+      console.log(url)
     }
     console.log("Game room mounting");
     return () => {
@@ -249,7 +165,7 @@ const SettingGame = (props: { socketService: { socket: any }; id: string }) => {
       props.socketService.socket?.off("join_game_success");
       props.socketService.socket?.off("join_game_error");
     };
-  }, [props.socketService.socket]);
+  }, [props.socketService.socket, url]);
 
   useEffect(() => {
     props.socketService.socket.on(
@@ -267,22 +183,70 @@ const SettingGame = (props: { socketService: { socket: any }; id: string }) => {
     return () => {
       props.socketService.socket?.off("user_leave_room");
     };
-  }, [usr1, usr2]);
+  }, [usr1, usr2, url]);
 
-  return (
-    <div className="createParty">
-      <h1 className="room_name">Game</h1>
-      {errorCode != 1 ? (
-        <h1>waiting for opponent</h1>
-      ) : (
-        <h1>Room is full, you are spectator</h1>
-      )}
-      <ListUser usr1={usr1} usr2={usr2} />
-      <ButtonIsCustom usrSocket={props.socketService.socket} id={props.id} />
-      <br />
-      <ButtonRdy />
-    </div>
-  );
+  const [custom, setCustom] = useState<boolean>(false);
+  const [rdy, setRdy] = useState<boolean>(false);
+  if (!props.isGameStarted) {
+    return (
+      <>
+        {errorCode >= 400 && <FetchError code={errorCode} />}
+        <div className="createParty">
+          <h1 className="room_name">{props.roomName}</h1>
+          {errorCode != 1 ? (
+            <h1>waiting for opponent</h1>
+          ) : (
+            <h1>Error : {errorText}</h1>
+          )}
+          {errorCode != 1 && (
+            <>
+              <ListUser usr1={usr1} usr2={usr2} />
+              <ButtonIsCustom
+                usrSocket={props.socketService.socket}
+                id={props.id}
+                setRdy={setRdy}
+                custom={custom}
+                setCustom={setCustom}
+              />
+              <br />
+              <ButtonRdy
+                usrSocket={props.socketService.socket}
+                uid={props.id}
+                usr1={usr1}
+                usr2={usr2}
+                rdy={rdy}
+                setRdy={setRdy}
+                custom={custom}
+                setCustom={setCustom}
+              />
+            </>
+          )}
+        </div>
+      </>
+    );
+  } else {
+    return (
+      <>
+        {errorCode >= 400 && <FetchError code={errorCode} />}
+        <div className="game_container">
+          <h1 className="room_name">{props.roomName}</h1>
+          <div className="game">
+            <canvas
+              ref={props.canvasRef}
+              className="game_canvas"
+              id="pong"
+              width={CANVAS_WIDTH}
+              height={CANVAS_HEIGHT}
+            ></canvas>
+            <ActivePowerUpsList
+              powerUps={props.powerUpList}
+              side={props.side}
+            />
+          </div>
+        </div>
+      </>
+    );
+  }
 };
 
 export default SettingGame;

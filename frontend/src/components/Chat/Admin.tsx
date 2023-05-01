@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FetchError, header, headerPost } from '../FetchError';
+import { header, headerPost } from '../FetchError';
 
 type typeUserInfo = {
     username: string,

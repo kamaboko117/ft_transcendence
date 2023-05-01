@@ -8,10 +8,24 @@ export class UpdateTypeRoom {
     roomId: string;
 }
 
-export class SizeBall {
-    @IsNumber()
-    size: string;
+
+
+export class UserIdRdy {
+    @IsBoolean()
+    rdy: boolean;
+
     @IsDefined()
     @IsString()
-    roomId: string;
+    uid: string;
+
+    @IsDefined()
+    @IsString()
+    usr1: string;
+
+    @IsDefined()
+    @IsString()
+    usr2: string;
+
+    @IsBoolean()
+    custom: boolean;
 }
