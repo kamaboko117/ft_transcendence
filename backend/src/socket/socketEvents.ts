@@ -344,11 +344,9 @@ interface IBall {
 interface IGame {
   id: string;
   intervalId: any;
-  type: string;
   player1: IPlayer;
   player2: IPlayer;
   ball: IBall;
-  goal: number;
   powerUps: IPowerUp[];
   settings: IGameSettings;
 }
@@ -419,7 +417,12 @@ class Game implements IGame {
   goal: number;
   powerUps: IPowerUp[];
   settings: IGameSettings;
-  constructor(id: string, player1id: string, player2id: string, goal: number) {
+  constructor(
+    id: string,
+    player1id: string,
+    player2id: string,
+    settings: IGameSettings
+  ) {
     this.id = id;
     this.player1 = new Player(0, CANVAS_HEIGHT / 2 - 100 / 2, player1id);
     this.player2 = new Player(
@@ -427,18 +430,14 @@ class Game implements IGame {
       CANVAS_HEIGHT / 2 - 100 / 2,
       player2id
     );
-    this.ball = new Ball();
-    this.goal = goal;
     this.powerUps = [];
-    this.settings = {
-      powerUps: false,
-      type: "classic",
-      goal: 11,
-      speed: 5,
-      acceleration: 0.1,
-      ballSize: 10,
-      ballColor: "WHITE",
-    };
+    this.settings = settings;
+    this.ball = new Ball(
+      this.settings.ballSize,
+      this.settings.speed,
+      this.settings.ballColor,
+      this.settings.acceleration
+    );
   }
 }
 
@@ -514,8 +513,8 @@ function handleRound(game: IGame) {
       }
     }
   }
-  //generate a power up randomly with a 1/5 chance
-  if (Math.floor(Math.random() * 5) === 0) {
+  //generate a power up randomly with a 1/5 chance if powerups are enabled
+  if (game.settings.powerUps && Math.floor(Math.random() * 5) === 0) {
     generatePowerUps(game);
   }
 }
@@ -625,9 +624,9 @@ export class SocketEvents {
       game.player1.score++;
       resetBall(game.ball, game);
     }
-    if (game.player1.score === game.goal) {
+    if (game.player1.score === game.settings.goal) {
       this.endGame(game, game.player1.socketId, game.player2.socketId);
-    } else if (game.player2.score === game.goal) {
+    } else if (game.player2.score === game.settings.goal) {
       this.endGame(game, game.player2.socketId, game.player1.socketId);
     }
   }
@@ -645,7 +644,7 @@ export class SocketEvents {
         if (user) loser = user.username;
       });
       await this.userService.updateHistory(
-        game.type,
+        game.settings.type,
         winnerId,
         loserId,
         winnerId
@@ -1026,7 +1025,10 @@ export class SocketEvents {
       if (socket2 === undefined) {
         return { err: "no socket second player found" };
       }
-      let newGame = new Game(data.uid, client.id, socket2, 11);
+      if (!getRoom) {
+        return { err: "no room found" };
+      }
+      let newGame = new Game(data.uid, client.id, socket2, getRoom.settings);
       let powerUps = newGame.powerUps;
       let player1 = newGame.player1;
       let player2 = newGame.player2;
