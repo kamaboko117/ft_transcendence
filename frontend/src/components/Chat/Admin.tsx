@@ -105,6 +105,8 @@ const handleSubmitBanMute = (event: React.FormEvent<HTMLFormElement>,
     ref: React.RefObject<HTMLInputElement>,
     object: typeFetchToBack) => {
     event.preventDefault();
+    if (!event)
+        return ;
     const target: HTMLElement = event.target as HTMLElement;
 
     if (!target)
@@ -213,6 +215,8 @@ const handleKick = (event: React.MouseEvent<HTMLButtonElement>,
     setAskKick: React.Dispatch<React.SetStateAction<boolean>>,
     askKick: boolean) => {
     event.preventDefault();
+    if (!event || !event.target)
+        return ;
     const target: HTMLElement = event.target as HTMLElement;
 
     if (target && askKick === false)

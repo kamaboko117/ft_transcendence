@@ -23,7 +23,8 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 	setLstUserGlobal: React.Dispatch<React.SetStateAction<Array<typeFlBl>>>,
 	jwt: string, value: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-	lstUserGlobal: Array<typeFlBl>) {
+	lstUserGlobal: Array<typeFlBl>,
+	setLst: React.Dispatch<React.SetStateAction<[]>>) {
 	e.preventDefault();
 	if (!e)
 		return;
@@ -40,13 +41,27 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 			return (res.json());
 		setErrorCode(res.status)
 	}).then(res => {
+		if (res && res.code === 1)
+			setLst(res.err);
 		if (res && res.code === 3) {
 			updateBlackFriendList({
 				id: res.id,
 				fl: res.fl, bl: res.bl, User_username: res.User_username, User_avatarPath: res.User_avatarPath
 			}, lstUserGlobal, setLstUserGlobal);
+			setLst([]);
 		}
 	}).catch(err => console.log(err))
+}
+
+const ErrorSubmit = (props: { lstErr: [] }) => {
+	let i: number = 0;
+	return (<>
+		{props.lstErr &&
+			props.lstErr.map((err) => (
+				<p style={{ color: "red" }} key={++i}>{err}</p>
+			))
+		}
+	</>);
 }
 
 export default function BlackList(props: { jwt: string }) {
@@ -56,16 +71,17 @@ export default function BlackList(props: { jwt: string }) {
 	});
 	const [value, setValue] = useState<null | string>(null);
 	const [errorCode, setErrorCode] = useState<number>(200);
+	const [lstErr, setLstErr] = useState<[]>([]);
 	return (<section>
 		<h1>Black List</h1>
 		<form onSubmit={(e: React.FormEvent<HTMLFormElement>) => handleSubmit(e, setLstUserGlobal
-			, props.jwt, value, setErrorCode, lstUserGlobal)}>
+			, props.jwt, value, setErrorCode, lstUserGlobal, setLstErr)}>
 			<input type="text" placeholder="Enter username"
 				onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
 					setValue(e.currentTarget.value)} />
 			<input type="submit" value="Add new block" />
 		</form>
-		{errorCode && errorCode === 1 && <span>User not found</span>}
+		<ErrorSubmit lstErr={lstErr} />
 		{errorCode && errorCode >= 400 && <FetchError code={errorCode} />}
 		<LoadUserGlobal jwt={props.jwt} />
 		<Display jwt={props.jwt} lstUserGlobal={lstUserGlobal}

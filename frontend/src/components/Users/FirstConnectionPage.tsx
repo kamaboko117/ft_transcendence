@@ -6,6 +6,8 @@ import { FetchError, header } from '../FetchError';
 function ChangeHandler(event: ChangeEvent<HTMLInputElement>
 	, setFile: React.Dispatch<React.SetStateAction<File | undefined>>) {
 	event.preventDefault();
+	if(!event || !event.target)
+		return ;
 	const target = event.target;
 
 	if (target.files && target.files.length === 1) {
