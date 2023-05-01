@@ -26,6 +26,7 @@ import * as bcrypt from 'bcrypt';
 //convert into promise
 import { promisify } from "util";
 import { unlink } from 'fs';
+import { UserDeco } from "src/common/middleware/user.decorator";
 
 const sizeOf = promisify(require('image-size'));
 
@@ -37,8 +38,8 @@ export class UsersController {
     @Public()
     @UseGuards(JwtFirstGuard)
     @Get('set-fa')
-    async setFa(@Request() req: any) {
-        const user: TokenUser = req.user;
+    async setFa(@UserDeco() user: TokenUser) {
+        //const user: TokenUser = req.user;
         const userDb = await this.userService.getUserFaSecret(user.userID);
 
         if (!userDb || !userDb?.username) {
@@ -59,8 +60,8 @@ export class UsersController {
     @Public()
     @UseGuards(JwtFirstGuard)
     @Get('check-fa')
-    async checkFa(@Request() req: any) {
-        const user: TokenUser = req.user;
+    async checkFa(@UserDeco() user: TokenUser) {
+        //const user: TokenUser = req.user;
         const userDb = await this.userService.getUserFaSecret(user.userID);
 
         if (!userDb?.username) {
@@ -77,8 +78,9 @@ export class UsersController {
     @Public()
     @UseGuards(JwtFirstGuard)
     @Post('valid-fa-code')
-    async validFaCode(@Request() req: any, @Body() body: Code) {
-        let user: TokenUser = req.user;
+    async validFaCode(@Body() body: Code,
+        @UserDeco() user: TokenUser) {
+        //let user: TokenUser = req.user;
         const userDb = await this.userService.getUserFaSecret(user.userID);
         let isValid = false;
         let access_token = { access_token: "" }
@@ -122,13 +124,13 @@ export class UsersController {
     @Public()
     @UseGuards(FakeAuthGuard)
     @Get('fake-login')
-    async fakeLogin(@Request() req: any) {
-        let user: TokenUser = req.user;
+    async fakeLogin(@UserDeco() user: TokenUser) {
+        //let user: TokenUser = req.user;
         user.fa_code = "";
         const access_token = await this.authService.login(user);
 
         return ({
-            token: access_token, user_id: req.user.userID,
+            token: access_token, user_id: user.userID,
             username: user.username, fa: user.fa
         });
     }
@@ -176,14 +178,14 @@ export class UsersController {
 
     @Post('update-user')
     @UseInterceptors(FileInterceptor('fileset', { dest: './upload_avatar' }))
-    async updateUser(@Request() req: any, @UploadedFile(new ParseFilePipe({
+    async updateUser(@UserDeco() user: TokenUser, @UploadedFile(new ParseFilePipe({
         validators: [
             new MaxFileSizeValidator({ maxSize: 1000000 }),
             new FileTypeValidator({ fileType: /^image\/(png|jpg|jpeg)$/ }),
         ], fileIsRequired: false
     }),
     ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
-        let user: TokenUser = req.user;
+        //let user: TokenUser = req.user;
         const ret_user = await this.userService.findUserByName(body.username);
         let ret_user2 = await this.userService.findUsersById(user.userID);
 
@@ -232,14 +234,14 @@ export class UsersController {
     @UseGuards(JwtFirstGuard)
     @Post('firstlogin')
     @UseInterceptors(FileInterceptor('fileset', { dest: './upload_avatar' }))
-    async uploadFirstLogin(@Request() req: any, @UploadedFile(new ParseFilePipe({
+    async uploadFirstLogin(@UserDeco() user: TokenUser, @UploadedFile(new ParseFilePipe({
         validators: [
             new MaxFileSizeValidator({ maxSize: 1000000 }),
             new FileTypeValidator({ fileType: /^image\/(png|jpg|jpeg)$/ }),
         ], fileIsRequired: false
     }),
     ) file: Express.Multer.File | undefined, @Body() body: FirstConnection) {
-        let user = req.user;
+        //let user = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
         const ret_user2 = await this.userService.findUserByName(body.username);
 
@@ -266,14 +268,14 @@ export class UsersController {
 
     @Post('avatarfile')
     @UseInterceptors(FileInterceptor('fileset', { dest: './upload_avatar' }))
-    uploadFile(@Request() req: any, @UploadedFile(new ParseFilePipe({
+    uploadFile(@UserDeco() user: TokenUser, @UploadedFile(new ParseFilePipe({
         validators: [
             new MaxFileSizeValidator({ maxSize: 1000000 }),
             new FileTypeValidator({ fileType: 'image/png' }),
         ],
     }),
     ) file: Express.Multer.File) {
-        const user: TokenUser = req.user;
+        //const user: TokenUser = req.user;
         this.userService.updatePathAvatarUser(user.userID, file.path);
         return ({ path: file.path });
     }
@@ -294,8 +296,8 @@ export class UsersController {
     */
     @UseGuards(JwtGuard)
     @Get('profile')
-    async getProfile(@Request() req: any) {
-        const user: TokenUser = req.user;
+    async getProfile(@UserDeco() user: TokenUser) {
+        //const user: TokenUser = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
         return (ret_user);
     }
@@ -304,17 +306,17 @@ export class UsersController {
     @Public()
     @UseGuards(JwtFirstGuard)
     @Get('first-profile')
-    async firstConnectionProfile(@Request() req: any) {
-        const user: TokenUser = req.user;
+    async firstConnectionProfile(@UserDeco() user: TokenUser) {
+        //const user: TokenUser = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
         return (ret_user);
     }
 
     /* get info focus user with friend and block list from requested user*/
     @Get('info-fr-bl')
-    async getUserInfo(@Request() req: any,
+    async getUserInfo(@UserDeco() user: TokenUser,
         @Query('name') name: string) {
-        const user: TokenUser = req.user;
+        //const user: TokenUser = req.user;
         const ret_user = await this.userService.findUserByName(name);
 
         if (!ret_user)
@@ -332,22 +334,20 @@ export class UsersController {
     }
 
     @Get('fr-bl-list')
-    async getFriendBlackListUser(@Request() req: any) {
-        const user: TokenUser = req.user;
+    async getFriendBlackListUser(@UserDeco() user: TokenUser) {
         const getBlFr: BlackFriendList[] = await this.userService.getBlackFriendListBy(user.userID)
         return (getBlFr);
     }
 
     @Get('get-username')
-    async getUsername(@Request() req: any) {
-        const user: TokenUser = req.user;
+    async getUsername(@UserDeco() user: TokenUser) {
         const ret_user = await this.userService.findUserByName(user.username);
         return (ret_user);
     }
 
     @Get('get-victory-nb')
-    async getNbVictory(@Request() req: any) {
-        const user: TokenUser = req.user;
+    async getNbVictory(@UserDeco() user: TokenUser) {
+        //const user: TokenUser = req.user;
         const ret_nb = await this.userService.getVictoryNb(user.userID);
         const rankDbByWin = await this.userService.getRankUserGlobalWin(user.userID);
         const rankByRankUser = await this.userService.getRankUserByRank(user.userID);
@@ -372,15 +372,14 @@ export class UsersController {
 
 
     @Get('get-games-nb')
-    async getNbGames(@Request() req: any) {
-        const user: TokenUser = req.user;
+    async getNbGames(@UserDeco() user: TokenUser) {
         const ret_nb = await this.userService.getGamesNb(user.userID);
         return (ret_nb);
     }
 
     @Get('get_raw_mh')
-    async getMHRaw(@Request() req: any) {
-        const user: TokenUser = req.user;
+    async getMHRaw(@UserDeco() user: TokenUser) {
+        //const user: TokenUser = req.user;
         const ret_raw = await this.userService.getRawMH(user.userID);
         return (ret_raw);
     }
@@ -403,9 +402,7 @@ export class UsersController {
     /* 2 = user is self */
     /* 3 = ok */
     @Post('add-friend')
-    async addFriend(@Request() req: any, @Body() body: Username) {
-        const user: TokenUser = req.user;
-
+    async addFriend(@UserDeco() user: TokenUser, @Body() body: Username) {
         const ret_user = await this.userService.findUserByName(body.username);
         if (!ret_user)
             return ({ code: 0 });
@@ -432,10 +429,9 @@ export class UsersController {
     }
 
     @Post('add-blacklist')
-    async addBlackList(@Request() req: any, @Body() body: Username) {
-        const user: TokenUser = req.user;
-
+    async addBlackList(@UserDeco() user: TokenUser, @Body() body: Username) {
         const ret_user = await this.userService.findUserByName(body.username);
+
         if (!ret_user)
             return ({ code: 0 });
         else if (Number(ret_user.userID) == user.userID)
@@ -461,8 +457,7 @@ export class UsersController {
     }
 
     @Post('fr-bl-list')
-    async useBlackFriendList(@Request() req: any, @Body() body: BlockUnblock) {
-        const user: TokenUser = req.user;
+    async useBlackFriendList(@UserDeco() user: TokenUser, @Body() body: BlockUnblock) {
         const find: BlackFriendList | null
             = await this.userService.findBlFr(user.userID, body.userId, body.type);
         if (user.userID === body.userId)
@@ -483,13 +478,13 @@ export class UsersController {
     @Public()
     @UseGuards(CustomAuthGuard)
     @Post('login')
-    async login(@Request() req: any) {
-        let user: TokenUser = req.user;
+    async login(@UserDeco() user: TokenUser) {
+        //let user: TokenUser = req.user;
         user.fa_code = "";
         const access_token = await this.authService.login(user);
 
         return ({
-            token: access_token, user_id: req.user.userID,
+            token: access_token, user_id: user.userID,
             username: user.username, fa: user.fa
         });
     }
@@ -500,8 +495,7 @@ export class UsersController {
         return this.userService.createUser(createUserDto);
     }
     @Get('achiv')
-    async achiv(@Request() req: any) {
-        let user: TokenUser = req.user;
+    async achiv(@UserDeco() user: TokenUser) {
         //await this.userService.updateAchive(74133);
         const resAchivement = await this.userService.getAchivementById(user.userID);
         return (resAchivement);
@@ -521,6 +515,4 @@ export class UsersController {
             return ({ userID: 0, username: "", avatarPath: null, sstat: {} });
         return (user)
     }
-
-
 }
