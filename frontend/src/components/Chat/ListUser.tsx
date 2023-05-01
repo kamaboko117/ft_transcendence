@@ -413,11 +413,13 @@ const ListUserChat = (props: {
             }).catch(e => console.log(e)));
         }
         fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
-            setLstUserChat(res);
+            if (res)
+                setLstUserChat(res);
         }).catch(e => console.log(e));
         usrSocket?.on("updateListChat", () => {
             fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
-                setLstUserChat(res);
+                if (res)
+                    setLstUserChat(res);
             });
         });
         return (() => {

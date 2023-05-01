@@ -40,6 +40,7 @@ export class Code {
 }*/
 
 export class UpdateUser {
+    @IsNotEmpty()
     @IsString()
     username: string;
 

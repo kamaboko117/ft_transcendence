@@ -138,7 +138,7 @@ export class UsersController {
     private async checkUpdateUserError(ret_user: any, ret_user2: any,
         body: any, file: Express.Multer.File | undefined) {
         let err: string[] = [];
-        const regex2 = /^[\w\d]{3,}$/;
+        const regex2 = /^[\w\d]{4,}$/;
         const regexRet2 = regex2.test(body.username);
         let dimensions;
             console.log(file)
@@ -155,7 +155,7 @@ export class UsersController {
                     err.push("Username is already used");
         }
         if (regexRet2 === false)
-            err.push("Username format is wrong, please use alphabet and numerics values");
+            err.push("Username format is wrong, please use alphabet, numerics values and at least 4 characters");
 
         if (file)
             dimensions = await sizeOf(file.path);
@@ -395,22 +395,27 @@ export class UsersController {
         // this.userService.updateHistory('Simple', 2988219, 74133, 2988219);
     }
 
-
-
     /* 0 = user not found */
     /* 1 = already added in friend list */
     /* 2 = user is self */
     /* 3 = ok */
     @Post('add-friend')
     async addFriend(@UserDeco() user: TokenUser, @Body() body: Username) {
+        let err: string[] = [];
         const ret_user = await this.userService.findUserByName(body.username);
-        if (!ret_user)
-            return ({ code: 0 });
-        else if (Number(ret_user.userID) == user.userID)
-            return ({ code: 2 });
+
+        if (!ret_user){
+            err.push("User not found");
+            return ({code: 1, err: err});
+        }
+        if (ret_user && Number(ret_user.userID) == user.userID)
+            err.push("Can't add yourself");
         const findInList = await this.userService.searchUserInList(user.userID, ret_user.userID, 2);
         if (findInList)
-            return ({ code: 1 });
+            err.push("User aleady in list");
+        if (err.length > 0)
+            return ({code: 1, err: err});
+        //return ({ code: 1 });
         this.userService.insertBlFr(user.userID, Number(ret_user.userID), 2);
         //need to check if user is in BL, for updating global friend black list
         const findInBlackList = await this.userService.searchUserInList(user.userID, ret_user.userID, 1);
@@ -430,15 +435,20 @@ export class UsersController {
 
     @Post('add-blacklist')
     async addBlackList(@UserDeco() user: TokenUser, @Body() body: Username) {
+        let err: string[] = [];
         const ret_user = await this.userService.findUserByName(body.username);
 
-        if (!ret_user)
-            return ({ code: 0 });
-        else if (Number(ret_user.userID) == user.userID)
-            return ({ code: 2 });
+        if (!ret_user){
+            err.push("User not found");
+            return ({code: 1, err: err});
+        }
+        if (ret_user && Number(ret_user.userID) == user.userID)
+            err.push("Can't add yourself");
         const findInList = await this.userService.searchUserInList(user.userID, ret_user.userID, 1);
         if (findInList)
-            return ({ code: 1 });
+            err.push("User aleady in list");
+        if (err.length > 0)
+            return ({code: 1, err: err});
         this.userService.insertBlFr(user.userID, Number(ret_user.userID), 1);
         //need to check if user is in BL, for updating global friend black list
         const findInBlackList = await this.userService.searchUserInList(user.userID, ret_user.userID, 2);

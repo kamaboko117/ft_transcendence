@@ -29,6 +29,10 @@ type nameAchivement = {
 	name: string
 }
 
+type rankWin = {
+	rankDbByWin: number | undefined,
+	rankByRankUser: number | undefined
+}
 
 /* display default img if not img loaded */
 
@@ -62,7 +66,7 @@ function ChangeHandler(event: ChangeEvent<HTMLInputElement>
 	}
 }
 
-async function update(event: FormEvent<HTMLFormElement>, username: string,
+async function update(event: FormEvent<HTMLFormElement>, username: string | undefined,
 	userId: number | undefined,
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
@@ -70,6 +74,8 @@ async function update(event: FormEvent<HTMLFormElement>, username: string,
 	setLstErr: React.Dispatch<React.SetStateAction<[]>>, userCtx) {
 	event.preventDefault();
 
+	if (!username)
+		return ;
 	const formData = new FormData();
 	if (fileSet) {
 		formData.append('fileset', fileSet);
@@ -191,10 +197,11 @@ const LoadAchivement = (props: {jwt: string | null, setErrorCode}) => {
 					return(res.json())
 				props.setErrorCode(res.status);
 			}).then((res) => {
-				setList(res);
+				if (res)
+					setList(res);
 			})
 		}
-	}, [props.jwt])
+	}, [])
 
 	return(
 		<table className="profile-table-2">
@@ -210,17 +217,12 @@ const LoadAchivement = (props: {jwt: string | null, setErrorCode}) => {
 	);
 }
 
-type rankWin = {
-	rankDbByWin: number | undefined,
-	rankByRankUser: number | undefined
-}
-
 const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: string | null}) => {
 	const [vc, setVc] = useState<number>(0);
 	const [df, setDf] = useState<number>(0);
 	const [nb_g, setNb_g] = useState<number | undefined>(undefined);
 	const [rank, setRank] = useState<rankWin>({rankByRankUser: undefined, rankDbByWin: undefined});
-//
+
 	useEffect(() => {
 		fetch('https://' + location.host + '/api/users/get-games-nb/', {headers: header(props.jwt)})
 			.then(res => {
@@ -277,7 +279,7 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: s
 }
 
 function Setting(props: Readonly<{ jwt: string | null }>) {
-	const [user, setUser] = useState<userInfo>();
+	const [user, setUser] = useState<userInfo | undefined>(undefined);
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [lstErr, setLstErr] = useState<[]>([]);
 	const [avatarPath, setAvatarPath] = useState<string | null>(null);
@@ -285,7 +287,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 	const [oldFa, setOldFa] = useState<boolean>(false);
 	const [file, setFile] = useState<File | undefined>();
 	const userCtx: any = useContext(UserContext);
-	const [username, setUsername] = useState<string>(userCtx.getUsername());
+	const [username, setUsername] = useState<string | undefined>(undefined);
 	const navigate = useNavigate();
 
 	useEffect(() => {
