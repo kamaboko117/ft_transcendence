@@ -14,6 +14,8 @@ import { JwtGuard } from 'src/auth/jwt.guard';
 import { UseGuards } from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
 import { ChatService } from './chat.service';
+import { UserDecoSock } from 'src/common/middleware/user.decorator';
+import { StopEmit } from './dto/gateway-chat-dto';
 
 class Room {
   @IsString()
@@ -66,9 +68,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   /* Socket part */
   @UseGuards(JwtGuard)
   @SubscribeMessage('joinRoomChat')
-  async joinRoomChat(@ConnectedSocket() socket: Readonly<any>,
+  async joinRoomChat(@ConnectedSocket() socket: Socket, @UserDecoSock() user: TokenUser,
     @MessageBody() data: Room): Promise<boolean | { ban: boolean }> {
-    const user = socket.user;
+    //const user = socket.user;
 
     if (typeof user.userID != "number")
       return (false);
@@ -165,9 +167,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('leaveRoomChat')
-  async leaveRoomChat(@ConnectedSocket() socket: Readonly<any>,
+  async leaveRoomChat(@ConnectedSocket() socket: Socket, @UserDecoSock() user: TokenUser,
     @MessageBody() data: Room): Promise<string | undefined | { ban: boolean }> {
-    const user: TokenUser = socket.user;
+    //const user: TokenUser = socket.user;
 
     if (typeof user.userID != "number")
       return ("Couldn't' leave chat, wrong type id?");
@@ -187,9 +189,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('stopEmit')
-  async stopEmit(@ConnectedSocket() socket: Readonly<any>,
-    @MessageBody() data: any) {
-    const user = socket.user;
+  async stopEmit(@ConnectedSocket() socket: Socket, @UserDecoSock() user: TokenUser,
+    @MessageBody() data: StopEmit) {
+    //const user = socket.user;
     if (typeof data === "undefined"
       || !user || typeof user.userID != "number")
       return;
@@ -223,10 +225,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('sendMsg')
-  async newPostChat(@ConnectedSocket() socket: any,
+  async newPostChat(@ConnectedSocket() socket: Socket, @UserDecoSock() user: TokenUser,
     @MessageBody() data: SendMsg) {
-    const user = socket.user;
-
     if (typeof user.userID != "number")
       return;
     const getUser = await this.chatService.getUserOnChannel(data.id, user.userID);

@@ -10,6 +10,7 @@ import { ListUser } from './lstuser.entity';
 import { UsersService } from '../users/providers/users/users.service';
 import { User } from 'src/typeorm';
 import { ChatService } from './chat.service';
+import { UserDeco } from 'src/common/middleware/user.decorator';
 
 type Channel_ret = {
     Channel_id: string
@@ -29,15 +30,15 @@ export class ChatController {
 
     @UseGuards(JwtGuard)
     @Get('private')
-    async getAllPrivate(@Request() req: any): Promise<InformationChat[]> {
-        const user: TokenUser = req.user;
+    async getAllPrivate(@UserDeco() user: TokenUser): Promise<InformationChat[]> {
+        //const user: TokenUser = req.user;
         return (await this.chatService.getAllPrivate(user.userID));
     }
 
     @Get('users')
-    async getAllUsersOnChannel(@Request() req: any,
+    async getAllUsersOnChannel(@UserDeco() user: TokenUser,
         @Query('id') id: string) {
-        const user: TokenUser = req.user;
+        //const user: TokenUser = req.user;
         const listUsers: any = await this.chatService.getAllUsersOnChannel(id, user.userID);
 
         if (typeof listUsers === "undefined" || listUsers === null)
@@ -47,15 +48,15 @@ export class ChatController {
 
     /* Start of fixed chatbox part */
     @Get('list-pm')
-    async getDirectMessage(@Request() req: any) {
-        const user: TokenUser = req.user;
+    async getDirectMessage(@UserDeco() user: TokenUser) {
+        //const user: TokenUser = req.user;
         const channel: ListUser[] | null
             = await this.chatService.getAllPmUser(user.userID);
         return (channel);
     }
     @Get('channel-registered')
-    async getAllChanUser(@Request() req: any) {
-        const user: TokenUser = req.user;
+    async getAllChanUser(@UserDeco() user: TokenUser) {
+        //const user: TokenUser = req.user;
         const channel: Channel[] | null
             = await this.chatService.getAllUserOnChannels(user.userID);
         return (channel);
@@ -78,7 +79,7 @@ export class ChatController {
 
     /* Find user PM by username */
     @Get('find-pm-username')
-    async openPrivateMessageByUsername(@Request() req: any,
+    async openPrivateMessageByUsername(@UserDeco() tokenUser: TokenUser,
         @Query('username') username: string): Promise<{
             valid: boolean,
             channel_id: string, listPm: {
@@ -88,7 +89,7 @@ export class ChatController {
                 },
             }
         }> {
-        const tokenUser: TokenUser = req.user;
+        //const tokenUser: TokenUser = req.user;
         const error = {
             valid: false,
             channel_id: "",
@@ -117,10 +118,8 @@ export class ChatController {
         if it doesn't exist, create a pm
     */
     @Get('private-messages')
-    async openPrivateMessage(@Request() req: any,
+    async openPrivateMessage(@UserDeco() user: TokenUser,
         @Query('id', ParseIntPipe) id: string): Promise<{ asw: string | null | undefined }> {
-        const user: TokenUser = req.user;
-
         if (user.userID === Number(id))
             return ({ asw: null });
         const channel = await this.findPm(user.userID, id);
@@ -134,9 +133,8 @@ export class ChatController {
     */
     @UseGuards(JwtGuard)
     @Get('has-paswd')
-    async getHasPaswd(@Request() req: any,
+    async getHasPaswd(@UserDeco() user: TokenUser,
         @Query('id') id: string): Promise<boolean> {
-        const user: TokenUser = req.user;
         const channel: undefined | DbChat = await this.chatService.getChannelByTest(id);
         if (typeof channel != "undefined" && channel != null) {
             const getUser = await this.chatService.getUserOnChannel(id, user.userID);
@@ -153,9 +151,8 @@ export class ChatController {
     /* (?: mean non-group (optionnal)*/
     @UseGuards(JwtGuard)
     @Post('new-public')
-    async postNewPublicChat(@Request() req: any,
+    async postNewPublicChat(@UserDeco() user: TokenUser,
         @Body() chat: CreateChatDto): Promise<InformationChat | string[]> {
-        const user: TokenUser = req.user;
         const channel: undefined | DbChat = await this.chatService.getChannelByName(chat.name);
         let err: string[] = [];
         const regex = /^[\wàâéêèäÉÊÈÇç]+(?: [\wàâéêèäÉÊÈÇç]+)*$/;
@@ -196,9 +193,8 @@ export class ChatController {
     */
     @UseGuards(JwtGuard)
     @Post('new-private')
-    async postNewPrivateChat(@Request() req: any,
+    async postNewPrivateChat(@UserDeco() user: TokenUser,
         @Body() chat: CreateChatDto): Promise<InformationChat | string[]> {
-        const user: TokenUser = req.user;
         const channel: undefined | DbChat = await this.chatService.getChannelByName(chat.name);
         let err: string[] = [];
         const regex = /^[\wàâéêèäÉÊÈÇç]+(?: [\wàâéêèäÉÊÈÇç]+)*$/;
@@ -233,6 +229,7 @@ export class ChatController {
     @Post('valid-paswd')
     async passwordIsValid(@Body() psw: PswChat): Promise<boolean> {
         const channel: undefined | DbChat = await this.chatService.getChannelByTest(psw.id);
+
         if (typeof channel == "undefined" || channel === null || channel.password == '')
             return (false);
         if (psw && psw.psw && channel && channel.password) {
@@ -244,9 +241,8 @@ export class ChatController {
     }
 
     @Get('')
-    async getChannel(@Request() req: any,
+    async getChannel(@UserDeco() user: TokenUser,
         @Query('id') id: string) {
-        const user: TokenUser = req.user;
         const chan = await this.chatService.getChannelByTest(id);
         const listMsg = await this.chatService.getListMsgByChannelId(id, user.userID);
         if (!chan)
