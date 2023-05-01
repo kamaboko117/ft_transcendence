@@ -1,5 +1,6 @@
 import { Request, Body, Controller, Get, Post, UsePipes, ValidationPipe, Query } from '@nestjs/common';
 import { TokenUser } from 'src/chat/chat.interface';
+import { UserDeco } from 'src/common/middleware/user.decorator';
 import { CreateRoomDto, CreateRoomPrivate } from 'src/rooms/dto/rooms.dtos';
 import { RoomsService } from 'src/rooms/services/rooms/rooms.service';
 import { SocketEvents } from 'src/socket/socketEvents';
@@ -15,10 +16,10 @@ export class RoomsController {
 
     @Post("create")
     @UsePipes(ValidationPipe)
-    createRoom(@Request() req: any,
+    createRoom(@UserDeco() user: TokenUser,
         @Body() createRoomDto: CreateRoomDto) {
         //si tu veux l user id
-        const user: TokenUser = req.user;
+        //const user: TokenUser = req.user;
         const regex = /^[\wàâéêèäÉÊÈÇç]+(?: [\wàâéêèäÉÊÈÇç]+)*$/;
         const resultRegex = regex.exec(createRoomDto.roomName);
 
@@ -51,9 +52,9 @@ export class RoomsController {
 
     @Post("create-private")
     @UsePipes(ValidationPipe)
-    async createRoomPrivate(@Request() req: any,
+    async createRoomPrivate(@UserDeco() user: TokenUser,
         @Body() createRoomDto: CreateRoomPrivate) {
-        const user: TokenUser = req.user;
+        //const user: TokenUser = req.user;
         const name: string = String(user.userID) + '|' + String(createRoomDto.id);
         if (user.userID === createRoomDto.id) {
             return ({ roomName: '', Capacity: '0', private: false, uid: '' });
@@ -78,8 +79,7 @@ export class RoomsController {
     }
 
     @Get('get')
-    async getRoom(@Request() req: any,
-        @Query('id') id: string) {
+    async getRoom(@Query('id') id: string) {
         const room = await this.roomsService.getRoom(id);
 
         if (!room)
@@ -93,13 +93,13 @@ export class RoomsController {
     }
 
     @Get(":id")
-    async getRoomById(@Request() req: any) {
-      const user: TokenUser = req.user;
+    async getRoomById(@Query('id') id: string, @UserDeco() user: TokenUser) {
+      //const user: TokenUser = req.user;
       const isUserConnected = this.socketEvents.isUserConnected(
         String(user.userID)
       );
       if (!isUserConnected)
         return { roomName: "", Capacity: "0", private: false, uid: "" };
-      return this.roomsService.findRoomById(req.params.id);
+      return this.roomsService.findRoomById(id);
     }
 }
