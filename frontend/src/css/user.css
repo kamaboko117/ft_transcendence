@@ -100,6 +100,9 @@ ul {
     td {
         font-size: 0.5em;
     }
+    span.txt {
+        font-size: 0.5em;
+    }
 }
 
 @media screen and (max-width: 110px) {
@@ -123,5 +126,8 @@ ul {
     }
     input[type="submit"] {
         font-size: 0.3em;
+    }
+    .txt {
+        margin-left: 1px !important;
     }
 }
