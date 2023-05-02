@@ -1,6 +1,6 @@
-import React, { useEffect, useState, ChangeEvent, FormEvent, useContext, useRef } from "react";
+import React, { useEffect, useState, ChangeEvent, FormEvent, useContext } from "react";
 import { FetchError, header } from "../../components/FetchError";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import UserContext from "../../contexts/UserContext";
 import '../../css/user.css';
 
@@ -330,7 +330,6 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 				<LoadAchivement setErrorCode={setErrorCode} jwt={props.jwt}/>
 			</article>
 			<article>
-				{/*getLocation.pathname === "/Setting" && <label>Username: {userCtx.getUsername()}</label>*/}
 				<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
 					update(event, username,
 						user?.userID, file, FA, props.jwt,
@@ -376,7 +375,6 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 						Image is too large, please upload a size inferior to 1MB.
 					</p>
 				}
-				
 			</article>
 		</section>);
 }

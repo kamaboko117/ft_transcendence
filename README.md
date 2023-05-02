@@ -4,4 +4,4 @@
 
 Lancer avec ```docker-compose up --build```
 
-Accès site + Vite au [http://localhost:4000/](http://localhost:4000/), backend au port 3000
+Accès site + Vite au [https://localhost:4000/](https://localhost:4000/), backend au port 3000

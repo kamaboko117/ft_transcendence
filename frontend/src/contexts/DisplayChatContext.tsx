@@ -1,6 +1,5 @@
 import React, { useEffect, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import scrollElement from 'react-scroll/modules/mixins/scroll-element';
 import { Socket } from 'socket.io-client';
 import { lstMsg } from '../components/Chat/Chat';
 import { FetchError, header } from '../components/FetchError';
