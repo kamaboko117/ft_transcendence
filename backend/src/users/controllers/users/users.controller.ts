@@ -8,7 +8,8 @@ import {
     UseGuards,
     UsePipes,
     ValidationPipe,
-    Request, Res, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, NotFoundException, UnauthorizedException, HttpException, HttpStatus, Query, BadRequestException
+    UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, NotFoundException
+    , HttpException, HttpStatus, Query, BadRequestException
 } from "@nestjs/common";
 import { CreateUserDto, BlockUnblock, UpdateUser, Username, FirstConnection, Code } from "src/users/dto/users.dtos";
 import { UsersService } from "src/users/providers/users/users.service";
@@ -39,7 +40,6 @@ export class UsersController {
     @UseGuards(JwtFirstGuard)
     @Get('set-fa')
     async setFa(@UserDeco() user: TokenUser) {
-        //const user: TokenUser = req.user;
         const userDb = await this.userService.getUserFaSecret(user.userID);
 
         if (!userDb || !userDb?.username) {
@@ -61,7 +61,6 @@ export class UsersController {
     @UseGuards(JwtFirstGuard)
     @Get('check-fa')
     async checkFa(@UserDeco() user: TokenUser) {
-        //const user: TokenUser = req.user;
         const userDb = await this.userService.getUserFaSecret(user.userID);
 
         if (!userDb?.username) {
@@ -80,7 +79,6 @@ export class UsersController {
     @Post('valid-fa-code')
     async validFaCode(@Body() body: Code,
         @UserDeco() user: TokenUser) {
-        //let user: TokenUser = req.user;
         const userDb = await this.userService.getUserFaSecret(user.userID);
         let isValid = false;
         let access_token = { access_token: "" }
@@ -125,7 +123,6 @@ export class UsersController {
     @UseGuards(FakeAuthGuard)
     @Get('fake-login')
     async fakeLogin(@UserDeco() user: TokenUser) {
-        //let user: TokenUser = req.user;
         user.fa_code = "";
         const access_token = await this.authService.login(user);
 
@@ -185,7 +182,6 @@ export class UsersController {
         ], fileIsRequired: false
     }),
     ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
-        //let user: TokenUser = req.user;
         const ret_user = await this.userService.findUserByName(body.username);
         let ret_user2 = await this.userService.findUsersById(user.userID);
 
@@ -241,7 +237,6 @@ export class UsersController {
         ], fileIsRequired: false
     }),
     ) file: Express.Multer.File | undefined, @Body() body: FirstConnection) {
-        //let user = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
         const ret_user2 = await this.userService.findUserByName(body.username);
 
@@ -275,7 +270,6 @@ export class UsersController {
         ],
     }),
     ) file: Express.Multer.File) {
-        //const user: TokenUser = req.user;
         this.userService.updatePathAvatarUser(user.userID, file.path);
         return ({ path: file.path });
     }
@@ -297,7 +291,6 @@ export class UsersController {
     @UseGuards(JwtGuard)
     @Get('profile')
     async getProfile(@UserDeco() user: TokenUser) {
-        //const user: TokenUser = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
         return (ret_user);
     }
@@ -307,7 +300,6 @@ export class UsersController {
     @UseGuards(JwtFirstGuard)
     @Get('first-profile')
     async firstConnectionProfile(@UserDeco() user: TokenUser) {
-        //const user: TokenUser = req.user;
         const ret_user = await this.userService.getUserProfile(user.userID);
         return (ret_user);
     }
@@ -316,7 +308,6 @@ export class UsersController {
     @Get('info-fr-bl')
     async getUserInfo(@UserDeco() user: TokenUser,
         @Query('name') name: string) {
-        //const user: TokenUser = req.user;
         const ret_user = await this.userService.findUserByName(name);
 
         if (!ret_user)
@@ -347,7 +338,6 @@ export class UsersController {
 
     @Get('get-victory-nb')
     async getNbVictory(@UserDeco() user: TokenUser) {
-        //const user: TokenUser = req.user;
         const ret_nb = await this.userService.getVictoryNb(user.userID);
         const rankDbByWin = await this.userService.getRankUserGlobalWin(user.userID);
         const rankByRankUser = await this.userService.getRankUserByRank(user.userID);
@@ -379,7 +369,6 @@ export class UsersController {
 
     @Get('get_raw_mh')
     async getMHRaw(@UserDeco() user: TokenUser) {
-        //const user: TokenUser = req.user;
         const ret_raw = await this.userService.getRawMH(user.userID);
         return (ret_raw);
     }
@@ -415,7 +404,6 @@ export class UsersController {
             err.push("User aleady in list");
         if (err.length > 0)
             return ({code: 1, err: err});
-        //return ({ code: 1 });
         this.userService.insertBlFr(user.userID, Number(ret_user.userID), 2);
         //need to check if user is in BL, for updating global friend black list
         const findInBlackList = await this.userService.searchUserInList(user.userID, ret_user.userID, 1);
@@ -433,6 +421,10 @@ export class UsersController {
         });
     }
 
+    /* 0 = user not found */
+    /* 1 = already added in friend list */
+    /* 2 = user is self */
+    /* 3 = ok */
     @Post('add-blacklist')
     async addBlackList(@UserDeco() user: TokenUser, @Body() body: Username) {
         let err: string[] = [];
@@ -489,7 +481,6 @@ export class UsersController {
     @UseGuards(CustomAuthGuard)
     @Post('login')
     async login(@UserDeco() user: TokenUser) {
-        //let user: TokenUser = req.user;
         user.fa_code = "";
         const access_token = await this.authService.login(user);
 
@@ -506,14 +497,12 @@ export class UsersController {
     }
     @Get('achiv')
     async achiv(@UserDeco() user: TokenUser) {
-        //await this.userService.updateAchive(74133);
         const resAchivement = await this.userService.getAchivementById(user.userID);
         return (resAchivement);
     }
 
     @Get('achiv-other/:id')
     async achivOther(@Param('id', ParseIntPipe) id: number) {
-        //await this.userService.updateAchive(id);
         const resAchivement = await this.userService.getAchivementById(id);
         return (resAchivement);
     }

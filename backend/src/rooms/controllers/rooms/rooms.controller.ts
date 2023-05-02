@@ -1,4 +1,4 @@
-import { Request, Body, Controller, Get, Post, UsePipes, ValidationPipe, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, UsePipes, ValidationPipe, Query } from '@nestjs/common';
 import { TokenUser } from 'src/chat/chat.interface';
 import { UserDeco } from 'src/common/middleware/user.decorator';
 import { CreateRoomDto, CreateRoomPrivate } from 'src/rooms/dto/rooms.dtos';
@@ -12,14 +12,10 @@ export class RoomsController {
         private readonly socketEvents: SocketEvents,
         private readonly userService: UsersService) { }
 
-
-
     @Post("create")
     @UsePipes(ValidationPipe)
     createRoom(@UserDeco() user: TokenUser,
         @Body() createRoomDto: CreateRoomDto) {
-        //si tu veux l user id
-        //const user: TokenUser = req.user;
         const regex = /^[\wàâéêèäÉÊÈÇç]+(?: [\wàâéêèäÉÊÈÇç]+)*$/;
         const resultRegex = regex.exec(createRoomDto.roomName);
 
@@ -54,7 +50,6 @@ export class RoomsController {
     @UsePipes(ValidationPipe)
     async createRoomPrivate(@UserDeco() user: TokenUser,
         @Body() createRoomDto: CreateRoomPrivate) {
-        //const user: TokenUser = req.user;
         const name: string = String(user.userID) + '|' + String(createRoomDto.id);
         if (user.userID === createRoomDto.id) {
             return ({ roomName: '', Capacity: '0', private: false, uid: '' });
@@ -94,7 +89,6 @@ export class RoomsController {
 
     @Get(":id")
     async getRoomById(@Query('id') id: string, @UserDeco() user: TokenUser) {
-      //const user: TokenUser = req.user;
       const isUserConnected = this.socketEvents.isUserConnected(
         String(user.userID)
       );

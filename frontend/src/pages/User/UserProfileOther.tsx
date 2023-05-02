@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext, MouseEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FetchError, header, headerPost } from '../../components/FetchError';
-import UserContext, { User } from '../../contexts/UserContext';
+import UserContext from '../../contexts/UserContext';
 import ContextDisplayChannel, { updateBlackFriendList } from '../../contexts/DisplayChatContext';
 import { inviteGame, StatusUser } from '../../components/Chat/ListUser';
 import { Achivement_Raw, Match_History_Raw } from './Setting';
