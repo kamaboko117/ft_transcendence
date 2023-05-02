@@ -26,7 +26,10 @@ export class User {
   })
   username: string;
 
-  @Column({ nullable: true })
+  @Column({
+    nullable: true,
+    default: 'upload_avatar/default.png'
+  })
   avatarPath!: string;
 
   @Column({

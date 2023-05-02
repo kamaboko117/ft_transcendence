@@ -228,19 +228,19 @@ export const StatusUser = (props: { userId: number, jwt: string | null }) => {
         {
             status === 0 && <div className='status'>
                 <div style={{ width: "20px", height: "20px", backgroundColor: "grey" }}>
-                </div><span>Offline</span>
+                </div><span className='txt'>Offline</span>
             </div>
         }
         {
             status === 1 && <div className='status'>
                 <div style={{ width: "20px", height: "20px", backgroundColor: "green" }}>
-                </div><span>Online</span>
+                </div><span className='txt'>Online</span>
             </div>
         }
         {
             status === 2 && <div className='status'>
                 <div style={{ width: "20px", height: "20px", backgroundColor: "orange" }}>
-                </div><span>In game</span>
+                </div><span className='txt'>In game</span>
             </div>
         }
     </>);
@@ -287,7 +287,7 @@ export const handleImgError = (e) => {
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
     if (target) {
-        target.srcset = "/upload_avatar/default.png 2x";
+        target.srcset = "/upload_avatar/default.png 320w";
         target.src = "/upload_avatar/default.png";
     }
 }
@@ -380,7 +380,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
             <div className={chooseClassName} style={{ top: offsetTop }}>
                 <label className="userInfo">{userInfo.username}</label>
                 <img src={"/" + userInfo.avatarPath}
-                    srcSet={"/" + userInfo.avatarPath + ' 2x'}
+                    srcSet={"/" + userInfo.avatarPath + " 320w"}
                     alt={"avatar " + userInfo.username}
                     onError={handleImgError}
                 />
