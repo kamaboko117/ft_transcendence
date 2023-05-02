@@ -20,7 +20,6 @@ export const SocketProvider = (props: { jwt: string | null, usrSocket: Socket<an
     const [errorCode, setErrorCode] = useState<number>(200);
 
     useEffect(() => {
-        console.log(props.usrSocket?.connected)
         //if (props.jwt && props.jwt != "" && props.usrSocket && props.usrSocket.connected === false)
         //   navigate("/logout");
         if (props.jwt && props.jwt != ""

@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, Query, Request } from '@nestjs/common';
 import { strict } from 'assert';
+import { UserDeco } from 'src/common/middleware/user.decorator';
 import { Channel } from '../chat.entity';
 import { TokenUser } from '../chat.interface';
 import { PostActionDto, PostActionDtoPsw } from '../dto/role-action-dto';
@@ -28,12 +29,22 @@ export class RoleController {
     /* GET part */
     /* id = channel's id */
     @Get('getRole')
-    async getQueryRole(@Request() req: any,
+    async getQueryRole(@UserDeco() user: TokenUser,
         @Query('id') id: string): Promise<typeGetRole> {
-        const user: TokenUser = req.user;
         const role: typeGetRole = await this.getRole(user.userID, id);
 
         return (role);
+    }
+
+    @Get('get-role-focus')
+    async getQueryFocusRole(@Query('idfocus') userId: number,
+        @Query('id') channelId: string): Promise<{role: string}> {
+        if (!channelId || !userId)
+            return ({ role: "" });
+        const list_user: ListUser | null = await this.roleService.getRole(channelId, userId);
+        if (!list_user)
+            return ({ role: "" });
+        return ({ role: list_user.role });
     }
 
     /*  grant user to administrator */
@@ -94,8 +105,7 @@ export class RoleController {
     }
 
     @Get('get-access-type')
-    async getAccessType(@Request() req: any, @Query('id') id: string) {
-        const user: TokenUser = req.user;
+    async getAccessType(@UserDeco() user: TokenUser, @Query('id') id: string) {
         const getRole = await this.getRole(user.userID, id);
 
         if (getRole.role != "Owner")
@@ -106,9 +116,8 @@ export class RoleController {
 
     /* POST */
     @Post('role-action')
-    async runActionAdmin(@Request() req: any,
+    async runActionAdmin(@UserDeco() user: TokenUser,
         @Body() body: PostActionDto): Promise<boolean> {
-        const user: TokenUser = req.user;
         const getRole = await this.getRole(user.userID, body.id);
         const getRoleUserFocus = await this.getRole(body.userId, body.id);
         let action: string = body.action;
@@ -116,6 +125,8 @@ export class RoleController {
         //need to Uppercase first character
         action = action.charAt(0).toUpperCase() + action.slice(1);
         if (!getRoleUserFocus || getRoleUserFocus.role === "Owner")
+            return (false);
+        if (getRole.role === "Administrator" && getRoleUserFocus.role === "Administrator")
             return (false);
         if (!getRole || user.userID === body.userId
             || (getRole.role !== "Owner" && getRole.role !== "Administrator"))
@@ -145,13 +156,16 @@ export class RoleController {
     }
 
     @Post('role-action-spe')
-    async runActionAdminSpecial(@Request() req: any,
+    async runActionAdminSpecial(@UserDeco() user: TokenUser,
         @Body() body: PostActionDto): Promise<boolean> {
-        const user: TokenUser = req.user;
         let action: string = body.action;
         const getRole = await this.getRole(user.userID, body.id);
+        const getRoleUserFocus = await this.getRole(body.userId, body.id);
+
         if (!getRole || user.userID === body.userId
             || (getRole.role !== "Owner" && getRole.role !== "Administrator"))
+            return (false);
+        if (getRole.role === "Administrator" && getRoleUserFocus.role === "Administrator")
             return (false);
         switch (action) {
             case "unban":
@@ -167,11 +181,11 @@ export class RoleController {
     }
 
     @Post('role-action-psw')
-    async runActionAdminPsw(@Request() req: any,
+    async runActionAdminPsw(@UserDeco() user: TokenUser,
         @Body() body: PostActionDtoPsw): Promise<boolean> {
-        const user: TokenUser = req.user;
         let action: string = body.action;
         const getRole = await this.getRole(user.userID, body.id);
+
         if (!getRole || getRole.role !== "Owner")
             return (false);
         if (action === "setpsw" && (!body.psw || body.psw === ""))
