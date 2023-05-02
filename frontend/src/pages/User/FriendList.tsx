@@ -93,7 +93,6 @@ const handleClick = (event: React.MouseEvent<HTMLDivElement>,
 	const attributes: NamedNodeMap = e.attributes as NamedNodeMap;
 	/* update userInfo state on click, from the html tree */
 	if (userInfo.username === "" || userInfo.username != name) {
-		//setUserId(Number(attributes[0].value));
 		if (attributes.length === 4) {
 			setUserInfo({
 				username: name,

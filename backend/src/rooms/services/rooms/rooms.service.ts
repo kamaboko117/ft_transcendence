@@ -31,7 +31,6 @@ export class RoomsService {
       .setParameters({ type: false })
       .getMany();
     return (await rooms);
-    //return this.roomRepository.find();
   }
 
   findRoomById(uid: string) {

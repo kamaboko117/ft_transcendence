@@ -6,7 +6,6 @@ import { CreateUserDto } from "src/users/dto/users.dtos";
 import { Stat } from "src/typeorm/stat.entity";
 import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
 import { MatchHistory } from "src/typeorm/matchHistory.entity";
-import { identity } from "rxjs";
 import { Achievements } from "src/typeorm/achievement.entity";
 
 const validateURL = "https://api.intra.42.fr/oauth/token"
@@ -378,8 +377,6 @@ export class UsersService {
     }
 
     async updateAchive(id: number) {
-        //let typeAchivement = "";
-        console.log(id)
         const nbGame = await this.getGamesNb(id);
         const nbVic = await this.getVictoryNb(id);
         const stat = await this.statRepository.createQueryBuilder("stat")
@@ -576,6 +573,4 @@ export class UsersService {
         }
     }
     /* end add remove friend - block unblock user part  */
-
-
 }

@@ -1,4 +1,4 @@
-import { Controller, Request, Query, Get, Post, Body, HttpException, HttpStatus, UseGuards, ParseIntPipe } from '@nestjs/common';
+import { Controller, Query, Get, Post, Body, HttpException, HttpStatus, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { InformationChat, TokenUser, DbChat } from './chat.interface';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { PswChat } from './psw-chat.dto';
@@ -31,14 +31,12 @@ export class ChatController {
     @UseGuards(JwtGuard)
     @Get('private')
     async getAllPrivate(@UserDeco() user: TokenUser): Promise<InformationChat[]> {
-        //const user: TokenUser = req.user;
         return (await this.chatService.getAllPrivate(user.userID));
     }
 
     @Get('users')
     async getAllUsersOnChannel(@UserDeco() user: TokenUser,
         @Query('id') id: string) {
-        //const user: TokenUser = req.user;
         const listUsers: any = await this.chatService.getAllUsersOnChannel(id, user.userID);
 
         if (typeof listUsers === "undefined" || listUsers === null)
@@ -49,14 +47,12 @@ export class ChatController {
     /* Start of fixed chatbox part */
     @Get('list-pm')
     async getDirectMessage(@UserDeco() user: TokenUser) {
-        //const user: TokenUser = req.user;
         const channel: ListUser[] | null
             = await this.chatService.getAllPmUser(user.userID);
         return (channel);
     }
     @Get('channel-registered')
     async getAllChanUser(@UserDeco() user: TokenUser) {
-        //const user: TokenUser = req.user;
         const channel: Channel[] | null
             = await this.chatService.getAllUserOnChannels(user.userID);
         return (channel);
@@ -89,7 +85,6 @@ export class ChatController {
                 },
             }
         }> {
-        //const tokenUser: TokenUser = req.user;
         const error = {
             valid: false,
             channel_id: "",
