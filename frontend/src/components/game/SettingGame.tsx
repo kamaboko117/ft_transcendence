@@ -153,7 +153,6 @@ const Custom_speed_ball = (props: { usrSocket }) => {
         onChange={handleChange}
         type="radio"
         value={3}
-        id="normalBall"
         name="speed_ball"
         checked={speed === "3"}
       />
@@ -162,7 +161,6 @@ const Custom_speed_ball = (props: { usrSocket }) => {
         onChange={handleChange}
         type="radio"
         value={5}
-        id="averageBall"
         name="speed_ball"
         checked={speed === "5"}
       />
@@ -171,7 +169,6 @@ const Custom_speed_ball = (props: { usrSocket }) => {
         onChange={handleChange}
         type="radio"
         value={10}
-        id="fastBall"
         name="speed_ball"
         checked={speed === "10"}
       />
@@ -180,30 +177,158 @@ const Custom_speed_ball = (props: { usrSocket }) => {
   );
 };
 
-const Custom_color_ball = () => {
+const Custom_acceleration_ball = (props: { usrSocket }) => {
+  const [acc, setAcc] = useState<string>("0.1");
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e && e.target) {
+      setAcc(e.target.value);
+      globalSettings.acceleration = Number(e.target.value);
+      if (!isNaN(Number(e.target.value)) && Number(e.target.value)) {
+        props.usrSocket.emit("edit_settings", { ...globalSettings });
+      }
+    }
+  };
+  useEffect(() => {
+    props.usrSocket.on("edit_settings", (res: IGameSettings) => {
+      changeGlobalSettings(res);
+      setAcc(res.acceleration.toString());
+    });
+  }, []);
   return (
     <div>
       <label>
-        <b>Couleur de la balle</b>
+        <b>Acceleration de la balle</b>
       </label>
-      <input type="radio" value="red" id="redBall" name="color_ball" checked />
-      <label>Red</label>
       <input
+        onChange={handleChange}
         type="radio"
-        value="blue"
-        id="blueBall"
-        name="color_ball"
-        checked
+        value={0.1}
+        name="acc_ball"
+        checked={acc === "0.1"}
       />
-      <label>Blue</label>
+      <label>Normal</label>
       <input
+        onChange={handleChange}
         type="radio"
-        value="green"
-        id="greenBall"
-        name="color_ball"
-        checked
+        value={0.2}
+        name="acc_ball"
+        checked={acc === "0.2"}
       />
-      <label>Green</label>
+      <label>Speed</label>
+      <input
+        onChange={handleChange}
+        type="radio"
+        value={0.4}
+        name="acc_ball"
+        checked={acc === "0.4"}
+      />
+      <label>Sonic</label>
+    </div>
+  );
+};
+
+const Custom_goal = (props: { usrSocket }) => {
+  const [goal, setGoal] = useState<string>("11");
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e && e.target) {
+      setGoal(e.target.value);
+      globalSettings.goal = Number(e.target.value);
+      if (!isNaN(Number(e.target.value)) && Number(e.target.value)) {
+        props.usrSocket.emit("edit_settings", { ...globalSettings });
+      }
+    }
+  };
+  useEffect(() => {
+    props.usrSocket.on("edit_settings", (res: IGameSettings) => {
+      changeGlobalSettings(res);
+      setGoal(res.goal.toString());
+    });
+  }, []);
+  return (
+    <div>
+      <label>
+        <b>Match Point</b>
+      </label>
+      <input
+        onChange={handleChange}
+        type="radio"
+        value={11}
+        name="goal_ball"
+        checked={goal === "11"}
+      />
+      <label>Normal</label>
+      <input
+        onChange={handleChange}
+        type="radio"
+        value={12}
+        name="goal_ball"
+        checked={goal === "12"}
+      />
+      <label>Long</label>
+      <input
+        onChange={handleChange}
+        type="radio"
+        value={42}
+        name="goal_ball"
+        checked={goal === "42"}
+      />
+      <label>Transendance long</label>
+    </div>
+  );
+};
+
+const Custom_color_ball = (props: { usrSocket }) => {
+  const [color, setColor] = useState<string>("WHITE");
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e && e.target) {
+      setColor(e.target.value);
+      globalSettings.ballColor = e.target.value;
+      props.usrSocket.emit("edit_settings", { ...globalSettings });
+    }
+  };
+  useEffect(() => {
+    props.usrSocket.on("edit_settings", (res: IGameSettings) => {
+      changeGlobalSettings(res);
+      setColor(res.ballColor);
+    });
+  }, []);
+  return (
+    <div>
+      <label>
+        <b>Color Ball</b>
+      </label>
+      <input
+        onChange={handleChange}
+        type="radio"
+        value={"WHITE"}
+        name="color_ball"
+        checked={color === "WHITE"}
+      />
+      <label>WHITE</label>
+      <input
+        onChange={handleChange}
+        type="radio"
+        value={"RED"}
+        name="color_ball"
+        checked={color === "RED"}
+      />
+      <label>RED</label>
+      <input
+        onChange={handleChange}
+        type="radio"
+        value={"GREEN"}
+        name="color_ball"
+        checked={color === "GREEN"}
+      />
+      <label>GREEN</label>
+      <input
+        onChange={handleChange}
+        type="radio"
+        value={"BLUE"}
+        name="color_ball"
+        checked={color === "BLUE"}
+      />
+      <label>BLUE</label>
     </div>
   );
 };
@@ -261,7 +386,16 @@ const Custom_setting = (props: { cst: boolean; usrSocket; id: string }) => {
         <Custom_speed_ball usrSocket={props.usrSocket} />
         <br />
         <br />
-        < Custom_power_up usrSocket={props.usrSocket}/>
+        <Custom_acceleration_ball usrSocket={props.usrSocket} />
+        <br />
+        <br />
+        < Custom_goal usrSocket={props.usrSocket} />
+        <br />
+        <br />
+        < Custom_color_ball usrSocket={props.usrSocket} />
+        <br />
+        <br />
+        <Custom_power_up usrSocket={props.usrSocket}/>
         <br />
       </>
     );
@@ -365,10 +499,10 @@ const SettingGame = (props: { socketService: { socket: any }; id: string }) => {
 export default SettingGame;
 
 /*
- * Power up
- * Type
- * Goal
- * Speed
- * Acceleration
- * Color
+ * Power up     OK
+ * Type         OK
+ * Goal         OK
+ * Speed        OK
+ * Acceleration OK
+ * Color        OK
  */
