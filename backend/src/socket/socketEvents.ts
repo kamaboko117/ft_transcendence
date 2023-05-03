@@ -701,18 +701,18 @@ export class SocketEvents {
     }
   }
 
-  
+
   MatchmakeUserToGame(userId: string, userIdFocus: string, idGame: string) {
     const map = this.userGateway.getMap();
 
     for (let [key, value] of map.entries()) {
       if (value === userIdFocus) {
         this.server.to(key).emit('matchmakeGame',
-          {idGame: idGame, user_id: userId});
+          { idGame: idGame, user_id: userId });
       }
       if (value === userId) {
         this.server.to(key).emit('matchmakeGame',
-          {idGame: idGame, user_id: userId});
+          { idGame: idGame, user_id: userId });
       }
     }
   }
@@ -916,11 +916,16 @@ export class SocketEvents {
     if (!game) {
       return;
     }
-    if (data.side === 1) {
+    /*if (data.side === 1) {
       game.player1.y = data.y;
     } else {
       game.player2.y = data.y;
-    }
+    }*/
+    if (client.id === game.player1.socketId)
+      game.player1.y = data;
+    else
+      game.player2.y = data;
+    game.player1.socketId
     let player1 = game.player1;
     let player2 = game.player2;
     let ball = game.ball;
@@ -998,7 +1003,7 @@ export class SocketEvents {
           ball,
           powerUps,
         });
-        client.to(data.uid).to(data.uid).emit("on_game_update", {
+        client.to(data.uid).emit("on_game_update", {
           player1,
           player2,
           ball,
