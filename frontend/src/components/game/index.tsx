@@ -263,10 +263,7 @@ export default function Game(props: {
     if (!rect) return;
     player.y = e.clientY - rect.top - player.height / 2;
     if (socketService.socket)
-      gameService.updatePlayerPosition(socketService.socket, {
-        side: side,
-        y: player.y,
-      });
+      gameService.updatePlayerPosition(socketService.socket, player.y);
   }
   /*
     useEffect(() => {
