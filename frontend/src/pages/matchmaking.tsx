@@ -167,7 +167,7 @@ export default function MatchmakingPage() {
         <br></br>
         {Queue && (
                 <div className="matchmakingLogos">
-                  <img style={{ backgroundColor: 'transparent', alignSelf: 'center', width: 500, height: 120}} src={MMloading} alt="loading..." />
+                  <img style={{ backgroundColor: 'transparent', alignSelf: 'center', width: 500}} src={MMloading} alt="loading..." />
                 </div>
            )}
         <ToastContainer
