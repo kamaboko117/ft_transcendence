@@ -5,7 +5,13 @@
     right: 0;
   }
 
-  @media screen and (max-width: 150px) {
+  @media screen and (max-width: 1000px) {
+    .container {
+      position: absolute;
+      bottom: 20%;
+      width: 100%;
+      height: 30%;
+    }
     .rhap_progress-section {
       display: block !important;
     }
