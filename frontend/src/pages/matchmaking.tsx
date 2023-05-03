@@ -1,22 +1,18 @@
-import { io } from "socket.io-client";
 import React, { useEffect, useState, useContext } from "react";
 import SocketContext from "../contexts/Socket";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import {
-  useDisclosure,
   Flex,
   Box,
-  useToast,
-  Spinner,
   Button,
+  Text
 } from "@chakra-ui/react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import logo from "../assets/MMlogo.gif";
 import MMchallenger from "../assets/newchallenjour.jpg";
 import notmariodontsuemenintendo from "../assets/nostalgiamario.png";
-
-
+import "./matchmaking.css"
 //import {MMClass} from "../components/matchmaking/matchmakingsocket";
 import { FetchError, header, headerPost } from "../components/FetchError";
 //location.host = "localhost:4000"
@@ -24,23 +20,7 @@ import { FetchError, header, headerPost } from "../components/FetchError";
 //client 192.168.1.31:4000
 //vm en nat
 
-// Après discussion sur le pont avec la partie Play, j'enlève la partie alertes toast
-//Au final, ce sera un bouton avec opt-in opt-out of queue dans la page play à côté de createroom
-//Quand ça match, je crée un room au nom d'un userid pour le joueur 1, je joinroom le joueur 2 en utilisant les fonctions dans play.tsx
-//Il y a un intérêt que ça passe par un room du play tsx pour qu'il soit possible de le voir dans le roomlist
-// -> pouvoir spectateur un room à partir de là
-//Pas de pop-up pour accepter ou decliner le match vu que ce ne n'est pas démandé dans le sujet, aucune idée sur la correction
-//Peut être implementé après si le reste est bien fait
-// En conclusion, la partie socket/bouton matchmaking dans cette page sera bougé dans la page Play à côté du Create Room sans le toast
-// Il faudra que je disable le bouton createRoom(peut simplement if (Queue) alors rien faire ) ou empêcher un joueur de rejoindre un room avec le Queue state à true
-// Tout ça à rajouter dans un play finalisé, en attendant, gérér le opt out du matchmaking et que le frontend recoit l'en dessous
-//Côté backend, la fonction rungame emit vers le frontend socket id l'id du joueur avec lequel il est matché et si il est celui qui crée le room ou celui qui attend de rejoindre le room de l'autre
 
-// Idée de douche, rajouter un component sur la page d'acceuil qui check si le serveur backend est joignable ou non avec le spinner tout con de nintendo là
-// Ca nous évite les "ah bah pk il marche plus le login maintenant lol"
-// Ca peut check tout bête avec un usrsocket vers le backend qui renvoie un "oui tkt je suis là" et tant qu'on n'a pas reçu de emit, on affiche un spinner
-// Après faire un gateway juste sur ça est peut-être un peu trop, je peux le rajouter dans mon mmgateway mais c'est meugnon
-//Il n'y a pas à check plusieurs fois, juste à check jusqu'à qu'il reçoit une réponse du backend et après on off
 
 const startmatchmaking = async (
   e: React.MouseEvent<HTMLButtonElement>,
@@ -159,18 +139,31 @@ export default function MatchmakingPage() {
     <>
       {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}
       <div className="matchmakingPage">
-        <Button onClick={startMatching}>
-          <Flex alignItems={"center"}>
+        <Box
+        
+          >
+        <Button 
+            width={[
+              "25%", // 0-30em
+              "50%", // 30em-48em
+              "75%", // 48em-62em
+              "100%", // 62em+
+            ]}
+            alignItems={"center"}
+            
+        onClick={startMatching}>
             <Box>
               {Queue
-                ? "Finding a worthy challenger... Click again to cancel"
-                : "Play Pong!"}
+                ? <Text>
+                 Finding a worthy challenger... Click again to cancel </Text>
+                : <Text >
+                  Play Pong!</Text>}
             </Box>
-          </Flex>
         </Button>
+        </Box>
         <br></br>
         {Queue && (
-                <div>
+                <div className="matchmakingLogos">
                  <img style={{ backgroundColor: 'transparent', alignSelf: 'center', width: 50, height: 50 }} src={notmariodontsuemenintendo} alt="loading..." />
                  <img style={{ alignSelf: 'center', width: 50, height: 50 }} src={logo} alt="loading..." />
                  <img style={{ alignSelf: 'center', width: 150, height: 50 }} src={MMchallenger} alt="loading..." />
