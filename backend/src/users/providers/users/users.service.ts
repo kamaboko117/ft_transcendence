@@ -180,7 +180,7 @@ export class UsersService {
      * WHERE "user_victory" = id
      */
     async getVictoryNb(id: number) {
-      const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
+        const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
             .select(['user_victory'])
             .where('user_victory = :user')
             .setParameters({ user: id })//anti hack
@@ -195,13 +195,13 @@ export class UsersService {
             .from(MatchHistory, "match")
             .select(["match.user_victory", "rank() over (order by COUNT(match.user_victory) desc)"])
             .addGroupBy("match.user_victory");
-        
+
         const source = this.dataSource.createQueryBuilder()
-        .addSelect('rank')
-        .from(rank.getQuery(), "table")
-        .where('match_user_victory = :id')
-        .setParameters({id: id})
-        .getRawOne();
+            .addSelect('rank')
+            .from(rank.getQuery(), "table")
+            .where('match_user_victory = :id')
+            .setParameters({ id: id })
+            .getRawOne();
         return (source)
     }
 
@@ -215,13 +215,13 @@ export class UsersService {
             .innerJoin('User.sstat', 'Stat')
             .addGroupBy("match.user_victory")
             .addGroupBy("Stat.id");
-        
+
         const source = this.dataSource.createQueryBuilder()
-        .addSelect('gen')
-        .from(rank.getQuery(), "table")
-        .where('match_user_victory = :id')
-        .setParameters({id: id})
-        .getRawOne();
+            .addSelect('gen')
+            .from(rank.getQuery(), "table")
+            .where('match_user_victory = :id')
+            .setParameters({ id: id })
+            .getRawOne();
         return (source)
     }
 
@@ -303,7 +303,7 @@ export class UsersService {
     async updateHistory(typeGame: string, id1: number, id2: number, idVictory: number) {
         if (id1 == id2)
             return;
-       await  this.matchHistoryRepository.createQueryBuilder()
+        await this.matchHistoryRepository.createQueryBuilder()
             .insert()
             .into(MatchHistory)
             .values([{
@@ -361,7 +361,6 @@ export class UsersService {
         }
 
         check.forEach(function (elem) {
-            console.log(elem)
             if (elem.name === "First game played !")
                 achOk.fg = true;
             else if (elem.name === "First victory !")

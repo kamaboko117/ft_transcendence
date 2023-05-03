@@ -22,7 +22,7 @@ class GameService {
 
   public async updatePlayerPosition(
     socket: Socket,
-    data: any
+    data: number
   ): Promise<void> {
     socket.emit("update_player_position", data);
   }
