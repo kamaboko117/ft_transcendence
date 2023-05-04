@@ -9,7 +9,8 @@ import {
   Query,
 } from "@nestjs/common";
 import { TokenUser } from "src/chat/chat.interface";
-import { CreateRoomDto, CreateRoomPrivate } from "src/rooms/dto/rooms.dtos";
+import { UserDeco } from "src/common/middleware/user.decorator";
+import { CreateRoomDto, CreateRoomInvite, CreateRoomPrivate } from "src/rooms/dto/rooms.dtos";
 import { RoomsService } from "src/rooms/services/rooms/rooms.service";
 import { SocketEvents } from "src/socket/socketEvents";
 import { UsersService } from "src/users/providers/users/users.service";
@@ -20,40 +21,39 @@ export class RoomsController {
     private readonly roomsService: RoomsService,
     private readonly socketEvents: SocketEvents,
     private readonly userService: UsersService
-  ) {}
+  ) { }
 
   @Post("create")
   @UsePipes(ValidationPipe)
-  createRoom(@Request() req: any, @Body() createRoomDto: CreateRoomDto) {
-    //si tu veux l user id
-    const user: TokenUser = req.user;
+  createRoom(@UserDeco() user: TokenUser,
+    @Body() createRoomDto: CreateRoomDto) {
     const regex = /^[\wàâéêèäÉÊÈÇç]+(?: [\wàâéêèäÉÊÈÇç]+)*$/;
     const resultRegex = regex.exec(createRoomDto.roomName);
 
     if (24 < createRoomDto.roomName.length) {
-      return { err: "true", uid: "" };
+      return { err: "true", uid: "" }
     }
     if (!resultRegex) {
-      return { err: "true", uid: "" };
+      return { err: "true", uid: "" }
     }
     const userId = user.userID;
     //let findInMap: boolean = false;
     for (let [key, value] of this.socketEvents.getMap().entries()) {
       if (value === userId) {
-        return { err: "You are already in a party", uid: "" };
+        return { err: "You are already in a party", uid: "" }
       }
     }
     /*const userIdString: string = String(user.userID);
-        this.socketEvents.getMap().forEach((value, key) => {
-            if (value === userIdString) {
-                findInMap = true;
-                return;
-            }
-        });
-        console.log("find: " + findInMap)
-        if (findInMap === true) {
-            return { err: "Already in a party", uid: "" }
-        }*/
+    this.socketEvents.getMap().forEach((value, key) => {
+        if (value === userIdString) {
+            findInMap = true;
+            return;
+        }
+    });
+    console.log("find: " + findInMap)
+    if (findInMap === true) {
+        return { err: "Already in a party", uid: "" }
+    }*/
     let settings = {
       powerUps: false,
       type: "classic",
@@ -72,7 +72,7 @@ export class RoomsController {
   @UsePipes(ValidationPipe)
   async createRoomPrivate(
     @Request() req: any,
-    @Body() createRoomDto: CreateRoomPrivate
+    @Body() createRoomDto: CreateRoomInvite
   ) {
     const user: TokenUser = req.user;
     const name: string = String(user.userID) + "|" + String(createRoomDto.id);
@@ -102,6 +102,32 @@ export class RoomsController {
       itm.uid
     );
     return itm;
+  }
+  @Post("create-matchmaking")
+  @UsePipes(ValidationPipe)
+  async createRoomMatchmaking(@UserDeco() user: TokenUser,
+    @Body() createRoomDto: CreateRoomPrivate) {
+    const name: string = String(user.userID) + '|' + String(createRoomDto.id);
+    if (user.userID === createRoomDto.id) {
+      return ({ roomName: '', Capacity: '0', private: false, uid: '' });
+    }
+    const userExist = await this.userService.findUsersById(createRoomDto.id)
+    if (!userExist)
+      return ({ roomName: '', Capacity: '0', private: false, uid: '' });
+    const isUserConnected = this.socketEvents.isUserConnected(String(createRoomDto.id));
+    if (!isUserConnected)
+      return ({ roomName: '', Capacity: '0', private: false, uid: '' });
+    //let findInMap: boolean = false;
+    const userId = user.userID;
+    for (let [key, value] of this.socketEvents.getMap().entries()) {
+      if (value === userId) {
+        return ({ roomName: '', Capacity: '0', private: false, uid: '' });
+      }
+    }
+    const itm = await this.roomsService.createRoomMatchmaking(name);
+    console.log(itm);
+    this.socketEvents.inviteUserToGame(String(user.userID), String(createRoomDto.id), itm.uid);
+    return (itm);
   }
 
   @Get("get")

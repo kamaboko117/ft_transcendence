@@ -6,7 +6,6 @@ import { CreateUserDto } from "src/users/dto/users.dtos";
 import { Stat } from "src/typeorm/stat.entity";
 import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
 import { MatchHistory } from "src/typeorm/matchHistory.entity";
-import { identity } from "rxjs";
 import { Achievements } from "src/typeorm/achievement.entity";
 
 const validateURL = "https://api.intra.42.fr/oauth/token"
@@ -181,7 +180,7 @@ export class UsersService {
      * WHERE "user_victory" = id
      */
     async getVictoryNb(id: number) {
-      const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
+        const ret_nb = await this.matchHistoryRepository.createQueryBuilder("match")
             .select(['user_victory'])
             .where('user_victory = :user')
             .setParameters({ user: id })//anti hack
@@ -196,13 +195,13 @@ export class UsersService {
             .from(MatchHistory, "match")
             .select(["match.user_victory", "rank() over (order by COUNT(match.user_victory) desc)"])
             .addGroupBy("match.user_victory");
-        
+
         const source = this.dataSource.createQueryBuilder()
-        .addSelect('rank')
-        .from(rank.getQuery(), "table")
-        .where('match_user_victory = :id')
-        .setParameters({id: id})
-        .getRawOne();
+            .addSelect('rank')
+            .from(rank.getQuery(), "table")
+            .where('match_user_victory = :id')
+            .setParameters({ id: id })
+            .getRawOne();
         return (source)
     }
 
@@ -216,13 +215,13 @@ export class UsersService {
             .innerJoin('User.sstat', 'Stat')
             .addGroupBy("match.user_victory")
             .addGroupBy("Stat.id");
-        
+
         const source = this.dataSource.createQueryBuilder()
-        .addSelect('gen')
-        .from(rank.getQuery(), "table")
-        .where('match_user_victory = :id')
-        .setParameters({id: id})
-        .getRawOne();
+            .addSelect('gen')
+            .from(rank.getQuery(), "table")
+            .where('match_user_victory = :id')
+            .setParameters({ id: id })
+            .getRawOne();
         return (source)
     }
 
@@ -301,10 +300,10 @@ export class UsersService {
             .execute()
     }
 
-    async updateHistory(typeGame: string, id1: number, id2: number, idVictory: number) {
+    async updateHistoryNormal(typeGame: string, id1: number, id2: number, idVictory: number) {
         if (id1 == id2)
             return;
-       await  this.matchHistoryRepository.createQueryBuilder()
+        await this.matchHistoryRepository.createQueryBuilder()
             .insert()
             .into(MatchHistory)
             .values([{
@@ -341,6 +340,23 @@ export class UsersService {
             await this.updateLevel(idVictory, vc);
     }
 
+    async updateHistoryCustom(typeGame: string, id1: number, id2: number, idVictory: number) {
+        if (id1 == id2)
+            return;
+        await this.matchHistoryRepository.createQueryBuilder()
+            .insert()
+            .into(MatchHistory)
+            .values([{
+                type_game: typeGame, player_one: id1, player_two: id2, user_victory: idVictory
+            }])
+            .execute();
+        // taking nb_victory
+        const vc = await this.getVictoryNb(idVictory);
+        // updating level
+        if (vc)
+            await this.updateLevel(idVictory, vc);
+    }
+
     async insertAchivement(id: number, name: string) {
         await this.achivementRepository.createQueryBuilder()
             .insert()
@@ -362,7 +378,6 @@ export class UsersService {
         }
 
         check.forEach(function (elem) {
-            console.log(elem)
             if (elem.name === "First game played !")
                 achOk.fg = true;
             else if (elem.name === "First victory !")
@@ -378,8 +393,6 @@ export class UsersService {
     }
 
     async updateAchive(id: number) {
-        //let typeAchivement = "";
-        console.log(id)
         const nbGame = await this.getGamesNb(id);
         const nbVic = await this.getVictoryNb(id);
         const stat = await this.statRepository.createQueryBuilder("stat")
@@ -576,6 +589,4 @@ export class UsersService {
         }
     }
     /* end add remove friend - block unblock user part  */
-
-
 }

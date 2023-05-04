@@ -10,7 +10,7 @@ export class RoomsService {
   constructor(
     @InjectRepository(Room)
     private readonly roomRepository: Repository<Room>
-  ) {}
+  ) { }
   onModuleInit() {
     console.log("COUCOU ICI ROOM MODULE");
   }
@@ -25,13 +25,32 @@ export class RoomsService {
       private: true,
       settings: {
         powerUps: false,
-        type: "classic",
+        type: "Invitation",
         goal: 11,
         speed: 5,
         acceleration: 0.1,
         ballSize: 10,
         ballColor: "WHITE",
       },
+      matchmaking: false
+    });
+    return this.roomRepository.save(newRoom);
+  }
+
+  createRoomMatchmaking(name: string) {
+    const newRoom = this.roomRepository.create({
+      roomName: name,
+      private: true,
+      settings: {
+        powerUps: false,
+        type: "Classic",
+        goal: 11,
+        speed: 5,
+        acceleration: 0.1,
+        ballSize: 10,
+        ballColor: "WHITE",
+      },
+      matchmaking: false
     });
     return this.roomRepository.save(newRoom);
   }
@@ -42,8 +61,7 @@ export class RoomsService {
       .where("room.private = :type")
       .setParameters({ type: false })
       .getMany();
-    return await rooms;
-    //return this.roomRepository.find();
+    return (await rooms);
   }
 
   findRoomById(uid: string) {

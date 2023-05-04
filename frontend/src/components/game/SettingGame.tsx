@@ -22,7 +22,8 @@ const ButtonIsCustom = (props: {
   useEffect(() => {
     props.usrSocket.on("updateTypeGameFromServer", (res: { type: boolean }) => {
       props.setRdy(false);
-      props.setCustom(res.type);
+      if (res)
+        props.setCustom(res.type);
       console.log(res.type)
     });
     return () => {
@@ -36,7 +37,8 @@ const ButtonIsCustom = (props: {
       (res: { type: boolean }) => {
         console.log(res.type)
         props.setRdy(false);
-        props.setCustom(res.type);
+        if (res)
+          props.setCustom(res.type);
       }
     );
   }, [props.custom]);
@@ -172,10 +174,10 @@ const SettingGame = (props: {
       "user_leave_room",
       (res: { username: string }) => {
         console.log(res);
-        if (res.username === usr1) {
+        if (res && res.username === usr1) {
           setUsr1("");
         }
-        if (res.username === usr2) {
+        if (res && res.username === usr2) {
           setUsr2("");
         }
       }

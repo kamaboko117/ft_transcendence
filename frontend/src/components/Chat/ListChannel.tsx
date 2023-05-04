@@ -34,13 +34,13 @@ type Props = {
 
 const ErrorSubmit = (props: any) => {
     let i: number = 0;
-    return (<>
+    return (<div style={{"width": "100%"}}>
         {props.listError &&
             props.listError.map((err) => (
                 <p style={{ color: "red" }} key={++i}>{err}</p>
             ))
         }
-    </>);
+    </div>);
 }
 
 const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, setErr,
@@ -122,9 +122,11 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     errorCode: res.status
                 });
             }).then(res => {
-                this.setState({
-                    listChannel: res
-                })
+                if (res) {
+                    this.setState({
+                        listChannel: res
+                    });
+                }
             }).catch(e => console.log(e));
         fetch('https://' + location.host + '/api/chat/private',
             { headers: header(this.props.jwt) }).then(res => {
@@ -134,9 +136,11 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     errorCode: res.status
                 });
             }).then(res => {
-                this.setState({
-                    listChannelPrivate: res
-                })
+                if (res) {
+                    this.setState({
+                        listChannelPrivate: res
+                    });
+                }
             }).catch(e => console.log(e));
     }
 
@@ -153,9 +157,11 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                 if (res.ok)
                     return (res.json());
             }).then(res => {
-                this.setState({
-                    listChannel: res
-                })
+                if (res) {
+                    this.setState({
+                        listChannel: res
+                    });
+                }
             }).catch(e => console.log(e))
         fetch('https://' + location.host + '/api/chat/private',
             { headers: header(this.props.jwt) }).then(res => {
@@ -165,9 +171,11 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     errorCode: res.status
                 });
             }).then(res => {
-                this.setState({
-                    listChannelPrivate: res
-                })
+                if (res) {
+                    this.setState({
+                        listChannelPrivate: res
+                    });
+                }
             }).catch(e => console.log(e))
     }
     onChange = (e: ChangeEvent<HTMLInputElement>): void => {
@@ -203,14 +211,16 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     errorCode: res.status
                 });
             }).then(res => {
-                if (Array.isArray(res) === true) {
-                    this.setState({ hasError: true, listError: res });
-                }
-                else {
-                    this.setState({
-                        hasError: false, listError: [],
-                        listChannel: [...this.state.listChannel, res],
-                    });
+                if (res) {
+                    if (Array.isArray(res) === true) {
+                        this.setState({ hasError: true, listError: res });
+                    }
+                    else {
+                        this.setState({
+                            hasError: false, listError: [],
+                            listChannel: [...this.state.listChannel, res],
+                        });
+                    }
                 }
             }).catch(e => console.log(e));
         }
@@ -235,15 +245,17 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     errorCode: res.status
                 });
             }).then(res => {
-                if (Array.isArray(res) === true) {
-                    this.setState({ hasError: true, listError: res });
-                }
-                else {
-                    this.setState({
-                        hasError: false, listError: [],
-                        listChannelPrivate: [...this.state.listChannelPrivate, res],
-                        privateIdChannel: res.channel_id
-                    });
+                if (res) {
+                    if (Array.isArray(res) === true) {
+                        this.setState({ hasError: true, listError: res });
+                    }
+                    else {
+                        this.setState({
+                            hasError: false, listError: [],
+                            listChannelPrivate: [...this.state.listChannelPrivate, res],
+                            privateIdChannel: res.channel_id
+                        });
+                    }
                 }
             }).catch(e => console.log(e));
         }

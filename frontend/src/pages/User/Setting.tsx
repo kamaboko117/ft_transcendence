@@ -1,6 +1,6 @@
-import React, { useEffect, useState, ChangeEvent, FormEvent, useContext, useRef } from "react";
+import React, { useEffect, useState, ChangeEvent, FormEvent, useContext } from "react";
 import { FetchError, header } from "../../components/FetchError";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import UserContext from "../../contexts/UserContext";
 import '../../css/user.css';
 
@@ -29,6 +29,10 @@ type nameAchivement = {
 	name: string
 }
 
+type rankWin = {
+	rankDbByWin: number | undefined,
+	rankByRankUser: number | undefined
+}
 
 /* display default img if not img loaded */
 
@@ -36,7 +40,7 @@ const handleImgError = (e) => {
 	const target: HTMLImageElement = e.target as HTMLImageElement;
 
 	if (target) {
-		target.srcset = "/upload_avatar/default.png 2x";
+		target.srcset = "/upload_avatar/default.png 320w";
 		target.src = "/upload_avatar/default.png";
 	}
 }
@@ -62,14 +66,17 @@ function ChangeHandler(event: ChangeEvent<HTMLInputElement>
 	}
 }
 
-async function update(event: FormEvent<HTMLFormElement>, username: string,
+async function update(event: FormEvent<HTMLFormElement>, username: string | undefined,
 	userId: number | undefined,
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	setAvatarPath: React.Dispatch<React.SetStateAction<string | null>>,
-	setLstErr: React.Dispatch<React.SetStateAction<[]>>, userCtx) {
+	setLstErr: React.Dispatch<React.SetStateAction<[]>>, userCtx,
+	setTimer, timerOk: boolean) {
 	event.preventDefault();
 
+	if (!username || timerOk)
+		return ;
 	const formData = new FormData();
 	if (fileSet) {
 		formData.append('fileset', fileSet);
@@ -99,6 +106,8 @@ async function update(event: FormEvent<HTMLFormElement>, username: string,
 					userId: userId
 				});
 				setLstErr([]);
+				setTimer(true);
+				setTimeout(() => setTimer(false), 3000);
 			}
 			else if (res.valid === false) {
 				setLstErr(res.err);
@@ -191,10 +200,11 @@ const LoadAchivement = (props: {jwt: string | null, setErrorCode}) => {
 					return(res.json())
 				props.setErrorCode(res.status);
 			}).then((res) => {
-				setList(res);
+				if (res)
+					setList(res);
 			})
 		}
-	}, [props.jwt])
+	}, [])
 
 	return(
 		<table className="profile-table-2">
@@ -210,17 +220,12 @@ const LoadAchivement = (props: {jwt: string | null, setErrorCode}) => {
 	);
 }
 
-type rankWin = {
-	rankDbByWin: number | undefined,
-	rankByRankUser: number | undefined
-}
-
 const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: string | null}) => {
 	const [vc, setVc] = useState<number>(0);
 	const [df, setDf] = useState<number>(0);
 	const [nb_g, setNb_g] = useState<number | undefined>(undefined);
 	const [rank, setRank] = useState<rankWin>({rankByRankUser: undefined, rankDbByWin: undefined});
-//
+
 	useEffect(() => {
 		fetch('https://' + location.host + '/api/users/get-games-nb/', {headers: header(props.jwt)})
 			.then(res => {
@@ -277,7 +282,7 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: s
 }
 
 function Setting(props: Readonly<{ jwt: string | null }>) {
-	const [user, setUser] = useState<userInfo>();
+	const [user, setUser] = useState<userInfo | undefined>(undefined);
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [lstErr, setLstErr] = useState<[]>([]);
 	const [avatarPath, setAvatarPath] = useState<string | null>(null);
@@ -285,7 +290,8 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 	const [oldFa, setOldFa] = useState<boolean>(false);
 	const [file, setFile] = useState<File | undefined>();
 	const userCtx: any = useContext(UserContext);
-	const [username, setUsername] = useState<string>(userCtx.getUsername());
+	const [username, setUsername] = useState<string | undefined>("");
+	const [timerOk, setTimer] = useState<boolean>(false);
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -303,6 +309,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 					setUser(res);
 					setFA(res.fa);
 					setOldFa(res.fa);
+					setUsername(userCtx.getUsername());
 				}
 			}).catch(e => console.log(e));
 	}, []);
@@ -323,12 +330,11 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 				<LoadAchivement setErrorCode={setErrorCode} jwt={props.jwt}/>
 			</article>
 			<article>
-				{/*getLocation.pathname === "/Setting" && <label>Username: {userCtx.getUsername()}</label>*/}
 				<form onSubmit={(event: FormEvent<HTMLFormElement>) =>
 					update(event, username,
 						user?.userID, file, FA, props.jwt,
 						setErrorCode, setAvatarPath, setLstErr,
-						userCtx)}>
+						userCtx, setTimer, timerOk)}>
 					<label>Username</label>
 					<input
 						type="text"
@@ -351,11 +357,12 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 					{avatarPath != null && <><br /><img
 						className="avatar"
 						src={avatarPath}
-						srcSet={avatarPath + ' 2x'}
+						srcSet={avatarPath + ' 320w'}
 						alt={"avatar " + user?.username}
 						onError={handleImgError}
 					/></>}
-					<input type="submit" value="Submit" />
+					{timerOk === false && <input type="submit" value="Submit" />}
+					{timerOk === true && <input type="submit" value="Updating again in 3 seconds..." />}
 				</form>
 				<ErrorSubmit lstErr={lstErr} />
 				{errorCode === 400
@@ -368,7 +375,6 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 						Image is too large, please upload a size inferior to 1MB.
 					</p>
 				}
-				
 			</article>
 		</section>);
 }

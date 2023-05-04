@@ -147,19 +147,19 @@ export const directMessage = async (event: MouseEvent<HTMLButtonElement>,
 
     if (jwt) {
         await fetch('https://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
-        id: String(userId),
-    }), { headers: header(jwt) })
-        .then(res => {
-            if (res.ok)
-                return (res.json());
-            setErrorCode(res.status)
-        }).then((res: aswType) => {
-            if (res) {
-                if (res.asw){
-                    setId(res.asw);
+            id: String(userId),
+        }), { headers: header(jwt) })
+            .then(res => {
+                if (res.ok)
+                    return (res.json());
+                setErrorCode(res.status)
+            }).then((res: aswType) => {
+                if (res) {
+                    if (res.asw) {
+                        setId(res.asw);
+                    }
                 }
-            }
-        }).catch(e => console.log(e));
+            }).catch(e => console.log(e));
     }
 }
 
@@ -214,8 +214,8 @@ export const StatusUser = (props: { userId: number, jwt: string | null }) => {
                     setStatus(res.code);
             });
             usrSocket.on('currentStatus', (res: { code: number, userId: string }) => {
-            if (res && props.userId === Number(res.userId))
-                setStatus(res.code);
+                if (res && props.userId === Number(res.userId))
+                    setStatus(res.code);
             });
         }
         return (() => {
@@ -228,19 +228,19 @@ export const StatusUser = (props: { userId: number, jwt: string | null }) => {
         {
             status === 0 && <div className='status'>
                 <div style={{ width: "20px", height: "20px", backgroundColor: "grey" }}>
-                </div><span>Offline</span>
+                </div><span className='txt'>Offline</span>
             </div>
         }
         {
             status === 1 && <div className='status'>
                 <div style={{ width: "20px", height: "20px", backgroundColor: "green" }}>
-                </div><span>Online</span>
+                </div><span className='txt'>Online</span>
             </div>
         }
         {
             status === 2 && <div className='status'>
                 <div style={{ width: "20px", height: "20px", backgroundColor: "orange" }}>
-                </div><span>In game</span>
+                </div><span className='txt'>In game</span>
             </div>
         }
     </>);
@@ -287,7 +287,7 @@ export const handleImgError = (e) => {
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
     if (target) {
-        target.srcset = "/upload_avatar/default.png 2x";
+        target.srcset = "/upload_avatar/default.png 320w";
         target.src = "/upload_avatar/default.png";
     }
 }
@@ -380,7 +380,7 @@ const UserInfo = (props: PropsUserInfo): JSX.Element => {
             <div className={chooseClassName} style={{ top: offsetTop }}>
                 <label className="userInfo">{userInfo.username}</label>
                 <img src={"/" + userInfo.avatarPath}
-                    srcSet={"/" + userInfo.avatarPath + ' 2x'}
+                    srcSet={"/" + userInfo.avatarPath + " 320w"}
                     alt={"avatar " + userInfo.username}
                     onError={handleImgError}
                 />
@@ -413,11 +413,13 @@ const ListUserChat = (props: {
             }).catch(e => console.log(e)));
         }
         fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
-            setLstUserChat(res);
+            if (res)
+                setLstUserChat(res);
         }).catch(e => console.log(e));
         usrSocket?.on("updateListChat", () => {
             fetchListUser(props.id, props.jwt, setErrorCode).then(res => {
-                setLstUserChat(res);
+                if (res)
+                    setLstUserChat(res);
             });
         });
         return (() => {
