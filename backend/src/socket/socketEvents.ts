@@ -13,6 +13,7 @@ import { JwtGuard } from "src/auth/jwt.guard";
 import { TokenUser } from "src/chat/chat.interface";
 import { UsersService } from "src/users/providers/users/users.service";
 import { UpdateTypeRoom, UserIdRdy } from "./dto";
+import { UserDecoSock } from "src/common/middleware/user.decorator";
 
 const FPS = 60;
 const CANVAS_WIDTH = 600;
@@ -105,8 +106,8 @@ class PUNeutral implements IPowerUp {
     this.color = "BLUE";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (game: IGame) => {};
-    this.cancelEffect = (game: IGame) => {};
+    this.effect = (game: IGame) => { };
+    this.cancelEffect = (game: IGame) => { };
   }
 }
 
@@ -134,8 +135,8 @@ class PUBonus implements IPowerUp {
     this.color = "GREEN";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => {};
-    this.cancelEffect = () => {};
+    this.effect = (player: IPlayer) => { };
+    this.cancelEffect = () => { };
   }
 }
 
@@ -163,8 +164,8 @@ class PUMalus implements IPowerUp {
     this.color = "RED";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => {};
-    this.cancelEffect = () => {};
+    this.effect = (player: IPlayer) => { };
+    this.cancelEffect = () => { };
   }
 }
 
@@ -349,6 +350,7 @@ interface IGame {
   ball: IBall;
   powerUps: IPowerUp[];
   settings: IGameSettings;
+  finish: boolean;
 }
 
 class Player implements IPlayer {
@@ -417,6 +419,7 @@ class Game implements IGame {
   goal: number;
   powerUps: IPowerUp[];
   settings: IGameSettings;
+  finish: boolean;
   constructor(
     id: string,
     player1id: string,
@@ -438,6 +441,7 @@ class Game implements IGame {
       this.settings.ballColor,
       this.settings.acceleration
     );
+    this.finish = false;
   }
 }
 
@@ -469,7 +473,7 @@ function generatePowerUps(game: IGame) {
     case 0: //neutral
       var type =
         neutralPowerUpTypes[
-          Math.floor(Math.random() * neutralPowerUpTypes.length)
+        Math.floor(Math.random() * neutralPowerUpTypes.length)
         ];
       PU = new powerUp(x, y, type);
       break;
@@ -491,7 +495,7 @@ function checkPowerUpCollision(ball: IBall, powerUp: IPowerUp) {
   if (powerUp.active) return false;
   let distance = Math.sqrt(
     (ball.x - powerUp.x) * (ball.x - powerUp.x) +
-      (ball.y - powerUp.y) * (ball.y - powerUp.y)
+    (ball.y - powerUp.y) * (ball.y - powerUp.y)
   );
   if (distance < ball.radius + powerUp.radius) {
     powerUp.user = ball.velocityX < 0 ? "player2" : "player1";
@@ -576,6 +580,7 @@ export class SocketEvents {
   }
 
   update(game: IGame) {
+    console.log(game.settings.type)
     game.ball.x += game.ball.velocityX;
     game.ball.y += game.ball.velocityY;
     if (
@@ -624,9 +629,11 @@ export class SocketEvents {
       game.player1.score++;
       resetBall(game.ball, game);
     }
-    if (game.player1.score === game.settings.goal) {
+    if (game.player1.score === game.settings.goal && game.finish === false) {
+      game.finish = true;
       this.endGame(game, game.player1.socketId, game.player2.socketId);
-    } else if (game.player2.score === game.settings.goal) {
+    } else if (game.player2.score === game.settings.goal && game.finish === false) {
+      game.finish = true;
       this.endGame(game, game.player2.socketId, game.player1.socketId);
     }
   }
@@ -643,12 +650,21 @@ export class SocketEvents {
       await this.userService.findUsersById(loserId).then((user) => {
         if (user) loser = user.username;
       });
-      await this.userService.updateHistory(
-        game.settings.type,
-        winnerId,
-        loserId,
-        winnerId
-      );
+      if (game.settings.type === "Classic") {
+        await this.userService.updateHistoryNormal(
+          game.settings.type,
+          winnerId,
+          loserId,
+          winnerId
+        );
+      } else if (game.settings.type === "Custom" || game.settings.type === "Invitation") {
+        await this.userService.updateHistoryCustom(
+          game.settings.type,
+          winnerId,
+          loserId,
+          winnerId
+        );
+      }
       await this.userService.updateAchive(winnerId);
       await this.userService.updateAchive(loserId);
     }
@@ -949,11 +965,16 @@ export class SocketEvents {
     if (!game) {
       return;
     }
-    if (data.side === 1) {
+    /*if (data.side === 1) {
       game.player1.y = data.y;
     } else {
       game.player2.y = data.y;
-    }
+    }*/
+    if (client.id === game.player1.socketId)
+      game.player1.y = data;
+    else
+      game.player2.y = data;
+    game.player1.socketId
     let player1 = game.player1;
     let player2 = game.player2;
     let ball = game.ball;
@@ -984,9 +1005,10 @@ export class SocketEvents {
   @SubscribeMessage("userIsRdy")
   async gameIsRdy(
     @MessageBody() data: UserIdRdy,
-    @ConnectedSocket() client: any
+    @ConnectedSocket() client: Socket,
+    @UserDecoSock() user: TokenUser
   ) {
-    const user: TokenUser = client.user;
+    //const user: TokenUser = client.user;
     const connectedSockets = this.server.sockets.adapter.rooms.get(data.uid);
 
     if (user.username === data.usr1) {
@@ -1007,13 +1029,13 @@ export class SocketEvents {
       );
     }
     //when two user are connected, and both are rdy, game must start
-    const getRoom = await this.roomsService.getRoom(data.uid);
+    let getRoom = await this.roomsService.getRoom(data.uid);
     if (
       connectedSockets?.size === 2 &&
       getRoom?.player_one_rdy === true &&
       getRoom.player_two_rdy === true
     ) {
-      const getRoom = await this.roomsService.getRoom(data.uid);
+      getRoom = await this.roomsService.getRoom(data.uid);
       if (getRoom?.player_one_type_game != getRoom?.player_two_type_game)
         return { err: "Room type from both users not synchronized" };
       // console.log(connectedSockets)
@@ -1028,6 +1050,12 @@ export class SocketEvents {
       if (!getRoom) {
         return { err: "no room found" };
       }
+
+      if (getRoom.player_one_type_game === "Custom") {
+        getRoom.settings.type = "Custom";
+        this.roomsService.updateRoomSettings(getRoom.uid, getRoom);
+      } else
+        getRoom.settings.type = getRoom.player_one_type_game;
       let newGame = new Game(data.uid, client.id, socket2, getRoom.settings);
       let powerUps = newGame.powerUps;
       let player1 = newGame.player1;
@@ -1045,7 +1073,7 @@ export class SocketEvents {
           ball,
           powerUps,
         });
-        client.to(data.uid).to(data.uid).emit("on_game_update", {
+        client.to(data.uid).emit("on_game_update", {
           player1,
           player2,
           ball,

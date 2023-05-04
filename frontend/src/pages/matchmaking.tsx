@@ -68,7 +68,7 @@ export default function MatchmakingPage() {
       draggable: true,
       progress: undefined,
       theme: "dark",
-      });
+    });
   };
 
   const declineMatch = () => {
@@ -103,7 +103,7 @@ export default function MatchmakingPage() {
     usrSocket?.on("matchmakeGame", (res: any) => {
       //openAlert();
       console.log(res);
-      navigate({ pathname: "/play-invite/" + res.idGame });
+      navigate({ pathname: "/play-matchmaking/" + res.idGame });
     });
     return () => {
       console.log("unload exception listener");
@@ -143,9 +143,9 @@ export default function MatchmakingPage() {
       {errorCode && errorCode >= 400 && <FetchError code={errorCode} />}
       <div className="matchmakingPage">
         <Box
-        
-          >
-        <Button 
+
+        >
+          <Button
             width={[
               "25%", // 0-30em
               "50%", // 30em-48em
@@ -153,23 +153,23 @@ export default function MatchmakingPage() {
               "100%", // 62em+
             ]}
             alignItems={"center"}
-            
-        onClick={startMatching}>
+
+            onClick={startMatching}>
             <Box>
               {Queue
                 ? <Text>
-                 Finding a worthy challenger... Click again to cancel </Text>
+                  Finding a worthy challenger... Click again to cancel </Text>
                 : <Text >
                   Play Pong!</Text>}
             </Box>
-        </Button>
+          </Button>
         </Box>
         <br></br>
         {Queue && (
-                <div className="matchmakingLogos">
-                  <img style={{ backgroundColor: 'transparent', alignSelf: 'center', width: 500}} src={MMloading} alt="loading..." />
-                </div>
-           )}
+          <div className="matchmakingLogos">
+            <img style={{ backgroundColor: 'transparent', alignSelf: 'center', width: 500 }} src={MMloading} alt="loading..." />
+          </div>
+        )}
         <ToastContainer
           position="top-right"
           autoClose={5000}

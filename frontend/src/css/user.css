@@ -81,6 +81,12 @@ ul {
     }
 }
 
+@media screen and (max-width: 300px) {
+    form > input {
+        font-size: 0.5em;
+    }
+}
+
 @media screen and (max-width: 200px) {
     h1 {
         font-size: 1em;
@@ -92,6 +98,9 @@ ul {
 
     th,
     td {
+        font-size: 0.5em;
+    }
+    span.txt {
         font-size: 0.5em;
     }
 }
@@ -114,5 +123,11 @@ ul {
 
     .userInfoClick {
         width: 100% !important;
+    }
+    input[type="submit"] {
+        font-size: 0.3em;
+    }
+    .txt {
+        margin-left: 1px !important;
     }
 }

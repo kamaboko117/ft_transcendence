@@ -5,7 +5,6 @@ import ContextDisplayChannel from '../contexts/DisplayChatContext';
 import UserContext from "../contexts/UserContext";
 
 type typeLogout = {
-    //jwt: string | null,
     usrSocket: Socket<any, any> | undefined,
     setUsrSocket: React.Dispatch<React.SetStateAction<Socket<any, any> | undefined>>
 }
