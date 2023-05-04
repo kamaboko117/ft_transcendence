@@ -28,10 +28,10 @@ class GameService {
   }
 
   public async onGameUpdate(
-    socket: Socket,
+    socket: Socket<any, any> | undefined,
     callback: (data: any) => void
   ): Promise<void> {
-    socket.on("on_game_update", callback);
+    socket?.on("on_game_update", callback);
   }
 
   public async onGameStart(

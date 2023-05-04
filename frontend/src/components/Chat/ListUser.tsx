@@ -147,19 +147,19 @@ export const directMessage = async (event: MouseEvent<HTMLButtonElement>,
 
     if (jwt) {
         await fetch('https://' + location.host + '/api/chat/private-messages?' + new URLSearchParams({
-        id: String(userId),
-    }), { headers: header(jwt) })
-        .then(res => {
-            if (res.ok)
-                return (res.json());
-            setErrorCode(res.status)
-        }).then((res: aswType) => {
-            if (res) {
-                if (res.asw){
-                    setId(res.asw);
+            id: String(userId),
+        }), { headers: header(jwt) })
+            .then(res => {
+                if (res.ok)
+                    return (res.json());
+                setErrorCode(res.status)
+            }).then((res: aswType) => {
+                if (res) {
+                    if (res.asw) {
+                        setId(res.asw);
+                    }
                 }
-            }
-        }).catch(e => console.log(e));
+            }).catch(e => console.log(e));
     }
 }
 
@@ -214,8 +214,8 @@ export const StatusUser = (props: { userId: number, jwt: string | null }) => {
                     setStatus(res.code);
             });
             usrSocket.on('currentStatus', (res: { code: number, userId: string }) => {
-            if (res && props.userId === Number(res.userId))
-                setStatus(res.code);
+                if (res && props.userId === Number(res.userId))
+                    setStatus(res.code);
             });
         }
         return (() => {

@@ -85,7 +85,7 @@ export default function MatchmakingPage() {
       draggable: true,
       progress: undefined,
       theme: "dark",
-      });
+    });
   };
 
   const declineMatch = () => {
@@ -120,7 +120,7 @@ export default function MatchmakingPage() {
     usrSocket?.on("matchmakeGame", (res: any) => {
       //openAlert();
       console.log(res);
-      navigate({ pathname: "/play-invite/" + res.idGame });
+      navigate({ pathname: "/play-matchmaking/" + res.idGame });
     });
     return () => {
       console.log("unload exception listener");
@@ -170,12 +170,12 @@ export default function MatchmakingPage() {
         </Button>
         <br></br>
         {Queue && (
-                <div>
-                 <img style={{ backgroundColor: 'transparent', alignSelf: 'center', width: 50, height: 50 }} src={notmariodontsuemenintendo} alt="loading..." />
-                 <img style={{ alignSelf: 'center', width: 50, height: 50 }} src={logo} alt="loading..." />
-                 <img style={{ alignSelf: 'center', width: 150, height: 50 }} src={MMchallenger} alt="loading..." />
-                </div>
-           )}
+          <div>
+            <img style={{ backgroundColor: 'transparent', alignSelf: 'center', width: 50, height: 50 }} src={notmariodontsuemenintendo} alt="loading..." />
+            <img style={{ alignSelf: 'center', width: 50, height: 50 }} src={logo} alt="loading..." />
+            <img style={{ alignSelf: 'center', width: 150, height: 50 }} src={MMchallenger} alt="loading..." />
+          </div>
+        )}
         <ToastContainer
           position="top-right"
           autoClose={5000}

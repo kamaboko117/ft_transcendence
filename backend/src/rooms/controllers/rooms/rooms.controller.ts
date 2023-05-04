@@ -73,6 +73,33 @@ export class RoomsController {
         return (itm);
     }
 
+    @Post("create-matchmaking")
+    @UsePipes(ValidationPipe)
+    async createRoomMatcmaking(@UserDeco() user: TokenUser,
+        @Body() createRoomDto: CreateRoomPrivate) {
+        const name: string = String(user.userID) + '|' + String(createRoomDto.id);
+        if (user.userID === createRoomDto.id) {
+            return ({ roomName: '', Capacity: '0', private: false, uid: '' });
+        }
+        const userExist = await this.userService.findUsersById(createRoomDto.id)
+        if (!userExist)
+            return ({ roomName: '', Capacity: '0', private: false, uid: '' });
+        const isUserConnected = this.socketEvents.isUserConnected(String(createRoomDto.id));
+        if (!isUserConnected)
+            return ({ roomName: '', Capacity: '0', private: false, uid: '' });
+        //let findInMap: boolean = false;
+        const userId = user.userID;
+        for (let [key, value] of this.socketEvents.getMap().entries()) {
+            if (value === userId) {
+                return ({ roomName: '', Capacity: '0', private: false, uid: '' });
+            }
+        }
+        const itm = await this.roomsService.createRoomMatchmaking(name);
+        console.log(itm);
+        this.socketEvents.inviteUserToGame(String(user.userID), String(createRoomDto.id), itm.uid);
+        return (itm);
+    }
+
     @Get('get')
     async getRoom(@Query('id') id: string) {
         const room = await this.roomsService.getRoom(id);
@@ -89,11 +116,11 @@ export class RoomsController {
 
     @Get(":id")
     async getRoomById(@Query('id') id: string, @UserDeco() user: TokenUser) {
-      const isUserConnected = this.socketEvents.isUserConnected(
-        String(user.userID)
-      );
-      if (!isUserConnected)
-        return { roomName: "", Capacity: "0", private: false, uid: "" };
-      return this.roomsService.findRoomById(id);
+        const isUserConnected = this.socketEvents.isUserConnected(
+            String(user.userID)
+        );
+        if (!isUserConnected)
+            return { roomName: "", Capacity: "0", private: false, uid: "" };
+        return this.roomsService.findRoomById(id);
     }
 }
