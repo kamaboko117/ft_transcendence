@@ -37,7 +37,7 @@ import { CustomMM } from './customMM/customMM';
 type Match = {
   player1id: string;
   player2id: string;
-  status : number;
+  status: number;
 };
 
 @WebSocketGateway({
@@ -56,7 +56,7 @@ export class MatchMakingGateway
 
   private readonly MMSocket: Map<string, string>;
   private mmQueue: { [key: string]: TokenUser[] } = {};
-  private mm : CustomMM<any>;
+  private mm: CustomMM<any>;
 
   constructor(private readonly roomsService: RoomsService, private readonly socketEvents: SocketEvents) {
     this.MMSocket = new Map();
@@ -64,26 +64,26 @@ export class MatchMakingGateway
   }
 
 
-  async emitbackplayer2id(id1 : number, id2: number) {
+  async emitbackplayer2id(id1: number, id2: number) {
 
     const name: string = String(id1) + '|' + String(id2);
-    if (id1 === id2){
-        return ({roomName: '', Capacity: '0', private: false, uid: ''});
+    if (id1 === id2) {
+      return ({ roomName: '', Capacity: '0', private: false, uid: '' });
     }
     const isUserConnected = await this.socketEvents.isUserConnected(String(id2));
     if (!isUserConnected)
-        return ({roomName: '', Capacity: '0', private: false, uid: ''});
-  const itm = await this.roomsService.createRoomPrivate(name);
-  console.log(itm);
-  this.socketEvents.MatchmakeUserToGame(String(id1), String(id2), itm.uid);
+      return ({ roomName: '', Capacity: '0', private: false, uid: '' });
+    const itm = await this.roomsService.createRoomMatchmaking(name);
+    console.log(itm);
+    this.socketEvents.MatchmakeUserToGame(String(id1), String(id2), itm.uid);
 
   }
 
-  public catchresolver(players: any){
-  this.emitbackplayer2id(players[0].id, players[1].id);
+  public catchresolver(players: any) {
+    this.emitbackplayer2id(players[0].id, players[1].id);
   }
 
-  runGame(players : any) {
+  runGame(players: any) {
 
     console.log("Game started with:");
     console.log(players);
@@ -92,14 +92,14 @@ export class MatchMakingGateway
   }
 
   // 0=not in queue, 1=in queue, 2=in game
-  public getPlayerStateMM(id : number) {
+  public getPlayerStateMM(id: number) {
     return this.mm.getPlayerState(id);
   }
-  
 
-  wait(milliseconds : any){
+
+  wait(milliseconds: any) {
     return new Promise(resolve => {
-        setTimeout(resolve, milliseconds);
+      setTimeout(resolve, milliseconds);
     });
   }
 
@@ -114,30 +114,27 @@ export class MatchMakingGateway
     client.join(client.id);
   }
 
-  
+
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('queuein')
   async queuein(@ConnectedSocket() socket: Readonly<any>) {
     try {
-      let statep1=this.mm.getPlayerState(socket.user.userID); // 0=not in queue, 1=in queue, 2=in game
-      if (statep1 == 2)
-      {
+      let statep1 = this.mm.getPlayerState(socket.user.userID); // 0=not in queue, 1=in queue, 2=in game
+      if (statep1 == 2) {
         console.log("already in game");
         throw Error("already in game");
       }
-      if (statep1 == 1)
-      {
+      if (statep1 == 1) {
         console.log("already in queue");
         throw Error("already in queue");
       }
 
-      let map = this.socketEvents.getMap(); 
+      let map = this.socketEvents.getMap();
 
       const iterator1 = map.values();
       for (const value of iterator1) {
-        if (value == socket.user.userID)
-        {
+        if (value == socket.user.userID) {
           console.log("already in game from socketEventsMap");
           throw Error("already in game from socketEventsMap")
         }
@@ -145,11 +142,11 @@ export class MatchMakingGateway
       console.log(socket.user.userID);
       console.log('queue in');
       const user = socket.user;
-      let player1 = { id:user.userID }
+      let player1 = { id: user.userID }
       this.mm.push(player1);
 
-     // if (typeof user.userID != 'number') return false;
-     
+      // if (typeof user.userID != 'number') return false;
+
     } catch (error) {
       console.log(error);
       console.log('matchmaking failed');
@@ -168,7 +165,7 @@ export class MatchMakingGateway
       const user = socket.user;
 
       if (typeof user.userID != 'number') return false;
-      let player1 = { id:user.userID }
+      let player1 = { id: user.userID }
       this.mm.leaveQueue(player1);
 
     } catch (error) {
@@ -220,7 +217,7 @@ export class MatchMakingGateway
       // leave queue here?
       console.log('remove from game');
       const user = socket.user;
-      let player1 = { id:user.userID }
+      let player1 = { id: user.userID }
       this.mm.endGame(player1);
 
     } catch (error) {
@@ -236,7 +233,7 @@ export class MatchMakingGateway
       // leave the page? = leave queue
 
       const user = socket.user;
-      let player1 = { id:user.userID }
+      let player1 = { id: user.userID }
       this.mm.leaveQueue(player1);
     } catch (error) {
       console.log('disconnect MM failed');

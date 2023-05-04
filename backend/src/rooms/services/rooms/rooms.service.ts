@@ -21,7 +21,13 @@ export class RoomsService {
 
   createRoomPrivate(name: string) {
     const newRoom =
-      this.roomRepository.create({ roomName: name, private: true });
+      this.roomRepository.create({ roomName: name, private: true, matchmaking: false });
+    return this.roomRepository.save(newRoom);
+  }
+
+  createRoomMatchmaking(name: string) {
+    const newRoom =
+      this.roomRepository.create({ roomName: name, private: true, matchmaking: true });
     return this.roomRepository.save(newRoom);
   }
 

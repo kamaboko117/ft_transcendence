@@ -142,36 +142,36 @@ const isCmdValid = (cmd: string, length: number) => {
 const fetchBlackAndFriendList = (userInfo: typeUserInfo, jwt: string,
     type: number, setErrorCode: React.Dispatch<React.SetStateAction<number>>, updateUserInfo) => {
     fetch("https://" + location.host + "/api/users/fr-bl-list", {
-            method: 'post',
-            headers: headerPost(jwt),
-            body: JSON.stringify({
-                userId: Number(userInfo.id), type: type
-            })
-        }).then(res => {
-            if (res.ok)
-                return (res.json());
-            setErrorCode(res.status);
-        }).then((res: { add: boolean, type: number }) => {
-            if (res) {
-                if (res.add) {
-                    if (res.type === 1) {
-                        updateUserInfo(userInfo.User_username, Number(userInfo.id),
-                            userInfo.fl, res.type, userInfo.avatarPath);
-                    } else if (res.type === 2) {
-                        updateUserInfo(userInfo.User_username, Number(userInfo.id),
-                            res.type, userInfo.bl, userInfo.avatarPath);
-                    }
-                } else {
-                    if (res.type === 1) {
-                        updateUserInfo(userInfo.User_username, Number(userInfo.id),
-                            userInfo.fl, null, userInfo.avatarPath);
-                    } else if (res.type === 2) {
-                        updateUserInfo(userInfo.User_username, Number(userInfo.id),
-                            null, userInfo.bl, userInfo.avatarPath);
-                    }
+        method: 'post',
+        headers: headerPost(jwt),
+        body: JSON.stringify({
+            userId: Number(userInfo.id), type: type
+        })
+    }).then(res => {
+        if (res.ok)
+            return (res.json());
+        setErrorCode(res.status);
+    }).then((res: { add: boolean, type: number }) => {
+        if (res) {
+            if (res.add) {
+                if (res.type === 1) {
+                    updateUserInfo(userInfo.User_username, Number(userInfo.id),
+                        userInfo.fl, res.type, userInfo.avatarPath);
+                } else if (res.type === 2) {
+                    updateUserInfo(userInfo.User_username, Number(userInfo.id),
+                        res.type, userInfo.bl, userInfo.avatarPath);
+                }
+            } else {
+                if (res.type === 1) {
+                    updateUserInfo(userInfo.User_username, Number(userInfo.id),
+                        userInfo.fl, null, userInfo.avatarPath);
+                } else if (res.type === 2) {
+                    updateUserInfo(userInfo.User_username, Number(userInfo.id),
+                        null, userInfo.bl, userInfo.avatarPath);
                 }
             }
-        }).catch(e => console.log(e));
+        }
+    }).catch(e => console.log(e));
 }
 
 export const commandChat = (jwt: string, obj: any, setErrorCode,

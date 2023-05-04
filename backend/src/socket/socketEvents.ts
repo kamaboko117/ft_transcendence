@@ -13,6 +13,7 @@ import { JwtGuard } from "src/auth/jwt.guard";
 import { TokenUser } from "src/chat/chat.interface";
 import { UsersService } from "src/users/providers/users/users.service";
 import { UpdateTypeRoom, UserIdRdy } from "./dto";
+import { UserDecoSock } from "src/common/middleware/user.decorator";
 
 const FPS = 60;
 const CANVAS_WIDTH = 600;
@@ -340,6 +341,7 @@ interface IGame {
   ball: IBall;
   goal: number;
   powerUps: IPowerUp[];
+  finish: boolean;
 }
 
 class Player implements IPlayer {
@@ -407,9 +409,10 @@ class Game implements IGame {
   ball: IBall;
   goal: number;
   powerUps: IPowerUp[];
+  finish: boolean;
   constructor(id: string, player1id: string, player2id: string, goal: number) {
     this.id = id;
-    this.type = "classic";
+    this.type = "Classic";
     this.player1 = new Player(0, CANVAS_HEIGHT / 2 - 100 / 2, player1id);
     this.player2 = new Player(
       CANVAS_WIDTH - 10,
@@ -419,6 +422,7 @@ class Game implements IGame {
     this.ball = new Ball();
     this.goal = goal;
     this.powerUps = [];
+    this.finish = false;
   }
 }
 
@@ -559,6 +563,7 @@ export class SocketEvents {
   }
 
   update(game: IGame) {
+
     game.ball.x += game.ball.velocityX;
     game.ball.y += game.ball.velocityY;
     if (
@@ -607,14 +612,18 @@ export class SocketEvents {
       game.player1.score++;
       resetBall(game.ball, game);
     }
-    if (game.player1.score === game.goal) {
+    if (game.player1.score === game.goal && game.finish === false) {
+      game.finish = true;
+      console.log("P1")
       this.endGame(game, game.player1.socketId, game.player2.socketId);
     } else if (game.player2.score === game.goal) {
+      console.log("P2")
       this.endGame(game, game.player2.socketId, game.player1.socketId);
     }
   }
 
   async endGame(game: IGame, winnerSocketId: string, loserSocketId: string) {
+    console.log("ASDASDA")
     const winnerId = this.mapUserInGame.get(winnerSocketId);
     const loserId = this.mapUserInGame.get(loserSocketId);
     let winner = "";
@@ -626,12 +635,21 @@ export class SocketEvents {
       await this.userService.findUsersById(loserId).then((user) => {
         if (user) loser = user.username;
       });
-      await this.userService.updateHistory(
-        game.type,
-        winnerId,
-        loserId,
-        winnerId
-      );
+      if (game.type === "Classic") {
+        await this.userService.updateHistoryNormal(
+          game.type,
+          winnerId,
+          loserId,
+          winnerId
+        );
+      } else if (game.type === "Custom" || game.type === "Invitation") {
+        await this.userService.updateHistoryCustom(
+          game.type,
+          winnerId,
+          loserId,
+          winnerId
+        );
+      }
       await this.userService.updateAchive(winnerId);
       await this.userService.updateAchive(loserId);
     }
@@ -956,9 +974,10 @@ export class SocketEvents {
   @SubscribeMessage("userIsRdy")
   async gameIsRdy(
     @MessageBody() data: UserIdRdy,
-    @ConnectedSocket() client: any
+    @ConnectedSocket() client: Socket,
+    @UserDecoSock() user: TokenUser
   ) {
-    const user: TokenUser = client.user;
+    //const user: TokenUser = client.user;
     const connectedSockets = this.server.sockets.adapter.rooms.get(data.uid);
 
     if (user.username === data.usr1) {
