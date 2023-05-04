@@ -1,15 +1,18 @@
 import { Socket } from "socket.io-client";
 
 class GameService {
-  public async joinGameRoom(socket: Socket, roomId: string, setUsr1, setUsr2): Promise<boolean> {
+  public async joinGameRoom(
+    socket: Socket,
+    roomId: string,
+    setUsr1,
+    setUsr2
+  ): Promise<boolean> {
     return new Promise((resolve, reject) => {
       socket.emit("join_game", { roomId });
       socket.on("join_game_success", (res) => {
         console.log(res);
-        if (res.nbClient === 1)
-          setUsr1(res.username);
-        else if (res.nbClient === 2)
-          setUsr2(res.username);
+        if (res.nbClient === 1) setUsr1(res.username);
+        else if (res.nbClient === 2) setUsr2(res.username);
         resolve(true);
       });
       socket.on("join_game_error", ({ error }) => reject(error));
@@ -27,6 +30,13 @@ class GameService {
     socket.emit("update_player_position", data);
   }
 
+  public async updatePlayerTickCount(
+    socket: Socket<any, any> | undefined,
+    data: number
+  ): Promise<void> {
+    socket?.emit("update_player_tick_count", data);
+  }
+
   public async onGameUpdate(
     socket: Socket<any, any> | undefined,
     callback: (data: any) => void
@@ -38,7 +48,7 @@ class GameService {
     socket: Socket,
     callback: (data: any) => void
   ): Promise<void> {
-    console.log("start_game log loaded")
+    console.log("start_game log loaded");
     socket.on("start_game", callback);
   }
 
