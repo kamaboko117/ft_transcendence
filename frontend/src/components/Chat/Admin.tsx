@@ -105,6 +105,8 @@ const handleSubmitBanMute = (event: React.FormEvent<HTMLFormElement>,
     ref: React.RefObject<HTMLInputElement>,
     object: typeFetchToBack) => {
     event.preventDefault();
+    if (!event)
+        return ;
     const target: HTMLElement = event.target as HTMLElement;
 
     if (!target)
@@ -213,6 +215,8 @@ const handleKick = (event: React.MouseEvent<HTMLButtonElement>,
     setAskKick: React.Dispatch<React.SetStateAction<boolean>>,
     askKick: boolean) => {
     event.preventDefault();
+    if (!event || !event.target)
+        return ;
     const target: HTMLElement = event.target as HTMLElement;
 
     if (target && askKick === false)
@@ -404,41 +408,69 @@ export const PasswordOwnerBox = (props: admPassword) => {
     )
 }
 
+function fetchGetRole(jwt: string, id: string,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>) {
+    return (fetch('https://' + location.host + '/api/chat-role/getRole?' + new URLSearchParams({
+        id: id,
+    }), { headers: header(jwt) })
+    .then(res => {
+        if (res.ok)
+            return (res.json());
+        setErrorCode(res.status);
+    }));
+}
+
+function fetchUserRole(jwt: string, userId: number, id: string,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>) {
+    return (fetch('https://' + location.host + '/api/chat-role/get-role-focus?' + new URLSearchParams({
+        id: id, idfocus: String(userId)
+    }), { headers: header(jwt) })
+    .then(res => {
+        if (res.ok)
+            return (res.json());
+        setErrorCode(res.status);
+    }));
+}
+
 const AdminComponent = (props: AdminCompType) => {
-    const [role, setRole] = useState<string>("");
-    const [userId, setUserId] = useState<number>();
+    const [role, setRole] = useState<string | undefined>(undefined);
+    const [roleFocus, setRoleFocus] = useState<string | undefined>(undefined);
+    const [userId, setUserId] = useState<number | undefined>(undefined);
 
     useEffect(() => {
         const getRole = () => {
-            fetch('https://' + location.host + '/api/chat-role/getRole?' + new URLSearchParams({
-                id: props.id,
-            }), { headers: header(props.jwt) })
-                .then(res => {
-                    if (res.ok)
-                        return (res.json());
-                    props.setErrorCode(res.status)
-                })
+            fetchUserRole(props.jwt, props.userId,
+                props.id, props.setErrorCode)
+            .then((res: {role: string})  => {
+                setRoleFocus(res.role);
+                fetchGetRole(props.jwt, props.id, props.setErrorCode)
                 .then((res) => {
                     if (res && res.role) {
                         setUserId(res.userId);
                         setRole(res.role);
                     }
                     else {
-                        setUserId(0);
+                        setUserId(undefined);
                         setRole("");
                     }
                 }).catch(e => console.log(e));
+            }).catch(e => console.log(e));
         };
         //check if userInfo box is displayed on client
         if (props.chooseClassName === "userInfo userInfoClick")
             getRole();
-        return (() => { })
-    }, [props.chooseClassName]);
+        return (() => {
+            setRole(undefined);
+            setRoleFocus(undefined);
+            setUserId(undefined);
+        });
+    }, [props.userId]);
     return (
         <>
-            {role && (role === "Owner" || role === "Administrator")
-                && <AdminButtons id={props.id} focusUserId={props.userId}
-                    userId={userId} role={role} userInfo={props.userInfo} jwt={props.jwt} />}
+        { (userId && role && !(roleFocus === role)) &&
+            (role === "Owner" || role === "Administrator")
+            && <AdminButtons id={props.id} focusUserId={props.userId}
+                    userId={userId} role={role} userInfo={props.userInfo} jwt={props.jwt} /> }
         </>
     );
 }

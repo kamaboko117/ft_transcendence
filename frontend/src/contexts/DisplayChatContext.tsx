@@ -1,6 +1,5 @@
 import React, { useEffect, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import scrollElement from 'react-scroll/modules/mixins/scroll-element';
 import { Socket } from 'socket.io-client';
 import { lstMsg } from '../components/Chat/Chat';
 import { FetchError, header } from '../components/FetchError';
@@ -72,7 +71,10 @@ export const LoadUserGlobal = (props: { jwt: string | null }) => {
                 if (res.ok)
                     return (res.json());
                 setErrorCode(res.status);
-            }).then(res => setLstUserGlobal(res))
+            }).then(res => {
+                if(res)
+                    setLstUserGlobal(res)
+            })
             .catch(err => console.log(err));
         return (() => { });
     }, [props.jwt]);

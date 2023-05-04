@@ -28,3 +28,8 @@ export class CreateRoomPrivate {
   };
   id: number;
 }
+
+export class CreateRoomInvite {
+  @IsNumber()
+  id: number;
+}

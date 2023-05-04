@@ -14,6 +14,8 @@ import { JwtGuard } from 'src/auth/jwt.guard';
 import { UseGuards } from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
 import { ChatService } from './chat.service';
+import { UserDecoSock } from 'src/common/middleware/user.decorator';
+import { StopEmit } from './dto/gateway-chat-dto';
 
 class Room {
   @IsString()
@@ -66,10 +68,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   /* Socket part */
   @UseGuards(JwtGuard)
   @SubscribeMessage('joinRoomChat')
-  async joinRoomChat(@ConnectedSocket() socket: Readonly<any>,
+  async joinRoomChat(@ConnectedSocket() socket: Socket, @UserDecoSock() user: TokenUser,
     @MessageBody() data: Room): Promise<boolean | { ban: boolean }> {
-    const user = socket.user;
-
     if (typeof user.userID != "number")
       return (false);
     const channel: Channel | null = await this.chatsRepository.findOne({
@@ -97,7 +97,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /* search list admin, and set one as new owner*/
-  private async searchAndSetAdministratorsChannel(id: string) {
+  /*private async searchAndSetAdministratorsChannel(id: string) {
     let listUser: ListUser[] = await this.listUserRepository.createQueryBuilder("list_user")
       .select(["list_user.id", "list_user.user_id"])
       .where("list_user.chatid = :id")
@@ -125,7 +125,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         .setParameters({ id: listUser[0].id })
         .execute();
     }
-  }
+  }*/
 
   /* Delete current owner, and try to set a new one */
   private async setNewOwner(userId: number, id: string, ownerId: string) {
@@ -146,7 +146,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (Number(ownerId) === userId) {
         //try set first admin as owner
         //if no admin, then first user on list channel become owner
-        await this.searchAndSetAdministratorsChannel(id);
+        await this.chatService.searchAndSetAdministratorsChannel(id);
       }
       const channel: Channel | null = await this.chatsRepository.findOne({
         where: {
@@ -165,10 +165,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('leaveRoomChat')
-  async leaveRoomChat(@ConnectedSocket() socket: Readonly<any>,
+  async leaveRoomChat(@ConnectedSocket() socket: Socket, @UserDecoSock() user: TokenUser,
     @MessageBody() data: Room): Promise<string | undefined | { ban: boolean }> {
-    const user: TokenUser = socket.user;
-
     if (typeof user.userID != "number")
       return ("Couldn't' leave chat, wrong type id?");
     const getUser: any = await this.chatService.getUserOnChannel(data.id, user.userID);
@@ -187,9 +185,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('stopEmit')
-  async stopEmit(@ConnectedSocket() socket: Readonly<any>,
-    @MessageBody() data: any) {
-    const user = socket.user;
+  async stopEmit(@ConnectedSocket() socket: Socket, @UserDecoSock() user: TokenUser,
+    @MessageBody() data: StopEmit) {
     if (typeof data === "undefined"
       || !user || typeof user.userID != "number")
       return;
@@ -223,10 +220,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('sendMsg')
-  async newPostChat(@ConnectedSocket() socket: any,
+  async newPostChat(@ConnectedSocket() socket: Socket, @UserDecoSock() user: TokenUser,
     @MessageBody() data: SendMsg) {
-    const user = socket.user;
-
     if (typeof user.userID != "number")
       return;
     const getUser = await this.chatService.getUserOnChannel(data.id, user.userID);

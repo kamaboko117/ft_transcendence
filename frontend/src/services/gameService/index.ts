@@ -22,16 +22,16 @@ class GameService {
 
   public async updatePlayerPosition(
     socket: Socket,
-    data: any
+    data: number
   ): Promise<void> {
     socket.emit("update_player_position", data);
   }
 
   public async onGameUpdate(
-    socket: Socket,
+    socket: Socket<any, any> | undefined,
     callback: (data: any) => void
   ): Promise<void> {
-    socket.on("on_game_update", callback);
+    socket?.on("on_game_update", callback);
   }
 
   public async onGameStart(

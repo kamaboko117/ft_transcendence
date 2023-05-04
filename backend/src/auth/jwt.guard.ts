@@ -16,10 +16,12 @@ export class JwtGuard extends AuthGuard('jwt') {
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest(); //see guard doc
+        //get context handler and class through metadata key
         const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
             context.getHandler(), context.getClass()
         ]);
         let bearer: string = "";
+        //if ispublic return true from metadata, meaning route is public, and do not need a user connection
         if (isPublic)
             return (true);
         if (typeof request.route != "undefined"

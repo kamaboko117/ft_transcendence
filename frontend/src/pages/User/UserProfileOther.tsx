@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext, MouseEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FetchError, header, headerPost } from '../../components/FetchError';
-import UserContext, { User } from '../../contexts/UserContext';
+import UserContext from '../../contexts/UserContext';
 import ContextDisplayChannel, { updateBlackFriendList } from '../../contexts/DisplayChatContext';
 import { inviteGame, StatusUser } from '../../components/Chat/ListUser';
 import { Achivement_Raw, Match_History_Raw } from './Setting';
@@ -40,7 +40,7 @@ const handleImgError = (e) => {
 	const target: HTMLImageElement = e.target as HTMLImageElement;
 
 	if (target) {
-		target.srcset = "/upload_avatar/default.png 2x";
+		target.srcset = "/upload_avatar/default.png 320w";
 		target.src = "/upload_avatar/default.png";
 	}
 }
@@ -217,7 +217,8 @@ const LoadAchivement = (props: {jwt: string | null, setErrorCode, id: string}) =
 					return(res.json())
 				props.setErrorCode(res.status);
 			}).then((res) => {
-				setList(res);
+				if (res)
+					setList(res);
 			})
 		}
 	}, [props.jwt])
@@ -268,11 +269,7 @@ const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | 
 				props.setErrorCode(res.status);
 			}).then((res) => {
 				if (res) {
-					console.log(res)
-					console.log("nb_g: " + nb_g);
-					//
 					setVC(Number(res.nb));
-					console.log("vc: " + vc)
 					setDf(nb_g - vc);
 					if (res.rankDbByWin)
 						setRank({
@@ -339,7 +336,7 @@ const UserProfileOther = (props: { jwt: string | null }) => {
 			{otherUser?.avatarPath != null && <img
 				className="avatar"
 				src={'/' + otherUser.avatarPath}
-				srcSet={'/' + otherUser.avatarPath + '2x'}
+				srcSet={'/' + otherUser.avatarPath + ' 320w'}
 				alt={"avatar " + otherUser?.username}
 				onError={handleImgError}
 			/>}

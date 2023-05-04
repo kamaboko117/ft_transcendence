@@ -1,7 +1,6 @@
 import { Socket } from 'socket.io-client';
 import React, { createContext, useEffect, useState } from 'react';
 import { FetchError } from '../components/FetchError';
-import { useNavigate } from 'react-router-dom';
 
 type typeSocket = {
     usrSocket: Socket<any, any> | undefined,
@@ -21,13 +20,12 @@ export const SocketProvider = (props: { jwt: string | null, usrSocket: Socket<an
     const [errorCode, setErrorCode] = useState<number>(200);
 
     useEffect(() => {
-        console.log(props.usrSocket?.connected)
         //if (props.jwt && props.jwt != "" && props.usrSocket && props.usrSocket.connected === false)
         //   navigate("/logout");
         if (props.jwt && props.jwt != ""
             && props.usrSocket?.connected === true) {
             props.usrSocket?.on('exception', (res: any) => {
-                if (res.status === "error" && res.message === "Token not valid") {
+                if (res && res.status === "error" && res.message === "Token not valid") {
                     setErrorCode(403)
                 }
                 else {
