@@ -33,6 +33,8 @@ export default function Game(props: {
     right: number;
   }
 
+  let receivedUpdates = 0;
+
   const navigate = useNavigate();
   useEffect(() => {
     const ft_fetch = async () => {
@@ -249,7 +251,12 @@ export default function Game(props: {
     if (socketService.socket) {
       gameService.onGameUpdate(socketService.socket, (data: any) => {
         ft_timer();
+        receivedUpdates++;
         player.y = side === 1 ? data.player2.y : data.player1.y;
+        let newTickCount = side === 1 ? data.player2.tickCount : data.player1.tickCount;
+        if (newTickCount > receivedUpdates) {
+          receivedUpdates = newTickCount;
+        }
         player1.score = data.player1.score;
         player2.score = data.player2.score;
         player1.height = data.player1.height;
@@ -266,6 +273,7 @@ export default function Game(props: {
       gameService.onGameEnd(socketService.socket, (data: any) => {
         console.log("Game ended");
         console.log(data);
+        receivedUpdates = 0;
         setIsGameStarted(false);
         setIsGameEnded(true);
         // console.log(`winner is ${data.winner}`)
@@ -279,8 +287,9 @@ export default function Game(props: {
     let player = side === 1 ? player1 : player2;
     if (!rect) return;
     player.y = e.clientY - rect.top - player.height / 2;
-    if (socketService.socket)
+    if (socketService.socket){
       gameService.updatePlayerPosition(socketService.socket, player.y);
+    }
   }
   /*
     useEffect(() => {
@@ -323,6 +332,8 @@ export default function Game(props: {
       }
       function game() {
         if (!ctx) return;
+        if (socketService)
+          gameService.updatePlayerTickCount(socketService.socket ,receivedUpdates);
         render(ctx, player1, player2);
       }
       window.addEventListener("mousemove", movePaddle);
