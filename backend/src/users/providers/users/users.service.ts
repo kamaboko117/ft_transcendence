@@ -300,7 +300,7 @@ export class UsersService {
             .execute()
     }
 
-    async updateHistory(typeGame: string, id1: number, id2: number, idVictory: number) {
+    async updateHistoryNormal(typeGame: string, id1: number, id2: number, idVictory: number) {
         if (id1 == id2)
             return;
         await this.matchHistoryRepository.createQueryBuilder()
@@ -333,6 +333,23 @@ export class UsersService {
                 await this.updateRank(idVictory, stat.rank + 1);
             }
         }
+        // taking nb_victory
+        const vc = await this.getVictoryNb(idVictory);
+        // updating level
+        if (vc)
+            await this.updateLevel(idVictory, vc);
+    }
+
+    async updateHistoryCustom(typeGame: string, id1: number, id2: number, idVictory: number) {
+        if (id1 == id2)
+            return;
+        await this.matchHistoryRepository.createQueryBuilder()
+            .insert()
+            .into(MatchHistory)
+            .values([{
+                type_game: typeGame, player_one: id1, player_two: id2, user_victory: idVictory
+            }])
+            .execute();
         // taking nb_victory
         const vc = await this.getVictoryNb(idVictory);
         // updating level

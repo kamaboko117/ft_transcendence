@@ -12,7 +12,10 @@ export class Room {
   roomName: string;
 
   @Column({ default: false })
-  private!: boolean
+  private!: boolean;
+
+  @Column({ default: false })
+  matchmaking!: boolean;
 
   @Column({ default: false })
   player_one_rdy!: boolean

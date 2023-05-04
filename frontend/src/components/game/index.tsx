@@ -1,9 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import gameService from "../../services/gameService";
 import ActivePowerUpsList from "./ActivePowerUpsList";
 import { FetchError, header } from "../FetchError";
 import SettingGame from "./SettingGame";
+import { Socket } from "socket.io-client";
 //import socketService from "../../services/socketService";
 
 const FPS = 60;
@@ -12,7 +13,7 @@ const CANVAS_HEIGHT = 400;
 
 export default function Game(props: {
   id: string;
-  usrSocket;
+  usrSocket: Socket<any, any> | undefined;
   roomName: string;
   jwt: string | null;
 }) {
@@ -228,10 +229,26 @@ export default function Game(props: {
     drawCircle(ctx, ball.x, ball.y, ball.radius, ball.color);
   }
 
+  const [timeOut, setTime] = React.useState<boolean>(false);
+
+  function ft_timeOut() {
+    console.log("TIMEOUT");
+    setTime(true);
+  }
+
+  let getTimer: null | number = null;
+  const ft_timer = () => {
+    if (getTimer)
+      clearTimeout(getTimer);
+    getTimer = setTimeout(ft_timeOut, 3000);
+  }
+
   const handleReceivedUpdate = () => {
+    ft_timer();
     let player = side === 1 ? player2 : player1;
     if (socketService.socket) {
       gameService.onGameUpdate(socketService.socket, (data: any) => {
+        ft_timer();
         player.y = side === 1 ? data.player2.y : data.player1.y;
         player1.score = data.player1.score;
         player2.score = data.player2.score;
@@ -314,6 +331,9 @@ export default function Game(props: {
     }
     return () => {
       console.log("canvas unmount");
+      //stop timeout listener when component unmount
+      if (getTimer)
+        clearTimeout(getTimer);
       if (intervalID) {
         clearInterval(intervalID);
       }
@@ -333,7 +353,16 @@ export default function Game(props: {
     }
   };
 
-  if (isGameEnded) {
+  if (timeOut === true) {
+    socketService.socket?.off("on_game_update");
+    return (<div className="game_container">
+      <h1 className="room_name">{props.roomName}</h1>
+      <h1 className="room_description">Server Time Out</h1>
+    </div>)
+  }
+  else if (isGameEnded && timeOut === false) {
+    if (getTimer)
+      clearTimeout(getTimer);
     return (
       <div className="game_container">
         <h1 className="room_name">{props.roomName}</h1>
