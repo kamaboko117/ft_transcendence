@@ -171,7 +171,7 @@ const handleClick = (event: React.MouseEvent<HTMLUListElement>,
 }
 
 const handleUpdate = (e: React.MouseEvent<HTMLButtonElement>,
-    setChannel, setPm, jwt, setErrorCode) => {
+    setChannel : any, setPm : any, jwt : any, setErrorCode : any) => {
     if (e && e.target)
         updateChannel(setChannel, setPm, jwt, setErrorCode);
 }
@@ -221,9 +221,9 @@ const ListDiscussion = (props: propsListChannel) => {
 }
 
 type typePostMsg = {
-    id, msg,
-    usrSocket, idBox, isPrivate,
-    setMsg,
+    id: string, msg: any,
+    usrSocket : any, idBox : any, isPrivate: any,
+    setMsg : any,
     setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,
     setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>
@@ -251,7 +251,7 @@ const PostMsg = (props: typePostMsg) => {
                 lstUserGlobal, lstUserChat, setLstUserGlobal,
                 setLstUserChat, navigate);
             if (cmdIsValid === false) {
-                props.usrSocket.emit('sendMsg', obj, (res) => {
+                props.usrSocket.emit('sendMsg', obj, (res : any) => {
                     if (res && res.room === obj.id && obj.idBox === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res && res.room === obj.id)
@@ -260,7 +260,7 @@ const PostMsg = (props: typePostMsg) => {
             }
         }
         else {
-            props.usrSocket.emit('sendMsg', obj, (res) => {
+            props.usrSocket.emit('sendMsg', obj, (res : any) => {
                 if (res && res.room === obj.id && obj.idBox === obj.id)
                     setLstMsgChat((lstMsg) => [...lstMsg, res]);
                 if (res && res.room === obj.id)
@@ -285,7 +285,7 @@ const PostMsg = (props: typePostMsg) => {
                     lstUserGlobal, lstUserChat, setLstUserGlobal,
                     setLstUserChat, navigate);
                 if (cmdIsValid === false) {
-                    props.usrSocket.emit('sendMsg', obj, (res) => {
+                    props.usrSocket.emit('sendMsg', obj, (res : any) => {
                         if (res && res.room === obj.id && obj.idBox === obj.id)
                             setLstMsgChat((lstMsg) => [...lstMsg, res]);
                         if (res && res.room === obj.id)
@@ -293,7 +293,7 @@ const PostMsg = (props: typePostMsg) => {
                     });
                 }
             } else {
-                props.usrSocket.emit('sendMsg', obj, (res) => {
+                props.usrSocket.emit('sendMsg', obj, (res : any) => {
                     if (res && res.room === obj.id && obj.idBox === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res && res.room === obj.id)
@@ -373,7 +373,7 @@ const DiscussionBox = (props: {
             });
         }
         //listen to exception sent by backend
-        usrSocket?.on('exception', (res) => {
+        usrSocket?.on('exception', (res: { status: string; message: string; }) => {
             if (res && res.status === "error" && res.message === "Token not valid")
                 props.setErrorCode(403);
             else
@@ -455,7 +455,7 @@ const DiscussionBox = (props: {
     </div>);
 }
 
-const updateChannel = (setChannel, setPm, jwt, setErrorCode) => {
+const updateChannel = (setChannel : any, setPm : any, jwt : any, setErrorCode : any) => {
     fetch('https://' + location.host + '/api/chat/list-pm',
         { headers: header(jwt) })
         .then(res => {
