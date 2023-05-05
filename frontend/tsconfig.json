@@ -8,6 +8,7 @@
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,
+    "noImplicitAny": false,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "moduleResolution": "Node",
@@ -17,6 +18,6 @@
     "types": ["vite/client"],
     "jsx": "react-jsx"
   },
-  "include": ["public/src", "src"],
+  "include": ["public/src", "src/**/*.tsx"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
