@@ -334,7 +334,7 @@ const Custom_goal = (props: { usrSocket }) => {
         name="goal_ball"
         checked={goal === "42"}
       />
-      <label>Transendance long</label>
+      <label>Transcendence long</label>
     </div>
   );
 };
