@@ -52,9 +52,10 @@ function PlayPageMatchmaking(props: { jwt: string | null }) {
                         setErrorCode(res.status);
                 })
                 .then((res: { exist: boolean }) => {
+                    console.log(res)
                     if (res) {
                         if (res.exist === false)
-                            navigate("/");
+                            navigate("/matchmaking");
                         else if (res.exist === true)
                             setLoadParty(true);
                     }

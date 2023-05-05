@@ -53,6 +53,7 @@ export default function Game(props: {
             setErrorCode(res.status);
         })
         .then((res: { exist: boolean }) => {
+          console.log("room exist: " + res)
           if (res) {
             if (res.exist === false) navigate("/");
           }

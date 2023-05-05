@@ -301,10 +301,12 @@ const PasswordExist = (props: {
     return (<></>);
 }
 
-function submitPsw(e, jwt: string, action: string,
+function submitPsw(e: any | undefined, jwt: string, action: string,
     id: string, psw: string,
     setType: React.Dispatch<React.SetStateAction<boolean>>,
     setErr: React.Dispatch<React.SetStateAction<boolean>>) {
+    if (!e)
+        return ;
     e.preventDefault();
 
     if (e && e.target) {

@@ -3,12 +3,13 @@ import gameService from "../../services/gameService";
 import { FetchError } from "../FetchError";
 import ActivePowerUpsList from "./ActivePowerUpsList";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Socket } from "socket.io-client";
 
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
 
 const ButtonIsCustom = (props: {
-  usrSocket,
+  usrSocket: Socket<any, any> | undefined,
   id: string,
   setRdy: React.Dispatch<React.SetStateAction<boolean>>,
   custom: boolean,
@@ -19,17 +20,17 @@ const ButtonIsCustom = (props: {
   };
 
   useEffect(() => {
-    props.usrSocket.on("updateTypeGameFromServer", (res: { type: boolean }) => {
+    props.usrSocket?.on("updateTypeGameFromServer", (res: { type: boolean }) => {
       props.setRdy(false);
       if (res)
         props.setCustom(res.type);
     });
     return () => {
-      props.usrSocket.off("updateTypeGameFromServer");
+      props.usrSocket?.off("updateTypeGameFromServer");
     };
   }, []);
   useEffect(() => {
-    props.usrSocket.emit(
+    props.usrSocket?.emit(
       "updateTypeGame",
       { type: props.custom, roomId: props.id },
       (res: { type: boolean }) => {
@@ -50,7 +51,7 @@ const ButtonIsCustom = (props: {
 };
 
 const ButtonRdy = (props: {
-  usrSocket,
+  usrSocket: Socket<any, any> | undefined,
   uid: string,
   usr1: string,
   usr2: string,
@@ -66,17 +67,17 @@ const ButtonRdy = (props: {
   };
 
   useEffect(() => {
-    props.usrSocket.on("updateUserRdy", () => {
+    props.usrSocket?.on("updateUserRdy", () => {
       props.setRdy(false);
       props.setCustom(false);
     });
     return () => {
-      props.usrSocket.off("updateUserRdy");
+      props.usrSocket?.off("updateUserRdy");
     };
   });
 
   useEffect(() => {
-    props.usrSocket.emit("userIsRdy", {
+    props.usrSocket?.emit("userIsRdy", {
       uid: props.uid,
       usr1: props.usr1,
       usr2: props.usr2,
@@ -116,14 +117,15 @@ interface IPowerUp {
 const MatchmakingLeft = (props: {userLeft: boolean, usr1: string, usr2: string}) => {
   const navigate = useNavigate();
   let getTimer: null | number = null;
+  let getTimer2: null | number = null;
 
   function redirect() {
     navigate('/matchmaking');
   }
   //if opponent not coming after x seconds, then go back to matchmaking page
   useEffect(() => {
-    if (!props.usr1 || !props.usr2)
-      getTimer = setTimeout(redirect, 5000);
+    if ((!props.usr1 || !props.usr2) && props.userLeft === false)
+      getTimer = setTimeout(redirect, 45000);
     if (getTimer && props.usr1 && props.usr2)
       clearTimeout(getTimer);
     return (() => {
@@ -137,15 +139,19 @@ const MatchmakingLeft = (props: {userLeft: boolean, usr1: string, usr2: string})
     if (props.userLeft === true) {
       if (getTimer)
         clearTimeout(getTimer);
-      setTimeout(redirect, 5000);
+      getTimer2 = setTimeout(redirect, 5000);
     }
+    return (() => {
+      if (getTimer2)
+        clearTimeout(getTimer2);
+    })
   }, [props.userLeft]);
 
   return (
     <>
-      {(!props.usr1 || !props.usr2) && 
+      {(!props.usr1 || !props.usr2) && props.userLeft === false && 
         <div className="game_container">
-          <p>If opponent not coming in 5 seconds, you will be sent back to matchmaking page...</p>
+          <p>If opponent not coming in 45 seconds, you will be sent back to matchmaking page...</p>
       </div>
       }
       {

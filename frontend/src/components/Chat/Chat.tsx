@@ -42,7 +42,9 @@ type msg = {
     img: string
 }
 
-const handleImgError = (e) => {
+const handleImgError = (e: any) => {
+    if (!e || !e.target)
+        return ;
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
     if (target) {
@@ -130,7 +132,7 @@ const PostMsg = (props: typePostMsg) => {
                 lstUserGlobal, lstUserChat,
                 setLstUserGlobal, setLstUserChat, navigate);
             if (cmdIsValid === false) {
-                props.usrSocket.emit('sendMsg', obj, (res) => {
+                props.usrSocket.emit('sendMsg', obj, (res: any) => {
                     if (res.room === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res.room === obj.id && obj.id == obj.idBox)
@@ -139,7 +141,7 @@ const PostMsg = (props: typePostMsg) => {
             }
         }
         else {
-            props.usrSocket.emit('sendMsg', obj, (res) => {
+            props.usrSocket.emit('sendMsg', obj, (res: any) => {
                 if (res.room === obj.id)
                     setLstMsgChat((lstMsg) => [...lstMsg, res]);
                 if (res.room === obj.id && obj.id == obj.idBox)
@@ -164,7 +166,7 @@ const PostMsg = (props: typePostMsg) => {
                     lstUserGlobal, lstUserChat, setLstUserGlobal,
                     setLstUserChat, navigate);
                 if (cmdIsValid === false) {
-                    props.usrSocket.emit('sendMsg', obj, (res) => {
+                    props.usrSocket.emit('sendMsg', obj, (res: any) => {
                         if (res.room === obj.id)
                             setLstMsgChat((lstMsg) => [...lstMsg, res]);
                         if (res.room === obj.id && obj.id == obj.idBox)
@@ -172,7 +174,7 @@ const PostMsg = (props: typePostMsg) => {
                     });
                 }
             } else {
-                props.usrSocket.emit('sendMsg', obj, (res) => {
+                props.usrSocket.emit('sendMsg', obj, (res: any) => {
                     if (res.room === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res.room === obj.id && obj.id == obj.idBox)

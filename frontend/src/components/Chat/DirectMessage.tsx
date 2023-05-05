@@ -172,8 +172,15 @@ const handleClick = (event: React.MouseEvent<HTMLUListElement>,
     setId(target.id);
 }
 
+type HandleUpdate = {
+    setChannel: React.Dispatch<React.SetStateAction<listChan[]>>,
+    setPm: React.Dispatch<React.SetStateAction<listPm[]>>,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>
+}
+
 const handleUpdate = (e: React.MouseEvent<HTMLButtonElement>,
-    setChannel, setPm, jwt, setErrorCode) => {
+    setChannel: HandleUpdate["setChannel"], setPm: HandleUpdate["setPm"],
+    jwt: string | null, setErrorCode: HandleUpdate["setErrorCode"]) => {
     if (e && e.target)
         updateChannel(setChannel, setPm, jwt, setErrorCode);
 }
@@ -223,7 +230,7 @@ const ListDiscussion = (props: propsListChannel) => {
 }
 
 type typePostMsg = {
-    id, msg,
+    id: string, msg,
     usrSocket, idBox, isPrivate,
     setMsg,
     setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,

@@ -1,4 +1,4 @@
-import { updateBlackFriendList } from "../../contexts/DisplayChatContext";
+import { typeListUser, typeListUserGlobal, updateBlackFriendList } from "../../contexts/DisplayChatContext";
 import { playPageInvite } from "../../pages/PlayInvite";
 import { header, headerPost } from "../FetchError";
 
@@ -24,6 +24,7 @@ type typeFetchToBackPsw = {
     jwt: string,
     psw: string
 }
+
 
 const fetchToBackWithTimer = (elem: typeFetchToBack) => {
     fetch('https://' + location.host + '/api/chat-role/role-action', {
@@ -74,7 +75,8 @@ const fetchToBackPsw = (elem: typeFetchToBackPsw) => {
 }
 
 const getUserInfoByName = (jwt: string, username: string,
-    setErrorCode, id: string, firstPartCmd: string, thirdPart: string) => {
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    id: string, firstPartCmd: string, thirdPart: string) => {
     fetch('https://' + location.host + '/api/users/info-fr-bl?' + new URLSearchParams({
         name: username
     }), { headers: header(jwt) })
@@ -140,7 +142,7 @@ const isCmdValid = (cmd: string, length: number) => {
 */
 
 const fetchBlackAndFriendList = (userInfo: typeUserInfo, jwt: string,
-    type: number, setErrorCode: React.Dispatch<React.SetStateAction<number>>, updateUserInfo) => {
+    type: number, setErrorCode: React.Dispatch<React.SetStateAction<number>>, updateUserInfo: any) => {
     fetch("https://" + location.host + "/api/users/fr-bl-list", {
         method: 'post',
         headers: headerPost(jwt),
@@ -174,9 +176,11 @@ const fetchBlackAndFriendList = (userInfo: typeUserInfo, jwt: string,
     }).catch(e => console.log(e));
 }
 
-export const commandChat = (jwt: string, obj: any, setErrorCode,
-    lstUserGlobal, lstUserChat,
-    setLstUserGlobal, setLstUserChat, navigate) => {
+export const commandChat = (jwt: string, obj: any,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    lstUserGlobal: typeListUserGlobal["listUser"], lstUserChat: typeListUser["listUser"],
+    setLstUserGlobal: React.Dispatch<React.SetStateAction<typeListUserGlobal["listUser"]>>,
+    setLstUserChat: React.Dispatch<React.SetStateAction<typeListUser["listUser"]>>, navigate: any) => {
     const cmd = obj.content;
 
     const listHandle = (jwt: string,
@@ -209,7 +213,7 @@ export const commandChat = (jwt: string, obj: any, setErrorCode,
 
     function runUserCmd(jwt: string, firstPartCmd: string, secondPartCmd: string) {
         function getInfoUser(jwt: string, firstPartCmd: string, secondPartCmd: string,
-            setErrorCode) {
+            setErrorCode: React.Dispatch<React.SetStateAction<number>>) {
             fetch('https://' + location.host + '/api/users/info-fr-bl?' + new URLSearchParams({
                 name: secondPartCmd
             }), { headers: header(jwt) })
