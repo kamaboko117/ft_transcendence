@@ -116,7 +116,7 @@ export default function MatchmakingPage() {
     };
   }, [usrSocket]);
 
-  const startMatching = (e: { detail: number; preventDefault: () => void; }) => {
+  const startMatching = (e: any) => {
     if (e.detail > 1)
       //prevent double click to mess with events, only allows single proper clicks
       return;
