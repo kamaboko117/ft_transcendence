@@ -359,7 +359,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 						src={avatarPath}
 						srcSet={avatarPath + ' 320w'}
 						alt={"avatar " + user?.username}
-						onError={handleImgError}
+						onError={handleImgError as any}
 					/></>}
 					{timerOk === false && <input type="submit" value="Submit" />}
 					{timerOk === true && <input type="submit" value="Updating again in 3 seconds..." />}
