@@ -5,8 +5,8 @@ class GameService {
   public async joinGameRoom(
     socket: Socket,
     roomId: string,
-    setUsr1: { (value: SetStateAction<string>): void; (arg0: any): void; },
-    setUsr2: { (value: SetStateAction<string>): void; (arg0: any): void; }
+    setUsr1: any,
+    setUsr2: any
   ): Promise<boolean> {
     return new Promise((resolve, reject) => {
       socket.emit("join_game", { roomId });
