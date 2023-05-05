@@ -42,7 +42,7 @@ type msg = {
     img: string
 }
 
-const handleImgError = (e: { target: HTMLImageElement; }) => {
+const handleImgError = (e: any) => {
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
     if (target) {
@@ -228,7 +228,7 @@ const MainChat = (props: any) => {
             }
         });
         //listen to excption sent by backend
-        usrSocket?.on('exception', (res: { status: string; message: string; }) => {
+        usrSocket?.on('exception', (res: any ) => {
             if (res.status === "error" && res.message === "Token not valid")
                 props.setErrorCode(403);
             else
