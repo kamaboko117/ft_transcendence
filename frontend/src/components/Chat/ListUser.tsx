@@ -115,7 +115,7 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 }
 
 export const inviteGame = (event: MouseEvent<HTMLButtonElement>,
-    userId: number, jwt: string | null, navigate, setErrorCode): void => {
+    userId: number, jwt: string | null, navigate : any, setErrorCode : any): void => {
     event.preventDefault();
     if (event.target && jwt)
         playPageInvite(jwt, setErrorCode,
@@ -123,7 +123,7 @@ export const inviteGame = (event: MouseEvent<HTMLButtonElement>,
 }
 
 export const userProfile = (event: MouseEvent<HTMLButtonElement>,
-    userId: number, navigate): void => {
+    userId: number, navigate : any): void => {
     event.preventDefault();
     if (event.target)
         navigate({ pathname: "/profile/" + userId });
@@ -283,7 +283,7 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
     </>)
 }
 
-export const handleImgError = (e) => {
+export const handleImgError = (e : any) => {
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
     if (target) {

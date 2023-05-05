@@ -48,7 +48,7 @@ const changeGlobalSettings = (settings: IGameSettings) => {
 };
 
 const ButtonIsCustom = (props: {
-  usrSocket;
+  usrSocket : any;
   id: string;
   setRdy: React.Dispatch<React.SetStateAction<boolean>>;
   custom: boolean;
@@ -97,7 +97,7 @@ const ButtonIsCustom = (props: {
 };
 
 const ButtonRdy = (props: {
-  usrSocket;
+  usrSocket : any;
   uid: string;
   usr1: string;
   usr2: string;
@@ -139,7 +139,7 @@ const ButtonRdy = (props: {
   );
 };
 
-const Custom_size_ball = (props: { usrSocket }) => {
+const Custom_size_ball = (props: { usrSocket : any }) => {
   const [size, setSize] = useState<string>("10");
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e && e.target) {
@@ -189,7 +189,7 @@ const Custom_size_ball = (props: { usrSocket }) => {
   );
 };
 
-const Custom_speed_ball = (props: { usrSocket }) => {
+const Custom_speed_ball = (props: { usrSocket : any }) => {
   const [speed, setSpeed] = useState<string>("5");
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e && e.target) {
@@ -239,7 +239,7 @@ const Custom_speed_ball = (props: { usrSocket }) => {
   );
 };
 
-const Custom_acceleration_ball = (props: { usrSocket }) => {
+const Custom_acceleration_ball = (props: { usrSocket : any }) => {
   const [acc, setAcc] = useState<string>("0.1");
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e && e.target) {
@@ -289,7 +289,7 @@ const Custom_acceleration_ball = (props: { usrSocket }) => {
   );
 };
 
-const Custom_goal = (props: { usrSocket }) => {
+const Custom_goal = (props: { usrSocket : any}) => {
   const [goal, setGoal] = useState<string>("11");
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e && e.target) {
@@ -339,7 +339,7 @@ const Custom_goal = (props: { usrSocket }) => {
   );
 };
 
-const Custom_color_ball = (props: { usrSocket }) => {
+const Custom_color_ball = (props: { usrSocket : any}) => {
   const [color, setColor] = useState<string>("WHITE");
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e && e.target) {
@@ -395,7 +395,7 @@ const Custom_color_ball = (props: { usrSocket }) => {
   );
 };
 
-const Custom_power_up = (props: { usrSocket }) => {
+const Custom_power_up = (props: { usrSocket : any}) => {
   const [isCheck, setIsCheck] = useState<boolean>(false);
   const handleCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e && e.target) {
@@ -429,7 +429,7 @@ const Custom_power_up = (props: { usrSocket }) => {
   );
 };
 
-const Custom_setting = (props: { cst: boolean; usrSocket; id: string }) => {
+const Custom_setting = (props: { cst: boolean; usrSocket : any; id: string }) => {
   useEffect(() => {
     props.usrSocket.on("edit_settings", (res: IGameSettings) => {
       changeGlobalSettings(res);
