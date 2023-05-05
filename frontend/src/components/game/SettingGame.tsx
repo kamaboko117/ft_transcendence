@@ -159,7 +159,7 @@ const Custom_size_ball = (props: { usrSocket }) => {
   return (
     <div>
       <label>
-        <b>Taille de la balle</b>
+        <b>Size Ball</b>
       </label>
       <input
         onChange={handleChange}
@@ -209,7 +209,7 @@ const Custom_speed_ball = (props: { usrSocket }) => {
   return (
     <div>
       <label>
-        <b>Vitesse de la balle</b>
+        <b>Speed Ball</b>
       </label>
       <input
         onChange={handleChange}
@@ -259,7 +259,7 @@ const Custom_acceleration_ball = (props: { usrSocket }) => {
   return (
     <div>
       <label>
-        <b>Acceleration de la balle</b>
+        <b>Acceleration Ball</b>
       </label>
       <input
         onChange={handleChange}
@@ -341,7 +341,7 @@ const Custom_goal = (props: { usrSocket }) => {
 
 const Custom_color_ball = (props: { usrSocket }) => {
   const [color, setColor] = useState<string>("WHITE");
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (e && e.target) {
       setColor(e.target.value);
       globalSettings.ballColor = e.target.value;
@@ -356,42 +356,20 @@ const Custom_color_ball = (props: { usrSocket }) => {
   }, []);
   return (
     <div>
-      <label>
-        <b>Color Ball</b>
-      </label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={"WHITE"}
-        name="color_ball"
-        checked={color === "WHITE"}
-      />
-      <label>WHITE</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={"RED"}
-        name="color_ball"
-        checked={color === "RED"}
-      />
-      <label>RED</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={"GREEN"}
-        name="color_ball"
-        checked={color === "GREEN"}
-      />
-      <label>GREEN</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={"BLUE"}
-        name="color_ball"
-        checked={color === "BLUE"}
-      />
-      <label>BLUE</label>
-    </div>
+    <label><b>Color Ball</b></label>
+    <br/>
+    <select name="color_ball" onChange={handleChange}>
+      <option value={"WHITE"} selected={color === "WHITE"}>WHITE</option>
+      <option value={"RED"} selected={color === "RED"} >RED</option>
+      <option value={"GREEN"} selected={color === "GREEN"} >GREEN</option>
+      <option value={"BLUE"} selected={color === "BLUE"} >BLUE</option>
+      <option value={"YELLOW"} selected={color === "YELLOW"} >YELLOW</option>
+      <option value={"PURPLE"} selected={color === "PURPLE"} >PURPLE</option>
+      <option value={"ORANGE"} selected={color === "ORANGE"} >ORANGE</option>
+      <option value={"PINK"} selected={color === "PINK"} >PINK</option>
+      <option value={"BROWN"} selected={color === "BROWN"} >BROWN</option>  
+    </select>
+  </div>
   );
 };
 
