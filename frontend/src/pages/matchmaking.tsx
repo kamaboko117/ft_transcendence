@@ -48,7 +48,7 @@ export default function MatchmakingPage() {
   const findMatch = () => {
     console.log("start queue in");
     console.log(usrSocket?.id);
-    usrSocket?.emit("queuein", (res) => {
+    usrSocket?.emit("queuein", (res: any) => {
       console.log("res: ");
       console.log(res);
     });
@@ -116,7 +116,7 @@ export default function MatchmakingPage() {
     };
   }, [usrSocket]);
 
-  const startMatching = (e) => {
+  const startMatching = (e: { detail: number; preventDefault: () => void; }) => {
     if (e.detail > 1)
       //prevent double click to mess with events, only allows single proper clicks
       return;
