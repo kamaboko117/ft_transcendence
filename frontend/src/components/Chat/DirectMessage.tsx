@@ -373,7 +373,7 @@ const DiscussionBox = (props: {
             });
         }
         //listen to exception sent by backend
-        usrSocket?.on('exception', (res: { status: string; message: string; }) => {
+        usrSocket?.on('exception', (res: any) => {
             if (res && res.status === "error" && res.message === "Token not valid")
                 props.setErrorCode(403);
             else
