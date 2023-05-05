@@ -36,7 +36,7 @@ type nameAchivement = {
 }
 
 /* display default img if not img loaded */
-const handleImgError = (e) => {
+const handleImgError = (e: any) => {
 	const target: HTMLImageElement = e.target as HTMLImageElement;
 
 	if (target) {
@@ -51,7 +51,7 @@ type frBl = {
 }
 
 function updateList(res: { add: boolean, type: number },
-	otherUser: userInfo, frBl: frBl, lstUserGlobal, setLstUserGlobal) {
+	otherUser: userInfo, frBl: frBl, lstUserGlobal: any, setLstUserGlobal : any) {
 	function updateUserInfo(username: string, id: number,
 		friend: number | null, block: number | null, avatarPath: string | null) {
 		updateBlackFriendList({
@@ -113,13 +113,13 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string | null,
 	}).catch(err => console.log(err));
 }
 
-const FriendBlockUser = (props: { userCtx, id, otherUser: userInfo | undefined, jwt: string | null }) => {
+const FriendBlockUser = (props: { userCtx: any, id: string, otherUser: userInfo | undefined, jwt: string | null }) => {
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const { lstUserGlobal, setLstUserGlobal } = useContext(ContextDisplayChannel);
 	const [frBl, setFrBl] = useState<frBl>({ friend: null, block: null });
 	const navigate = useNavigate();
 
-	const Button = (props: { num: number, jwt: string | null, id, otherUser: userInfo | undefined }) => {
+	const Button = (props: { num: number, jwt: string | null, id: string, otherUser: userInfo | undefined }) => {
 		return (
 			<button onClick={(e) => {
 				listHandle(e, props.jwt, setErrorCode,
@@ -207,7 +207,7 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null , id: string}>
 
 const rank_index = ['BRONZE', 'SILVER', 'GOLD'];
 
-const LoadAchivement = (props: {jwt: string | null, setErrorCode, id: string}) => {
+const LoadAchivement = (props: {jwt: string | null, setErrorCode: any, id: string}) => {
 	const [listAchivement, setList] = useState<Array<nameAchivement>>();
 	useEffect(() => {
 		if (props.jwt) {
@@ -242,7 +242,7 @@ type rankWin = {
 	rankByRankUser: number | undefined
 }
 
-const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | undefined, jwt: string | null}) => {
+const LoadResultGame = (props: {setErrorCode: any, id: string, otherUser: userInfo | undefined, jwt: string | null}) => {
 	const [vc, setVC] = useState<number>(0);
 	const [nb_g, setNb_g] = useState<number | undefined>(undefined);
 	const [df, setDf] = useState<number>(0);
@@ -338,7 +338,7 @@ const UserProfileOther = (props: { jwt: string | null }) => {
 				src={'/' + otherUser.avatarPath}
 				srcSet={'/' + otherUser.avatarPath + ' 320w'}
 				alt={"avatar " + otherUser?.username}
-				onError={handleImgError}
+				onError={handleImgError as any}
 			/>}
 			<LoadResultGame id={id} setErrorCode={setErrorCode} jwt={props.jwt} otherUser={otherUser}/>
 			<LoadAchivement setErrorCode={setErrorCode} jwt={props.jwt} id={id}/>

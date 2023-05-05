@@ -1,11 +1,12 @@
+import { SetStateAction } from "react";
 import { Socket } from "socket.io-client";
 
 class GameService {
   public async joinGameRoom(
     socket: Socket,
     roomId: string,
-    setUsr1,
-    setUsr2
+    setUsr1: any,
+    setUsr2: any
   ): Promise<boolean> {
     return new Promise((resolve, reject) => {
       socket.emit("join_game", { roomId });
