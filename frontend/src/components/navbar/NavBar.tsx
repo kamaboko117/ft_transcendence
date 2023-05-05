@@ -48,7 +48,7 @@ export default function NavBar(props: {
 	)
 }
 
-function NavBarLink( to : any, children : any, ...props: any[] ) {
+function NavBarLink({ to, children, ...props} : any) {
 	const resolvedPath = useResolvedPath(to);
 	const isActive = useMatch({ path: resolvedPath.pathname, end: true });
 
