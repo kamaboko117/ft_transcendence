@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import UserContext from '../../contexts/UserContext';
 import { FetchError, headerPost, header } from '../FetchError';
 
-const handleChange = (event, setCode) => {
+const handleChange = (event : any, setCode : any) => {
     event.preventDefault();
     const target = event?.currentTarget;
 
@@ -14,9 +14,9 @@ const handleChange = (event, setCode) => {
     }
 }
 
-const handleSubmit = (event, code: number | null,
-    jwt: string | null, userId: number, userCtx,
-    setErrorCode, setValid) => {
+const handleSubmit = (event : any, code: number | null,
+    jwt: string | null, userId: number, userCtx : any,
+    setErrorCode : any, setValid : any) => {
     event.preventDefault();
     const target = event?.currentTarget;
 
