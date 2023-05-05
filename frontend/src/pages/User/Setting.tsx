@@ -36,7 +36,7 @@ type rankWin = {
 
 /* display default img if not img loaded */
 
-const handleImgError = (e: { target: HTMLImageElement; }) => {
+const handleImgError = (e: any) => {
 	const target: HTMLImageElement = e.target as HTMLImageElement;
 
 	if (target) {
@@ -71,8 +71,8 @@ async function update(event: FormEvent<HTMLFormElement>, username: string | unde
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	setAvatarPath: React.Dispatch<React.SetStateAction<string | null>>,
-	setLstErr: React.Dispatch<React.SetStateAction<[]>>, userCtx: { reconnectUser: (arg0: { jwt: any; username: any; userId: number | undefined; }) => void; },
-	setTimer: { (value: React.SetStateAction<boolean>): void; (arg0: boolean): void; }, timerOk: boolean) {
+	setLstErr: React.Dispatch<React.SetStateAction<[]>>, userCtx: any,
+	setTimer: any, timerOk: boolean) {
 	event.preventDefault();
 
 	if (!username || timerOk)
@@ -190,7 +190,7 @@ export const Achivement_Raw = (props: {nameAchivement: Array<nameAchivement> | u
 	</>)
 }
 
-const LoadAchivement = (props: {jwt: string | null, setErrorCode: (arg0: number) => void}) => {
+const LoadAchivement = (props: {jwt: string | null, setErrorCode: any}) => {
 	const [listAchivement, setList] = useState<Array<nameAchivement>>();
 	useEffect(() => {
 		if (props.jwt) {
@@ -220,7 +220,7 @@ const LoadAchivement = (props: {jwt: string | null, setErrorCode: (arg0: number)
 	);
 }
 
-const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode: (arg0: number) => void, jwt: string | null}) => {
+const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode: any, jwt: string | null}) => {
 	const [vc, setVc] = useState<number>(0);
 	const [df, setDf] = useState<number>(0);
 	const [nb_g, setNb_g] = useState<number | undefined>(undefined);

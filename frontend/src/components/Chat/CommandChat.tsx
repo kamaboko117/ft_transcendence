@@ -76,7 +76,7 @@ const fetchToBackPsw = (elem: typeFetchToBackPsw) => {
 }
 
 const getUserInfoByName = (jwt: string, username: string,
-    setErrorCode: { (value: SetStateAction<number>): void; (value: SetStateAction<number>): void; (value: SetStateAction<number>): void; (value: SetStateAction<number>): void; (arg0: number): void; (arg0: number): void; }, id: string, firstPartCmd: string, thirdPart: string) => {
+    setErrorCode: any, id: string, firstPartCmd: string, thirdPart: string) => {
     fetch('https://' + location.host + '/api/users/info-fr-bl?' + new URLSearchParams({
         name: username
     }), { headers: header(jwt) })
@@ -142,7 +142,7 @@ const isCmdValid = (cmd: string, length: number) => {
 */
 
 const fetchBlackAndFriendList = (userInfo: typeUserInfo, jwt: string,
-    type: number, setErrorCode: React.Dispatch<React.SetStateAction<number>>, updateUserInfo: { (username: string, id: number, friend: number | null, block: number | null, avatarPath: string | null): void; (arg0: string, arg1: number, arg2: number | null, arg3: number | null, arg4: string | null): void; }) => {
+    type: number, setErrorCode: any, updateUserInfo: any) => {
     fetch("https://" + location.host + "/api/users/fr-bl-list", {
         method: 'post',
         headers: headerPost(jwt),
@@ -176,9 +176,9 @@ const fetchBlackAndFriendList = (userInfo: typeUserInfo, jwt: string,
     }).catch(e => console.log(e));
 }
 
-export const commandChat = (jwt: string, obj: any, setErrorCode: { (value: SetStateAction<number>): void; (value: SetStateAction<number>): void; (value: SetStateAction<number>): void; (value: SetStateAction<number>): void; (arg0: number): void; },
-    lstUserGlobal: { id: number; fl: number | null; bl: number | null; User_username: string; User_avatarPath: string | null; }[], lstUserChat: any[],
-    setLstUserGlobal: { (value: SetStateAction<{ id: number; fl: number | null; bl: number | null; User_username: string; User_avatarPath: string | null; }[]>): void; (value: SetStateAction<{ id: number; fl: number | null; bl: number | null; User_username: string; User_avatarPath: string | null; }[]>): void; (value: SetStateAction<{ id: number; fl: number | null; bl: number | null; User_username: string; User_avatarPath: string | null; }[]>): void; (value: SetStateAction<{ id: number; fl: number | null; bl: number | null; User_username: string; User_avatarPath: string | null; }[]>): void; (value: SetStateAction<{ id: number; fl: number | null; bl: number | null; User_username: string; User_avatarPath: string | null; }[]>): void; }, setLstUserChat: { (value: SetStateAction<{ list_user_user_id: number; list_user_role: string | null; fl: number | null; bl: number | null; User_username: string; User_avatarPath: string | null; }[]>): void; (value: SetStateAction<{ list_user_user_id: number; list_user_role: string | null; fl: number | null; bl: number | null; User_username: string; User_avatarPath: string | null; }[]>): void; (value: SetStateAction<{ list_user_user_id: number; list_user_role: string | null; fl: number | null; bl: number | null; User_username: string; User_avatarPath: string | null; }[]>): void; (value: SetStateAction<{ list_user_user_id: number; list_user_role: string | null; fl: number | null; bl: number | null; User_username: string; User_avatarPath: string | null; }[]>): void; (arg0: any): void; }, navigate: NavigateFunction) => {
+export const commandChat = (jwt: string, obj: any, setErrorCode: any,
+    lstUserGlobal: any, lstUserChat: any[],
+    setLstUserGlobal: any, setLstUserChat : any, navigate: any) => {
     const cmd = obj.content;
 
     const listHandle = (jwt: string,
@@ -211,7 +211,7 @@ export const commandChat = (jwt: string, obj: any, setErrorCode: { (value: SetSt
 
     function runUserCmd(jwt: string, firstPartCmd: string, secondPartCmd: string) {
         function getInfoUser(jwt: string, firstPartCmd: string, secondPartCmd: string,
-            setErrorCode: { (value: SetStateAction<number>): void; (value: SetStateAction<number>): void; (value: SetStateAction<number>): void; (value: SetStateAction<number>): void; (arg0: number): void; (arg0: number): void; }) {
+            setErrorCode: any) {
             fetch('https://' + location.host + '/api/users/info-fr-bl?' + new URLSearchParams({
                 name: secondPartCmd
             }), { headers: header(jwt) })
