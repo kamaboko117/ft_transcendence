@@ -88,9 +88,10 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
             userId: userId, type: type
         })
     }).then(res => {
-        if (res.ok)
+        if (res && res.ok)
             return (res.json());
-        setErrorCode(res.status)
+        if (res)
+            setErrorCode(res.status)
     }).then((res: { add: boolean, type: number }) => {
         if (res) {
             if (res.add) {
@@ -150,9 +151,10 @@ export const directMessage = async (event: MouseEvent<HTMLButtonElement>,
             id: String(userId),
         }), { headers: header(jwt) })
             .then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
-                setErrorCode(res.status)
+                if (res)
+                    setErrorCode(res.status)
             }).then((res: aswType) => {
                 if (res) {
                     if (res.asw) {
@@ -407,9 +409,10 @@ const ListUserChat = (props: {
             return (await fetch('https://' + location.host + '/api/chat/users?' + new URLSearchParams({
                 id: id,
             }), { headers: header(jwt) }).then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
-                setErrorCode(res.status);
+                if (res)
+                    setErrorCode(res.status);
             }).catch(e => console.log(e)));
         }
         fetchListUser(props.id, props.jwt, setErrorCode).then(res => {

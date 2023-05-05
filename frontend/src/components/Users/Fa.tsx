@@ -23,9 +23,10 @@ function SettingFa(props: { jwt: string | null }) {
         fetch('https://' + location.host + '/api/users/set-fa/',
             { headers: header(props.jwt) })
             .then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
-                setErrorCode(res.status);
+                if (res)
+                    setErrorCode(res.status);
             })
             .then((res) => {
                 if (res) {

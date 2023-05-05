@@ -17,7 +17,7 @@ export function playPageInvite(jwt: string, setErrorCode,
             headers: headerPost(jwt)
         })
             .then((response) => {
-                if (response.ok)
+                if (response && response.ok)
                     return response.json();
                 setErrorCode(response.status);
             })
@@ -46,9 +46,10 @@ function PlayPageInvite(props: { jwt: string | null }) {
             }),
                 { headers: header(props.jwt) })
                 .then(res => {
-                    if (res.ok)
+                    if (res && res.ok)
                         return (res.json());
-                    setErrorCode(res.status);
+                    if (res)
+                        setErrorCode(res.status);
                 })
                 .then((res: { exist: boolean }) => {
                     if (res) {

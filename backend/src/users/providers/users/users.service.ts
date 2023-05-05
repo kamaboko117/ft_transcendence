@@ -58,7 +58,7 @@ export class UsersService {
             method: "POST",
             body: formData
         }).then(res => {
-            if (res.ok) {
+            if (res && res.ok) {
                 return (res.json());
             }
             return (undefined)

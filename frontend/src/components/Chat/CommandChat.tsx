@@ -35,7 +35,7 @@ const fetchToBackWithTimer = (elem: typeFetchToBack) => {
         })
     })
         .then(res => {
-            if (res.ok)
+            if (res && res.ok)
                 return (res)
         })
         .catch(e => console.log(e));
@@ -51,7 +51,7 @@ const fetchToBackSpecial = (elem: typeFetchToBack) => {
         })
     })
         .then(res => {
-            if (res.ok)
+            if (res && res.ok)
                 return (res)
         })
         .catch(e => console.log(e));
@@ -67,7 +67,7 @@ const fetchToBackPsw = (elem: typeFetchToBackPsw) => {
         })
     })
         .then(res => {
-            if (res.ok)
+            if (res && res.ok)
                 return (res)
         })
         .catch(e => console.log(e));
@@ -79,7 +79,7 @@ const getUserInfoByName = (jwt: string, username: string,
         name: username
     }), { headers: header(jwt) })
         .then(res => {
-            if (res.ok)
+            if (res && res.ok)
                 return (res.json());
             setErrorCode(res.status)
         }).then(res => {
@@ -148,7 +148,7 @@ const fetchBlackAndFriendList = (userInfo: typeUserInfo, jwt: string,
             userId: Number(userInfo.id), type: type
         })
     }).then(res => {
-        if (res.ok)
+        if (res && res.ok)
             return (res.json());
         setErrorCode(res.status);
     }).then((res: { add: boolean, type: number }) => {
@@ -214,7 +214,7 @@ export const commandChat = (jwt: string, obj: any, setErrorCode,
                 name: secondPartCmd
             }), { headers: header(jwt) })
                 .then(res => {
-                    if (res.ok)
+                    if (res && res.ok)
                         return (res.json());
                     setErrorCode(res.status)
                 })
@@ -250,7 +250,7 @@ export const commandChat = (jwt: string, obj: any, setErrorCode,
             id: obj.id,
         }), { headers: header(jwt) })
             .then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
                 setErrorCode(res.status)
             })

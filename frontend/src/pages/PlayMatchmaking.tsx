@@ -46,9 +46,10 @@ function PlayPageMatchmaking(props: { jwt: string | null }) {
             }),
                 { headers: header(props.jwt) })
                 .then(res => {
-                    if (res.ok)
+                    if (res && res.ok)
                         return (res.json());
-                    setErrorCode(res.status);
+                    if (res)
+                        setErrorCode(res.status);
                 })
                 .then((res: { exist: boolean }) => {
                     if (res) {

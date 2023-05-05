@@ -90,7 +90,7 @@ async function update(event: FormEvent<HTMLFormElement>, username: string | unde
 			body: formData,
 		}
 	).then(res => {
-		if (res.ok)
+		if (res && res.ok)
 			return (res.json());
 		setErrorCode(res.status);
 	}).then(res => {
@@ -150,9 +150,10 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
 	useEffect(() => {
 		fetch('https://' + location.host + '/api/users/get_raw_mh', {headers: header(props.jwt)})
 		.then(res => {
-			if (res.ok)
+			if (res && res.ok)
 				return(res.json());
-			setErrorCode(res.status);
+			if (res)
+				setErrorCode(res.status);
 		}).then((res: Array<rawMH>) => {
 			if (res) {
 				setRaw(res);
@@ -196,9 +197,10 @@ const LoadAchivement = (props: {jwt: string | null, setErrorCode}) => {
 		if (props.jwt) {
 			fetch('https://' + location.host + '/api/users/achiv/', {headers: header(props.jwt)})
 			.then(res => {
-				if (res.ok)
+				if (res && res.ok)
 					return(res.json())
-				props.setErrorCode(res.status);
+				if (res)
+					props.setErrorCode(res.status);
 			}).then((res) => {
 				if (res)
 					setList(res);
@@ -230,8 +232,9 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: s
 		fetch('https://' + location.host + '/api/users/get-games-nb/', {headers: header(props.jwt)})
 			.then(res => {
 				if (res.ok)
-					return(res.text())
-				props.setErrorCode(res.status);
+					return(res.text());
+				if (res)
+					props.setErrorCode(res.status);
 			}).then((res) => {
 				setNb_g(Number(res));
 			})
@@ -241,9 +244,10 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: s
 		if (typeof nb_g === 'number') {
 			fetch('https://' + location.host + '/api/users/get-victory-nb/', {headers: header(props.jwt)})
 			.then(res => {
-				if (res.ok)
-					return (res.json())
-				props.setErrorCode(res.status);
+				if (res && res.ok)
+					return (res.json());
+				if (res)
+					props.setErrorCode(res.status);
 			}).then((res) => {
 				if (res) {
 					setVc(Number(res.nb));
@@ -299,7 +303,8 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 			.then(res => {
 				if (res.ok)
 					return (res.json());
-				setErrorCode(res.status);
+				if (res)
+					setErrorCode(res.status);
 			}).then((res: userInfo) => {
 				if (res) {
 					if (res.avatarPath)

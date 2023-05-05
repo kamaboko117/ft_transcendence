@@ -37,9 +37,10 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 			username: value, type: 2
 		})
 	}).then(res => {
-		if (res.ok)
+		if (res && res.ok)
 			return (res.json());
-		setErrorCode(res.status)
+		if (res)
+			setErrorCode(res.status)
 	}).then(res => {
 		if (res && res.code === 1)
 			setLst(res.err);

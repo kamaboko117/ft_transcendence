@@ -17,7 +17,7 @@ function UserItem(props: ItemProps) {
             fetch('https://' + location.host + '/api/users/profile/',
             { headers: header(props.jwt) })
             .then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
             })
             .then((res) => {

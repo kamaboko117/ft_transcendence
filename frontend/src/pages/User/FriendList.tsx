@@ -57,7 +57,7 @@ export const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string | n
 			userId: Number(userInfo.id), type: type
 		})
 	}).then(res => {
-		if (res.ok)
+		if (res && res.ok)
 			return (res.json());
 		setErrorCode(res.status);
 	}).then((res: { add: boolean, type: number }) => {
@@ -213,7 +213,7 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 			username: value, type: 2
 		})
 	}).then(res => {
-		if (res.ok)
+		if (res && res.ok)
 			return (res.json());
 		setErrorCode(res.status);
 	}).then(res => {

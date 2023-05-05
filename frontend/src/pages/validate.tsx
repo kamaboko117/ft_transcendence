@@ -36,9 +36,10 @@ function ValidatePage(props: { jwt: string }) {
           code: code
         })
       }).then(response => {
-        if (response.ok)
+        if (response && response.ok)
           return (response.json());
-        setErrorCode(response.status);
+        if (response)
+          setErrorCode(response.status);
       }).catch(e => console.log(e)));
     };
     //set load user

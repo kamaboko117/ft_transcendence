@@ -32,9 +32,10 @@ const handleSubmit = (event, code: number | null,
                 }),
             }
         ).then(res => {
-            if (res.ok)
+            if (res && res.ok)
                 return (res.json());
-            setErrorCode(res.status);
+            if (res)
+                setErrorCode(res.status);
         }).then(res => {
             if (res) {
                 if (res.token) {
@@ -65,7 +66,7 @@ function FaCode(props: { jwt: string | null }) {
         fetch('https://' + location.host + '/api/users/check-fa/',
             { headers: header(props.jwt) })
             .then(res => {
-                if (!res.ok)
+                if (res && !res.ok)
                     setErrorCode(res.status);
             }).catch(err => console.log(err));
     }, []);

@@ -107,11 +107,13 @@ const handleSubmitPmUser = (e: React.FormEvent<HTMLFormElement>, user: string, j
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     setPm: React.Dispatch<React.SetStateAction<listPm[]>>) => {
     e.preventDefault();
+    if (!user || user === "")
+        return ;
     fetch('https://' + location.host + '/api/chat/find-pm-username?' + new URLSearchParams({
         username: String(user)
     }), { headers: header(jwt) })
         .then(res => {
-            if (res.ok)
+            if (res && res.ok)
                 return (res.json());
             setErrorCode(res.status);
         }).then((res: {
@@ -345,7 +347,7 @@ const DiscussionBox = (props: {
     isPrivate: boolean
 }) => {
     const stringRegex = /(\/\w*\/)/;
-    const regex = RegExp(stringRegex, 'g')
+    const regex = RegExp(stringRegex, 'g');
     const getLocation = useLocation()?.pathname;
     const getFirstPartRegex = regex.exec(getLocation);
     let getSecondPartRegex = '';
@@ -373,12 +375,12 @@ const DiscussionBox = (props: {
             });
         }
         //listen to exception sent by backend
-        usrSocket?.on('exception', (res) => {
+        /*usrSocket?.on('exception', (res) => {
             if (res && res.status === "error" && res.message === "Token not valid")
                 props.setErrorCode(403);
             else
                 props.setErrorCode(500);
-        })
+        });*/
         return (() => {
             //unsubscribeChat
             if (getSecondPartRegex != props.id
@@ -387,7 +389,7 @@ const DiscussionBox = (props: {
                     setOnline(false);
                 });
             }
-            usrSocket?.off("exception");
+            //usrSocket?.off("exception");
         })
     }, [props.id, usrSocket]);
 
@@ -399,7 +401,7 @@ const DiscussionBox = (props: {
             }),
                 { headers: header(props.jwt) })
                 .then(res => {
-                    if (res.ok)
+                    if (res && res.ok)
                         return (res.json());
                     props.setErrorCode(res.status);
                 }).catch(e => console.log(e));
@@ -459,7 +461,7 @@ const updateChannel = (setChannel, setPm, jwt, setErrorCode) => {
     fetch('https://' + location.host + '/api/chat/list-pm',
         { headers: header(jwt) })
         .then(res => {
-            if (res.ok)
+            if (res && res.ok)
                 return (res.json());
             setErrorCode(res.status);
         })
@@ -470,7 +472,7 @@ const updateChannel = (setChannel, setPm, jwt, setErrorCode) => {
     fetch('https://' + location.host + '/api/chat/channel-registered',
         { headers: header(jwt) })
         .then(res => {
-            if (res.ok)
+            if (res && res.ok)
                 return (res.json());
             setErrorCode(res.status);
         }).then(res => {

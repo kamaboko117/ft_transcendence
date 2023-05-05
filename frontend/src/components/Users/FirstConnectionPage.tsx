@@ -41,9 +41,10 @@ function update(event: FormEvent<HTMLFormElement>, username: string, userCtx, us
 			body: formData,
 		}
 	).then(res => {
-		if (res.ok)
+		if (res && res.ok)
 			return (res.json());
-		setErrorCode(res.status);
+		if (res)
+			setErrorCode(res.status);
 	}).then(res => {
 		if (res) {
 			if (res.valid === true) {
@@ -88,7 +89,8 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 			.then(res => {
 				if (res.ok)
 					return (res.json());
-				setErrorCode(res.status);
+				if (res)
+					setErrorCode(res.status);
 			})
 			.then((res) => {
 				if (res

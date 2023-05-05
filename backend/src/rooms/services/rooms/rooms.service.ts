@@ -32,7 +32,6 @@ export class RoomsService {
         ballSize: 10,
         ballColor: "WHITE",
       },
-      matchmaking: false
     });
     return this.roomRepository.save(newRoom);
   }
@@ -50,7 +49,6 @@ export class RoomsService {
         ballSize: 10,
         ballColor: "WHITE",
       },
-      matchmaking: false
     });
     return this.roomRepository.save(newRoom);
   }

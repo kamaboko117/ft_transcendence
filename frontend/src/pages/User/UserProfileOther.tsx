@@ -103,7 +103,7 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string | null,
 			userId: Number(id), type: type
 		})
 	}).then(res => {
-		if (res.ok)
+		if (res && res.ok)
 			return (res.json());
 		setErrorCode(res.status);
 	}).then((res: { add: boolean, type: number }) => {
@@ -178,9 +178,10 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null , id: string}>
 	useEffect(() => {
 		fetch('https://' + location.host + `/api/users/get_raw_mh_user/${props.id}`, {headers: header(props.jwt)})
 		.then(res => {
-			if (res.ok)
+			if (res && res.ok)
 				return(res.json());
-			setErrorCode(res.status);
+			if (res)
+				setErrorCode(res.status);
 		}).then((res: Array<rawMH>) => {
 			if (res) {
 				setRaw(res);
@@ -214,8 +215,9 @@ const LoadAchivement = (props: {jwt: string | null, setErrorCode, id: string}) =
 			fetch('https://' + location.host + '/api/users/achiv-other/' + props.id, {headers: header(props.jwt)})
 			.then(res => {
 				if (res.ok)
-					return(res.json())
-				props.setErrorCode(res.status);
+					return(res.json());
+				if (res)
+					props.setErrorCode(res.status);
 			}).then((res) => {
 				if (res)
 					setList(res);
@@ -252,10 +254,10 @@ const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | 
 		fetch('https://' + location.host + `/api/users/get-games-nb-other/${props.id}`, {headers: header(props.jwt)})
 			.then(res => {
 				if (res.ok)
-					return(res.text())
-				props.setErrorCode(res.status);
+					return(res.text());
+				if (res)
+					props.setErrorCode(res.status);
 			}).then((res) => {
-				console.log(res)
 				setNb_g(Number(res));
 			})
 	}, [])
@@ -264,9 +266,10 @@ const LoadResultGame = (props: {setErrorCode, id: string, otherUser: userInfo | 
 		if (typeof nb_g === 'number') {
 			fetch('https://' + location.host + `/api/users/get-victory-nb-other/${props.id}`, {headers: header(props.jwt)})
 			.then(res => {
-				if (res.ok)
-					return (res.json())
-				props.setErrorCode(res.status);
+				if (res && res.ok)
+					return (res.json());
+				if (res)
+					props.setErrorCode(res.status);
 			}).then((res) => {
 				if (res) {
 					setVC(Number(res.nb));
@@ -315,7 +318,8 @@ const UserProfileOther = (props: { jwt: string | null }) => {
 			.then(res => {
 				if (res.ok)
 					return (res.json());
-				setErrorCode(res.status);
+				if (res)
+					setErrorCode(res.status);
 			}).then(res => {
 				if (res) {
 					if (!res.avatarPath)

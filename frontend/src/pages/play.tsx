@@ -42,7 +42,7 @@ export default function PlayPage(props: { jwt: string | null }) {
       headers: header(props.jwt),
     })
       .then((response) => {
-        if (response.ok) return response.json();
+        if (response && response.ok) return response.json();
         setErrorCode(response.status);
       })
       .then((data) => {
@@ -90,11 +90,12 @@ export default function PlayPage(props: { jwt: string | null }) {
         headers: header(props.jwt),
       })
         .then((response) => {
-          if (response.ok) return response.json();
+          if (response && response.ok) return response.json();
           setErrorCode(response.status);
         })
         .then((data) => {
-          roomName = data.roomName;
+          if (data)
+            roomName = data.roomName;
           console.log(roomName);
         });
       setRoomName(roomName);

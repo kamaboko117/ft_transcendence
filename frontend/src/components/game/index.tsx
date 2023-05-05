@@ -48,8 +48,9 @@ export default function Game(props: {
         { headers: header(props.jwt) }
       )
         .then((res) => {
-          if (res.ok) return res.json();
-          setErrorCode(res.status);
+          if (res && res.ok) return res.json();
+          if (res)
+            setErrorCode(res.status);
         })
         .then((res: { exist: boolean }) => {
           if (res) {

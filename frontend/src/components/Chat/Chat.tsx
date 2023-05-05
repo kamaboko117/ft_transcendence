@@ -228,18 +228,18 @@ const MainChat = (props: any) => {
             }
         });
         //listen to excption sent by backend
-        usrSocket?.on('exception', (res) => {
+        /*usrSocket?.on('exception', (res) => {
             if (res.status === "error" && res.message === "Token not valid")
                 props.setErrorCode(403);
             else
                 props.setErrorCode(500);
-        });
+        });*/
         return (() => {
             //unsubscribeChat
             usrSocket?.emit("stopEmit", { id: props.id }, () => {
                 setOnline(false);
             });
-            usrSocket?.off("exception");
+            //usrSocket?.off("exception");
         })
     }, [props.id, usrSocket]);
     const navigate = useNavigate();
@@ -351,7 +351,7 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
             psw: value
         })
     }).then(res => {
-        if (res.ok)
+        if (res && res.ok)
             return (res.json())
         setErrorCode(res.status);
         return (false);
@@ -368,7 +368,7 @@ const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>,
     }),
         { headers: header(jwt) })
         .then(res => {
-            if (res.ok)
+            if (res && res.ok)
                 return (res.json());
             setErrorCode(res.status);
         }));

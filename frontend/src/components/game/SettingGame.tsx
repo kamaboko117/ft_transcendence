@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import gameService from "../../services/gameService";
 import { FetchError } from "../FetchError";
 import ActivePowerUpsList from "./ActivePowerUpsList";
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
@@ -14,7 +14,6 @@ const ButtonIsCustom = (props: {
   custom: boolean,
   setCustom: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
-  //const [custom, setCustom] = useState<boolean>(false);
   const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (e && e.target) props.setCustom((prev) => !prev);
   };
@@ -24,7 +23,6 @@ const ButtonIsCustom = (props: {
       props.setRdy(false);
       if (res)
         props.setCustom(res.type);
-      console.log(res.type)
     });
     return () => {
       props.usrSocket.off("updateTypeGameFromServer");
@@ -35,7 +33,6 @@ const ButtonIsCustom = (props: {
       "updateTypeGame",
       { type: props.custom, roomId: props.id },
       (res: { type: boolean }) => {
-        console.log(res.type)
         props.setRdy(false);
         if (res)
           props.setCustom(res.type);
@@ -62,8 +59,6 @@ const ButtonRdy = (props: {
   custom: boolean,
   setCustom: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
-  //const [rdy, setRdy] = useState<boolean>(false);
-
   const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (e && e.target) {
       props.setRdy((prev) => !prev);
@@ -118,13 +113,56 @@ interface IPowerUp {
   lifespan: number;
 }
 
+const MatchmakingLeft = (props: {userLeft: boolean, usr1: string, usr2: string}) => {
+  const navigate = useNavigate();
+  let getTimer: null | number = null;
+
+  function redirect() {
+    navigate('/matchmaking');
+  }
+  //if opponent not coming after x seconds, then go back to matchmaking page
+  useEffect(() => {
+    if (!props.usr1 || !props.usr2)
+      getTimer = setTimeout(redirect, 5000);
+    if (getTimer && props.usr1 && props.usr2)
+      clearTimeout(getTimer);
+    return (() => {
+      if (getTimer)
+        clearTimeout(getTimer);
+    });
+  }, [props.usr1, props.usr2]);
+
+  //if user leave during matchmaking waiting room
+  useEffect(() => {
+    if (props.userLeft === true) {
+      if (getTimer)
+        clearTimeout(getTimer);
+      setTimeout(redirect, 5000);
+    }
+  }, [props.userLeft]);
+
+  return (
+    <>
+      {(!props.usr1 || !props.usr2) && 
+        <div className="game_container">
+          <p>If opponent not coming in 5 seconds, you will be sent back to matchmaking page...</p>
+      </div>
+      }
+      {
+        props.userLeft === true &&
+        <div className="game_container">
+          <p>Opponent left, redirection into matchmaking in 5 seconds...</p>
+        </div>
+    }
+    </>
+  );
+}
+
 const SettingGame = (props: {
   socketService: { socket: any };
   id: string;
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   isGameStarted: boolean;
-  /*typeGame: string;*/
-  /*setTypeGame: React.Dispatch<React.SetStateAction<string>>;*/
   powerUpList: IPowerUp[];
   side: number;
   roomName: string;
@@ -134,35 +172,31 @@ const SettingGame = (props: {
   const [usr2, setUsr2] = useState<string>("");
   const [errorText, setErrorText] = useState<string>("");
   const url = useParams().id as string;
-  // console.log(useParams())
-  //console.log(useParams())
-  //console.log(url)
+  const [userLeft, setLeft] = useState<boolean>(false);
+  const regex = RegExp(/(\/[\w-]*\/)/, 'g');
+  const getLocation = useLocation()?.pathname;
+  const getFirstPartRegex = regex.exec(getLocation);
+
   useEffect(() => {
-    console.log(props.id);
-    console.log(props.socketService.socket);
+    /*props.socketService.socket?.on('exception', (res) => {
+      if (res && res.status === "error" && res.message === "Token not valid")
+          setErrorCode(403);
+      else
+          setErrorCode(500);
+  })*/
     if (props.socketService.socket) {
-      console.log("socketed");
       const game = async () => {
         await gameService
           .joinGameRoom(props.socketService.socket, props.id, setUsr1, setUsr2)
-          .then((res) => {
-            console.log(res);
-          })
           .catch((err: string) => {
             setErrorText(err);
-            console.log("joining room " + err);
             setErrorCode(1);
             props.socketService.socket?.off("join_game_success");
           });
       };
       game();
-      console.log("joined from game component");
-      console.log("url")
-      console.log(url)
     }
-    console.log("Game room mounting");
     return () => {
-      console.log("Game room unmount");
       props.socketService.socket?.emit("leave_game", { roomId: props.id });
       props.socketService.socket?.off("join_game_success");
       props.socketService.socket?.off("join_game_error");
@@ -173,13 +207,16 @@ const SettingGame = (props: {
     props.socketService.socket.on(
       "user_leave_room",
       (res: { username: string }) => {
-        console.log(res);
         if (res && res.username === usr1) {
           setUsr1("");
         }
         if (res && res.username === usr2) {
           setUsr2("");
         }
+        if (res.username
+          && getFirstPartRegex
+          && getFirstPartRegex[0] == "/play-matchmaking/")
+          setLeft(true);
       }
     );
     return () => {
@@ -193,6 +230,8 @@ const SettingGame = (props: {
     return (
       <>
         {errorCode >= 400 && <FetchError code={errorCode} />}
+        {getFirstPartRegex && <MatchmakingLeft userLeft={userLeft}
+          usr1={usr1} usr2={usr2} />}
         <div className="createParty">
           <h1 className="room_name">{props.roomName}</h1>
           {errorCode != 1 ? (
