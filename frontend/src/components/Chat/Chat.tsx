@@ -43,7 +43,7 @@ type msg = {
     img: string
 }
 
-const handleImgError = (e: { target: HTMLImageElement; }) => {
+const handleImgError = (e: any) => {
     if (!e || !e.target)
         return ;
     const target: HTMLImageElement = e.target as HTMLImageElement;
