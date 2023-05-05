@@ -22,7 +22,7 @@ const headerPost = (jwt: Readonly<string | null>) => {
 	return (header);
 };
 
-function update(event: FormEvent<HTMLFormElement>, username: string, userCtx, userId,
+function update(event: FormEvent<HTMLFormElement>, username: string, userCtx: any, userId: string | null,
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	setLstErr: React.Dispatch<React.SetStateAction<[]>>) {

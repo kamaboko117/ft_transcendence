@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { NavigateFunction, useNavigate } from 'react-router-dom';
 import { FetchError, header } from '../FetchError';
 import NavBar from '../navbar/NavBar';
 
 const handleButton = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-    navigate) => {
+    navigate: NavigateFunction) => {
     if (event && event.target)
         navigate("/fa-code");
 }

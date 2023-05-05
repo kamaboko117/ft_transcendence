@@ -9,7 +9,7 @@ import SocketContext from '../../contexts/Socket';
 import { debounce } from 'debounce';
 import ContextDisplayChannel, { updateBlackFriendList } from '../../contexts/DisplayChatContext';
 import AdminComponent from './Admin';
-import { useNavigate } from 'react-router-dom';
+import { NavigateFunction, useNavigate } from 'react-router-dom';
 import { playPageInvite } from '../../pages/PlayInvite';
 
 type typeUserInfo = {
@@ -116,7 +116,8 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 }
 
 export const inviteGame = (event: MouseEvent<HTMLButtonElement>,
-    userId: number, jwt: string | null, navigate, setErrorCode): void => {
+    userId: number, jwt: string | null, navigate: NavigateFunction,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>): void => {
     event.preventDefault();
     if (event.target && jwt)
         playPageInvite(jwt, setErrorCode,
@@ -124,7 +125,7 @@ export const inviteGame = (event: MouseEvent<HTMLButtonElement>,
 }
 
 export const userProfile = (event: MouseEvent<HTMLButtonElement>,
-    userId: number, navigate): void => {
+    userId: number, navigate: NavigateFunction): void => {
     event.preventDefault();
     if (event.target)
         navigate({ pathname: "/profile/" + userId });
@@ -285,7 +286,9 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
     </>)
 }
 
-export const handleImgError = (e) => {
+export const handleImgError = (e: any) => {
+    if (!e || !e.target)
+        return ;
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
     if (target) {

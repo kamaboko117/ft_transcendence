@@ -36,15 +36,15 @@ const ErrorSubmit = (props: any) => {
     let i: number = 0;
     return (<div style={{"width": "100%"}}>
         {props.listError &&
-            props.listError.map((err) => (
+            props.listError.map((err: string) => (
                 <p style={{ color: "red" }} key={++i}>{err}</p>
             ))
         }
     </div>);
 }
 
-const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, setErr,
-    name: string | null, navigate: any, jwt) => {
+const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, setErr: React.Dispatch<React.SetStateAction<boolean>>,
+    name: string | null, navigate: any, jwt: string | null) => {
     e.preventDefault();
 
     if (name) {

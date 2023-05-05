@@ -1,4 +1,6 @@
 import { typeListUser, typeListUserGlobal, updateBlackFriendList } from "../../contexts/DisplayChatContext";
+import { SetStateAction } from "react";
+import { NavigateFunction } from "react-router-dom";
 import { playPageInvite } from "../../pages/PlayInvite";
 import { header, headerPost } from "../FetchError";
 
@@ -142,7 +144,7 @@ const isCmdValid = (cmd: string, length: number) => {
 */
 
 const fetchBlackAndFriendList = (userInfo: typeUserInfo, jwt: string,
-    type: number, setErrorCode: React.Dispatch<React.SetStateAction<number>>, updateUserInfo: any) => {
+    type: number, setErrorCode: React.Dispatch<React.SetStateAction<number>>, updateUserInfo: { (username: string, id: number, friend: number | null, block: number | null, avatarPath: string | null): void; (arg0: string, arg1: number, arg2: number | null, arg3: number | null, arg4: string | null): void; }) => {
     fetch("https://" + location.host + "/api/users/fr-bl-list", {
         method: 'post',
         headers: headerPost(jwt),
@@ -180,7 +182,8 @@ export const commandChat = (jwt: string, obj: any,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     lstUserGlobal: typeListUserGlobal["listUser"], lstUserChat: typeListUser["listUser"],
     setLstUserGlobal: React.Dispatch<React.SetStateAction<typeListUserGlobal["listUser"]>>,
-    setLstUserChat: React.Dispatch<React.SetStateAction<typeListUser["listUser"]>>, navigate: any) => {
+    setLstUserChat: React.Dispatch<React.SetStateAction<typeListUser["listUser"]>>,
+    navigate: NavigateFunction) => {
     const cmd = obj.content;
 
     const listHandle = (jwt: string,

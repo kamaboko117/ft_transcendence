@@ -8,6 +8,7 @@ import SocketContext from '../../contexts/Socket';
 import { useLocation, useNavigate } from 'react-router-dom';
 import UserContext from '../../contexts/UserContext';
 import { commandChat } from './CommandChat';
+import { Socket } from 'socket.io-client';
 
 type settingChat = {
     width: number,
@@ -230,12 +231,23 @@ const ListDiscussion = (props: propsListChannel) => {
 }
 
 type typePostMsg = {
-    id: string, msg,
-    usrSocket, idBox, isPrivate,
-    setMsg,
+    id: string, msg: string | null,
+    usrSocket: Socket<any, any> | undefined, idBox: string, isPrivate: boolean,
+    setMsg :React.Dispatch<React.SetStateAction<string | null>>,
     setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,
     setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>
+}
+
+type typeGetMsg = {
+    lstMsg: Array<{
+        user: {
+            avatarPath: string;
+            username: string;
+        };
+        content: string;
+        img: string;
+    }>;
 }
 
 const PostMsg = (props: typePostMsg) => {
@@ -249,6 +261,8 @@ const PostMsg = (props: typePostMsg) => {
     /* Post msg */
     const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
         obj: any, ref: any) => {
+        if (!e || !e.target)
+            return ;
         e.preventDefault();
         let cmdIsValid = true;
 
@@ -260,7 +274,7 @@ const PostMsg = (props: typePostMsg) => {
                 lstUserGlobal, lstUserChat, setLstUserGlobal,
                 setLstUserChat, navigate);
             if (cmdIsValid === false) {
-                props.usrSocket.emit('sendMsg', obj, (res) => {
+                props.usrSocket?.emit('sendMsg', obj, (res: lstMsg) => {
                     if (res && res.room === obj.id && obj.idBox === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res && res.room === obj.id)
@@ -269,7 +283,7 @@ const PostMsg = (props: typePostMsg) => {
             }
         }
         else {
-            props.usrSocket.emit('sendMsg', obj, (res) => {
+            props.usrSocket?.emit('sendMsg', obj, (res: lstMsg) => {
                 if (res && res.room === obj.id && obj.idBox === obj.id)
                     setLstMsgChat((lstMsg) => [...lstMsg, res]);
                 if (res && res.room === obj.id)
@@ -294,7 +308,7 @@ const PostMsg = (props: typePostMsg) => {
                     lstUserGlobal, lstUserChat, setLstUserGlobal,
                     setLstUserChat, navigate);
                 if (cmdIsValid === false) {
-                    props.usrSocket.emit('sendMsg', obj, (res) => {
+                    props.usrSocket?.emit('sendMsg', obj, (res: lstMsg) => {
                         if (res && res.room === obj.id && obj.idBox === obj.id)
                             setLstMsgChat((lstMsg) => [...lstMsg, res]);
                         if (res && res.room === obj.id)
@@ -302,7 +316,7 @@ const PostMsg = (props: typePostMsg) => {
                     });
                 }
             } else {
-                props.usrSocket.emit('sendMsg', obj, (res) => {
+                props.usrSocket?.emit('sendMsg', obj, (res: lstMsg) => {
                     if (res && res.room === obj.id && obj.idBox === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res && res.room === obj.id)
@@ -464,7 +478,15 @@ const DiscussionBox = (props: {
     </div>);
 }
 
-const updateChannel = (setChannel, setPm, jwt, setErrorCode) => {
+type updateChannelType = {
+    setChannel: React.Dispatch<React.SetStateAction<listChan[]>>,
+    setPm: React.Dispatch<React.SetStateAction<listPm[]>>,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>
+}
+
+const updateChannel = (setChannel: updateChannelType["setChannel"],
+    setPm: updateChannelType["setPm"], jwt: string | null,
+    setErrorCode: updateChannelType["setErrorCode"]) => {
     fetch('https://' + location.host + '/api/chat/list-pm',
         { headers: header(jwt) })
         .then(res => {

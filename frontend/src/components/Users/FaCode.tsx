@@ -3,20 +3,26 @@ import { useNavigate } from 'react-router-dom';
 import UserContext from '../../contexts/UserContext';
 import { FetchError, headerPost, header } from '../FetchError';
 
-const handleChange = (event, setCode) => {
+const handleChange = (event: React.ChangeEvent<HTMLInputElement> | undefined,
+    setCode: React.Dispatch<React.SetStateAction<number | null>>) => {
+    if (!event || !event.target)
+        return ;
     event.preventDefault();
     const target = event?.currentTarget;
 
-    if (target && !isNaN(target.value)) {
+    if (target && !isNaN(Number(target.value))) {
         setCode(Number(target.value));
     } else {
         setCode(0);
     }
 }
 
-const handleSubmit = (event, code: number | null,
-    jwt: string | null, userId: number, userCtx,
-    setErrorCode, setValid) => {
+const handleSubmit = (event: React.FormEvent<HTMLFormElement> | undefined, code: number | null,
+    jwt: string | null, userId: number, userCtx: any,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    setValid: React.Dispatch<React.SetStateAction<boolean | undefined>>) => {
+    if (!event || !!event.target)
+        return ;
     event.preventDefault();
     const target = event?.currentTarget;
 

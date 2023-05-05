@@ -3,7 +3,7 @@ import ListUserChat from './ListUser';
 import { PasswordOwnerBox } from './Admin';
 import { FetchError, header, headerPost } from '../FetchError';
 import "../../css/chat.css";
-import { useLocation, useParams, useNavigate } from 'react-router-dom';
+import { useLocation, useParams, useNavigate, NavigateFunction } from 'react-router-dom';
 import scroll from 'react-scroll';
 import SocketContext from '../../contexts/Socket';
 import { ContextUserLeave } from '../../contexts/LeaveChannel';
@@ -12,6 +12,7 @@ import ContextDisplayChannel, { LoadUserGlobal } from '../../contexts/DisplayCha
 import { commandChat } from './CommandChat';
 
 export type lstMsg = {
+    room: string,
     lstMsg: Array<{
         //idUser: string,
         user: { avatarPath: string, username: string }
@@ -42,7 +43,7 @@ type msg = {
     img: string
 }
 
-const handleImgError = (e: any) => {
+const handleImgError = (e: { target: HTMLImageElement; }) => {
     if (!e || !e.target)
         return ;
     const target: HTMLImageElement = e.target as HTMLImageElement;
@@ -78,7 +79,7 @@ export const ListMsg = (props: any) => {
                                 src={'/' + msg.user.avatarPath}
                                 srcSet={'/' + msg.user.avatarPath + ' 2x'}
                                 alt={"avatar " + msg.user?.username}
-                                onError={handleImgError}
+                                onError={handleImgError as any}
                             />}
                             <label className="chatBox">{msg.user.username}</label>
                         </div>
@@ -93,7 +94,7 @@ export const ListMsg = (props: any) => {
 /* Leave chat */
 const handleLeave = async (e: React.MouseEvent<HTMLButtonElement>, contextUserLeave: any, usrSocket: any, obj: {
     id: string,
-}, navigate: any) => {
+}, navigate: NavigateFunction) => {
     e.preventDefault();
     usrSocket.emit('leaveRoomChat', obj, (res: any) => {
         navigate("/channels");
@@ -132,7 +133,7 @@ const PostMsg = (props: typePostMsg) => {
                 lstUserGlobal, lstUserChat,
                 setLstUserGlobal, setLstUserChat, navigate);
             if (cmdIsValid === false) {
-                props.usrSocket.emit('sendMsg', obj, (res: any) => {
+                props.usrSocket.emit('sendMsg', obj, (res : lstMsg) => {
                     if (res.room === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res.room === obj.id && obj.id == obj.idBox)
@@ -141,7 +142,7 @@ const PostMsg = (props: typePostMsg) => {
             }
         }
         else {
-            props.usrSocket.emit('sendMsg', obj, (res: any) => {
+            props.usrSocket.emit('sendMsg', obj, (res : lstMsg) => {
                 if (res.room === obj.id)
                     setLstMsgChat((lstMsg) => [...lstMsg, res]);
                 if (res.room === obj.id && obj.id == obj.idBox)
@@ -166,7 +167,7 @@ const PostMsg = (props: typePostMsg) => {
                     lstUserGlobal, lstUserChat, setLstUserGlobal,
                     setLstUserChat, navigate);
                 if (cmdIsValid === false) {
-                    props.usrSocket.emit('sendMsg', obj, (res: any) => {
+                    props.usrSocket.emit('sendMsg', obj, (res : lstMsg) => {
                         if (res.room === obj.id)
                             setLstMsgChat((lstMsg) => [...lstMsg, res]);
                         if (res.room === obj.id && obj.id == obj.idBox)
@@ -174,7 +175,7 @@ const PostMsg = (props: typePostMsg) => {
                     });
                 }
             } else {
-                props.usrSocket.emit('sendMsg', obj, (res: any) => {
+                props.usrSocket.emit('sendMsg', obj, (res : lstMsg) => {
                     if (res.room === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res.room === obj.id && obj.id == obj.idBox)

@@ -2,12 +2,13 @@ import React, { useContext, useEffect, useState } from "react";
 import Game from "../components/game";
 import SocketContext from '../contexts/Socket';
 import { FetchError, header, headerPost } from '../components/FetchError';
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, NavigateFunction } from "react-router-dom";
 
-export function playPageInvite(jwt: string, setErrorCode,
-    focusUserId: number, navigate) {
+export function playPageInvite(jwt: string, setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    focusUserId: number, navigate: NavigateFunction) {
 
-    async function addRoomHandler(jwt: string, setErrorCode,
+    async function addRoomHandler(jwt: string,
+        setErrorCode: React.Dispatch<React.SetStateAction<number>>,
         focusUserId: number) {
         await fetch("https://" + location.host + "/api/rooms/create-private", {
             method: "POST",
