@@ -4,7 +4,7 @@ import { useContext } from "react";
 import UserContext from "../contexts/UserContext";
 import { FetchError } from "../components/FetchError";
 
-const CheckFa = (props: { userCtx: { getUsername: () => string; }, fa: boolean | undefined }) => {
+const CheckFa = (props: { userCtx: any, fa: boolean | undefined }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
