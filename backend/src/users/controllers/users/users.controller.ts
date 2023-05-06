@@ -133,12 +133,13 @@ export class UsersController {
     }
 
     private async checkUpdateUserError(ret_user: any, ret_user2: any,
-        body: any, file: Express.Multer.File | undefined) {
+        body: any, file: Express.Multer.File | undefined, filePath: string | undefined) {
         let err: string[] = [];
         const regex2 = /^[\w\d]{4,}$/;
         const regexRet2 = regex2.test(body.username);
+        let fileDeleted: boolean = false;
         let dimensions;
-            console.log(file)
+
         if (24 < body.username.length)
             err.push("Username is too long");
         if (body.username.length === 0)
@@ -156,20 +157,20 @@ export class UsersController {
 
         if (file)
             dimensions = await sizeOf(file.path);
-        console.log(dimensions)
-        if (file && dimensions
+        if (file && dimensions && filePath
             && typeof dimensions != "undefined"
             && 61 <= dimensions.width){
-            if (existsSync(file.path))
-                unlink(file.path, (res) => {console.log(res)} );
+            if (existsSync(filePath))
+                unlink(filePath, (res) => {if (res) console.log(res)} );
+            fileDeleted = true
             err.push("Image size width must be below 60px.");
         }
-        if (file
+        if (file && filePath
             && dimensions && typeof dimensions != "undefined"
             && 61 <= dimensions.height)
         {
-            if (existsSync(file.path))
-                unlink(file.path, (res) => {console.log(res)} );
+            if (fileDeleted === false && existsSync(filePath))
+                unlink(filePath, (res) => {if (res) console.log(res)} );
             err.push("Image size height must be below 60px.");
         }
         return (err);
@@ -186,16 +187,21 @@ export class UsersController {
     ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
         const ret_user = await this.userService.findUserByName(body.username);
         let ret_user2 = await this.userService.findUsersById(user.userID);
-
+        let filePath: string | undefined = undefined;
+        if (file) {
+            let formatFile = file.filename.replace("/", "");
+            formatFile = formatFile.replace("\\", "");
+            filePath = "upload_avatar/" + formatFile;
+        }
         //check errors
         let retErr = await this.checkUpdateUserError(ret_user,
-            ret_user2, body, file);
+            ret_user2, body, file, filePath);
 
         if (retErr.length != 0)
             return ({ valid: false, err: retErr });
         //update avatar
-        if (file)
-            await this.userService.updatePathAvatarUser(user.userID, file.path);
+        if (file && filePath)
+            await this.userService.updatePathAvatarUser(user.userID, filePath);
         //need to update username token, for new login
         if (body.username !== "")
             user.username = body.username;
@@ -241,16 +247,21 @@ export class UsersController {
     ) file: Express.Multer.File | undefined, @Body() body: FirstConnection) {
         const ret_user = await this.userService.getUserProfile(user.userID);
         const ret_user2 = await this.userService.findUserByName(body.username);
-
+        let filePath: string | undefined = undefined;
+        if (file) {
+            let formatFile = file.filename.replace("/", "");
+            formatFile = formatFile.replace("\\", "");
+            filePath = "upload_avatar/" + formatFile;
+        }
         let retErr = await this.checkUpdateUserError(ret_user2,
-            ret_user, body, file);
+            ret_user, body, file, filePath);
 
         if (retErr.length != 0)
             return ({ valid: false, err: retErr });
         const regex1 = /^({"fa":true})$/;
         const regexRet = body.fa.match(regex1);
-        if (file)
-            this.userService.updatePathAvatarUser(user.userID, file.path);
+        if (file && filePath)
+            this.userService.updatePathAvatarUser(user.userID, filePath);
         this.userService.updateUsername(user.userID, body.username);
         if (regexRet) {
             //generate new auth secret

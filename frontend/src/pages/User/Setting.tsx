@@ -269,10 +269,6 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode: (arg0:
 		}
 	}, [nb_g, vc]);
 
-	//useEffect(() => {
-//		fetch('https://' + location.host + '/api/users/achiv', {headers: header(props.jwt)})	
-//	}, []);
-
 	return (<>
 		<ul>
 					<li>Nb_Games: {nb_g}</li>

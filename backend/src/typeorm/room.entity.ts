@@ -14,9 +14,6 @@ export class Room {
   @Column({ default: false })
   private!: boolean;
 
-  //@Column({ default: false })
-  //matchmaking!: boolean;
-
   @Column({ default: false })
   player_one_rdy!: boolean;
   @Column({ default: false })
