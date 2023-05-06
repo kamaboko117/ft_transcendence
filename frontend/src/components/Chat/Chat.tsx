@@ -14,7 +14,6 @@ import { commandChat } from './CommandChat';
 export type lstMsg = {
     room: string,
     lstMsg: Array<{
-        //idUser: string,
         user: { avatarPath: string, username: string }
         content: string,
         img: string

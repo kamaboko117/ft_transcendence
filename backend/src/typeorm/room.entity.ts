@@ -26,7 +26,17 @@ export class Room {
   player_two_type_game: string;
 
   @Column("simple-json")
-  settings: {
+  settingsOne: {
+    powerUps: boolean;
+    type: string;
+    goal: number;
+    speed: number;
+    acceleration: number;
+    ballSize: number;
+    ballColor: string;
+  }
+  @Column("simple-json")
+  settingsTwo: {
     powerUps: boolean;
     type: string;
     goal: number;

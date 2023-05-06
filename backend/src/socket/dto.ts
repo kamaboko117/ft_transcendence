@@ -1,4 +1,4 @@
-import { IsBoolean, IsDefined, IsNumber, IsString } from "class-validator";
+import { IsBoolean, IsDefined, IsNumber, IsObject, IsString } from "class-validator";
 
 export class UpdateTypeRoom {
     @IsBoolean()
@@ -6,6 +6,25 @@ export class UpdateTypeRoom {
     @IsDefined()
     @IsString()
     roomId: string;
+}
+
+class Settings {
+    @IsNumber()
+    ballSize: number;
+    @IsNumber()
+    speed: number;
+    @IsNumber()
+    acceleration: number;
+    @IsNumber()
+    goal: number;
+    @IsDefined()
+    @IsString()
+    ballColor: string;
+    @IsBoolean()
+    powerUps: boolean;
+    @IsDefined()
+    @IsString()
+    type: string;
 }
 
 export class UserIdRdy {
@@ -26,4 +45,8 @@ export class UserIdRdy {
 
     @IsBoolean()
     custom: boolean;
+
+    @IsDefined()
+    @IsObject()
+    settings: Settings;
 }

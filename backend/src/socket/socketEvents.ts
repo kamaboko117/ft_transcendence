@@ -14,6 +14,7 @@ import { TokenUser } from "src/chat/chat.interface";
 import { UsersService } from "src/users/providers/users/users.service";
 import { UpdateTypeRoom, UserIdRdy } from "./dto";
 import { UserDecoSock } from "src/common/middleware/user.decorator";
+import { Console } from "console";
 
 const FPS = 60;
 const CANVAS_WIDTH = 600;
@@ -843,8 +844,8 @@ export class SocketEvents {
     if (roomID) {
       let room = await this.roomsService.findRoomById(roomID);
       if (room) {
-        room.settings = data;
-        this.roomsService.updateRoomSettings(roomID, data);
+        //room.settings = data;
+        //this.roomsService.updateRoomSettings(roomID, data);
         client.to(roomID).emit("edit_settings", data);
       }
     }
@@ -1050,7 +1051,6 @@ export class SocketEvents {
     @ConnectedSocket() client: Socket,
     @UserDecoSock() user: TokenUser
   ) {
-    //const user: TokenUser = client.user;
     const connectedSockets = this.server.sockets.adapter.rooms.get(data.uid);
 
     if (user.username === data.usr1) {
@@ -1061,6 +1061,7 @@ export class SocketEvents {
         false,
         data.custom
       );
+      await this.roomsService.updateRoomSettingsOne(data.uid, data.settings);
     } else if (user.username === data.usr2) {
       await this.roomsService.updateRoomReady(data.uid, data.rdy, false, true);
       await this.roomsService.updateRoomTypeGame(
@@ -1069,6 +1070,7 @@ export class SocketEvents {
         true,
         data.custom
       );
+      await this.roomsService.updateRoomSettingsTwo(data.uid, data.settings);
     }
     //when two user are connected, and both are rdy, game must start
     let getRoom = await this.roomsService.getRoom(data.uid);
@@ -1078,10 +1080,12 @@ export class SocketEvents {
       getRoom.player_two_rdy === true
     ) {
       getRoom = await this.roomsService.getRoom(data.uid);
+      console.log(getRoom)
       if (getRoom?.player_one_type_game != getRoom?.player_two_type_game)
-        return { err: "Room type from both users not synchronized" };
-      // console.log(connectedSockets)
-      //let socket2 = connectedSockets?.values().next().value;
+        return { err: "Room type from both users are not synchronized" };
+      console.log("type game ok")
+      if (JSON.stringify(getRoom?.settingsOne) != JSON.stringify(getRoom?.settingsTwo))
+        return { err: "Room settings from both users are not synchronized" };
       let socket2: string | undefined = undefined;
       connectedSockets?.forEach((key) => {
         if (key !== client.id) socket2 = key;
@@ -1092,12 +1096,13 @@ export class SocketEvents {
       if (!getRoom) {
         return { err: "no room found" };
       }
-
       if (getRoom.player_one_type_game === "Custom") {
-        getRoom.settings.type = "Custom";
-        this.roomsService.updateRoomSettings(getRoom.uid, getRoom);
-      } else getRoom.settings.type = getRoom.player_one_type_game;
-      let newGame = new Game(data.uid, client.id, socket2, getRoom.settings);
+        getRoom.settingsOne.type = "Custom";
+        this.roomsService.updateRoomSettingsOne(getRoom.uid, getRoom);
+        this.roomsService.updateRoomSettingsTwo(getRoom.uid, getRoom);
+      }// else if(data.)
+      //  getRoom.settings.type = getRoom.player_one_type_game;
+      let newGame = new Game(data.uid, client.id, socket2, getRoom.settingsOne);
       let powerUps = newGame.powerUps;
       let player1 = newGame.player1;
       let player2 = newGame.player2;

@@ -56,7 +56,7 @@ export class RoomsController {
     }*/
     let settings = {
       powerUps: false,
-      type: "classic",
+      type: "Classic",
       goal: 11,
       speed: 5,
       acceleration: 0.1,

@@ -8,9 +8,19 @@ import { Socket } from "socket.io-client";
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
 
+type typeObject = {
+    ballSize: number;
+    speed: number;
+    acceleration: number;
+    goal: number;
+    ballColor: string;
+    powerUps: boolean;
+    type: string;
+}
+
 interface IGameSettings {
   powerUps: boolean;
-  type: string;
+  //type: string;
   goal: number;
   speed: number;
   acceleration: number;
@@ -20,7 +30,7 @@ interface IGameSettings {
 
 const globalSettings: IGameSettings = {
   powerUps: false,
-  type: "classic",
+  //type: "classic",
   goal: 11,
   speed: 5,
   acceleration: 0.1,
@@ -30,7 +40,7 @@ const globalSettings: IGameSettings = {
 
 const resetGlobalSettings = () => {
   globalSettings.powerUps = false;
-  globalSettings.type = "classic";
+  //globalSettings.type = "classic";
   globalSettings.goal = 11;
   globalSettings.speed = 5;
   globalSettings.acceleration = 0.1;
@@ -40,7 +50,7 @@ const resetGlobalSettings = () => {
 
 const changeGlobalSettings = (settings: IGameSettings) => {
   globalSettings.powerUps = settings.powerUps;
-  globalSettings.type = settings.type;
+  //globalSettings.type = settings.type;
   globalSettings.goal = settings.goal;
   globalSettings.speed = settings.speed;
   globalSettings.acceleration = settings.acceleration;
@@ -53,7 +63,15 @@ const ButtonIsCustom = (props: {
   id: string,
   setRdy: React.Dispatch<React.SetStateAction<boolean>>,
   custom: boolean,
-  setCustom: React.Dispatch<React.SetStateAction<boolean>>
+  setCustom: React.Dispatch<React.SetStateAction<boolean>>,
+  sizeBall: string,
+  setSizeBall: React.Dispatch<React.SetStateAction<string>>,
+  speed: string,
+  setSpeed: React.Dispatch<React.SetStateAction<string>>,
+  acc: string, setAcc: React.Dispatch<React.SetStateAction<string>>,
+  goal: string, setGoal: React.Dispatch<React.SetStateAction<string>>,
+  color: string, setColor: React.Dispatch<React.SetStateAction<string>>,
+  isCheck: boolean, setIsCheck: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
   const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (e && e.target) props.setCustom((prev: boolean) => !prev);
@@ -78,7 +96,6 @@ const ButtonIsCustom = (props: {
       }
     );
   }, [props.custom]);
-
   return (
     <>
       <button onClick={handleRdy}>
@@ -90,6 +107,14 @@ const ButtonIsCustom = (props: {
         cst={props.custom}
         usrSocket={props.usrSocket}
         id={props.id}
+        setSizeBall={props.setSizeBall}
+        sizeBall={props.sizeBall}
+        speed={props.speed}
+        setSpeed={props.setSpeed}
+        acc={props.acc} setAcc={props.setAcc}
+        goal={props.goal} setGoal={props.setGoal}
+        color={props.color} setColor={props.setColor}
+        isCheck={props.isCheck} setIsCheck={props.setIsCheck}
       />
     </>
   );
@@ -103,7 +128,8 @@ const ButtonRdy = (props: {
   rdy: boolean,
   setRdy: React.Dispatch<React.SetStateAction<boolean>>,
   custom: boolean,
-  setCustom: React.Dispatch<React.SetStateAction<boolean>>
+  setCustom: React.Dispatch<React.SetStateAction<boolean>>,
+  settings: typeObject
 }) => {
   const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (e && e.target) {
@@ -128,6 +154,7 @@ const ButtonRdy = (props: {
       usr2: props.usr2,
       rdy: props.rdy,
       custom: props.custom,
+      settings: props.settings
     });
   }, [props.rdy]);
   return (
@@ -137,11 +164,14 @@ const ButtonRdy = (props: {
   );
 };
 
-const Custom_size_ball = (props: { usrSocket: Socket<any, any> | undefined }) => {
-  const [size, setSize] = useState<string>("10");
+const Custom_size_ball = (props: {
+  usrSocket: Socket<any, any> | undefined
+  sizeBall: string,
+  setSizeBall: React.Dispatch<React.SetStateAction<string>>
+}) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e && e.target) {
-      setSize(e.target.value);
+      props.setSizeBall(e.target.value);
       globalSettings.ballSize = Number(e.target.value);
       if (!isNaN(Number(e.target.value)) && Number(e.target.value)) {
         props.usrSocket?.emit("edit_settings", { ...globalSettings });
@@ -151,7 +181,7 @@ const Custom_size_ball = (props: { usrSocket: Socket<any, any> | undefined }) =>
   useEffect(() => {
     props.usrSocket?.on("edit_settings", (res: IGameSettings) => {
       changeGlobalSettings(res);
-      setSize(res.ballSize.toString());
+      props.setSizeBall(res.ballSize.toString());
     });
     return (() => {
       props.usrSocket?.off("edit_settings");
@@ -167,7 +197,7 @@ const Custom_size_ball = (props: { usrSocket: Socket<any, any> | undefined }) =>
         type="radio"
         value={5}
         name="size_ball"
-        checked={size === "5"}
+        checked={props.sizeBall === "5"}
       />
       <label>Small</label>
       <input
@@ -175,7 +205,7 @@ const Custom_size_ball = (props: { usrSocket: Socket<any, any> | undefined }) =>
         type="radio"
         value={10}
         name="size_ball"
-        checked={size === "10"}
+        checked={props.sizeBall === "10"}
       />
       <label>Normal</label>
       <input
@@ -183,18 +213,21 @@ const Custom_size_ball = (props: { usrSocket: Socket<any, any> | undefined }) =>
         type="radio"
         value={20}
         name="size_ball"
-        checked={size === "20"}
+        checked={props.sizeBall === "20"}
       />
       <label>Big</label>
     </div>
   );
 };
 
-const Custom_speed_ball = (props: { usrSocket: Socket<any, any> | undefined }) => {
-  const [speed, setSpeed] = useState<string>("5");
+const Custom_speed_ball = (props: {
+  usrSocket: Socket<any, any> | undefined,
+  speed: string,
+  setSpeed: React.Dispatch<React.SetStateAction<string>>
+}) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e && e.target) {
-      setSpeed(e.target.value);
+      props.setSpeed(e.target.value);
       globalSettings.speed = Number(e.target.value);
       if (!isNaN(Number(e.target.value)) && Number(e.target.value)) {
         props.usrSocket?.emit("edit_settings", { ...globalSettings });
@@ -204,7 +237,7 @@ const Custom_speed_ball = (props: { usrSocket: Socket<any, any> | undefined }) =
   useEffect(() => {
     props.usrSocket?.on("edit_settings", (res: IGameSettings) => {
       changeGlobalSettings(res);
-      setSpeed(res.speed.toString());
+      props.setSpeed(res.speed.toString());
     });
     return (() => {
       props.usrSocket?.off("edit_settings");
@@ -220,7 +253,7 @@ const Custom_speed_ball = (props: { usrSocket: Socket<any, any> | undefined }) =
         type="radio"
         value={3}
         name="speed_ball"
-        checked={speed === "3"}
+        checked={props.speed === "3"}
       />
       <label>Slow</label>
       <input
@@ -228,7 +261,7 @@ const Custom_speed_ball = (props: { usrSocket: Socket<any, any> | undefined }) =
         type="radio"
         value={5}
         name="speed_ball"
-        checked={speed === "5"}
+        checked={props.speed === "5"}
       />
       <label>Average</label>
       <input
@@ -236,18 +269,20 @@ const Custom_speed_ball = (props: { usrSocket: Socket<any, any> | undefined }) =
         type="radio"
         value={10}
         name="speed_ball"
-        checked={speed === "10"}
+        checked={props.speed === "10"}
       />
       <label>Fast</label>
     </div>
   );
 };
 
-const Custom_acceleration_ball = (props: { usrSocket: Socket<any, any> | undefined }) => {
-  const [acc, setAcc] = useState<string>("0.1");
+const Custom_acceleration_ball = (props: {
+  usrSocket: Socket<any, any> | undefined
+  acc: string, setAcc: React.Dispatch<React.SetStateAction<string>>
+}) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e && e.target) {
-      setAcc(e.target.value);
+      props.setAcc(e.target.value);
       globalSettings.acceleration = Number(e.target.value);
       if (!isNaN(Number(e.target.value)) && Number(e.target.value)) {
         props.usrSocket?.emit("edit_settings", { ...globalSettings });
@@ -257,7 +292,7 @@ const Custom_acceleration_ball = (props: { usrSocket: Socket<any, any> | undefin
   useEffect(() => {
     props.usrSocket?.on("edit_settings", (res: IGameSettings) => {
       changeGlobalSettings(res);
-      setAcc(res.acceleration.toString());
+      props.setAcc(res.acceleration.toString());
     });
     return (() => {
       props.usrSocket?.off("edit_settings");
@@ -273,7 +308,7 @@ const Custom_acceleration_ball = (props: { usrSocket: Socket<any, any> | undefin
         type="radio"
         value={0.1}
         name="acc_ball"
-        checked={acc === "0.1"}
+        checked={props.acc === "0.1"}
       />
       <label>Normal</label>
       <input
@@ -281,7 +316,7 @@ const Custom_acceleration_ball = (props: { usrSocket: Socket<any, any> | undefin
         type="radio"
         value={0.2}
         name="acc_ball"
-        checked={acc === "0.2"}
+        checked={props.acc === "0.2"}
       />
       <label>Speed</label>
       <input
@@ -289,18 +324,20 @@ const Custom_acceleration_ball = (props: { usrSocket: Socket<any, any> | undefin
         type="radio"
         value={0.4}
         name="acc_ball"
-        checked={acc === "0.4"}
+        checked={props.acc === "0.4"}
       />
       <label>Sonic</label>
     </div>
   );
 };
 
-const Custom_goal = (props: { usrSocket: Socket<any, any> | undefined }) => {
-  const [goal, setGoal] = useState<string>("11");
+const Custom_goal = (props: {
+  usrSocket: Socket<any, any> | undefined,
+  goal: string, setGoal: React.Dispatch<React.SetStateAction<string>>
+}) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e && e.target) {
-      setGoal(e.target.value);
+      props.setGoal(e.target.value);
       globalSettings.goal = Number(e.target.value);
       if (!isNaN(Number(e.target.value)) && Number(e.target.value)) {
         props.usrSocket?.emit("edit_settings", { ...globalSettings });
@@ -310,7 +347,7 @@ const Custom_goal = (props: { usrSocket: Socket<any, any> | undefined }) => {
   useEffect(() => {
     props.usrSocket?.on("edit_settings", (res: IGameSettings) => {
       changeGlobalSettings(res);
-      setGoal(res.goal.toString());
+      props.setGoal(res.goal.toString());
     });
     return (() => {
       props.usrSocket?.off("edit_settings");
@@ -326,7 +363,7 @@ const Custom_goal = (props: { usrSocket: Socket<any, any> | undefined }) => {
         type="radio"
         value={11}
         name="goal_ball"
-        checked={goal === "11"}
+        checked={props.goal === "11"}
       />
       <label>Normal</label>
       <input
@@ -334,7 +371,7 @@ const Custom_goal = (props: { usrSocket: Socket<any, any> | undefined }) => {
         type="radio"
         value={12}
         name="goal_ball"
-        checked={goal === "12"}
+        checked={props.goal === "12"}
       />
       <label>Long</label>
       <input
@@ -342,18 +379,20 @@ const Custom_goal = (props: { usrSocket: Socket<any, any> | undefined }) => {
         type="radio"
         value={42}
         name="goal_ball"
-        checked={goal === "42"}
+        checked={props.goal === "42"}
       />
       <label>Transendance long</label>
     </div>
   );
 };
 
-const Custom_color_ball = (props: { usrSocket: Socket<any, any> | undefined }) => {
-  const [color, setColor] = useState<string>("WHITE");
+const Custom_color_ball = (props: {
+  usrSocket: Socket<any, any> | undefined,
+  color: string, setColor: React.Dispatch<React.SetStateAction<string>>
+}) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e && e.target) {
-      setColor(e.target.value);
+      props.setColor(e.target.value);
       globalSettings.ballColor = e.target.value;
       props.usrSocket?.emit("edit_settings", { ...globalSettings });
     }
@@ -361,7 +400,7 @@ const Custom_color_ball = (props: { usrSocket: Socket<any, any> | undefined }) =
   useEffect(() => {
     props.usrSocket?.on("edit_settings", (res: IGameSettings) => {
       changeGlobalSettings(res);
-      setColor(res.ballColor);
+      props.setColor(res.ballColor);
     });
     return (() => {
       props.usrSocket?.off("edit_settings");
@@ -377,7 +416,7 @@ const Custom_color_ball = (props: { usrSocket: Socket<any, any> | undefined }) =
         type="radio"
         value={"WHITE"}
         name="color_ball"
-        checked={color === "WHITE"}
+        checked={props.color === "WHITE"}
       />
       <label>WHITE</label>
       <input
@@ -385,7 +424,7 @@ const Custom_color_ball = (props: { usrSocket: Socket<any, any> | undefined }) =
         type="radio"
         value={"RED"}
         name="color_ball"
-        checked={color === "RED"}
+        checked={props.color === "RED"}
       />
       <label>RED</label>
       <input
@@ -393,7 +432,7 @@ const Custom_color_ball = (props: { usrSocket: Socket<any, any> | undefined }) =
         type="radio"
         value={"GREEN"}
         name="color_ball"
-        checked={color === "GREEN"}
+        checked={props.color === "GREEN"}
       />
       <label>GREEN</label>
       <input
@@ -401,26 +440,28 @@ const Custom_color_ball = (props: { usrSocket: Socket<any, any> | undefined }) =
         type="radio"
         value={"BLUE"}
         name="color_ball"
-        checked={color === "BLUE"}
+        checked={props.color === "BLUE"}
       />
       <label>BLUE</label>
     </div>
   );
 };
 
-const Custom_power_up = (props: { usrSocket: Socket<any, any> | undefined }) => {
-  const [isCheck, setIsCheck] = useState<boolean>(false);
+const Custom_power_up = (props: {
+  usrSocket: Socket<any, any> | undefined,
+  isCheck: boolean, setIsCheck: React.Dispatch<React.SetStateAction<boolean>>
+}) => {
   const handleCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e && e.target) {
-      setIsCheck((isCheck: boolean) => !isCheck);
-      globalSettings.powerUps = !isCheck;
+      props.setIsCheck((isCheck: boolean) => !isCheck);
+      globalSettings.powerUps = !props.isCheck;
       props.usrSocket?.emit("edit_settings", { ...globalSettings });
     }
   };
   useEffect(() => {
     props.usrSocket?.on("edit_settings", (res: IGameSettings) => {
       changeGlobalSettings(res);
-      setIsCheck(res.powerUps);
+      props.setIsCheck(res.powerUps);
     });
     return (() => {
       props.usrSocket?.off("edit_settings");
@@ -436,7 +477,7 @@ const Custom_power_up = (props: { usrSocket: Socket<any, any> | undefined }) => 
         type="checkbox"
         name="Power_Up"
         value="powerUp"
-        checked={isCheck}
+        checked={props.isCheck}
       />
     </div>
   );
@@ -444,7 +485,16 @@ const Custom_power_up = (props: { usrSocket: Socket<any, any> | undefined }) => 
 
 const Custom_setting = (props: { cst: boolean;
   usrSocket: Socket<any, any> | undefined;
-  id: string }) => {
+  id: string,
+  sizeBall: string,
+  setSizeBall: React.Dispatch<React.SetStateAction<string>>,
+  speed: string,
+  setSpeed: React.Dispatch<React.SetStateAction<string>>,
+  acc: string, setAcc: React.Dispatch<React.SetStateAction<string>>,
+  goal: string, setGoal: React.Dispatch<React.SetStateAction<string>>,
+  color: string, setColor: React.Dispatch<React.SetStateAction<string>>
+  isCheck: boolean, setIsCheck: React.Dispatch<React.SetStateAction<boolean>>
+}) => {
   useEffect(() => {
     props.usrSocket?.on("edit_settings", (res: IGameSettings) => {
       changeGlobalSettings(res);
@@ -454,7 +504,7 @@ const Custom_setting = (props: { cst: boolean;
     });
   }, []);
   if (props.cst === true) {
-    globalSettings.type = "Custom";
+    //globalSettings.type = "Custom";
     props.usrSocket?.emit("edit_settings", { ...globalSettings });
     return (
       <>
@@ -462,22 +512,28 @@ const Custom_setting = (props: { cst: boolean;
         <label>Custom game</label>
         <br />
         <br />
-        <Custom_size_ball usrSocket={props.usrSocket} />
+        <Custom_size_ball usrSocket={props.usrSocket}
+          sizeBall={props.sizeBall} setSizeBall={props.setSizeBall} />
         <br />
         <br />
-        <Custom_speed_ball usrSocket={props.usrSocket} />
+        <Custom_speed_ball usrSocket={props.usrSocket}
+          speed={props.speed} setSpeed={props.setSpeed} />
         <br />
         <br />
-        <Custom_acceleration_ball usrSocket={props.usrSocket} />
+        <Custom_acceleration_ball usrSocket={props.usrSocket}
+          acc={props.acc} setAcc={props.setAcc} />
         <br />
         <br />
-        <Custom_goal usrSocket={props.usrSocket} />
+        <Custom_goal usrSocket={props.usrSocket}
+          goal={props.goal} setGoal={props.setGoal} />
         <br />
         <br />
-        <Custom_color_ball usrSocket={props.usrSocket} />
+        <Custom_color_ball usrSocket={props.usrSocket}
+          color={props.color} setColor={props.setColor} />
         <br />
         <br />
-        <Custom_power_up usrSocket={props.usrSocket} />
+        <Custom_power_up usrSocket={props.usrSocket}
+          isCheck={props.isCheck} setIsCheck={props.setIsCheck} />
         <br />
       </>
     );
@@ -622,7 +678,25 @@ const SettingGame = (props: {
 
   const [custom, setCustom] = useState<boolean>(false);
   const [rdy, setRdy] = useState<boolean>(false);
-  console.log()
+  const [sizeBall, setSizeBall] = useState<string>("10");
+  const [speed, setSpeed] = useState<string>("5");
+  const [acc, setAcc] = useState<string>("0.1");
+  const [goal, setGoal] = useState<string>("11");
+  const [color, setColor] = useState<string>("WHITE");
+  const [isCheck, setIsCheck] = useState<boolean>(false);
+  let settings: typeObject = {
+    ballSize: Number(sizeBall), speed: Number(speed),
+    acceleration: Number(acc), goal: Number(goal), ballColor: color,
+    powerUps: isCheck,
+    type: ""
+  }
+  if (getFirstPartRegex
+    && getFirstPartRegex[0] == "/play-invite/")
+    settings.type = "Invitation";
+  else
+    settings.type = "Classic";
+  if (custom === true)
+    settings.type = "Custom";
   if (!props.isGameStarted) {
     return (
       <>
@@ -646,6 +720,14 @@ const SettingGame = (props: {
                 setRdy={setRdy}
                 custom={custom}
                 setCustom={setCustom}
+                sizeBall={sizeBall}
+                setSizeBall={setSizeBall}
+                speed={speed}
+                setSpeed={setSpeed}
+                acc={acc} setAcc={setAcc}
+                goal={goal} setGoal={setGoal}
+                color={color} setColor={setColor}
+                isCheck={isCheck} setIsCheck={setIsCheck}
               />
               <br />
               <ButtonRdy
@@ -657,6 +739,7 @@ const SettingGame = (props: {
                 setRdy={setRdy}
                 custom={custom}
                 setCustom={setCustom}
+                settings={settings}
               />
             </>
           )}
