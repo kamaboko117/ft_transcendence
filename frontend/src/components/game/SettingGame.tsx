@@ -3,6 +3,7 @@ import gameService from "../../services/gameService";
 import { FetchError } from "../FetchError";
 import ActivePowerUpsList from "./ActivePowerUpsList";
 import { useParams } from "react-router-dom";
+import { Socket } from "socket.io-client";
 
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
@@ -48,7 +49,7 @@ const changeGlobalSettings = (settings: IGameSettings) => {
 };
 
 const ButtonIsCustom = (props: {
-  usrSocket;
+  usrSocket: Socket<any, any>;
   id: string;
   setRdy: React.Dispatch<React.SetStateAction<boolean>>;
   custom: boolean;
@@ -97,7 +98,7 @@ const ButtonIsCustom = (props: {
 };
 
 const ButtonRdy = (props: {
-  usrSocket;
+  usrSocket: Socket<any, any>;
   uid: string;
   usr1: string;
   usr2: string;
@@ -139,9 +140,9 @@ const ButtonRdy = (props: {
   );
 };
 
-const Custom_size_ball = (props: { usrSocket }) => {
+const Custom_size_ball = (props: { usrSocket: Socket<any, any> }) => {
   const [size, setSize] = useState<string>("10");
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: any) => {
     if (e && e.target) {
       setSize(e.target.value);
       globalSettings.ballSize = Number(e.target.value);
@@ -157,41 +158,43 @@ const Custom_size_ball = (props: { usrSocket }) => {
     });
   }, []);
   return (
-    <div>
-      <label>
-        <b>Taille de la balle</b>
+    <div className="setting_row">
+      <label className="setting_title">
+        <b>Ball Size</b>
       </label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={5}
-        name="size_ball"
-        checked={size === "5"}
-      />
-      <label>Small</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={10}
-        name="size_ball"
-        checked={size === "10"}
-      />
-      <label>Normal</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={20}
-        name="size_ball"
-        checked={size === "20"}
-      />
-      <label>Big</label>
+      <div className="setting_choice_group">
+        <button
+          className={size === "5" ? "setting_choice_active" : "setting_choice"}
+          onClick={handleChange}
+          value={5}
+          name="size_ball"
+        >
+          Small
+        </button>
+        <button
+          className={size === "10" ? "setting_choice_active" : "setting_choice"}
+          onClick={handleChange}
+          value={10}
+          name="size_ball"
+        >
+          Normal
+        </button>
+        <button
+          className={size === "20" ? "setting_choice_active" : "setting_choice"}
+          onClick={handleChange}
+          value={20}
+          name="size_ball"
+        >
+          Big
+        </button>
+      </div>
     </div>
   );
 };
 
-const Custom_speed_ball = (props: { usrSocket }) => {
+const Custom_speed_ball = (props: { usrSocket: Socket<any, any> }) => {
   const [speed, setSpeed] = useState<string>("5");
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: any) => {
     if (e && e.target) {
       setSpeed(e.target.value);
       globalSettings.speed = Number(e.target.value);
@@ -207,41 +210,54 @@ const Custom_speed_ball = (props: { usrSocket }) => {
     });
   }, []);
   return (
-    <div>
-      <label>
-        <b>Vitesse de la balle</b>
+    <div className="setting_row">
+      <label className="setting_title">
+        <b>Ball Speed</b>
       </label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={3}
-        name="speed_ball"
-        checked={speed === "3"}
-      />
-      <label>Slow</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={5}
-        name="speed_ball"
-        checked={speed === "5"}
-      />
-      <label>Average</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={10}
-        name="speed_ball"
-        checked={speed === "10"}
-      />
-      <label>Fast</label>
+      <div className="setting_choice_group">
+        <button
+          className={speed === "3" ? "setting_choice_active" : "setting_choice"}
+          onClick={handleChange}
+          // type="radio"
+          value={3}
+          name="speed_ball"
+          // checked={speed === "3"}
+        >
+          Slow
+        </button>
+        {/* <label>Slow</label> */}
+        <button
+          className={speed === "5" ? "setting_choice_active" : "setting_choice"}
+          onClick={handleChange}
+          // type="radio"
+          value={5}
+          name="speed_ball"
+          // checked={speed === "5"}
+        >
+          Average
+        </button>
+        {/* <label>Average</label> */}
+        <button
+          className={
+            speed === "10" ? "setting_choice_active" : "setting_choice"
+          }
+          onClick={handleChange}
+          // type="radio"
+          value={10}
+          name="speed_ball"
+          // checked={speed === "10"}
+        >
+          Fast
+        </button>
+        {/* <label>Fast</label> */}
+      </div>
     </div>
   );
 };
 
-const Custom_acceleration_ball = (props: { usrSocket }) => {
+const Custom_acceleration_ball = (props: { usrSocket: Socket<any, any> }) => {
   const [acc, setAcc] = useState<string>("0.1");
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: any) => {
     if (e && e.target) {
       setAcc(e.target.value);
       globalSettings.acceleration = Number(e.target.value);
@@ -257,41 +273,43 @@ const Custom_acceleration_ball = (props: { usrSocket }) => {
     });
   }, []);
   return (
-    <div>
-      <label>
-        <b>Acceleration de la balle</b>
+    <div className="setting_row">
+      <label className="setting_title">
+        <b>Ball Acceleration</b>
       </label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={0.1}
-        name="acc_ball"
-        checked={acc === "0.1"}
-      />
-      <label>Normal</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={0.2}
-        name="acc_ball"
-        checked={acc === "0.2"}
-      />
-      <label>Speed</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={0.4}
-        name="acc_ball"
-        checked={acc === "0.4"}
-      />
-      <label>Sonic</label>
+      <div className="setting_choice_group">
+        <button
+          className={acc === "0.1" ? "setting_choice_active" : "setting_choice"}
+          onClick={handleChange}
+          value={0.1}
+          name="acc_ball"
+        >
+          Normal
+        </button>
+        <button
+          className={acc === "0.2" ? "setting_choice_active" : "setting_choice"}
+          onClick={handleChange}
+          value={0.2}
+          name="acc_ball"
+        >
+          Speed
+        </button>
+        <button
+          className={acc === "0.4" ? "setting_choice_active" : "setting_choice"}
+          onClick={handleChange}
+          value={0.4}
+          name="acc_ball"
+        >
+          Sonic
+        </button>
+      </div>
     </div>
   );
 };
 
-const Custom_goal = (props: { usrSocket }) => {
+const Custom_goal = (props: { usrSocket: Socket<any, any> }) => {
   const [goal, setGoal] = useState<string>("11");
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: any) => {
     if (e && e.target) {
       setGoal(e.target.value);
       globalSettings.goal = Number(e.target.value);
@@ -307,41 +325,44 @@ const Custom_goal = (props: { usrSocket }) => {
     });
   }, []);
   return (
-    <div>
-      <label>
-        <b>Match Point</b>
+    <div className="setting_row">
+      <label className="setting_title">
+        <b>Score to Win</b>
       </label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={11}
-        name="goal_ball"
-        checked={goal === "11"}
-      />
-      <label>Normal</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={12}
-        name="goal_ball"
-        checked={goal === "12"}
-      />
-      <label>Long</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={42}
-        name="goal_ball"
-        checked={goal === "42"}
-      />
-      <label>Transendance long</label>
+      <div className="setting_choice_group">
+        <button
+          className={goal === "5" ? "setting_choice_active" : "setting_choice"}
+          onClick={handleChange}
+          value={5}
+          name="goal_ball"
+        >
+          Normal
+        </button>
+        <button
+          className={goal === "10" ? "setting_choice_active" : "setting_choice"}
+          onClick={handleChange}
+          value={10}
+          name="goal_ball"
+        >
+          Long
+        </button>
+        <button
+          className={goal === "20" ? "setting_choice_active" : "setting_choice"}
+          // style={ "width: 100px" }
+          onClick={handleChange}
+          value={20}
+          name="goal_ball"
+        >
+          Transcendence
+        </button>
+      </div>
     </div>
   );
 };
 
 const Custom_color_ball = (props: { usrSocket }) => {
   const [color, setColor] = useState<string>("WHITE");
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (e && e.target) {
       setColor(e.target.value);
       globalSettings.ballColor = e.target.value;
@@ -355,49 +376,47 @@ const Custom_color_ball = (props: { usrSocket }) => {
     });
   }, []);
   return (
-    <div>
-      <label>
+    <div className="setting_row">
+      <label className="setting_title">
         <b>Color Ball</b>
       </label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={"WHITE"}
-        name="color_ball"
-        checked={color === "WHITE"}
-      />
-      <label>WHITE</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={"RED"}
-        name="color_ball"
-        checked={color === "RED"}
-      />
-      <label>RED</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={"GREEN"}
-        name="color_ball"
-        checked={color === "GREEN"}
-      />
-      <label>GREEN</label>
-      <input
-        onChange={handleChange}
-        type="radio"
-        value={"BLUE"}
-        name="color_ball"
-        checked={color === "BLUE"}
-      />
-      <label>BLUE</label>
+      <br />
+      <select name="color_ball" onChange={handleChange}>
+        <option value={"WHITE"} selected={color === "WHITE"}>
+          WHITE
+        </option>
+        <option value={"RED"} selected={color === "RED"}>
+          RED
+        </option>
+        <option value={"GREEN"} selected={color === "GREEN"}>
+          GREEN
+        </option>
+        <option value={"BLUE"} selected={color === "BLUE"}>
+          BLUE
+        </option>
+        <option value={"YELLOW"} selected={color === "YELLOW"}>
+          YELLOW
+        </option>
+        <option value={"PURPLE"} selected={color === "PURPLE"}>
+          PURPLE
+        </option>
+        <option value={"ORANGE"} selected={color === "ORANGE"}>
+          ORANGE
+        </option>
+        <option value={"PINK"} selected={color === "PINK"}>
+          PINK
+        </option>
+        <option value={"BROWN"} selected={color === "BROWN"}>
+          BROWN
+        </option>
+      </select>
     </div>
   );
 };
 
-const Custom_power_up = (props: { usrSocket }) => {
+const Custom_power_up = (props: { usrSocket: Socket<any, any> }) => {
   const [isCheck, setIsCheck] = useState<boolean>(false);
-  const handleCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCheck = (e: any) => {
     if (e && e.target) {
       setIsCheck((isCheck) => !isCheck);
       globalSettings.powerUps = !isCheck;
@@ -414,22 +433,26 @@ const Custom_power_up = (props: { usrSocket }) => {
     };
   }, []);
   return (
-    <div>
-      <label>
-        <b>Power Up</b>
+    <div className="setting_row">
+      <label className="setting_title">
+        <b>Power Ups</b>
       </label>
-      <input
-        onChange={handleCheck}
-        type="checkbox"
+      <button className={isCheck ? "setting_choice_active" : "setting_choice"}
+        onClick={handleCheck}
+        // type="checkbox"
         name="Power_Up"
         value="powerUp"
-        checked={isCheck}
-      />
+        // checked={isCheck}
+      >{isCheck ? "ON" : "OFF"}</button>
     </div>
   );
 };
 
-const Custom_setting = (props: { cst: boolean; usrSocket; id: string }) => {
+const Custom_setting = (props: {
+  cst: boolean;
+  usrSocket: Socket<any, any>;
+  id: string;
+}) => {
   useEffect(() => {
     props.usrSocket.on("edit_settings", (res: IGameSettings) => {
       changeGlobalSettings(res);
@@ -442,7 +465,7 @@ const Custom_setting = (props: { cst: boolean; usrSocket; id: string }) => {
     globalSettings.type = "Custom";
     props.usrSocket.emit("edit_settings", { ...globalSettings });
     return (
-      <>
+      <div className="settings_container">
         <br />
         <label>Custom game</label>
         <br />
@@ -464,7 +487,7 @@ const Custom_setting = (props: { cst: boolean; usrSocket; id: string }) => {
         <br />
         <Custom_power_up usrSocket={props.usrSocket} />
         <br />
-      </>
+      </div>
     );
   } else {
     resetGlobalSettings();
