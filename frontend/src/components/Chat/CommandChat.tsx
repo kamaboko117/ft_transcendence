@@ -1,3 +1,5 @@
+import { SetStateAction } from "react";
+import { NavigateFunction } from "react-router-dom";
 import { updateBlackFriendList } from "../../contexts/DisplayChatContext";
 import { playPageInvite } from "../../pages/PlayInvite";
 import { header, headerPost } from "../FetchError";
@@ -74,7 +76,7 @@ const fetchToBackPsw = (elem: typeFetchToBackPsw) => {
 }
 
 const getUserInfoByName = (jwt: string, username: string,
-    setErrorCode, id: string, firstPartCmd: string, thirdPart: string) => {
+    setErrorCode: any, id: string, firstPartCmd: string, thirdPart: string) => {
     fetch('https://' + location.host + '/api/users/info-fr-bl?' + new URLSearchParams({
         name: username
     }), { headers: header(jwt) })
@@ -140,7 +142,7 @@ const isCmdValid = (cmd: string, length: number) => {
 */
 
 const fetchBlackAndFriendList = (userInfo: typeUserInfo, jwt: string,
-    type: number, setErrorCode: React.Dispatch<React.SetStateAction<number>>, updateUserInfo) => {
+    type: number, setErrorCode: any, updateUserInfo: any) => {
     fetch("https://" + location.host + "/api/users/fr-bl-list", {
         method: 'post',
         headers: headerPost(jwt),
@@ -174,9 +176,9 @@ const fetchBlackAndFriendList = (userInfo: typeUserInfo, jwt: string,
     }).catch(e => console.log(e));
 }
 
-export const commandChat = (jwt: string, obj: any, setErrorCode,
-    lstUserGlobal, lstUserChat,
-    setLstUserGlobal, setLstUserChat, navigate) => {
+export const commandChat = (jwt: string, obj: any, setErrorCode: any,
+    lstUserGlobal: any, lstUserChat: any[],
+    setLstUserGlobal: any, setLstUserChat : any, navigate: any) => {
     const cmd = obj.content;
 
     const listHandle = (jwt: string,
@@ -209,7 +211,7 @@ export const commandChat = (jwt: string, obj: any, setErrorCode,
 
     function runUserCmd(jwt: string, firstPartCmd: string, secondPartCmd: string) {
         function getInfoUser(jwt: string, firstPartCmd: string, secondPartCmd: string,
-            setErrorCode) {
+            setErrorCode: any) {
             fetch('https://' + location.host + '/api/users/info-fr-bl?' + new URLSearchParams({
                 name: secondPartCmd
             }), { headers: header(jwt) })

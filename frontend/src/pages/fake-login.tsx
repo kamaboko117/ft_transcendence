@@ -3,7 +3,7 @@ import UserContext from "../contexts/UserContext";
 import { FetchError } from "../components/FetchError";
 import { useNavigate } from "react-router-dom";
 
-const CheckFa = (props: { userCtx, fa: boolean | undefined }) => {
+const CheckFa = (props: { userCtx: any, fa: boolean | undefined }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
