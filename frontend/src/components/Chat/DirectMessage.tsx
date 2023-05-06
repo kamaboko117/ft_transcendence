@@ -157,7 +157,7 @@ const BoxPmUser = (props: {
     return (
         <form className='formPm' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
             handleSubmitPmUser(e, user, props.jwt, props.listPm,
-                props.setId, props.setErrorCode, props.setPm/*, props.listPm*/)}>
+                props.setId, props.setErrorCode, props.setPm)}>
             <input type="text" placeholder='Direct message a user' name="user"
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setUser(e?.target?.value)} />
@@ -395,13 +395,7 @@ const DiscussionBox = (props: {
                 }
             });
         }
-        //listen to exception sent by backend
-        /*usrSocket?.on('exception', (res) => {
-            if (res && res.status === "error" && res.message === "Token not valid")
-                props.setErrorCode(403);
-            else
-                props.setErrorCode(500);
-        });*/
+       
         return (() => {
             //unsubscribeChat
             if (getSecondPartRegex != props.id
@@ -410,7 +404,6 @@ const DiscussionBox = (props: {
                     setOnline(false);
                 });
             }
-            //usrSocket?.off("exception");
         })
     }, [props.id, usrSocket]);
 
@@ -460,7 +453,7 @@ const DiscussionBox = (props: {
         });
         return (() => { usrSocket?.off("sendBackMsg2"); });
     }, [JSON.stringify(lstUserGlobal), props.id]);
-    const [msg, setMsg] = useState<null | string>(null);
+    const [msg, setMsg] = useState<null | string>("");
 
     if (online === "Ban" && props.id != "")
         return (<article className='containerDiscussionBox'><span className='fullBox'>You are banned from this chat</span><Button /></article>)

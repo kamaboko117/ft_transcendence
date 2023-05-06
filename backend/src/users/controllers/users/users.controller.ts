@@ -26,7 +26,7 @@ import { toDataURL } from 'qrcode';
 import * as bcrypt from 'bcrypt';
 //convert into promise
 import { promisify } from "util";
-import { unlink } from 'fs';
+import { unlink, existsSync } from 'fs';
 import { UserDeco } from "src/common/middleware/user.decorator";
 
 const sizeOf = promisify(require('image-size'));
@@ -160,14 +160,16 @@ export class UsersController {
         if (file && dimensions
             && typeof dimensions != "undefined"
             && 61 <= dimensions.width){
-            unlink(file.path, (res) => {console.log(res)} );
+            if (existsSync(file.path))
+                unlink(file.path, (res) => {console.log(res)} );
             err.push("Image size width must be below 60px.");
         }
         if (file
             && dimensions && typeof dimensions != "undefined"
             && 61 <= dimensions.height)
         {
-            unlink(file.path, (res) => {console.log(res)} );
+            if (existsSync(file.path))
+                unlink(file.path, (res) => {console.log(res)} );
             err.push("Image size height must be below 60px.");
         }
         return (err);

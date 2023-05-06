@@ -91,24 +91,10 @@ button:hover {
   background-color: #f8dae9;
 }
 
-/*
-.card {
-  background-color: white;
-  border-radius: 4px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  padding: 1rem;
-  width: 20rem;
-}
-*/
 .room_item {
-  /*display: flex;*/
-  /*flex-direction: column;*/
-  /*align-items: center;*/
   background-color: #2b2927;
   border-radius: 4px;
-  /*box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);*/
   padding: 40px;
-  /*width: 20rem;*/
   margin: 5px;
   word-break: break-all;
 }
@@ -136,13 +122,9 @@ button:hover {
 
 /* room items are set up in a grid */
 .room_list {
-  /*display: grid;*/
-  /*grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));*/
-  /*grid-gap: 1rem;*/
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
-  /*padding: 1rem;*/
   background-color: #333333;
   justify-content: center;
 }
@@ -165,13 +147,9 @@ button:hover {
   background-color: white;
   padding: 10px;
   text-align: center;
-  /*width: 30rem;*/
   max-width: 500px;
-
   z-index: 3;
   position: fixed;
-  /*top: 20vh;*/
-  /*left: calc(50% - 15rem);*/
   margin: auto;
   top: 30%;
   left: 50%;
@@ -207,7 +185,6 @@ button:hover {
   border-radius: 4px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   padding: 1rem;
-  /* width: 9rem; */
   max-width: 400px;
   margin: 0rem;
 }
@@ -221,11 +198,9 @@ button:hover {
 .game_powerups_lists {
   display: flex;
   flex-direction: column;
-  /*align-items: left;*/
   background-color: #333333;
   border-radius: 4px;
   padding: 0rem;
-  /* width: 9rem; */
   width: 100%;
   margin: 0rem;
 }
@@ -234,12 +209,10 @@ button:hover {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  /*align-items: left;*/
   justify-content: left;
   background-color: #333333;
   border-radius: 4px;
   padding: 0rem;
-  /* width: 9rem; */
   width: 100%;
   margin: 0rem;
 }
@@ -249,9 +222,7 @@ button:hover {
   flex-direction: row;
   align-items: center;
   background-color: #333333;
-  /* border-radius: 4px; */
   padding: 0rem;
-  /* width: 3rem; */
   width: 33%;
   margin: 0rem;
 }
@@ -369,19 +340,3 @@ button:hover {
     max-width: 20px;
   }
 }
-
-/*
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-
-  a:hover {
-    color: #747bff;
-  }
-
-  button {
-    background-color: #f9f9f9;
-  }
-}*/

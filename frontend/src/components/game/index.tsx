@@ -352,7 +352,9 @@ export default function Game(props: {
       }
       window?.removeEventListener("mousemove", movePaddle);
       socketService.socket?.off("on_game_update");
-      socketService.socket?.off("onGameStart");
+      //socketService.socket?.off("onGameStart");
+      socketService.socket?.off("start_game");
+      socketService.socket?.off("end_game");
     };
   }, [isGameStarted, socketService.socket?.connected]);
 

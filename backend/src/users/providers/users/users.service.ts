@@ -145,17 +145,6 @@ export class UsersService {
             .execute();
     }
 
-    /*
-        exemple requete sql avec un innerjoin facon typeorm
-        createQueryBuilder("list_msg")
-        .select(['list_msg.idUser',
-          'list_msg.username', 'list_msg.content'])
-        .innerJoin("list_msg.chat", "lstMsg")
-        .where("list_msg.chatid = :id")
-        .setParameters({ id: element.id })
-        .getMany() OU getOne();
-    */
-
     async getUserProfile(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")
             .select(['user.username', 'user.userID', 'user.avatarPath', 'user.fa'])

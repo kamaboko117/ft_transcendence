@@ -96,37 +96,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return (true);
   }
 
-  /* search list admin, and set one as new owner*/
-  /*private async searchAndSetAdministratorsChannel(id: string) {
-    let listUser: ListUser[] = await this.listUserRepository.createQueryBuilder("list_user")
-      .select(["list_user.id", "list_user.user_id"])
-      .where("list_user.chatid = :id")
-      .setParameters({ id: id })
-      .andWhere("list_user.role = :role")
-      .setParameters({ role: 'Administrator' })
-      .getMany();
-
-    if (listUser.length === 0) {
-      listUser = await this.listUserRepository.createQueryBuilder("list_user")
-        .select(["list_user.id", "list_user.user_id"])
-        .where("list_user.chatid = :id")
-        .setParameters({ id: id })
-        .getMany();
-    }
-    if (listUser.length > 0) {
-      await this.chatsRepository.createQueryBuilder().update(Channel)
-        .set({ user_id: listUser[0].user_id })
-        .where("id = :id")
-        .setParameters({ id: id })
-        .execute();
-      await this.listUserRepository.createQueryBuilder().update(ListUser)
-        .set({ role: "Owner" })
-        .where("id = :id")
-        .setParameters({ id: listUser[0].id })
-        .execute();
-    }
-  }*/
-
   /* Delete current owner, and try to set a new one */
   private async setNewOwner(userId: number, id: string, ownerId: string) {
     const runner = this.dataSource.createQueryRunner();

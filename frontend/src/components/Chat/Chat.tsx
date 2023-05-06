@@ -230,19 +230,11 @@ const MainChat = (props: any) => {
                     setOnline(false);
             }
         });
-        //listen to excption sent by backend
-        /*usrSocket?.on('exception', (res) => {
-            if (res.status === "error" && res.message === "Token not valid")
-                props.setErrorCode(403);
-            else
-                props.setErrorCode(500);
-        });*/
         return (() => {
             //unsubscribeChat
             usrSocket?.emit("stopEmit", { id: props.id }, () => {
                 setOnline(false);
             });
-            //usrSocket?.off("exception");
         })
     }, [props.id, usrSocket]);
     const navigate = useNavigate();

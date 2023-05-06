@@ -153,6 +153,9 @@ const Custom_size_ball = (props: { usrSocket: Socket<any, any> | undefined }) =>
       changeGlobalSettings(res);
       setSize(res.ballSize.toString());
     });
+    return (() => {
+      props.usrSocket?.off("edit_settings");
+    });
   }, []);
   return (
     <div>
@@ -202,6 +205,9 @@ const Custom_speed_ball = (props: { usrSocket: Socket<any, any> | undefined }) =
     props.usrSocket?.on("edit_settings", (res: IGameSettings) => {
       changeGlobalSettings(res);
       setSpeed(res.speed.toString());
+    });
+    return (() => {
+      props.usrSocket?.off("edit_settings");
     });
   }, []);
   return (
@@ -253,6 +259,9 @@ const Custom_acceleration_ball = (props: { usrSocket: Socket<any, any> | undefin
       changeGlobalSettings(res);
       setAcc(res.acceleration.toString());
     });
+    return (() => {
+      props.usrSocket?.off("edit_settings");
+    });
   }, []);
   return (
     <div>
@@ -303,6 +312,9 @@ const Custom_goal = (props: { usrSocket: Socket<any, any> | undefined }) => {
       changeGlobalSettings(res);
       setGoal(res.goal.toString());
     });
+    return (() => {
+      props.usrSocket?.off("edit_settings");
+    });
   }, []);
   return (
     <div>
@@ -350,6 +362,9 @@ const Custom_color_ball = (props: { usrSocket: Socket<any, any> | undefined }) =
     props.usrSocket?.on("edit_settings", (res: IGameSettings) => {
       changeGlobalSettings(res);
       setColor(res.ballColor);
+    });
+    return (() => {
+      props.usrSocket?.off("edit_settings");
     });
   }, []);
   return (
@@ -407,9 +422,9 @@ const Custom_power_up = (props: { usrSocket: Socket<any, any> | undefined }) => 
       changeGlobalSettings(res);
       setIsCheck(res.powerUps);
     });
-    return () => {
+    return (() => {
       props.usrSocket?.off("edit_settings");
-    };
+    });
   }, []);
   return (
     <div>
@@ -434,9 +449,9 @@ const Custom_setting = (props: { cst: boolean;
     props.usrSocket?.on("edit_settings", (res: IGameSettings) => {
       changeGlobalSettings(res);
     });
-    return () => {
+    return (() => {
       props.usrSocket?.off("edit_settings");
-    };
+    });
   }, []);
   if (props.cst === true) {
     globalSettings.type = "Custom";
@@ -565,12 +580,6 @@ const SettingGame = (props: {
   const getFirstPartRegex = regex.exec(getLocation);
 
   useEffect(() => {
-    /*props.socketService.socket?.on('exception', (res) => {
-      if (res && res.status === "error" && res.message === "Token not valid")
-          setErrorCode(403);
-      else
-          setErrorCode(500);
-  })*/
     if (props.socketService.socket) {
       const game = async () => {
         await gameService
@@ -613,11 +622,13 @@ const SettingGame = (props: {
 
   const [custom, setCustom] = useState<boolean>(false);
   const [rdy, setRdy] = useState<boolean>(false);
+  console.log()
   if (!props.isGameStarted) {
     return (
       <>
         {errorCode >= 400 && <FetchError code={errorCode} />}
-        {getFirstPartRegex && <MatchmakingLeft userLeft={userLeft}
+        {getFirstPartRegex && getFirstPartRegex[0] == "/play-matchmaking/"
+          && <MatchmakingLeft userLeft={userLeft}
           usr1={usr1} usr2={usr2} />}
         <div className="createParty">
           <h1 className="room_name">{props.roomName}</h1>

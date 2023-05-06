@@ -9,18 +9,6 @@ import SocketContext from "../contexts/Socket";
 import { FetchError, header } from "../components/FetchError";
 
 export default function PlayPage(props: { jwt: string | null }) {
-  /*const connectSocket = async () => {
-    const socket = await socketService
-      .connect("http://localhost:5000")
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-  useEffect(() => {
-    connectSocket();
-  }, []);
-*/
   const [idRoom, setIdRoom] = useState<string>("");
   const [roomName, setRoomName] = useState<string>("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
