@@ -360,7 +360,7 @@ const Custom_goal = (props: { usrSocket: Socket<any, any> }) => {
   );
 };
 
-const Custom_color_ball = (props: { usrSocket }) => {
+const Custom_color_ball = (props: { usrSocket: any }) => {
   const [color, setColor] = useState<string>("WHITE");
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (e && e.target) {

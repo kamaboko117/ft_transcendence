@@ -36,7 +36,7 @@ type rankWin = {
 
 /* display default img if not img loaded */
 
-const handleImgError = (e) => {
+const handleImgError = (e: any) => {
 	const target: HTMLImageElement = e.target as HTMLImageElement;
 
 	if (target) {
@@ -71,8 +71,8 @@ async function update(event: FormEvent<HTMLFormElement>, username: string | unde
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	setAvatarPath: React.Dispatch<React.SetStateAction<string | null>>,
-	setLstErr: React.Dispatch<React.SetStateAction<[]>>, userCtx,
-	setTimer, timerOk: boolean) {
+	setLstErr: React.Dispatch<React.SetStateAction<[]>>, userCtx: any,
+	setTimer: any, timerOk: boolean) {
 	event.preventDefault();
 
 	if (!username || timerOk)
@@ -190,7 +190,7 @@ export const Achivement_Raw = (props: {nameAchivement: Array<nameAchivement> | u
 	</>)
 }
 
-const LoadAchivement = (props: {jwt: string | null, setErrorCode}) => {
+const LoadAchivement = (props: {jwt: string | null, setErrorCode: any}) => {
 	const [listAchivement, setList] = useState<Array<nameAchivement>>();
 	useEffect(() => {
 		if (props.jwt) {
@@ -220,7 +220,7 @@ const LoadAchivement = (props: {jwt: string | null, setErrorCode}) => {
 	);
 }
 
-const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode, jwt: string | null}) => {
+const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode: any, jwt: string | null}) => {
 	const [vc, setVc] = useState<number>(0);
 	const [df, setDf] = useState<number>(0);
 	const [nb_g, setNb_g] = useState<number | undefined>(undefined);
@@ -359,7 +359,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 						src={avatarPath}
 						srcSet={avatarPath + ' 320w'}
 						alt={"avatar " + user?.username}
-						onError={handleImgError}
+						onError={handleImgError as any}
 					/></>}
 					{timerOk === false && <input type="submit" value="Submit" />}
 					{timerOk === true && <input type="submit" value="Updating again in 3 seconds..." />}

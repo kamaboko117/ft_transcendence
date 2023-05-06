@@ -1,4 +1,3 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
@@ -12,7 +11,7 @@ const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 
-function ErrorFallback({ error, resetErrorBoundary }) {
+function ErrorFallback( error: any ) {
   return (
     <div role="alert">
       <pre>{error.message}</pre>

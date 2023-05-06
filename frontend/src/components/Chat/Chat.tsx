@@ -42,7 +42,7 @@ type msg = {
     img: string
 }
 
-const handleImgError = (e) => {
+const handleImgError = (e: any) => {
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
     if (target) {
@@ -76,7 +76,7 @@ export const ListMsg = (props: any) => {
                                 src={'/' + msg.user.avatarPath}
                                 srcSet={'/' + msg.user.avatarPath + ' 2x'}
                                 alt={"avatar " + msg.user?.username}
-                                onError={handleImgError}
+                                onError={handleImgError as any}
                             />}
                             <label className="chatBox">{msg.user.username}</label>
                         </div>
@@ -130,7 +130,7 @@ const PostMsg = (props: typePostMsg) => {
                 lstUserGlobal, lstUserChat,
                 setLstUserGlobal, setLstUserChat, navigate);
             if (cmdIsValid === false) {
-                props.usrSocket.emit('sendMsg', obj, (res) => {
+                props.usrSocket.emit('sendMsg', obj, (res : any) => {
                     if (res.room === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res.room === obj.id && obj.id == obj.idBox)
@@ -139,7 +139,7 @@ const PostMsg = (props: typePostMsg) => {
             }
         }
         else {
-            props.usrSocket.emit('sendMsg', obj, (res) => {
+            props.usrSocket.emit('sendMsg', obj, (res : any) => {
                 if (res.room === obj.id)
                     setLstMsgChat((lstMsg) => [...lstMsg, res]);
                 if (res.room === obj.id && obj.id == obj.idBox)
@@ -164,7 +164,7 @@ const PostMsg = (props: typePostMsg) => {
                     lstUserGlobal, lstUserChat, setLstUserGlobal,
                     setLstUserChat, navigate);
                 if (cmdIsValid === false) {
-                    props.usrSocket.emit('sendMsg', obj, (res) => {
+                    props.usrSocket.emit('sendMsg', obj, (res : any) => {
                         if (res.room === obj.id)
                             setLstMsgChat((lstMsg) => [...lstMsg, res]);
                         if (res.room === obj.id && obj.id == obj.idBox)
@@ -172,7 +172,7 @@ const PostMsg = (props: typePostMsg) => {
                     });
                 }
             } else {
-                props.usrSocket.emit('sendMsg', obj, (res) => {
+                props.usrSocket.emit('sendMsg', obj, (res : any) => {
                     if (res.room === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res.room === obj.id && obj.id == obj.idBox)
@@ -228,7 +228,7 @@ const MainChat = (props: any) => {
             }
         });
         //listen to excption sent by backend
-        usrSocket?.on('exception', (res) => {
+        usrSocket?.on('exception', (res: any ) => {
             if (res.status === "error" && res.message === "Token not valid")
                 props.setErrorCode(403);
             else
