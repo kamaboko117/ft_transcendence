@@ -15,7 +15,28 @@ export class RoomsService {
     this.roomRepository.delete({});
   }
   createRoom(CreateRoomDto: CreateRoomDto) {
-    const newRoom = this.roomRepository.create(CreateRoomDto);
+    const newRoom = this.roomRepository.create({
+      roomName: CreateRoomDto.roomName,
+      private: false,
+      settingsOne: {
+        powerUps: CreateRoomDto.settings.powerUps,
+        type: CreateRoomDto.settings.type,
+        goal: CreateRoomDto.settings.goal,
+        speed: CreateRoomDto.settings.speed,
+        acceleration: CreateRoomDto.settings.acceleration,
+        ballSize: CreateRoomDto.settings.ballSize,
+        ballColor: CreateRoomDto.settings.ballColor,
+      },
+      settingsTwo: {
+        powerUps: CreateRoomDto.settings.powerUps,
+        type: CreateRoomDto.settings.type,
+        goal: CreateRoomDto.settings.goal,
+        speed: CreateRoomDto.settings.speed,
+        acceleration: CreateRoomDto.settings.acceleration,
+        ballSize: CreateRoomDto.settings.ballSize,
+        ballColor: CreateRoomDto.settings.ballColor,
+      },
+    });
     return this.roomRepository.save(newRoom);
   }
 

@@ -116,7 +116,8 @@ const handleSubmitPmUser = (e: React.FormEvent<HTMLFormElement>, user: string, j
         .then(res => {
             if (res && res.ok)
                 return (res.json());
-            setErrorCode(res.status);
+            if (res)
+                setErrorCode(res.status);
         }).then((res: {
             valid: boolean,
             channel_id: string, listPm: {
@@ -125,7 +126,7 @@ const handleSubmitPmUser = (e: React.FormEvent<HTMLFormElement>, user: string, j
                     username: string
                 },
             }
-        }) => {
+            }) => {
             if (res && res.valid === true) {
                 setId(res.channel_id);
                 let found: any = undefined;
@@ -417,7 +418,8 @@ const DiscussionBox = (props: {
                 .then(res => {
                     if (res && res.ok)
                         return (res.json());
-                    props.setErrorCode(res.status);
+                    if (res)
+                        props.setErrorCode(res.status);
                 }).catch(e => console.log(e));
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
                 setLstMsgPm(res.lstMsg);
@@ -443,6 +445,7 @@ const DiscussionBox = (props: {
         online, usrSocket]);
     useEffect(() => {
         usrSocket?.on("sendBackMsg2", (res: any) => {
+            //need to check if user is blocked
             if (lstUserGlobal && res) {
                 let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id && elem.bl === 1);
                 if (!found) {
@@ -462,7 +465,7 @@ const DiscussionBox = (props: {
     else if (props.id != "" && typeof online == "undefined")
         return (<article className='containerDiscussionBox'><span className='fullBox'>Connecting to chat...</span><Button /></article>)
     return (<div className='containerDiscussionBox'>
-        <ListMsg lstMsg={lstMsgPm} />
+        <ListMsg lstMsg={lstMsgPm} id={props.id} />
         <PostMsg id={props.id} usrSocket={usrSocket} idBox={getSecondPartRegex} msg={msg}
             isPrivate={props.isPrivate} setMsg={setMsg}
             setErrorCode={props.setErrorCode}
@@ -485,7 +488,8 @@ const updateChannel = (setChannel: updateChannelType["setChannel"],
         .then(res => {
             if (res && res.ok)
                 return (res.json());
-            setErrorCode(res.status);
+            if (res)
+                setErrorCode(res.status);
         })
         .then(res => {
             setPm(res);
@@ -500,7 +504,7 @@ const updateChannel = (setChannel: updateChannelType["setChannel"],
         }).then(res => {
             if (res)
                 setChannel(res);
-        }).catch(e => console.log(e))
+        }).catch(e => console.log(e));
 }
 
 const Box = (props: settingBox) => {

@@ -105,7 +105,8 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string | null,
 	}).then(res => {
 		if (res && res.ok)
 			return (res.json());
-		setErrorCode(res.status);
+		if (res)
+			setErrorCode(res.status);
 	}).then((res: { add: boolean, type: number }) => {
 		if (res) {
 			updateList(res, otherUser, frBl, lstUserGlobal, setLstUserGlobal);
@@ -186,7 +187,7 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null , id: string}>
 			if (res) {
 				setRaw(res);
 			}
-		})
+		}).catch(err => console.log(err));
 	}, [])
 	
 	return(
@@ -221,7 +222,7 @@ const LoadAchivement = (props: {jwt: string | null, setErrorCode: (arg0: number)
 			}).then((res) => {
 				if (res)
 					setList(res);
-			})
+			}).catch(err => console.log(err));
 		}
 	}, [props.jwt])
 
@@ -259,7 +260,7 @@ const LoadResultGame = (props: {setErrorCode: (arg0: number) => void, id: string
 					props.setErrorCode(res.status);
 			}).then((res) => {
 				setNb_g(Number(res));
-			})
+			}).catch(err => console.log(err));
 	}, [])
 
 	useEffect(() => {
@@ -277,15 +278,15 @@ const LoadResultGame = (props: {setErrorCode: (arg0: number) => void, id: string
 					if (res.rankDbByWin)
 						setRank({
 							rankDbByWin: res.rankDbByWin.rank,
-							rankByRankUser: rank.rankByRankUser
+							rankByRankUser: res?.rankByRankUser.gen
 						});
 					if (res.rankByRankUser)
 						setRank({
-							rankDbByWin: rank.rankDbByWin,
-							rankByRankUser: res.rankByRankUser.gen
+							rankDbByWin: res.rankDbByWin.rank,
+							rankByRankUser: res?.rankByRankUser.gen
 						});
 				}
-			})
+			}).catch(err => console.log(err));
 		}
 	}, [nb_g, vc])
 	return(
@@ -316,7 +317,7 @@ const UserProfileOther = (props: { jwt: string | null }) => {
 	useEffect(() => {
 		fetch(`https://` + location.host + `/api/users/${id}`, { headers: header(props.jwt) })
 			.then(res => {
-				if (res.ok)
+				if (res && res.ok)
 					return (res.json());
 				if (res)
 					setErrorCode(res.status);
@@ -335,7 +336,7 @@ const UserProfileOther = (props: { jwt: string | null }) => {
 		return (<span>No user found</span>);
 	return (
 		<>
-			<h1>Username: {otherUser?.username}</h1>
+			<h1>{otherUser?.username}</h1>
 			{!isNaN(Number(id)) && <StatusUser jwt={props.jwt} userId={Number(id)} />}
 			{otherUser?.avatarPath != null && <img
 				className="avatar"

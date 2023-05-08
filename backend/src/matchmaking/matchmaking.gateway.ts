@@ -24,7 +24,8 @@ import {
   HttpStatus,
   UseGuards,
   Logger,
-  NotImplementedException
+  NotImplementedException,
+  Injectable
 } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/jwt.guard';
 import { TokenUser } from '../chat/chat.interface';
@@ -47,6 +48,7 @@ type Match = {
   },
 })
 
+@Injectable()
 export class MatchMakingGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   @WebSocketServer() server: Server;

@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Game from "../components/game";
 import SocketContext from '../contexts/Socket';
-import { FetchError, header, headerPost } from '../components/FetchError';
+import { FetchError, header } from '../components/FetchError';
 import { useParams, useNavigate } from "react-router-dom";
 
 function PlayPageMatchmaking(props: { jwt: string | null }) {

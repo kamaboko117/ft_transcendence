@@ -12,7 +12,7 @@ import { Inject, UseGuards, forwardRef } from "@nestjs/common";
 import { JwtGuard } from "src/auth/jwt.guard";
 import { TokenUser } from "src/chat/chat.interface";
 import { UsersService } from "src/users/providers/users/users.service";
-import { UpdateTypeRoom, UserIdRdy } from "./dto";
+import { LeaveGame, UpdateTypeRoom, UserIdRdy } from "./dto";
 import { UserDecoSock } from "src/common/middleware/user.decorator";
 import { Console } from "console";
 
@@ -803,9 +803,11 @@ export class SocketEvents {
   }
 
   @SubscribeMessage("leave_game")
-  async leave(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
+  async leave(@MessageBody() data: LeaveGame, @ConnectedSocket() client: Socket) {
     console.log("client id: " + client.id + "is leaving room");
     if (data) {
+      if (data.roomId && typeof data.roomId !== "string")
+        return ;
       for (let [key, value] of this.mapUserInGame.entries()) {
         if (client.id === key) {
           const userDb = await this.userService.findUsersById(Number(value));
@@ -816,8 +818,6 @@ export class SocketEvents {
         }
       }
       client.leave(data.roomId);
-      //this.mapUserInGame.delete(client.id);
-
       const game = this.findGameByConnectedSocket(client.id);
       if (game) {
         if (game.player1.socketId === client.id) {
@@ -852,7 +852,7 @@ export class SocketEvents {
   }
   //
 
-  /* search if user is in private room */
+  /* search if user is in private room, registered in room name */
   checkIfUserFound(room: Room, clientId: string) {
     const map = this.userGateway.getMap();
     const split = room?.roomName.split("|");
@@ -866,20 +866,64 @@ export class SocketEvents {
     return false;
   }
 
-  @UseGuards(JwtGuard)
-  @SubscribeMessage("join_game")
-  async join(@MessageBody() data: any, @ConnectedSocket() client: any) {
-    const user: TokenUser = client.user;
-    //await client.join(data.roomId);
-    console.log("New user joining room: ", data);
-    const userId: number = user.userID;
-    //let findInMap: boolean = false;
-    /*this.mapUserInGame.forEach((value, key) => {
-      if (value === userIdString) {
-        findInMap = true;
+  private async joinPartTwo(room: Room | null,
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: LeaveGame,
+    userId: number) {
+    if (!room) {
+      this.server
+          .to(client.id)
+          .emit("join_game_error", { error: "No room found" });
+          return;
+    }
+    //check if user is invited in the game
+    if (room.private === true) {
+      const result: boolean = this.checkIfUserFound(room, client.id);
+      if (result === false) {
+        this.server
+          .to(client.id)
+          .emit("join_game_error", { error: "You are not invited in this game" });
         return;
       }
-    });*/
+    }
+    await client.join(data.roomId);
+    //update client state in database (if rdy or not)
+    this.roomsService.updateRoomReady(data.roomId, false, true, true);
+    this.roomsService.updateRoomTypeGame(data.roomId, true, true, false);
+    this.mapUserInGame.set(client.id, userId);
+    client.to(data.roomId).emit("updateUserRdy");
+    const loop = this.server.sockets.adapter.rooms.get(data.roomId);
+    let i: number = 1;
+    //check if user joined room with success
+    loop?.forEach((key: string) => {
+      this.mapUserInGame.forEach(async (value2, key2) => {
+        if (key === key2) {
+          const userDb = await this.userService.findUsersById(Number(value2));
+          this.server.to(data.roomId).emit("join_game_success", {
+            roomId: data.roomId,
+            username: userDb?.username,
+            nbClient: i,
+          });
+          ++i;
+        }
+      });
+    });
+  }
+
+  @UseGuards(JwtGuard)
+  @SubscribeMessage("join_game")
+  async join(@MessageBody() data: LeaveGame,
+  @ConnectedSocket() client: Socket,
+  @UserDecoSock() user: TokenUser) {
+    const userId: number = user.userID;
+    const room = await this.roomsService.findRoomById(data.roomId);
+
+    if (!room){
+      client
+          .emit("join_game_error", { error: "Room not found" });
+      return ;
+    }
+    //check if user already in a game
     for (let [key, value] of this.mapUserInGame.entries()) {
       if (value === userId) {
         this.server
@@ -888,107 +932,15 @@ export class SocketEvents {
         return;
       }
     }
-    /*if (findInMap === true) {
-      this.server.to(client.id).emit("join_game_error", { error: "You are already in a party" });
-      return;
-    }*/
     const connectedSockets = this.server.sockets.adapter.rooms.get(data.roomId);
-    //const socketRooms = Array.from(client.rooms.values()).filter(
-    //  (r) => r !== client.id
-    //);
-    const room = await this.roomsService.findRoomById(data.roomId);
-    //j'enleve ca car le find fonctionne mal, il cherche sur toutes les rooms chat compris,
-    //si c pour trouver si deja en partie faut modifier
-    console.log(this.mapUserInGame);
-
-    //check if user is in a party
-
-    if (
-      /*socketRooms.length > 0
-      || */ connectedSockets &&
-      connectedSockets?.size > 1
-    ) {
+    //check if user is in a party and if room is full or not
+    if (connectedSockets && connectedSockets?.size > 1) {
       this.server
         .to(client.id)
         .emit("join_game_error", { error: "Room is full" });
       return;
     } else {
-      await client.join(data.roomId);
-      this.roomsService.updateRoomReady(data.roomId, false, true, true);
-      this.roomsService.updateRoomTypeGame(data.roomId, true, true, false);
-      this.mapUserInGame.set(client.id, userId);
-      if (room && room.private === true) {
-        const result: boolean = this.checkIfUserFound(room, client.id);
-        //console.log("result: " + result)
-        //console.log(this.server.sockets.adapter.rooms.get(data.roomId))
-        if (result === false) {
-          this.server
-            .to(client.id)
-            .emit("join_game_error", { error: "You are spectactor" });
-          return;
-        }
-      }
-      /*console.log("lst id");
-      console.log(this.server.sockets.adapter.rooms.get(data.roomId));
-      console.log("map")
-      console.log(this.mapUserInGame);
-      console.log("nb client");
-      const nbClient = this.server.sockets.adapter.rooms.get(data.roomId)?.size;
-      
-      this.server.to(data.roomId).emit("join_game_success", {
-        roomId: data.roomId,
-        username: user.username,
-        nbClient: nbClient
-      });*/
-      console.log("--------");
-      console.log(this.server.sockets.adapter.rooms.get(data.roomId));
-      console.log(this.mapUserInGame);
-      client.to(data.roomId).emit("updateUserRdy");
-      const loop = this.server.sockets.adapter.rooms.get(data.roomId);
-      //const nbClient = this.server.sockets.adapter.rooms.get(data.roomId)?.size;
-      let i: number = 1;
-      loop?.forEach((key) => {
-        console.log(key);
-        this.mapUserInGame.forEach(async (value2, key2) => {
-          if (key === key2) {
-            console.log("FOUND");
-            const userDb = await this.userService.findUsersById(Number(value2));
-            console.log(userDb);
-            this.server.to(data.roomId).emit("join_game_success", {
-              roomId: data.roomId,
-              username: userDb?.username,
-              nbClient: i,
-            });
-            ++i;
-          }
-        });
-      });
-      /*if (connectedSockets?.size === 2) {
-        let newGame = new Game(data.roomId);
-        let player1 = newGame.player1;
-        let player2 = newGame.player2;
-        let ball = newGame.ball;
-        let powerUps = newGame.powerUps;
-        games.push(newGame);
-        console.log("Starting game");
-        client.to(data.roomId).emit("start_game", { side: 1 });
-        client.to(data.roomId).emit("start_game", { side: 2 });
-        setInterval(() => {
-          update(newGame);
-          client.to(data.roomId).emit("on_game_update", {
-            player1,
-            player2,
-            ball,
-            powerUps,
-          });
-          client.to(data.roomId).to(data.roomId).emit("on_game_update", {
-            player1,
-            player2,
-            ball,
-            powerUps,
-          });
-        }, 1000 / FPS);
-      }*/
+      this.joinPartTwo(room, client, data, userId)
     }
   }
 
@@ -1000,33 +952,20 @@ export class SocketEvents {
 
   @SubscribeMessage("update_player_position")
   async updatePlayerPosition(
-    @MessageBody() data: any,
+    @MessageBody() data: number,
     @ConnectedSocket() client: Socket
   ) {
     const gameRoom: any = this.getSocketGameRoom(client);
     let game = games.find((g) => g.id === gameRoom);
+  
     if (!game) {
       return;
     }
-    /*if (data.side === 1) {
-      game.player1.y = data.y;
-    } else {
-      game.player2.y = data.y;
-    }*/
     if (client.id === game.player1.socketId) {
       game.player1.y = data;
     } else {
       game.player2.y = data;
     }
-    // let player1 = game.player1;
-    // let player2 = game.player2;
-    // let ball = game.ball;
-    // client.to(gameRoom).emit("on_game_update", {
-    //   player1,
-    //   player2,
-    //   ball,
-    //   powerUps: game.powerUps,
-    // });
   }
 
   getMap() {
@@ -1044,81 +983,36 @@ export class SocketEvents {
       .emit("updateTypeGameFromServer", { type: data.type });
   }
 
-  @UseGuards(JwtGuard)
-  @SubscribeMessage("userIsRdy")
-  async gameIsRdy(
-    @MessageBody() data: UserIdRdy,
-    @ConnectedSocket() client: Socket,
-    @UserDecoSock() user: TokenUser
-  ) {
-    const connectedSockets = this.server.sockets.adapter.rooms.get(data.uid);
-
-    if (user.username === data.usr1) {
-      await this.roomsService.updateRoomReady(data.uid, data.rdy, true, false);
-      await this.roomsService.updateRoomTypeGame(
-        data.uid,
-        true,
-        false,
-        data.custom
-      );
+  private async updateRoomState(data: UserIdRdy, userOneRdy: boolean, userTwoRdy: boolean) {
+    await this.roomsService.updateRoomReady(data.uid, data.rdy, userOneRdy, userTwoRdy);
+    await this.roomsService.updateRoomTypeGame(
+      data.uid,
+      userOneRdy,
+      userTwoRdy,
+      data.custom
+    );
+    if (userOneRdy === true)
       await this.roomsService.updateRoomSettingsOne(data.uid, data.settings);
-    } else if (user.username === data.usr2) {
-      await this.roomsService.updateRoomReady(data.uid, data.rdy, false, true);
-      await this.roomsService.updateRoomTypeGame(
-        data.uid,
-        false,
-        true,
-        data.custom
-      );
+    else
       await this.roomsService.updateRoomSettingsTwo(data.uid, data.settings);
-    }
-    //when two user are connected, and both are rdy, game must start
-    let getRoom = await this.roomsService.getRoom(data.uid);
-    if (
-      connectedSockets?.size === 2 &&
-      getRoom?.player_one_rdy === true &&
-      getRoom.player_two_rdy === true
-    ) {
-      getRoom = await this.roomsService.getRoom(data.uid);
-      console.log(getRoom)
-      if (getRoom?.player_one_type_game != getRoom?.player_two_type_game)
-        return { err: "Room type from both users are not synchronized" };
-      console.log("type game ok")
-      if (JSON.stringify(getRoom?.settingsOne) != JSON.stringify(getRoom?.settingsTwo))
-        return { err: "Room settings from both users are not synchronized" };
-      let socket2: string | undefined = undefined;
-      connectedSockets?.forEach((key) => {
-        if (key !== client.id) socket2 = key;
-      });
-      if (socket2 === undefined) {
-        return { err: "no socket second player found" };
-      }
-      if (!getRoom) {
-        return { err: "no room found" };
-      }
-      if (getRoom.player_one_type_game === "Custom") {
-        getRoom.settingsOne.type = "Custom";
-        this.roomsService.updateRoomSettingsOne(getRoom.uid, getRoom);
-        this.roomsService.updateRoomSettingsTwo(getRoom.uid, getRoom);
-      }// else if(data.)
-      //  getRoom.settings.type = getRoom.player_one_type_game;
+  }
+
+  private gameStart(data: UserIdRdy,
+    @ConnectedSocket() client: Socket,
+      getRoom: Room | null, socket2: string | undefined) {
+      if (!getRoom || !socket2)
+        return ;
       let newGame = new Game(data.uid, client.id, socket2, getRoom.settingsOne);
       let powerUps = newGame.powerUps;
       let player1 = newGame.player1;
       let player2 = newGame.player2;
       let ball = newGame.ball;
+  
       games.push(newGame);
-      console.log("Starting game");
       client.emit("start_game", { side: 1 });
       client.to(data.uid).emit("start_game", { side: 2 });
       newGame.intervalId = setInterval(() => {
         this.update(newGame);
-        // let client1 = this.server.sockets.sockets.get(game.player1.socketId);
-        //if (newGame.tickCount - player1.tickCount )
-       // console.log("p1");
-       // console.log(newGame.tickCount - player1.tickCount);
-      //  console.log("p2");
-      //  console.log(newGame.tickCount - player2.tickCount);
         if (newGame.tickCount - player1.tickCount < 60) {
           this.server
             .to(newGame.player1.socketId)
@@ -1144,6 +1038,63 @@ export class SocketEvents {
           this.handleLaggedPlayer(player2, newGame.tickCount);
         }
       }, 1000 / FPS);
+  }
+
+  private async BothUserReady(data: UserIdRdy,
+    connectedSockets: Set<string> | undefined, @ConnectedSocket() client: Socket) {
+    const getRoom = await this.roomsService.getRoom(data.uid);
+  
+    if (!connectedSockets)
+      return ({ err: "No connected socket" });
+    if (getRoom?.player_one_type_game != getRoom?.player_two_type_game)
+      return ({ err: "Room type from both users are not synchronized" });
+    if (JSON.stringify(getRoom?.settingsOne) != JSON.stringify(getRoom?.settingsTwo))
+      return ({ err: "Room settings from both users are not synchronized" });
+    let socket2: string | undefined = undefined;
+
+    connectedSockets.forEach((key) => {
+      if (key !== client.id) socket2 = key;
+    });
+    if (socket2 === undefined) {
+      return ({ err: "No socket second player found" });
+    }
+    if (!getRoom) {
+      return ({ err: "No room found" });
+    }
+    if (getRoom.player_one_type_game === "Custom") {
+      getRoom.settingsOne.type = "Custom";
+      this.roomsService.updateRoomSettingsOne(getRoom.uid, getRoom);
+      this.roomsService.updateRoomSettingsTwo(getRoom.uid, getRoom);
+    }
+    this.gameStart(data, client, getRoom, socket2);
+    return (true)
+  }
+
+  @UseGuards(JwtGuard)
+  @SubscribeMessage("userIsRdy")
+  async gameIsRdy(
+    @MessageBody() data: UserIdRdy,
+    @ConnectedSocket() client: Socket,
+    @UserDecoSock() user: TokenUser
+  ) {
+    const connectedSockets = this.server.sockets.adapter.rooms.get(data.uid);
+
+    if (user.username === data.usr1)
+      await this.updateRoomState(data, true, false);
+    else if (user.username === data.usr2)
+      await this.updateRoomState(data, false, true);
+    else
+      return ({ err: "User ready not found" });
+    //when two user are connected, and both are rdy, game must start
+    let getRoom = await this.roomsService.getRoom(data.uid);
+    if (
+      connectedSockets?.size === 2 &&
+      getRoom?.player_one_rdy === true &&
+      getRoom.player_two_rdy === true
+    ) {
+      const bothUserRdy = await this.BothUserReady(data, connectedSockets, client);
+      if (bothUserRdy !== true)
+        return (bothUserRdy);
     }
   }
 }

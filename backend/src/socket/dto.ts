@@ -8,6 +8,12 @@ export class UpdateTypeRoom {
     roomId: string;
 }
 
+export class LeaveGame {
+    @IsDefined()
+    @IsString()
+    roomId: string;
+}
+
 class Settings {
     @IsNumber()
     ballSize: number;

@@ -17,14 +17,16 @@ type typeFetchToBack = {
     action: string,
     jwt: string,
     userId: number,
-    option: string
+    option: string,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>
 }
 
 type typeFetchToBackPsw = {
     channelId: string,
     action: string,
     jwt: string,
-    psw: string
+    psw: string,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>
 }
 
 
@@ -39,7 +41,9 @@ const fetchToBackWithTimer = (elem: typeFetchToBack) => {
     })
         .then(res => {
             if (res && res.ok)
-                return (res)
+                return (res);
+            if (res)
+                elem.setErrorCode(res.status);
         })
         .catch(e => console.log(e));
 }
@@ -55,7 +59,9 @@ const fetchToBackSpecial = (elem: typeFetchToBack) => {
     })
         .then(res => {
             if (res && res.ok)
-                return (res)
+                return (res);
+            if (res)
+                elem.setErrorCode(res.status);
         })
         .catch(e => console.log(e));
 }
@@ -71,7 +77,9 @@ const fetchToBackPsw = (elem: typeFetchToBackPsw) => {
     })
         .then(res => {
             if (res && res.ok)
-                return (res)
+                return (res);
+            if (res)
+                elem.setErrorCode(res.status);
         })
         .catch(e => console.log(e));
 }
@@ -85,21 +93,24 @@ const getUserInfoByName = (jwt: string, username: string,
         .then(res => {
             if (res && res.ok)
                 return (res.json());
-            setErrorCode(res.status)
+            if (res && res.status)
+                setErrorCode(res.status)
         }).then(res => {
             if (res && res.valid === true &&
                 (firstPartCmd === "unban" || firstPartCmd === "unmute")) {
                 fetchToBackSpecial({
                     channelId: id,
                     action: firstPartCmd, jwt: jwt,
-                    userId: Number(res.id), option: thirdPart
+                    userId: Number(res.id), option: thirdPart,
+                    setErrorCode
                 });
             }
             else if (res && res.valid === true) {
                 fetchToBackWithTimer({
                     channelId: id,
                     action: firstPartCmd, jwt: jwt,
-                    userId: Number(res.id), option: thirdPart
+                    userId: Number(res.id), option: thirdPart,
+                    setErrorCode
                 });
             }
         }).catch(err => console.log(err));
@@ -161,7 +172,8 @@ const fetchBlackAndFriendList = (userInfo: typeUserInfo, jwt: string,
     }).then(res => {
         if (res && res.ok)
             return (res.json());
-        setErrorCode(res.status);
+        if (res)
+            setErrorCode(res.status);
     }).then((res: { add: boolean, type: number }) => {
         if (res) {
             if (res.add) {
@@ -230,7 +242,8 @@ export const commandChat = (jwt: string, obj: any,
                 .then(res => {
                     if (res && res.ok)
                         return (res.json());
-                    setErrorCode(res.status)
+                    if (res)
+                        setErrorCode(res.status)
                 })
                 .then((res: any) => {
                     if (res && res.valid) {
@@ -266,7 +279,8 @@ export const commandChat = (jwt: string, obj: any,
             .then(res => {
                 if (res && res.ok)
                     return (res.json());
-                setErrorCode(res.status)
+                if (res)
+                    setErrorCode(res.status);
             })
             .then((res) => {
                 if (res && res.role) {
@@ -277,7 +291,8 @@ export const commandChat = (jwt: string, obj: any,
                         fetchToBackPsw({
                             channelId: obj.id,
                             action: firstPartCmd, jwt: jwt,
-                            psw: secondPartCmd
+                            psw: secondPartCmd,
+                            setErrorCode
                         })
                     }
                 }

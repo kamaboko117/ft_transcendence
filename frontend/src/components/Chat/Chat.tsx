@@ -54,7 +54,7 @@ const handleImgError = (e: any) => {
 }
 
 /* return user state list */
-export const ListMsg = (props: any) => {
+export const ListMsg = (props: {lstMsg: any, id: string}) => {
     const scrollBottom = useRef<any>();
     const Element = scroll.Element;
     let EScroll = scroll.animateScroll;
@@ -64,10 +64,12 @@ export const ListMsg = (props: any) => {
         arrayLength = 0;
     useEffect(() => {
         if (scrollBottom && scrollBottom.current)
-            EScroll.scrollToBottom({ containerId: "containerElement", duration: 0 });
+            EScroll.scrollToBottom({ containerId: "containerElement".concat(props.id), duration: 0 });
     }, [props.lstMsg, props.id, scrollBottom.current])
     return (
-        <Element name="container" className="element fullBox" id="containerElement" ref={scrollBottom}>
+        <Element name="container" className="element fullBox"
+            id={"containerElement".concat(props.id)}
+            ref={scrollBottom}>
             {
                 props.lstMsg &&
                 props.lstMsg.slice(arrayLength, props.lstMsg.length).map((msg: msg) => (
@@ -251,7 +253,8 @@ const MainChat = (props: any) => {
                 .then(res => {
                     if (res.ok)
                         return (res.json());
-                    props.setErrorCode(res.status);
+                    if (res && res.status)
+                        props.setErrorCode(res.status);
                 }).catch(e => console.log(e));
 
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
@@ -287,7 +290,7 @@ const MainChat = (props: any) => {
     useEffect(() => {
         usrSocket?.on("sendBackMsg", (res: any) => {
             //need to check if user is blocked
-            if (lstUserGlobal) {
+            if (lstUserGlobal && res) {
                 let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id && elem.bl === 1);
                 if (!found) {
                     if (res.room === props.id)
@@ -296,7 +299,7 @@ const MainChat = (props: any) => {
             }
         });
         return (() => { usrSocket?.off("sendBackMsg"); });
-    }, [JSON.stringify(lstUserGlobal)])
+    }, [JSON.stringify(lstUserGlobal), props.id]);
     const [msg, setMsg] = useState<null | string>("");
 
     if (online === "Ban")
@@ -316,7 +319,7 @@ const MainChat = (props: any) => {
                 }, navigate)}
                     className='chatLeave'>Leave</button>
             </div>
-            <ListMsg lstMsg={lstMsgChat} />
+            <ListMsg lstMsg={lstMsgChat} id={props.id} />
             <PostMsg id={props.id} msg={msg} usrSocket={usrSocket} setErrorCode={props.setErrorCode}
                 setMsg={setMsg} setLstMsgChat={setLstMsgChat} setLstMsgPm={setLstMsgPm} />
         </article>
@@ -347,7 +350,8 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>
     }).then(res => {
         if (res && res.ok)
             return (res.json())
-        setErrorCode(res.status);
+        if (res)
+            setErrorCode(res.status);
         return (false);
     }).catch(e => console.log(e)));
 }
@@ -364,7 +368,8 @@ const hasPassword = async (id: Readonly<string>, jwt: Readonly<string | null>,
         .then(res => {
             if (res && res.ok)
                 return (res.json());
-            setErrorCode(res.status);
+            if (res)
+                setErrorCode(res.status);
         }));
 }
 

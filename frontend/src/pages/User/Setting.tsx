@@ -94,7 +94,8 @@ async function update(event: FormEvent<HTMLFormElement>, username: string | unde
 	).then(res => {
 		if (res && res.ok)
 			return (res.json());
-		setErrorCode(res.status);
+		if (res)
+			setErrorCode(res.status);
 	}).then(res => {
 		if (res) {
 			if (res.valid === true) {
@@ -160,7 +161,7 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
 			if (res) {
 				setRaw(res);
 			}
-		})
+		}).catch(err => console.log(err));
 	}, [])
 	
 	return(
@@ -206,7 +207,7 @@ const LoadAchivement = (props: {jwt: string | null, setErrorCode: (arg0: number)
 			}).then((res) => {
 				if (res)
 					setList(res);
-			})
+			}).catch(err => console.log(err));
 		}
 	}, [])
 
@@ -239,7 +240,7 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode: (arg0:
 					props.setErrorCode(res.status);
 			}).then((res) => {
 				setNb_g(Number(res));
-			})
+			}).catch(err => console.log(err));
 	}, []);
 
 	useEffect(() => {
@@ -265,7 +266,7 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode: (arg0:
 							rankByRankUser: res?.rankByRankUser.gen
 						});
 				}
-			})
+			}).catch(err => console.log(err));
 		}
 	}, [nb_g, vc]);
 

@@ -268,12 +268,18 @@ button:hover {
 }
 
 @media screen and (max-width: 600px) {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-size: 1em;
+    word-break: break-all;
+  }
   .room_list {
     flex-direction: column;
   }
-
-  
-
   .room_name {
     font-size: 1em;
   }
@@ -295,7 +301,6 @@ button:hover {
 }
 
 @media screen and (max-width: 200px) {
-
   h1,
   h2,
   h3,

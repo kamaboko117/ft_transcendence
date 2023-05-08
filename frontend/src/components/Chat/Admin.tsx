@@ -293,10 +293,12 @@ const PasswordExist = (props: {
             .then(res => {
                 if (res && res.ok)
                     return (res.json());
+                if (res && res.status)
+                    props.setErrorCode(res.status);
             }).then((res: boolean) => {
                 if (typeof res === "boolean")
                     props.setType(res);
-            });
+            }).catch(err => console.log(err));
     }, [props.id]);
     return (<></>);
 }
@@ -385,7 +387,8 @@ export const PasswordOwnerBox = (props: admPassword) => {
             .then(res => {
                 if (res && res.ok)
                     return (res.json());
-                props.setErrorCode(res.status)
+                if (res && res.status)
+                    props.setErrorCode(res.status);
             })
             .then((res) => {
                 if (res && res.role) {
@@ -418,7 +421,8 @@ function fetchGetRole(jwt: string, id: string,
     .then(res => {
         if (res && res.ok)
             return (res.json());
-        setErrorCode(res.status);
+        if (res && res.status)
+            setErrorCode(res.status);
     }));
 }
 
@@ -430,7 +434,8 @@ function fetchUserRole(jwt: string, userId: number, id: string,
     .then(res => {
         if (res && res.ok)
             return (res.json());
-        setErrorCode(res.status);
+        if (res && res.status)
+            setErrorCode(res.status);
     }));
 }
 

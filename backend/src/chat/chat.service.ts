@@ -3,7 +3,7 @@ import { Chat, InformationChat, DbChat } from './chat.interface';
 import { IsString } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Channel } from './chat.entity';
 import { ListBan } from './lstban.entity';
 import { ListMsg } from './lstmsg.entity';
@@ -38,6 +38,7 @@ export class ChatService {
     @InjectRepository(BlackFriendList)
     private readonly blFrRepository: Repository<BlackFriendList>
 
+    constructor(private dataSource: DataSource) {}
     async getAllPublic(): Promise<any[]> {
         const arr: Channel[] = await this.chatsRepository
             .createQueryBuilder("channel")
@@ -177,8 +178,13 @@ export class ChatService {
         userTwo: Readonly<string>): Promise<string> {
         /* create Private message channel */
         const concat = String(userOne).concat(userTwo);
+        const runner = this.dataSource.createQueryRunner();
 
-        await this.chatsRepository.createQueryBuilder()
+        await runner.connect();
+        await runner.startTransaction();
+
+        try {
+            await this.chatsRepository.createQueryBuilder()
             .insert().into(Channel)
             .values({
                 id: concat,
@@ -186,18 +192,26 @@ export class ChatService {
                 accesstype: '4'
             })
             .execute();
-        /* insert first user */
-        await this.listUserRepository.createQueryBuilder()
-            .insert().into(ListUser)
-            .values([
-                { user_id: userOne, chatid: concat }
-            ]).execute();
-        /* insert second user */
-        await this.listUserRepository.createQueryBuilder()
-            .insert().into(ListUser)
-            .values([
-                { user_id: Number(userTwo), chatid: concat }
-            ]).execute();
+            /* insert first user */
+            await this.listUserRepository.createQueryBuilder()
+                .insert().into(ListUser)
+                .values([
+                    { user_id: userOne, chatid: concat }
+                ]).execute();
+            /* insert second user */
+            await this.listUserRepository.createQueryBuilder()
+                .insert().into(ListUser)
+                .values([
+                    { user_id: Number(userTwo), chatid: concat }
+                ]).execute();
+                await runner.commitTransaction();
+                return (concat);
+            } catch (e) {
+                await runner.rollbackTransaction();
+        } finally {
+                //doc want it released
+                await runner.release();
+        }
         return (concat);
     }
     /* END OF PRIVATE  */
@@ -237,7 +251,7 @@ export class ChatService {
         return (listMsg);
     }
 
-    async getChannelByTest(id: string): Promise<undefined | DbChat> {
+    async getChannelById(id: string): Promise<undefined | DbChat> {
         const channel: any = await this.chatsRepository
             .createQueryBuilder("channel")
             .select(["channel.id", "channel.name", "channel.accesstype",
@@ -329,7 +343,7 @@ export class ChatService {
         return (arr);
     }
 
-    createChat(chat: CreateChatDto, id: string, owner: Owner): InformationChat {
+    async createChat(chat: CreateChatDto, id: string, owner: Owner): Promise<InformationChat> {
         chat.id = id;
         let newChat: Chat = {
             id: chat.id, name: chat.name, owner: owner.idUser,
@@ -350,8 +364,19 @@ export class ChatService {
         listUsr.user_id = owner.idUser;
         listUsr.role = "Owner";
         listUsr.chat = channel;
-        this.listUserRepository.save(listUsr);
+        const runner = this.dataSource.createQueryRunner();
 
+        await runner.connect();
+        await runner.startTransaction();
+        try {
+            this.listUserRepository.save(listUsr);
+            await runner.commitTransaction();
+        } catch (e) {
+            await runner.rollbackTransaction();
+        } finally {
+            //doc want it released
+            await runner.release();
+        }
         const return_chat: InformationChat = {
             channel_id: newChat.id,
             channel_name: newChat.name,
@@ -372,7 +397,12 @@ export class ChatService {
             if (comp === false)
                 return (undefined)
         }
-        await this.listUserRepository
+        const runner = this.dataSource.createQueryRunner();
+
+        await runner.connect();
+        await runner.startTransaction();
+        try {
+            await this.listUserRepository
             .createQueryBuilder()
             .insert()
             .into(ListUser)
@@ -381,6 +411,13 @@ export class ChatService {
                 chatid: data.id
             }])
             .execute();
+            await runner.commitTransaction();
+        } catch (e) {
+            await runner.rollbackTransaction();
+        } finally {
+            //doc want it released
+            await runner.release();
+        }
         return (true);
     }
 }

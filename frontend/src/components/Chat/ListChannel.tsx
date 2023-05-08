@@ -158,7 +158,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         fetch('https://' + location.host + '/api/chat/public/',
             { headers: header(this.props.jwt) })
             .then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
             }).then(res => {
                 if (res) {
@@ -169,11 +169,13 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             }).catch(e => console.log(e))
         fetch('https://' + location.host + '/api/chat/private',
             { headers: header(this.props.jwt) }).then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
-                this.setState({
-                    errorCode: res.status
-                });
+                if (res) {
+                    this.setState({
+                        errorCode: res.status
+                    });
+                }
             }).then(res => {
                 if (res) {
                     this.setState({

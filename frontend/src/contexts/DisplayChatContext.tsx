@@ -70,7 +70,8 @@ export const LoadUserGlobal = (props: { jwt: string | null }) => {
             .then(res => {
                 if (res.ok)
                     return (res.json());
-                setErrorCode(res.status);
+                if (res)
+                    setErrorCode(res.status);
             }).then(res => {
                 if(res)
                     setLstUserGlobal(res)

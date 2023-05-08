@@ -20,7 +20,8 @@ export function playPageInvite(jwt: string, setErrorCode: React.Dispatch<React.S
             .then((response) => {
                 if (response && response.ok)
                     return response.json();
-                setErrorCode(response.status);
+                if (response)
+                    setErrorCode(response.status);
             })
             .then((data) => {
                 if (data) {

@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { readFileSync } from 'fs';
 import { urlencoded, json } from 'express';
-//import helmet from 'helmet';
+import helmet from 'helmet';
 
 let httpsOptions = null;
 
@@ -16,7 +16,10 @@ async function bootstrap() {
     cert: certP,
   }
   const app = await NestFactory.create(AppModule, { httpsOptions });
-  //app.use(helmet());
+  //dev mod strict transport disabled for dev mod, enable it on production with a domain name to disable warning
+  app.use(helmet({
+    strictTransportSecurity: false
+  }));
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors();
   app.use(cookieParser());

@@ -21,7 +21,6 @@ function NewRoomModal(props: any) {
                     setErrorCode(response.status);
             })
             .then((data) => {
-                console.log(data);
                 if (data && data.err === "true") {
                     setErrorCode(1);
                     return ("");

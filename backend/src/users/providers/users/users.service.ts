@@ -8,8 +8,8 @@ import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
 import { MatchHistory } from "src/typeorm/matchHistory.entity";
 import { Achievements } from "src/typeorm/achievement.entity";
 
-const validateURL = "https://api.intra.42.fr/oauth/token"
-const infoURL = "https://api.intra.42.fr/oauth/token/info"
+const validateURL = "https://api.intra.42.fr/oauth/token";
+const infoURL = "https://api.intra.42.fr/oauth/token/info";
 const appId = process.env.APP_ID!;
 const appSecret = process.env.APP_SECRET!;
 
@@ -61,7 +61,7 @@ export class UsersService {
             if (res && res.ok) {
                 return (res.json());
             }
-            return (undefined)
+            return (undefined);
         }).catch(e => console.log(e));
         if (typeof res === "undefined" || typeof res.access_token === "undefined")
             return (undefined);

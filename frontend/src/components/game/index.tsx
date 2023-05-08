@@ -253,7 +253,7 @@ export default function Game(props: {
     if (socketService.socket) {
       gameService.onGameUpdate(socketService.socket, (data: any) => {
         ft_timer();
-        receivedUpdates++;
+        ++receivedUpdates;
         player.y = side === 1 ? data.player2.y : data.player1.y;
         let newTickCount = side === 1 ? data.player2.tickCount : data.player1.tickCount;
         if (newTickCount > receivedUpdates) {

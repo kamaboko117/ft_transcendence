@@ -31,7 +31,7 @@ export default function PlayPage(props: { jwt: string | null }) {
     })
       .then((response) => {
         if (response && response.ok) return response.json();
-        setErrorCode(response.status);
+        if (response) setErrorCode(response.status);
       })
       .then((data) => {
         const rooms: any = [];
@@ -79,13 +79,13 @@ export default function PlayPage(props: { jwt: string | null }) {
       })
         .then((response) => {
           if (response && response.ok) return response.json();
-          setErrorCode(response.status);
+          if (response) setErrorCode(response.status);
         })
         .then((data) => {
           if (data)
             roomName = data.roomName;
           console.log(roomName);
-        });
+        }).catch(err => console.log(err));
       setRoomName(roomName);
       setIdRoom(roomId);
       setIsInRoom(true);
