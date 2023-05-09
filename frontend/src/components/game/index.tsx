@@ -53,7 +53,6 @@ export default function Game(props: {
             setErrorCode(res.status);
         })
         .then((res: { exist: boolean }) => {
-          console.log("room exist: " + res)
           if (res) {
             if (res.exist === false) navigate("/");
           }
@@ -273,12 +272,9 @@ export default function Game(props: {
         setPowerUpList(data.powerUps);
       });
       gameService.onGameEnd(socketService.socket, (data: any) => {
-        console.log("Game ended");
-        console.log(data);
         receivedUpdates = 0;
         setIsGameStarted(false);
         setIsGameEnded(true);
-        // console.log(`winner is ${data.winner}`)
         setWinner(data.winner);
       });
     }
@@ -293,40 +289,11 @@ export default function Game(props: {
       gameService.updatePlayerPosition(socketService.socket, player.y);
     }
   }
-  /*
-    useEffect(() => {
-      console.log(socketService.socket)
-      if (socketService.socket) {
-        console.log("socketed")
-        const game = async () => {
-          await gameService
-            .joinGameRoom(socketService.socket, props.id, 0, 0)
-            .catch((err) => {
-              console.log("joining room " + err);
-              setErrorCode(1);
-            });
-        }
-        game();
-      }
-      console.log("joined from game component");
-      console.log("Game room mounting");
-      return (() => {
-        console.log("Game room unmount");
-        socketService.socket?.emit("leave_game", { roomId: props.id });
-        socketService.socket?.off("join_game_success");
-        socketService.socket?.off("join_game_error");
-      });
-    }, [socketService.socket]);*/
 
   useEffect(() => {
     handleGameStart();
     const canvas = canvasRef.current;
-    //if (!canvas) {
-    //  return;
-    //}
-    console.log("canvas");
-    console.log(canvas);
-    console.log(isGameStarted);
+
     if (canvas) {
       const ctx = canvas.getContext("2d");
       if (!ctx) {
@@ -343,7 +310,6 @@ export default function Game(props: {
       handleReceivedUpdate();
     }
     return () => {
-      console.log("canvas unmount");
       //stop timeout listener when component unmount
       if (getTimer)
         clearTimeout(getTimer);
@@ -362,7 +328,6 @@ export default function Game(props: {
       await gameService.onGameStart(socketService.socket, (data: any) => {
         setSide(data.side);
         setIsGameStarted(true);
-        console.log("start");
       });
     }
   };
@@ -386,19 +351,6 @@ export default function Game(props: {
     );
   }
 
-  // if (!isGameStarted) {
-  //   return (
-  //     <div className="game_container">
-  //       <h1 className="room_name">{props.roomName}</h1>
-  //       {errorCode != 1 ? (
-  //         <h1 className="room_content">waiting for opponent</h1>
-  //       ) : (
-  //         <h1 className="room_description">Room is full, you are spectator</h1>
-  //       )}
-  //     </div>
-  //   );
-  // }
-
   return (
     <>
       {errorCode >= 400 && <FetchError code={errorCode} />}
@@ -413,18 +365,4 @@ export default function Game(props: {
       />
     </>
   );
-  //}
-
-  /*return (
-    <div className="game">
-      <h1 className="room_name">Game</h1>
-      <canvas
-        ref={canvasRef}
-        className="game_canvas"
-        id="pong"
-        width={CANVAS_WIDTH}
-        height={CANVAS_HEIGHT}
-      ></canvas>
-    </div>
-  );*/
 }
