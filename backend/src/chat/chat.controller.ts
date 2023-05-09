@@ -86,7 +86,7 @@ export class ChatController {
         }
         return (list_user.Channel_id);
     }
-    //
+
     /* Find user PM by username */
     @Get('find-pm-username')
     async openPrivateMessageByUsername(@UserDeco() tokenUser: TokenUser,
