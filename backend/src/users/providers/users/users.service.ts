@@ -556,7 +556,7 @@ export class UsersService {
         }
     }
 
-    async deleteBlFr(ownerId: number, focusUserId: number, type: number, findId: number) {
+    async deleteBlFr(findId: number) {
         const runner = this.dataSource.createQueryRunner();
 
         await runner.connect();

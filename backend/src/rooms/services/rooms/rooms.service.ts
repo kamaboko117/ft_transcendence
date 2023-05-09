@@ -102,7 +102,9 @@ export class RoomsService {
   }
 
   findRoomById(uid: string) {
-    return this.roomRepository.findOneBy({ uid: uid });
+    if (validate(uid))
+      return this.roomRepository.findOneBy({ uid: uid });
+    return (null);
   }
 
   getRoom(uid: string) {

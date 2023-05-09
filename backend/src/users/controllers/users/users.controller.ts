@@ -452,7 +452,7 @@ export class UsersController {
             return ({ add: false, type: null });
         if (find) {
             //deletes
-            this.userService.deleteBlFr(user.userID, body.userId, body.type, find.id);
+            this.userService.deleteBlFr(find.id);
             return ({ add: false, type: body.type });
         }
         else {

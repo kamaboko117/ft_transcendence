@@ -55,6 +55,7 @@ export class RoleGateway {
       })
     }
   }
+
   /* id = id channel */
   updateListChat(id: string) {
     this.server.to(id).emit("updateListChat", true);

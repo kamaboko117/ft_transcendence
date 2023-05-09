@@ -28,7 +28,7 @@ export class RoleService {
                         .where("channel.id = :id")
                         .setParameters({ id: id })
                         .getOne();
-                return (channel)
+                return (channel);
         }
 
         async getHasPsw(id: Readonly<string>): Promise<boolean> {
@@ -39,7 +39,7 @@ export class RoleService {
                         .getOne();
                 if (channel && channel.password && channel.password != "")
                         return (true);
-                return (false)
+                return (false);
         }
 
         getAccessType(id: Readonly<string>): Promise<Channel | null> {
@@ -56,7 +56,7 @@ export class RoleService {
                         .where("list_user.chatid = :id")
                         .andWhere("list_user.user_id = :userId")
                         .setParameters({ id: id, userId: userId })
-                        .getOne()
+                        .getOne();
                 return (list_user);
         }
 

@@ -470,36 +470,36 @@ const Custom_color_ball = (props: {
         <b>Color Ball</b>
       </label>
       <br />
-      <select name="color_ball" onChange={handleChange}>
-        <option value={"WHITE"} selected={props.color === "WHITE"}>
+      <select value={props.color} name="color_ball" onChange={handleChange}>
+        <option value={"WHITE"}>
           WHITE
         </option>
-        <option value={"RED"} selected={props.color === "RED"}>
+        <option value={"RED"}>
           RED
         </option>
-        <option value={"GREEN"} selected={props.color === "GREEN"}>
+        <option value={"GREEN"}>
           GREEN
         </option>
-        <option value={"BLUE"} selected={props.color === "BLUE"}>
+        <option value={"BLUE"}>
           BLUE
         </option>
-        <option value={"YELLOW"} selected={props.color === "YELLOW"}>
+        <option value={"YELLOW"}>
           YELLOW
         </option>
-        <option value={"PURPLE"} selected={props.color === "PURPLE"}>
+        <option value={"PURPLE"}>
           PURPLE
         </option>
-        <option value={"ORANGE"} selected={props.color === "ORANGE"}>
+        <option value={"ORANGE"}>
           ORANGE
         </option>
-        <option value={"PINK"} selected={props.color === "PINK"}>
+        <option value={"PINK"}>
           PINK
         </option>
-        <option value={"BROWN"} selected={props.color === "BROWN"}>
+        <option value={"BROWN"}>
           BROWN
         </option>
       </select>
-    </div>
+    </div >
   );
 };
 
