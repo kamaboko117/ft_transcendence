@@ -202,7 +202,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.leavePm(data.id, user.userID);
     const [listUsr, count]: any = await this.listUserRepository.findAndCountBy({ chatid: data.id });
     socket.leave(data.id);
-    //this.server.to(data.id).emit("updateListChat", true);
     if (count === 0)
       this.chatsRepository.delete(data);
     return (getUser.User_username + " left the chat");
