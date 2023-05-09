@@ -333,15 +333,15 @@ const Custom_goal = (props: { usrSocket: Socket<any, any> }) => {
         <button
           className={goal === "5" ? "setting_choice_active" : "setting_choice"}
           onClick={handleChange}
-          value={5}
+          value={11}
           name="goal_ball"
         >
           Normal
         </button>
         <button
-          className={goal === "10" ? "setting_choice_active" : "setting_choice"}
+          className={goal === "11" ? "setting_choice_active" : "setting_choice"}
           onClick={handleChange}
-          value={10}
+          value={21}
           name="goal_ball"
         >
           Long
@@ -350,7 +350,7 @@ const Custom_goal = (props: { usrSocket: Socket<any, any> }) => {
           className={goal === "20" ? "setting_choice_active" : "setting_choice"}
           // style={ "width: 100px" }
           onClick={handleChange}
-          value={20}
+          value={42}
           name="goal_ball"
         >
           Transcendence
@@ -437,13 +437,16 @@ const Custom_power_up = (props: { usrSocket: Socket<any, any> }) => {
       <label className="setting_title">
         <b>Power Ups</b>
       </label>
-      <button className={isCheck ? "setting_choice_active" : "setting_choice"}
+      <button
+        className={isCheck ? "setting_choice_active" : "setting_choice"}
         onClick={handleCheck}
         // type="checkbox"
         name="Power_Up"
         value="powerUp"
         // checked={isCheck}
-      >{isCheck ? "ON" : "OFF"}</button>
+      >
+        {isCheck ? "ON" : "OFF"}
+      </button>
     </div>
   );
 };
