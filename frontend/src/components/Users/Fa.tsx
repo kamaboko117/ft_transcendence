@@ -4,11 +4,7 @@ import { FetchError, header } from '../FetchError';
 import NavBar from '../navbar/NavBar';
 
 const handleButton = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-<<<<<<< HEAD
-    navigate : any) => {
-=======
     navigate: NavigateFunction) => {
->>>>>>> gchopin
     if (event && event.target)
         navigate("/fa-code");
 }
