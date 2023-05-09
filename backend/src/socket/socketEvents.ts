@@ -14,7 +14,6 @@ import { TokenUser } from "src/chat/chat.interface";
 import { UsersService } from "src/users/providers/users/users.service";
 import { LeaveGame, UpdateTypeRoom, UserIdRdy } from "./dto";
 import { UserDecoSock } from "src/common/middleware/user.decorator";
-import { Console } from "console";
 
 const FPS = 60;
 const CANVAS_WIDTH = 600;
@@ -107,8 +106,8 @@ class PUNeutral implements IPowerUp {
     this.color = "BLUE";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (game: IGame) => {};
-    this.cancelEffect = (game: IGame) => {};
+    this.effect = (game: IGame) => { };
+    this.cancelEffect = (game: IGame) => { };
   }
 }
 
@@ -136,8 +135,8 @@ class PUBonus implements IPowerUp {
     this.color = "GREEN";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => {};
-    this.cancelEffect = () => {};
+    this.effect = (player: IPlayer) => { };
+    this.cancelEffect = () => { };
   }
 }
 
@@ -165,8 +164,8 @@ class PUMalus implements IPowerUp {
     this.color = "RED";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => {};
-    this.cancelEffect = () => {};
+    this.effect = (player: IPlayer) => { };
+    this.cancelEffect = () => { };
   }
 }
 
@@ -486,7 +485,7 @@ function generatePowerUps(game: IGame) {
     case 0: //neutral
       var type =
         neutralPowerUpTypes[
-          Math.floor(Math.random() * neutralPowerUpTypes.length)
+        Math.floor(Math.random() * neutralPowerUpTypes.length)
         ];
       PU = new powerUp(x, y, type);
       break;
@@ -508,7 +507,7 @@ function checkPowerUpCollision(ball: IBall, powerUp: IPowerUp) {
   if (powerUp.active) return false;
   let distance = Math.sqrt(
     (ball.x - powerUp.x) * (ball.x - powerUp.x) +
-      (ball.y - powerUp.y) * (ball.y - powerUp.y)
+    (ball.y - powerUp.y) * (ball.y - powerUp.y)
   );
   if (distance < ball.radius + powerUp.radius) {
     powerUp.user = ball.velocityX < 0 ? "player2" : "player1";
@@ -807,7 +806,7 @@ export class SocketEvents {
     console.log("client id: " + client.id + "is leaving room");
     if (data) {
       if (data.roomId && typeof data.roomId !== "string")
-        return ;
+        return;
       for (let [key, value] of this.mapUserInGame.entries()) {
         if (client.id === key) {
           const userDb = await this.userService.findUsersById(Number(value));
@@ -872,9 +871,9 @@ export class SocketEvents {
     userId: number) {
     if (!room) {
       this.server
-          .to(client.id)
-          .emit("join_game_error", { error: "No room found" });
-          return;
+        .to(client.id)
+        .emit("join_game_error", { error: "No room found" });
+      return;
     }
     //check if user is invited in the game
     if (room.private === true) {
@@ -913,15 +912,15 @@ export class SocketEvents {
   @UseGuards(JwtGuard)
   @SubscribeMessage("join_game")
   async join(@MessageBody() data: LeaveGame,
-  @ConnectedSocket() client: Socket,
-  @UserDecoSock() user: TokenUser) {
+    @ConnectedSocket() client: Socket,
+    @UserDecoSock() user: TokenUser) {
     const userId: number = user.userID;
     const room = await this.roomsService.findRoomById(data.roomId);
 
-    if (!room){
+    if (!room) {
       client
-          .emit("join_game_error", { error: "Room not found" });
-      return ;
+        .emit("join_game_error", { error: "Room not found" });
+      return;
     }
     //check if user already in a game
     for (let [key, value] of this.mapUserInGame.entries()) {
@@ -957,7 +956,7 @@ export class SocketEvents {
   ) {
     const gameRoom: any = this.getSocketGameRoom(client);
     let game = games.find((g) => g.id === gameRoom);
-  
+
     if (!game) {
       return;
     }
@@ -999,51 +998,51 @@ export class SocketEvents {
 
   private gameStart(data: UserIdRdy,
     @ConnectedSocket() client: Socket,
-      getRoom: Room | null, socket2: string | undefined) {
-      if (!getRoom || !socket2)
-        return ;
-      let newGame = new Game(data.uid, client.id, socket2, getRoom.settingsOne);
-      let powerUps = newGame.powerUps;
-      let player1 = newGame.player1;
-      let player2 = newGame.player2;
-      let ball = newGame.ball;
-  
-      games.push(newGame);
-      client.emit("start_game", { side: 1 });
-      client.to(data.uid).emit("start_game", { side: 2 });
-      newGame.intervalId = setInterval(() => {
-        this.update(newGame);
-        if (newGame.tickCount - player1.tickCount < 60) {
-          this.server
-            .to(newGame.player1.socketId)
-            .volatile.emit("on_game_update", {
-              player1,
-              player2,
-              ball,
-              powerUps,
-            });
-        } else {
-          this.handleLaggedPlayer(player1, newGame.tickCount);
-        }
-        if (newGame.tickCount - player2.tickCount < 60) {
-          this.server
-            .to(newGame.player2.socketId)
-            .volatile.emit("on_game_update", {
-              player1,
-              player2,
-              ball,
-              powerUps,
-            });
-        } else {
-          this.handleLaggedPlayer(player2, newGame.tickCount);
-        }
-      }, 1000 / FPS);
+    getRoom: Room | null, socket2: string | undefined) {
+    if (!getRoom || !socket2)
+      return;
+    let newGame = new Game(data.uid, client.id, socket2, getRoom.settingsOne);
+    let powerUps = newGame.powerUps;
+    let player1 = newGame.player1;
+    let player2 = newGame.player2;
+    let ball = newGame.ball;
+
+    games.push(newGame);
+    client.emit("start_game", { side: 1 });
+    client.to(data.uid).emit("start_game", { side: 2 });
+    newGame.intervalId = setInterval(() => {
+      this.update(newGame);
+      if (newGame.tickCount - player1.tickCount < 60) {
+        this.server
+          .to(newGame.player1.socketId)
+          .volatile.emit("on_game_update", {
+            player1,
+            player2,
+            ball,
+            powerUps,
+          });
+      } else {
+        this.handleLaggedPlayer(player1, newGame.tickCount);
+      }
+      if (newGame.tickCount - player2.tickCount < 60) {
+        this.server
+          .to(newGame.player2.socketId)
+          .volatile.emit("on_game_update", {
+            player1,
+            player2,
+            ball,
+            powerUps,
+          });
+      } else {
+        this.handleLaggedPlayer(player2, newGame.tickCount);
+      }
+    }, 1000 / FPS);
   }
 
   private async BothUserReady(data: UserIdRdy,
     connectedSockets: Set<string> | undefined, @ConnectedSocket() client: Socket) {
     const getRoom = await this.roomsService.getRoom(data.uid);
-  
+
     if (!connectedSockets)
       return ({ err: "No connected socket" });
     if (getRoom?.player_one_type_game != getRoom?.player_two_type_game)

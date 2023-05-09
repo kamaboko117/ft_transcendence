@@ -148,10 +148,10 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
 				type, props.userInfo, props.setUserInfo, lstUserGlobal, setLstUserGlobal)}
 			className="userInfo">{(props.userInfo.bl === type ? "Remove " : "Add ") + props.type}
 		</button>}
-		<button onClick={(e) => inviteGame(e, props.userInfo.id, props.jwt,
+		{type && type === 2 && <button onClick={(e) => inviteGame(e, props.userInfo.id, props.jwt,
 			navigate, props.setErrorCode)}
-			className="userInfo">Invite to a game</button>
-		{
+			className="userInfo">Invite to a game</button>}
+		{type && type === 2 &&
 			<button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
 				directMessage(e, setDisplay,
 					setId, props.setErrorCode,
@@ -201,7 +201,7 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	lstUserGlobal: Array<typeFlBl>,
 	setLst: React.Dispatch<React.SetStateAction<[]>>
-	) {
+) {
 	e.preventDefault();
 	if (!e)
 		return;

@@ -60,11 +60,25 @@ export class ChatController {
 
     /* find and create if needed a private message */
     private async findPm(user_id: number, id: string): Promise<string> {
-        await this.chatService.findDuplicateAndDelete(String(user_id));
-        await this.chatService.findDuplicateAndDelete(id);
+        //await this.chatService.findDuplicateAndDelete(String(user_id));
+        //await this.chatService.findDuplicateAndDelete(id);
+        const concatOne = String(user_id).concat(id);
+        const concatTwo = id.concat(String(user_id));
+
+        const getChanOne = await this.chatService.getChannelById(concatOne);
+        console.log(getChanOne)
+        if (getChanOne) {
+            await this.chatService.insertMemberPm(user_id, concatOne);
+            return (getChanOne.id);
+        }
+        const getChanTwo = await this.chatService.getChannelById(concatTwo);
+        console.log(getChanTwo);
+        if (getChanTwo) {
+            await this.chatService.insertMemberPm(user_id, concatTwo);
+            return (getChanTwo.id);
+        }
         const list_user: Channel_ret | undefined
             = await this.chatService.findPmUsers(user_id, id);
-
         if (typeof list_user === "undefined") {
             const ret: string
                 = await this.chatService.createPrivateMessage(user_id, id);
@@ -199,7 +213,7 @@ export class ChatController {
         const resultRegex = regex.exec(chat.name);
         const id: string = crypto.randomBytes(6).toString('hex');
         const getChannelById = await this.chatService.getChannelById(id);
-        
+
         if ((chat.accesstype != '2' && chat.accesstype != '3'))
             err.push("Illegal access type");
         if (chat.name.length === 0)

@@ -159,18 +159,17 @@ export class UsersController {
             dimensions = await sizeOf(file.path);
         if (file && dimensions && filePath
             && typeof dimensions != "undefined"
-            && 61 <= dimensions.width){
+            && 61 <= dimensions.width) {
             if (existsSync(filePath))
-                unlink(filePath, (res) => {if (res) console.log(res)} );
+                unlink(filePath, (res) => { if (res) console.log(res) });
             fileDeleted = true
             err.push("Image size width must be below 60px.");
         }
         if (file && filePath
             && dimensions && typeof dimensions != "undefined"
-            && 61 <= dimensions.height)
-        {
+            && 61 <= dimensions.height) {
             if (fileDeleted === false && existsSync(filePath))
-                unlink(filePath, (res) => {if (res) console.log(res)} );
+                unlink(filePath, (res) => { if (res) console.log(res) });
             err.push("Image size height must be below 60px.");
         }
         return (err);
@@ -253,16 +252,19 @@ export class UsersController {
             formatFile = formatFile.replace("\\", "");
             filePath = "upload_avatar/" + formatFile;
         }
+        //check errors
         let retErr = await this.checkUpdateUserError(ret_user2,
             ret_user, body, file, filePath);
 
         if (retErr.length != 0)
             return ({ valid: false, err: retErr });
-        const regex1 = /^({"fa":true})$/;
-        const regexRet = body.fa.match(regex1);
+        //update avatar
         if (file && filePath)
             this.userService.updatePathAvatarUser(user.userID, filePath);
         this.userService.updateUsername(user.userID, body.username);
+        //check if 2FA is asked by requested user
+        const regex1 = /^({"fa":true})$/;
+        const regexRet = body.fa.match(regex1);
         if (regexRet) {
             //generate new auth secret
             this.userService.update2FA(user.userID, true, authenticator.generateSecret());
@@ -273,7 +275,7 @@ export class UsersController {
         const access_token = await this.authService.login(user);
         return ({ valid: true, username: body.username, token: access_token });
     }
-
+    /*
     @Post('avatarfile')
     @UseInterceptors(FileInterceptor('fileset', { dest: './upload_avatar' }))
     uploadFile(@UserDeco() user: TokenUser, @UploadedFile(new ParseFilePipe({
@@ -285,7 +287,7 @@ export class UsersController {
     ) file: Express.Multer.File) {
         this.userService.updatePathAvatarUser(user.userID, file.path);
         return ({ path: file.path });
-    }
+    }*/
 
     /*
         useGuard est un middleware
@@ -355,7 +357,7 @@ export class UsersController {
         const rankDbByWin = await this.userService.getRankUserGlobalWin(user.userID);
         const rankByRankUser = await this.userService.getRankUserByRank(user.userID);
 
-        return ({nb: ret_nb, rankDbByWin, rankByRankUser});
+        return ({ nb: ret_nb, rankDbByWin, rankByRankUser });
     }
 
     @Get('get-victory-nb-other/:id')
@@ -364,7 +366,7 @@ export class UsersController {
         const rankDbByWin = await this.userService.getRankUserGlobalWin(id);
         const rankByRankUser = await this.userService.getRankUserByRank(id);
 
-        return ({nb: ret_nb, rankDbByWin, rankByRankUser});
+        return ({ nb: ret_nb, rankDbByWin, rankByRankUser });
     }
 
     @Get('get-games-nb-other/:id')
@@ -392,11 +394,6 @@ export class UsersController {
         return (ret_raw);
     }
 
-    @Get('updateHistory')
-    async updateHistoryfunc() {
-        // this.userService.updateHistory('Simple', 2988219, 74133, 2988219);
-    }
-
     /* 0 = user not found */
     /* 1 = already added in friend list */
     /* 2 = user is self */
@@ -406,9 +403,9 @@ export class UsersController {
         let err: string[] = [];
         const ret_user = await this.userService.findUserByName(body.username);
 
-        if (!ret_user){
+        if (!ret_user) {
             err.push("User not found");
-            return ({code: 1, err: err});
+            return ({ code: 1, err: err });
         }
         if (ret_user && Number(ret_user.userID) == user.userID)
             err.push("Can't add yourself");
@@ -416,7 +413,7 @@ export class UsersController {
         if (findInList)
             err.push("User aleady in list");
         if (err.length > 0)
-            return ({code: 1, err: err});
+            return ({ code: 1, err: err });
         this.userService.insertBlFr(user.userID, Number(ret_user.userID), 2);
         //need to check if user is in BL, for updating global friend black list
         const findInBlackList = await this.userService.searchUserInList(user.userID, ret_user.userID, 1);
@@ -443,9 +440,9 @@ export class UsersController {
         let err: string[] = [];
         const ret_user = await this.userService.findUserByName(body.username);
 
-        if (!ret_user){
+        if (!ret_user) {
             err.push("User not found");
-            return ({code: 1, err: err});
+            return ({ code: 1, err: err });
         }
         if (ret_user && Number(ret_user.userID) == user.userID)
             err.push("Can't add yourself");
@@ -453,7 +450,7 @@ export class UsersController {
         if (findInList)
             err.push("User aleady in list");
         if (err.length > 0)
-            return ({code: 1, err: err});
+            return ({ code: 1, err: err });
         this.userService.insertBlFr(user.userID, Number(ret_user.userID), 1);
         //need to check if user is in BL, for updating global friend black list
         const findInBlackList = await this.userService.searchUserInList(user.userID, ret_user.userID, 2);
@@ -473,6 +470,9 @@ export class UsersController {
 
     @Post('fr-bl-list')
     async useBlackFriendList(@UserDeco() user: TokenUser, @Body() body: BlockUnblock) {
+        const ret_user = await this.userService.findUsersById(body.userId);
+        if (!ret_user)
+            return ({ add: false, type: null });
         const find: BlackFriendList | null
             = await this.userService.findBlFr(user.userID, body.userId, body.type);
         if (user.userID === body.userId)

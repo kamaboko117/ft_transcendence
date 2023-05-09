@@ -38,7 +38,7 @@ export class ChatService {
     @InjectRepository(BlackFriendList)
     private readonly blFrRepository: Repository<BlackFriendList>
 
-    constructor(private dataSource: DataSource) {}
+    constructor(private dataSource: DataSource) { }
     async getAllPublic(): Promise<any[]> {
         const arr: Channel[] = await this.chatsRepository
             .createQueryBuilder("channel")
@@ -67,33 +67,33 @@ export class ChatService {
 
     async searchAndSetAdministratorsChannel(id: string) {
         let listUser: ListUser[] = await this.listUserRepository.createQueryBuilder("list_user")
-          .select(["list_user.id", "list_user.user_id"])
-          .where("list_user.chatid = :id")
-          .setParameters({ id: id })
-          .andWhere("list_user.role = :role")
-          .setParameters({ role: 'Administrator' })
-          .getMany();
-    
-        if (listUser.length === 0) {
-          listUser = await this.listUserRepository.createQueryBuilder("list_user")
             .select(["list_user.id", "list_user.user_id"])
             .where("list_user.chatid = :id")
             .setParameters({ id: id })
+            .andWhere("list_user.role = :role")
+            .setParameters({ role: 'Administrator' })
             .getMany();
+
+        if (listUser.length === 0) {
+            listUser = await this.listUserRepository.createQueryBuilder("list_user")
+                .select(["list_user.id", "list_user.user_id"])
+                .where("list_user.chatid = :id")
+                .setParameters({ id: id })
+                .getMany();
         }
         if (listUser.length > 0) {
-          await this.chatsRepository.createQueryBuilder().update(Channel)
-            .set({ user_id: listUser[0].user_id })
-            .where("id = :id")
-            .setParameters({ id: id })
-            .execute();
-          await this.listUserRepository.createQueryBuilder().update(ListUser)
-            .set({ role: "Owner" })
-            .where("id = :id")
-            .setParameters({ id: listUser[0].id })
-            .execute();
+            await this.chatsRepository.createQueryBuilder().update(Channel)
+                .set({ user_id: listUser[0].user_id })
+                .where("id = :id")
+                .setParameters({ id: id })
+                .execute();
+            await this.listUserRepository.createQueryBuilder().update(ListUser)
+                .set({ role: "Owner" })
+                .where("id = :id")
+                .setParameters({ id: listUser[0].id })
+                .execute();
         }
-      }
+    }
 
     /* PRIVATE MESSAGE PART */
     async getAllPmUser(userID: Readonly<number>) {
@@ -119,7 +119,7 @@ export class ChatService {
     }
 
     /* find and delete duplicate */
-    async findDuplicateAndDelete(user_id: Readonly<string>) {
+    /*async findDuplicateAndDelete(user_id: Readonly<string>) {
         const channel: {
             list_user_user_id: string,
             Channel_id: string,
@@ -148,7 +148,7 @@ export class ChatService {
                 .setParameters({ id: channel.Channel_id })
                 .execute();
         }
-    }
+    }*/
 
     /* GET PM BETWEEN 2 USERS BY NEEDED ID */
     async findPmUsers(userOne: Readonly<number>,
@@ -174,6 +174,28 @@ export class ChatService {
     /* GET PM BY USERNAME */
 
     /* Create private message part */
+    async insertMemberPm(userId: Readonly<number>, concat: string) {
+        const runner = this.dataSource.createQueryRunner();
+
+        await runner.connect();
+        await runner.startTransaction();
+
+        try {
+            /* insert first user */
+            await this.listUserRepository.createQueryBuilder()
+                .insert().into(ListUser)
+                .values([
+                    { user_id: userId, chatid: concat }
+                ]).execute();
+            await runner.commitTransaction();
+        } catch (e) {
+            await runner.rollbackTransaction();
+        } finally {
+            //doc want it released
+            await runner.release();
+        }
+    }
+    /* Create private message part */
     async createPrivateMessage(userOne: Readonly<number>,
         userTwo: Readonly<string>): Promise<string> {
         /* create Private message channel */
@@ -185,13 +207,13 @@ export class ChatService {
 
         try {
             await this.chatsRepository.createQueryBuilder()
-            .insert().into(Channel)
-            .values({
-                id: concat,
-                name: concat,
-                accesstype: '4'
-            })
-            .execute();
+                .insert().into(Channel)
+                .values({
+                    id: concat,
+                    name: concat,
+                    accesstype: '4'
+                })
+                .execute();
             /* insert first user */
             await this.listUserRepository.createQueryBuilder()
                 .insert().into(ListUser)
@@ -204,13 +226,13 @@ export class ChatService {
                 .values([
                     { user_id: Number(userTwo), chatid: concat }
                 ]).execute();
-                await runner.commitTransaction();
-                return (concat);
-            } catch (e) {
-                await runner.rollbackTransaction();
+            await runner.commitTransaction();
+            return (concat);
+        } catch (e) {
+            await runner.rollbackTransaction();
         } finally {
-                //doc want it released
-                await runner.release();
+            //doc want it released
+            await runner.release();
         }
         return (concat);
     }
@@ -403,14 +425,14 @@ export class ChatService {
         await runner.startTransaction();
         try {
             await this.listUserRepository
-            .createQueryBuilder()
-            .insert()
-            .into(ListUser)
-            .values([{
-                user_id: user_id,
-                chatid: data.id
-            }])
-            .execute();
+                .createQueryBuilder()
+                .insert()
+                .into(ListUser)
+                .values([{
+                    user_id: user_id,
+                    chatid: data.id
+                }])
+                .execute();
             await runner.commitTransaction();
         } catch (e) {
             await runner.rollbackTransaction();

@@ -44,7 +44,7 @@ type msg = {
 
 const handleImgError = (e: any) => {
     if (!e || !e.target)
-        return ;
+        return;
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
     if (target) {
@@ -54,7 +54,7 @@ const handleImgError = (e: any) => {
 }
 
 /* return user state list */
-export const ListMsg = (props: {lstMsg: any, id: string}) => {
+export const ListMsg = (props: { lstMsg: any, id: string }) => {
     const scrollBottom = useRef<any>();
     const Element = scroll.Element;
     let EScroll = scroll.animateScroll;
@@ -134,7 +134,7 @@ const PostMsg = (props: typePostMsg) => {
                 lstUserGlobal, lstUserChat,
                 setLstUserGlobal, setLstUserChat, navigate);
             if (cmdIsValid === false) {
-                props.usrSocket.emit('sendMsg', obj, (res : lstMsg) => {
+                props.usrSocket.emit('sendMsg', obj, (res: lstMsg) => {
                     if (res.room === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res.room === obj.id && obj.id == obj.idBox)
@@ -143,7 +143,7 @@ const PostMsg = (props: typePostMsg) => {
             }
         }
         else {
-            props.usrSocket.emit('sendMsg', obj, (res : lstMsg) => {
+            props.usrSocket.emit('sendMsg', obj, (res: lstMsg) => {
                 if (res.room === obj.id)
                     setLstMsgChat((lstMsg) => [...lstMsg, res]);
                 if (res.room === obj.id && obj.id == obj.idBox)
@@ -168,7 +168,7 @@ const PostMsg = (props: typePostMsg) => {
                     lstUserGlobal, lstUserChat, setLstUserGlobal,
                     setLstUserChat, navigate);
                 if (cmdIsValid === false) {
-                    props.usrSocket.emit('sendMsg', obj, (res : lstMsg) => {
+                    props.usrSocket.emit('sendMsg', obj, (res: lstMsg) => {
                         if (res.room === obj.id)
                             setLstMsgChat((lstMsg) => [...lstMsg, res]);
                         if (res.room === obj.id && obj.id == obj.idBox)
@@ -176,7 +176,7 @@ const PostMsg = (props: typePostMsg) => {
                     });
                 }
             } else {
-                props.usrSocket.emit('sendMsg', obj, (res : lstMsg) => {
+                props.usrSocket.emit('sendMsg', obj, (res: lstMsg) => {
                     if (res.room === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res.room === obj.id && obj.id == obj.idBox)

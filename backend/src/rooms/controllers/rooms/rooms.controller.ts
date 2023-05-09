@@ -1,5 +1,4 @@
 import {
-  Request,
   Body,
   Controller,
   Get,
@@ -7,10 +6,11 @@ import {
   UsePipes,
   ValidationPipe,
   Query,
+  Param,
 } from "@nestjs/common";
 import { TokenUser } from "src/chat/chat.interface";
 import { UserDeco, UserDecoSock } from "src/common/middleware/user.decorator";
-import { CreateRoomDto, CreateRoomInvite, CreateRoomPrivate } from "src/rooms/dto/rooms.dtos";
+import { CreateRoomDto, CreateRoomInvite, ParamRoom } from "src/rooms/dto/rooms.dtos";
 import { RoomsService } from "src/rooms/services/rooms/rooms.service";
 import { SocketEvents } from "src/socket/socketEvents";
 import { UsersService } from "src/users/providers/users/users.service";
@@ -127,7 +127,7 @@ export class RoomsController {
   }*/
 
   @Get("get")
-  async getRoom(@Request() req: any, @Query("id") id: string) {
+  async getRoom(@Query("id") id: string) {
     const room = await this.roomsService.getRoom(id);
 
     if (!room) return { exist: false };
@@ -140,13 +140,12 @@ export class RoomsController {
   }
 
   @Get(":id")
-  async getRoomById(@Request() req: any) {
-    const user: TokenUser = req.user;
+  async getRoomById(@Param() params: ParamRoom, @UserDeco() user: TokenUser) {
     const isUserConnected = this.socketEvents.isUserConnected(
       String(user.userID)
     );
     if (!isUserConnected)
       return { roomName: "", Capacity: "0", private: false, uid: "" };
-    return this.roomsService.findRoomById(req.params.id);
+    return this.roomsService.findRoomById(params.id);
   }
 }
