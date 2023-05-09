@@ -54,8 +54,8 @@ export class ChatService {
     async getAllPrivate(userID: Readonly<number>): Promise<any[]> {
         const arr: Channel[] = await this.chatsRepository
             .createQueryBuilder("channel")
+            .innerJoin("channel.user", "User")
             .innerJoin("channel.lstUsr", "ListUser")
-            .innerJoin("ListUser.user", "User")
             .select(['channel.id', 'channel.name',
                 'channel.user_id', 'channel.accesstype',
                 'User.username'])

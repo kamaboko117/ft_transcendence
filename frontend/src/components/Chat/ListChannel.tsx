@@ -34,7 +34,7 @@ type Props = {
 
 const ErrorSubmit = (props: any) => {
     let i: number = 0;
-    return (<div style={{"width": "100%"}}>
+    return (<div style={{ "width": "100%" }}>
         {props.listError &&
             props.listError.map((err: string) => (
                 <p style={{ color: "red" }} key={++i}>{err}</p>

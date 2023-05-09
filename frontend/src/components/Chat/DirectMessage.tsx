@@ -309,7 +309,6 @@ const PostMsg = (props: typePostMsg) => {
 
         if (e.key === "Enter" && e.shiftKey === false) {
             e.preventDefault();
-            console.log(obj)
             if (obj.content
                 && obj.isPm === true
                 && obj.content === "/leavePm") {

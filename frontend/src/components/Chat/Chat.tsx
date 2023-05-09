@@ -233,6 +233,7 @@ const MainChat = (props: any) => {
         });
         return (() => {
             //unsubscribeChat
+            setOnline(false);
             usrSocket?.emit("stopEmit", { id: props.id }, () => {
                 setOnline(false);
             });
@@ -256,13 +257,13 @@ const MainChat = (props: any) => {
                     if (res && res.status)
                         props.setErrorCode(res.status);
                 }).catch(e => console.log(e));
-
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
                 setLstMsgChat(res.lstMsg);
                 setChatName(res.name);
                 if (res.accesstype === "2" || res.accesstype === "3")
                     contextUserLeave();
             } else {
+                console.log("allo")
                 navigate("/channels");
             }
         }
@@ -280,11 +281,12 @@ const MainChat = (props: any) => {
                 setLstMsgChat((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
+            //setOnline(false);
             usrSocket?.off("actionOnUser");
             setLstMsgChat([]);
             setChatName("");
         });
-    }, [lstMsgChat.keys, props.id, JSON.stringify(lstUserGlobal),
+    }, [lstMsgChat.keys, /*props.id,*/ JSON.stringify(lstUserGlobal),
         online, usrSocket]);
     /* Get message from backend, must reload properly when lstUser is updated */
     useEffect(() => {
@@ -437,14 +439,22 @@ const Chat = (props: { jwt: string }) => {
     useEffect(() => {
         const hasPass: Promise<boolean> = hasPassword(id, props.jwt, setErrorCode);
         hasPass.then(res => {
+            console.log(res)
             setLoadPsw(res);
         }).catch(e => console.log(e));
+        return (() => {
+            console.log("unm")
+            setLoadPsw(undefined);
+        });
     }, [id]);
     if (errorCode >= 400)
         return (<FetchError code={errorCode} />);
-    return (<BlockChat id={id} getLocation={getLocation}
-        setErrorCode={setErrorCode} jwt={props.jwt}
-        hasPsw={psw} />);
+    return (<>
+        {typeof psw !== "undefined" &&
+            <BlockChat id={id} getLocation={getLocation}
+                setErrorCode={setErrorCode} jwt={props.jwt}
+                hasPsw={psw} />
+        }</>);
 }
 
 export default Chat;
