@@ -481,7 +481,7 @@ const Custom_color_ball = (props: {
         <option value={"PINK"}>PINK</option>
         <option value={"BROWN"}>BROWN</option>
       </select>
-    </div>
+    </div >
   );
 };
 

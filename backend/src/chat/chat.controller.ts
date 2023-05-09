@@ -62,8 +62,8 @@ export class ChatController {
     private async findPm(user_id: number, id: string): Promise<string> {
         //await this.chatService.findDuplicateAndDelete(String(user_id));
         //await this.chatService.findDuplicateAndDelete(id);
-        const concatOne = String(user_id).concat(id);
-        const concatTwo = id.concat(String(user_id));
+        const concatOne = String(user_id).concat(String(id));
+        const concatTwo = String(id).concat(String(user_id));
 
         const getChanOne = await this.chatService.getChannelById(concatOne);
         if (getChanOne) {
@@ -165,7 +165,7 @@ export class ChatController {
         let err: string[] = [];
         const regex = /^[\wàâéêèäÉÊÈÇç]+(?: [\wàâéêèäÉÊÈÇç]+)*$/;
         const resultRegex = regex.exec(chat.name);
-        const id: string = crypto.randomBytes(4).toString('hex')
+        const id: string = crypto.randomBytes(4).toString('hex');
         const getChanneByName = await this.chatService.getChannelById(id);
 
         if ((chat.accesstype != '0' && chat.accesstype != '1'))

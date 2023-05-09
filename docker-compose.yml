@@ -74,8 +74,8 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     networks:
       - ft_transcendence
 
