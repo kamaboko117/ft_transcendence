@@ -20,7 +20,6 @@ type typeObject = {
 
 interface IGameSettings {
   powerUps: boolean;
-  //type: string;
   goal: number;
   speed: number;
   acceleration: number;
@@ -30,7 +29,6 @@ interface IGameSettings {
 
 const globalSettings: IGameSettings = {
   powerUps: false,
-  //type: "classic",
   goal: 11,
   speed: 5,
   acceleration: 0.1,
@@ -40,7 +38,6 @@ const globalSettings: IGameSettings = {
 
 const resetGlobalSettings = () => {
   globalSettings.powerUps = false;
-  //globalSettings.type = "classic";
   globalSettings.goal = 11;
   globalSettings.speed = 5;
   globalSettings.acceleration = 0.1;
@@ -50,7 +47,6 @@ const resetGlobalSettings = () => {
 
 const changeGlobalSettings = (settings: IGameSettings) => {
   globalSettings.powerUps = settings.powerUps;
-  //globalSettings.type = settings.type;
   globalSettings.goal = settings.goal;
   globalSettings.speed = settings.speed;
   globalSettings.acceleration = settings.acceleration;
@@ -501,10 +497,8 @@ const Custom_power_up = (props: {
         className={props.isCheck ? "setting_choice_active" : "setting_choice"}
         style={{ width: "67%", minWidth: "67%", maxWidth: "67%" }}
         onClick={handleCheck}
-        // type="checkbox"
         name="Power_Up"
         value="powerUp"
-        // checked={isCheck}
       >
         {props.isCheck ? "ON" : "OFF"}
       </button>
@@ -533,7 +527,6 @@ const Custom_setting = (props: { cst: boolean;
     });
   }, []);
   if (props.cst === true) {
-    //globalSettings.type = "Custom";
     props.usrSocket?.emit("edit_settings", { ...globalSettings });
     return (
       <div className="settings_container">
