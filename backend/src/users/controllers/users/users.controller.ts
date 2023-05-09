@@ -188,8 +188,8 @@ export class UsersController {
         let ret_user2 = await this.userService.findUsersById(user.userID);
         let filePath: string | undefined = undefined;
         if (file) {
-            let formatFile = file.filename.replace("/", "");
-            formatFile = formatFile.replace("\\", "");
+            //shouldn't happen since it's only alphanumeric but still
+            const formatFile = file.filename.replace(/[\\./]/g, "");
             filePath = "upload_avatar/" + formatFile;
         }
         //check errors
@@ -248,8 +248,8 @@ export class UsersController {
         const ret_user2 = await this.userService.findUserByName(body.username);
         let filePath: string | undefined = undefined;
         if (file) {
-            let formatFile = file.filename.replace("/", "");
-            formatFile = formatFile.replace("\\", "");
+            //shouldn't happen since it's only alphanumeric but still
+            const formatFile = file.filename.replace(/[\\./]/g, "");
             filePath = "upload_avatar/" + formatFile;
         }
         //check errors
@@ -275,34 +275,7 @@ export class UsersController {
         const access_token = await this.authService.login(user);
         return ({ valid: true, username: body.username, token: access_token });
     }
-    /*
-    @Post('avatarfile')
-    @UseInterceptors(FileInterceptor('fileset', { dest: './upload_avatar' }))
-    uploadFile(@UserDeco() user: TokenUser, @UploadedFile(new ParseFilePipe({
-        validators: [
-            new MaxFileSizeValidator({ maxSize: 1000000 }),
-            new FileTypeValidator({ fileType: 'image/png' }),
-        ],
-    }),
-    ) file: Express.Multer.File) {
-        this.userService.updatePathAvatarUser(user.userID, file.path);
-        return ({ path: file.path });
-    }*/
 
-    /*
-        useGuard est un middleware
-        le middleware peut traiter les requetes et les reponses
-        avant d'aller dans la fonction souhaite (getProfile ici)
-        UseGuard va utiliser le middleware
-        JwtGuard qui valide le token recu
-        si FAUX, s'arrete la et ne va pas dans getProfile
-        si bon, le guard JwtGuard va passer a la suite,
-        la strategy jwt lui va decoder le Json web token (jwt)
-        et renvoyer le token decoder
-        (ici utilise uniquement req.user.userID)
-        ce token decoder sera ajouter a la requete utilisateur
-        (ici @Request() req: any)
-    */
     @UseGuards(JwtGuard)
     @Get('profile')
     async getProfile(@UserDeco() user: TokenUser) {

@@ -66,13 +66,11 @@ export class ChatController {
         const concatTwo = id.concat(String(user_id));
 
         const getChanOne = await this.chatService.getChannelById(concatOne);
-        console.log(getChanOne)
         if (getChanOne) {
             await this.chatService.insertMemberPm(user_id, concatOne);
             return (getChanOne.id);
         }
         const getChanTwo = await this.chatService.getChannelById(concatTwo);
-        console.log(getChanTwo);
         if (getChanTwo) {
             await this.chatService.insertMemberPm(user_id, concatTwo);
             return (getChanTwo.id);
@@ -145,6 +143,7 @@ export class ChatController {
     async getHasPaswd(@UserDeco() user: TokenUser,
         @Query('id') id: string): Promise<boolean> {
         const channel: undefined | DbChat = await this.chatService.getChannelById(id);
+
         if (typeof channel != "undefined" && channel != null) {
             const getUser = await this.chatService.getUserOnChannel(id, user.userID);
             if (typeof getUser !== "undefined" || getUser === null)
