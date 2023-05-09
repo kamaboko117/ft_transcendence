@@ -2,6 +2,19 @@ import { Strategy } from 'passport-custom';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { IsDefined, IsObject, IsString } from 'class-validator';
+
+class Code {
+    @IsDefined()
+    @IsString()
+    code: string;
+}
+
+class Body {
+    @IsDefined()
+    @IsObject()
+    body: Code
+}
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy, "custom") {
@@ -9,7 +22,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, "custom") {
         super();
     }
 
-    async validate(req: any): Promise<any> {
+    async validate(req: Body) {
         const code: string = req.body.code;
 
         if (typeof code === "undefined" || !code || code === '')

@@ -4,10 +4,11 @@ import SocketContext from '../contexts/Socket';
 import { FetchError, header, headerPost } from '../components/FetchError';
 import { useParams, useNavigate, NavigateFunction } from "react-router-dom";
 
-export function playPageInvite(jwt: string, setErrorCode: any,
+export function playPageInvite(jwt: string, setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     focusUserId: number, navigate: NavigateFunction) {
 
-    async function addRoomHandler(jwt: string, setErrorCode: any,
+    async function addRoomHandler(jwt: string,
+        setErrorCode: React.Dispatch<React.SetStateAction<number>>,
         focusUserId: number) {
         await fetch("https://" + location.host + "/api/rooms/create-private", {
             method: "POST",
@@ -17,9 +18,10 @@ export function playPageInvite(jwt: string, setErrorCode: any,
             headers: headerPost(jwt)
         })
             .then((response) => {
-                if (response.ok)
+                if (response && response.ok)
                     return response.json();
-                setErrorCode(response.status);
+                if (response)
+                    setErrorCode(response.status);
             })
             .then((data) => {
                 if (data) {
@@ -46,9 +48,10 @@ function PlayPageInvite(props: { jwt: string | null }) {
             }),
                 { headers: header(props.jwt) })
                 .then(res => {
-                    if (res.ok)
+                    if (res && res.ok)
                         return (res.json());
-                    setErrorCode(res.status);
+                    if (res)
+                        setErrorCode(res.status);
                 })
                 .then((res: { exist: boolean }) => {
                     if (res) {

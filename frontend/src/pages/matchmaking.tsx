@@ -116,7 +116,9 @@ export default function MatchmakingPage() {
     };
   }, [usrSocket]);
 
-  const startMatching = (e: any) => {
+  const startMatching = (e: React.MouseEvent<HTMLButtonElement> | undefined) => {
+    if (!e || !e.target)
+      return;
     if (e.detail > 1)
       //prevent double click to mess with events, only allows single proper clicks
       return;

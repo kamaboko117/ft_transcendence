@@ -24,6 +24,11 @@ class Room {
   psw: string
 }
 
+class Pm {
+  @IsString()
+  id: string;
+}
+
 class SendMsg {
   @IsString()
   id: string;
@@ -96,36 +101,30 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return (true);
   }
 
-  /* search list admin, and set one as new owner*/
-  /*private async searchAndSetAdministratorsChannel(id: string) {
-    let listUser: ListUser[] = await this.listUserRepository.createQueryBuilder("list_user")
-      .select(["list_user.id", "list_user.user_id"])
-      .where("list_user.chatid = :id")
-      .setParameters({ id: id })
-      .andWhere("list_user.role = :role")
-      .setParameters({ role: 'Administrator' })
-      .getMany();
+  private async leavePm(id: string, userId: number) {
+    const runner = this.dataSource.createQueryRunner();
 
-    if (listUser.length === 0) {
-      listUser = await this.listUserRepository.createQueryBuilder("list_user")
-        .select(["list_user.id", "list_user.user_id"])
-        .where("list_user.chatid = :id")
-        .setParameters({ id: id })
-        .getMany();
-    }
-    if (listUser.length > 0) {
-      await this.chatsRepository.createQueryBuilder().update(Channel)
-        .set({ user_id: listUser[0].user_id })
-        .where("id = :id")
-        .setParameters({ id: id })
+    await runner.connect();
+    await runner.startTransaction();
+    try {
+      //remove user from channel
+      await this.chatsRepository
+        .createQueryBuilder()
+        .delete()
+        .from(ListUser)
+        .where("user_id = :id")
+        .setParameters({ id: userId })
+        .andWhere("chatid = :idchannel")
+        .setParameters({ idchannel: id })
         .execute();
-      await this.listUserRepository.createQueryBuilder().update(ListUser)
-        .set({ role: "Owner" })
-        .where("id = :id")
-        .setParameters({ id: listUser[0].id })
-        .execute();
+      await runner.commitTransaction();
+    } catch (e) {
+      await runner.rollbackTransaction();
+    } finally {
+      //doc want it released
+      await runner.release();
     }
-  }*/
+  }
 
   /* Delete current owner, and try to set a new one */
   private async setNewOwner(userId: number, id: string, ownerId: string) {
@@ -141,6 +140,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         .from(ListUser)
         .where("user_id = :id")
         .setParameters({ id: userId })
+        .andWhere("chatid = :idchannel")
+        .setParameters({ idchannel: id })
         .execute();
 
       if (Number(ownerId) === userId) {
@@ -169,6 +170,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: Room): Promise<string | undefined | { ban: boolean }> {
     if (typeof user.userID != "number")
       return ("Couldn't' leave chat, wrong type id?");
+    const checkAccess = await this.chatService.getChannelById(data.id);
+    if (!checkAccess || checkAccess.accesstype === "4")
+      return ("Couldn't' leave chat, make sure you are in a public or private chat.");
     const getUser: any = await this.chatService.getUserOnChannel(data.id, user.userID);
     if (getUser === "Ban")
       return ({ ban: true });
@@ -179,6 +183,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     socket.leave(data.id);
     this.server.to(data.id).emit("updateListChat", true);
     if (channel != undefined && channel != null && count === 0)
+      this.chatsRepository.delete(data);
+    return (getUser.User_username + " left the chat");
+  }
+
+  @UseGuards(JwtGuard)
+  @SubscribeMessage('leaveRoomChatPm')
+  async leaveRoomChatPm(@ConnectedSocket() socket: Socket, @UserDecoSock() user: TokenUser,
+    @MessageBody() data: Pm): Promise<string | undefined | { ban: boolean }> {
+    if (typeof user.userID != "number")
+      return ("Couldn't' leave chat, wrong type id?");
+    const channel = await this.chatService.getChannelById(data.id);
+    if (!channel || channel.accesstype != "4")
+      return ("Couldn't' leave chat,not in current chat, or chat is not private");
+    const getUser = await this.chatService.getUserOnChannel(data.id, user.userID);
+    if (typeof getUser === "undefined" || getUser === null)
+      return ("No user found");
+    await this.leavePm(data.id, user.userID);
+    const [listUsr, count]: any = await this.listUserRepository.findAndCountBy({ chatid: data.id });
+    socket.leave(data.id);
+    //this.server.to(data.id).emit("updateListChat", true);
+    if (count === 0)
       this.chatsRepository.delete(data);
     return (getUser.User_username + " left the chat");
   }

@@ -12,10 +12,31 @@ export class RoomsService {
     private readonly roomRepository: Repository<Room>
   ) { }
   onModuleInit() {
-    console.log("COUCOU ICI ROOM MODULE");
+    this.roomRepository.delete({});
   }
   createRoom(CreateRoomDto: CreateRoomDto) {
-    const newRoom = this.roomRepository.create(CreateRoomDto);
+    const newRoom = this.roomRepository.create({
+      roomName: CreateRoomDto.roomName,
+      private: false,
+      settingsOne: {
+        powerUps: CreateRoomDto.settings.powerUps,
+        type: CreateRoomDto.settings.type,
+        goal: CreateRoomDto.settings.goal,
+        speed: CreateRoomDto.settings.speed,
+        acceleration: CreateRoomDto.settings.acceleration,
+        ballSize: CreateRoomDto.settings.ballSize,
+        ballColor: CreateRoomDto.settings.ballColor,
+      },
+      settingsTwo: {
+        powerUps: CreateRoomDto.settings.powerUps,
+        type: CreateRoomDto.settings.type,
+        goal: CreateRoomDto.settings.goal,
+        speed: CreateRoomDto.settings.speed,
+        acceleration: CreateRoomDto.settings.acceleration,
+        ballSize: CreateRoomDto.settings.ballSize,
+        ballColor: CreateRoomDto.settings.ballColor,
+      },
+    });
     return this.roomRepository.save(newRoom);
   }
 
@@ -23,7 +44,7 @@ export class RoomsService {
     const newRoom = this.roomRepository.create({
       roomName: name,
       private: true,
-      settings: {
+      settingsOne: {
         powerUps: false,
         type: "Invitation",
         goal: 11,
@@ -32,7 +53,15 @@ export class RoomsService {
         ballSize: 10,
         ballColor: "WHITE",
       },
-      matchmaking: false
+      settingsTwo: {
+        powerUps: false,
+        type: "Invitation",
+        goal: 11,
+        speed: 5,
+        acceleration: 0.1,
+        ballSize: 10,
+        ballColor: "WHITE",
+      },
     });
     return this.roomRepository.save(newRoom);
   }
@@ -41,7 +70,7 @@ export class RoomsService {
     const newRoom = this.roomRepository.create({
       roomName: name,
       private: true,
-      settings: {
+      settingsOne: {
         powerUps: false,
         type: "Classic",
         goal: 11,
@@ -50,7 +79,15 @@ export class RoomsService {
         ballSize: 10,
         ballColor: "WHITE",
       },
-      matchmaking: false
+      settingsTwo: {
+        powerUps: false,
+        type: "Classic",
+        goal: 11,
+        speed: 5,
+        acceleration: 0.1,
+        ballSize: 10,
+        ballColor: "WHITE",
+      },
     });
     return this.roomRepository.save(newRoom);
   }
@@ -142,11 +179,27 @@ export class RoomsService {
     }
   }
 
-  async updateRoomSettings(uid: string, settings: object) {
+  /*async updateRoomSettings(uid: string, settings: object) {
     await this.roomRepository
       .createQueryBuilder()
       .update(Room)
       .set({ settings: settings })
+      .where("uid = :uid", { uid: uid })
+      .execute();
+  }*/
+  async updateRoomSettingsOne(uid: string, settings: object) {
+    await this.roomRepository
+      .createQueryBuilder()
+      .update(Room)
+      .set({ settingsOne: settings })
+      .where("uid = :uid", { uid: uid })
+      .execute();
+  }
+  async updateRoomSettingsTwo(uid: string, settings: object) {
+    await this.roomRepository
+      .createQueryBuilder()
+      .update(Room)
+      .set({ settingsTwo: settings })
       .where("uid = :uid", { uid: uid })
       .execute();
   }

@@ -34,11 +34,6 @@ export class Code {
     code: number;
 }
 
-/*class Fa {
-    @IsBoolean()
-    fa: boolean;
-}*/
-
 export class UpdateUser {
     @IsNotEmpty()
     @IsString()

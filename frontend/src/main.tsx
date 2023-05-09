@@ -11,7 +11,10 @@ const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 
-function ErrorFallback( error: any ) {
+function ErrorFallback({ error, resetErrorBoundary }: {
+  error: {message: string};
+  resetErrorBoundary: any;
+}) {
   return (
     <div role="alert">
       <pre>{error.message}</pre>

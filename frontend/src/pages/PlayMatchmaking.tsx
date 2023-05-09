@@ -1,36 +1,8 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Game from "../components/game";
 import SocketContext from '../contexts/Socket';
-import { FetchError, header, headerPost } from '../components/FetchError';
+import { FetchError, header } from '../components/FetchError';
 import { useParams, useNavigate } from "react-router-dom";
-/*
-export function playPageMatchmaking(jwt: string, setErrorCode,
-    focusUserId: number, navigate) {
-
-    async function addRoomHandler(jwt: string, setErrorCode,
-        focusUserId: number) {
-        await fetch("https://" + location.host + "/api/rooms/create-matchmaking", {
-            method: "POST",
-            body: JSON.stringify({
-                id: focusUserId,
-            }),
-            headers: headerPost(jwt)
-        })
-            .then((response) => {
-                if (response.ok)
-                    return response.json();
-                setErrorCode(response.status);
-            })
-            .then((data) => {
-                if (data) {
-                    if (!data.uid || data.uid === "")
-                        return;
-                    navigate({ pathname: '/play-invite/' + data.uid });
-                }
-            }).catch(err => console.log(err));
-    }
-    addRoomHandler(jwt, setErrorCode, focusUserId);
-}*/
 
 function PlayPageMatchmaking(props: { jwt: string | null }) {
     const [errorCode, setErrorCode] = useState<number>(200);
@@ -46,14 +18,16 @@ function PlayPageMatchmaking(props: { jwt: string | null }) {
             }),
                 { headers: header(props.jwt) })
                 .then(res => {
-                    if (res.ok)
+                    if (res && res.ok)
                         return (res.json());
-                    setErrorCode(res.status);
+                    if (res)
+                        setErrorCode(res.status);
                 })
                 .then((res: { exist: boolean }) => {
+                    console.log(res)
                     if (res) {
                         if (res.exist === false)
-                            navigate("/");
+                            navigate("/matchmaking");
                         else if (res.exist === true)
                             setLoadParty(true);
                     }

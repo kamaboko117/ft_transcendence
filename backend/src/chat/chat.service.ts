@@ -3,7 +3,7 @@ import { Chat, InformationChat, DbChat } from './chat.interface';
 import { IsString } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Channel } from './chat.entity';
 import { ListBan } from './lstban.entity';
 import { ListMsg } from './lstmsg.entity';
@@ -38,6 +38,7 @@ export class ChatService {
     @InjectRepository(BlackFriendList)
     private readonly blFrRepository: Repository<BlackFriendList>
 
+    constructor(private dataSource: DataSource) { }
     async getAllPublic(): Promise<any[]> {
         const arr: Channel[] = await this.chatsRepository
             .createQueryBuilder("channel")
@@ -53,8 +54,8 @@ export class ChatService {
     async getAllPrivate(userID: Readonly<number>): Promise<any[]> {
         const arr: Channel[] = await this.chatsRepository
             .createQueryBuilder("channel")
+            .innerJoin("channel.user", "User")
             .innerJoin("channel.lstUsr", "ListUser")
-            .innerJoin("ListUser.user", "User")
             .select(['channel.id', 'channel.name',
                 'channel.user_id', 'channel.accesstype',
                 'User.username'])
@@ -66,33 +67,33 @@ export class ChatService {
 
     async searchAndSetAdministratorsChannel(id: string) {
         let listUser: ListUser[] = await this.listUserRepository.createQueryBuilder("list_user")
-          .select(["list_user.id", "list_user.user_id"])
-          .where("list_user.chatid = :id")
-          .setParameters({ id: id })
-          .andWhere("list_user.role = :role")
-          .setParameters({ role: 'Administrator' })
-          .getMany();
-    
-        if (listUser.length === 0) {
-          listUser = await this.listUserRepository.createQueryBuilder("list_user")
             .select(["list_user.id", "list_user.user_id"])
             .where("list_user.chatid = :id")
             .setParameters({ id: id })
+            .andWhere("list_user.role = :role")
+            .setParameters({ role: 'Administrator' })
             .getMany();
+
+        if (listUser.length === 0) {
+            listUser = await this.listUserRepository.createQueryBuilder("list_user")
+                .select(["list_user.id", "list_user.user_id"])
+                .where("list_user.chatid = :id")
+                .setParameters({ id: id })
+                .getMany();
         }
         if (listUser.length > 0) {
-          await this.chatsRepository.createQueryBuilder().update(Channel)
-            .set({ user_id: listUser[0].user_id })
-            .where("id = :id")
-            .setParameters({ id: id })
-            .execute();
-          await this.listUserRepository.createQueryBuilder().update(ListUser)
-            .set({ role: "Owner" })
-            .where("id = :id")
-            .setParameters({ id: listUser[0].id })
-            .execute();
+            await this.chatsRepository.createQueryBuilder().update(Channel)
+                .set({ user_id: listUser[0].user_id })
+                .where("id = :id")
+                .setParameters({ id: id })
+                .execute();
+            await this.listUserRepository.createQueryBuilder().update(ListUser)
+                .set({ role: "Owner" })
+                .where("id = :id")
+                .setParameters({ id: listUser[0].id })
+                .execute();
         }
-      }
+    }
 
     /* PRIVATE MESSAGE PART */
     async getAllPmUser(userID: Readonly<number>) {
@@ -118,7 +119,7 @@ export class ChatService {
     }
 
     /* find and delete duplicate */
-    async findDuplicateAndDelete(user_id: Readonly<string>) {
+    /*async findDuplicateAndDelete(user_id: Readonly<string>) {
         const channel: {
             list_user_user_id: string,
             Channel_id: string,
@@ -147,7 +148,7 @@ export class ChatService {
                 .setParameters({ id: channel.Channel_id })
                 .execute();
         }
-    }
+    }*/
 
     /* GET PM BETWEEN 2 USERS BY NEEDED ID */
     async findPmUsers(userOne: Readonly<number>,
@@ -173,31 +174,66 @@ export class ChatService {
     /* GET PM BY USERNAME */
 
     /* Create private message part */
+    async insertMemberPm(userId: Readonly<number>, concat: string) {
+        const runner = this.dataSource.createQueryRunner();
+
+        await runner.connect();
+        await runner.startTransaction();
+
+        try {
+            /* insert first user */
+            await this.listUserRepository.createQueryBuilder()
+                .insert().into(ListUser)
+                .values([
+                    { user_id: userId, chatid: concat }
+                ]).execute();
+            await runner.commitTransaction();
+        } catch (e) {
+            await runner.rollbackTransaction();
+        } finally {
+            //doc want it released
+            await runner.release();
+        }
+    }
+    /* Create private message part */
     async createPrivateMessage(userOne: Readonly<number>,
         userTwo: Readonly<string>): Promise<string> {
         /* create Private message channel */
         const concat = String(userOne).concat(userTwo);
+        const runner = this.dataSource.createQueryRunner();
 
-        await this.chatsRepository.createQueryBuilder()
-            .insert().into(Channel)
-            .values({
-                id: concat,
-                name: concat,
-                accesstype: '4'
-            })
-            .execute();
-        /* insert first user */
-        await this.listUserRepository.createQueryBuilder()
-            .insert().into(ListUser)
-            .values([
-                { user_id: userOne, chatid: concat }
-            ]).execute();
-        /* insert second user */
-        await this.listUserRepository.createQueryBuilder()
-            .insert().into(ListUser)
-            .values([
-                { user_id: Number(userTwo), chatid: concat }
-            ]).execute();
+        await runner.connect();
+        await runner.startTransaction();
+
+        try {
+            await this.chatsRepository.createQueryBuilder()
+                .insert().into(Channel)
+                .values({
+                    id: concat,
+                    name: concat,
+                    accesstype: '4'
+                })
+                .execute();
+            /* insert first user */
+            await this.listUserRepository.createQueryBuilder()
+                .insert().into(ListUser)
+                .values([
+                    { user_id: userOne, chatid: concat }
+                ]).execute();
+            /* insert second user */
+            await this.listUserRepository.createQueryBuilder()
+                .insert().into(ListUser)
+                .values([
+                    { user_id: Number(userTwo), chatid: concat }
+                ]).execute();
+            await runner.commitTransaction();
+            return (concat);
+        } catch (e) {
+            await runner.rollbackTransaction();
+        } finally {
+            //doc want it released
+            await runner.release();
+        }
         return (concat);
     }
     /* END OF PRIVATE  */
@@ -237,7 +273,7 @@ export class ChatService {
         return (listMsg);
     }
 
-    async getChannelByTest(id: string): Promise<undefined | DbChat> {
+    async getChannelById(id: string): Promise<undefined | DbChat> {
         const channel: any = await this.chatsRepository
             .createQueryBuilder("channel")
             .select(["channel.id", "channel.name", "channel.accesstype",
@@ -329,7 +365,7 @@ export class ChatService {
         return (arr);
     }
 
-    createChat(chat: CreateChatDto, id: string, owner: Owner): InformationChat {
+    async createChat(chat: CreateChatDto, id: string, owner: Owner): Promise<InformationChat> {
         chat.id = id;
         let newChat: Chat = {
             id: chat.id, name: chat.name, owner: owner.idUser,
@@ -350,8 +386,19 @@ export class ChatService {
         listUsr.user_id = owner.idUser;
         listUsr.role = "Owner";
         listUsr.chat = channel;
-        this.listUserRepository.save(listUsr);
+        const runner = this.dataSource.createQueryRunner();
 
+        await runner.connect();
+        await runner.startTransaction();
+        try {
+            this.listUserRepository.save(listUsr);
+            await runner.commitTransaction();
+        } catch (e) {
+            await runner.rollbackTransaction();
+        } finally {
+            //doc want it released
+            await runner.release();
+        }
         const return_chat: InformationChat = {
             channel_id: newChat.id,
             channel_name: newChat.name,
@@ -372,15 +419,27 @@ export class ChatService {
             if (comp === false)
                 return (undefined)
         }
-        await this.listUserRepository
-            .createQueryBuilder()
-            .insert()
-            .into(ListUser)
-            .values([{
-                user_id: user_id,
-                chatid: data.id
-            }])
-            .execute();
+        const runner = this.dataSource.createQueryRunner();
+
+        await runner.connect();
+        await runner.startTransaction();
+        try {
+            await this.listUserRepository
+                .createQueryBuilder()
+                .insert()
+                .into(ListUser)
+                .values([{
+                    user_id: user_id,
+                    chatid: data.id
+                }])
+                .execute();
+            await runner.commitTransaction();
+        } catch (e) {
+            await runner.rollbackTransaction();
+        } finally {
+            //doc want it released
+            await runner.release();
+        }
         return (true);
     }
 }

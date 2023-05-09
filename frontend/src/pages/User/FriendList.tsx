@@ -57,9 +57,10 @@ export const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string | n
 			userId: Number(userInfo.id), type: type
 		})
 	}).then(res => {
-		if (res.ok)
+		if (res && res.ok)
 			return (res.json());
-		setErrorCode(res.status);
+		if (res)
+			setErrorCode(res.status);
 	}).then((res: { add: boolean, type: number }) => {
 		if (res) {
 			if (res.add) {
@@ -147,10 +148,10 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
 				type, props.userInfo, props.setUserInfo, lstUserGlobal, setLstUserGlobal)}
 			className="userInfo">{(props.userInfo.bl === type ? "Remove " : "Add ") + props.type}
 		</button>}
-		<button onClick={(e) => inviteGame(e, props.userInfo.id, props.jwt,
+		{type && type === 2 && <button onClick={(e) => inviteGame(e, props.userInfo.id, props.jwt,
 			navigate, props.setErrorCode)}
-			className="userInfo">Invite to a game</button>
-		{
+			className="userInfo">Invite to a game</button>}
+		{type && type === 2 &&
 			<button onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
 				directMessage(e, setDisplay,
 					setId, props.setErrorCode,
@@ -200,7 +201,7 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	lstUserGlobal: Array<typeFlBl>,
 	setLst: React.Dispatch<React.SetStateAction<[]>>
-	) {
+) {
 	e.preventDefault();
 	if (!e)
 		return;
@@ -213,9 +214,10 @@ function handleSubmit(e: React.FormEvent<HTMLFormElement>,
 			username: value, type: 2
 		})
 	}).then(res => {
-		if (res.ok)
+		if (res && res.ok)
 			return (res.json());
-		setErrorCode(res.status);
+		if (res)
+			setErrorCode(res.status);
 	}).then(res => {
 		if (res && res.code === 1)
 			setLst(res.err);

@@ -15,9 +15,6 @@ export class Room {
   private!: boolean;
 
   @Column({ default: false })
-  matchmaking!: boolean;
-
-  @Column({ default: false })
   player_one_rdy!: boolean;
   @Column({ default: false })
   player_two_rdy!: boolean;
@@ -29,7 +26,17 @@ export class Room {
   player_two_type_game: string;
 
   @Column("simple-json")
-  settings: {
+  settingsOne: {
+    powerUps: boolean;
+    type: string;
+    goal: number;
+    speed: number;
+    acceleration: number;
+    ballSize: number;
+    ballColor: string;
+  }
+  @Column("simple-json")
+  settingsTwo: {
     powerUps: boolean;
     type: string;
     goal: number;

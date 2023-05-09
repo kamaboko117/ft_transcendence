@@ -22,7 +22,7 @@ const headerPost = (jwt: Readonly<string | null>) => {
 	return (header);
 };
 
-function update(event: FormEvent<HTMLFormElement>, username: string, userCtx : any, userId : any,
+function update(event: FormEvent<HTMLFormElement>, username: string, userCtx: any, userId: string | null,
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	setLstErr: React.Dispatch<React.SetStateAction<[]>>) {
@@ -41,9 +41,10 @@ function update(event: FormEvent<HTMLFormElement>, username: string, userCtx : a
 			body: formData,
 		}
 	).then(res => {
-		if (res.ok)
+		if (res && res.ok)
 			return (res.json());
-		setErrorCode(res.status);
+		if (res)
+			setErrorCode(res.status);
 	}).then(res => {
 		if (res) {
 			if (res.valid === true) {
@@ -88,7 +89,8 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 			.then(res => {
 				if (res.ok)
 					return (res.json());
-				setErrorCode(res.status);
+				if (res)
+					setErrorCode(res.status);
 			})
 			.then((res) => {
 				if (res

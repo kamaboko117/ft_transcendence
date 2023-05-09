@@ -27,10 +27,11 @@ function FakeLogin(props: { jwt: string }) {
     //gets existing user from database if exists. If not, returns [false, <42id>]
     const getUser = () => {
       return (fetch('https://' + location.host + '/api/users/fake-login').then(response => {
-        if (response.ok)
+        if (response && response.ok)
           return (response.json());
-        setErrorCode(response.status);
-      }).catch(e => console.log(e)));
+        if (response)
+          setErrorCode(response.status);
+      }))
     };
     getUser().then(res => {
       if (typeof res != "undefined") {
@@ -41,7 +42,7 @@ function FakeLogin(props: { jwt: string }) {
           userId: String(res.user_id)
         });
       }
-    })
+    }).catch(e => console.log(e));
   }, []);
 
   if (errorCode >= 400)

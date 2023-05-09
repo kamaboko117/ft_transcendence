@@ -103,9 +103,10 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string | null,
 			userId: Number(id), type: type
 		})
 	}).then(res => {
-		if (res.ok)
+		if (res && res.ok)
 			return (res.json());
-		setErrorCode(res.status);
+		if (res)
+			setErrorCode(res.status);
 	}).then((res: { add: boolean, type: number }) => {
 		if (res) {
 			updateList(res, otherUser, frBl, lstUserGlobal, setLstUserGlobal);
@@ -178,14 +179,15 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null , id: string}>
 	useEffect(() => {
 		fetch('https://' + location.host + `/api/users/get_raw_mh_user/${props.id}`, {headers: header(props.jwt)})
 		.then(res => {
-			if (res.ok)
+			if (res && res.ok)
 				return(res.json());
-			setErrorCode(res.status);
+			if (res)
+				setErrorCode(res.status);
 		}).then((res: Array<rawMH>) => {
 			if (res) {
 				setRaw(res);
 			}
-		})
+		}).catch(err => console.log(err));
 	}, [])
 	
 	return(
@@ -207,19 +209,20 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null , id: string}>
 
 const rank_index = ['BRONZE', 'SILVER', 'GOLD'];
 
-const LoadAchivement = (props: {jwt: string | null, setErrorCode: any, id: string}) => {
+const LoadAchivement = (props: {jwt: string | null, setErrorCode: React.Dispatch<React.SetStateAction<number>>, id: string}) => {
 	const [listAchivement, setList] = useState<Array<nameAchivement>>();
 	useEffect(() => {
 		if (props.jwt) {
 			fetch('https://' + location.host + '/api/users/achiv-other/' + props.id, {headers: header(props.jwt)})
 			.then(res => {
 				if (res.ok)
-					return(res.json())
-				props.setErrorCode(res.status);
+					return(res.json());
+				if (res)
+					props.setErrorCode(res.status);
 			}).then((res) => {
 				if (res)
 					setList(res);
-			})
+			}).catch(err => console.log(err));
 		}
 	}, [props.jwt])
 
@@ -242,7 +245,7 @@ type rankWin = {
 	rankByRankUser: number | undefined
 }
 
-const LoadResultGame = (props: {setErrorCode: any, id: string, otherUser: userInfo | undefined, jwt: string | null}) => {
+const LoadResultGame = (props: {setErrorCode: React.Dispatch<React.SetStateAction<number>>, id: string, otherUser: userInfo | undefined, jwt: string | null}) => {
 	const [vc, setVC] = useState<number>(0);
 	const [nb_g, setNb_g] = useState<number | undefined>(undefined);
 	const [df, setDf] = useState<number>(0);
@@ -252,21 +255,22 @@ const LoadResultGame = (props: {setErrorCode: any, id: string, otherUser: userIn
 		fetch('https://' + location.host + `/api/users/get-games-nb-other/${props.id}`, {headers: header(props.jwt)})
 			.then(res => {
 				if (res.ok)
-					return(res.text())
-				props.setErrorCode(res.status);
+					return(res.text());
+				if (res)
+					props.setErrorCode(res.status);
 			}).then((res) => {
-				console.log(res)
 				setNb_g(Number(res));
-			})
+			}).catch(err => console.log(err));
 	}, [])
 
 	useEffect(() => {
 		if (typeof nb_g === 'number') {
 			fetch('https://' + location.host + `/api/users/get-victory-nb-other/${props.id}`, {headers: header(props.jwt)})
 			.then(res => {
-				if (res.ok)
-					return (res.json())
-				props.setErrorCode(res.status);
+				if (res && res.ok)
+					return (res.json());
+				if (res)
+					props.setErrorCode(res.status);
 			}).then((res) => {
 				if (res) {
 					setVC(Number(res.nb));
@@ -274,15 +278,15 @@ const LoadResultGame = (props: {setErrorCode: any, id: string, otherUser: userIn
 					if (res.rankDbByWin)
 						setRank({
 							rankDbByWin: res.rankDbByWin.rank,
-							rankByRankUser: rank.rankByRankUser
+							rankByRankUser: res?.rankByRankUser.gen
 						});
 					if (res.rankByRankUser)
 						setRank({
-							rankDbByWin: rank.rankDbByWin,
-							rankByRankUser: res.rankByRankUser.gen
+							rankDbByWin: res.rankDbByWin.rank,
+							rankByRankUser: res?.rankByRankUser.gen
 						});
 				}
-			})
+			}).catch(err => console.log(err));
 		}
 	}, [nb_g, vc])
 	return(
@@ -313,9 +317,10 @@ const UserProfileOther = (props: { jwt: string | null }) => {
 	useEffect(() => {
 		fetch(`https://` + location.host + `/api/users/${id}`, { headers: header(props.jwt) })
 			.then(res => {
-				if (res.ok)
+				if (res && res.ok)
 					return (res.json());
-				setErrorCode(res.status);
+				if (res)
+					setErrorCode(res.status);
 			}).then(res => {
 				if (res) {
 					if (!res.avatarPath)
@@ -331,7 +336,7 @@ const UserProfileOther = (props: { jwt: string | null }) => {
 		return (<span>No user found</span>);
 	return (
 		<>
-			<h1>Username: {otherUser?.username}</h1>
+			<h1>{otherUser?.username}</h1>
 			{!isNaN(Number(id)) && <StatusUser jwt={props.jwt} userId={Number(id)} />}
 			{otherUser?.avatarPath != null && <img
 				className="avatar"

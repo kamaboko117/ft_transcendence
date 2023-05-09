@@ -37,6 +37,8 @@ type rankWin = {
 /* display default img if not img loaded */
 
 const handleImgError = (e: any) => {
+	if (!e || !e.target)
+		return ;
 	const target: HTMLImageElement = e.target as HTMLImageElement;
 
 	if (target) {
@@ -71,8 +73,8 @@ async function update(event: FormEvent<HTMLFormElement>, username: string | unde
 	fileSet: File | undefined, FA: boolean, jwt: string | null,
 	setErrorCode: React.Dispatch<React.SetStateAction<number>>,
 	setAvatarPath: React.Dispatch<React.SetStateAction<string | null>>,
-	setLstErr: React.Dispatch<React.SetStateAction<[]>>, userCtx: any,
-	setTimer: any, timerOk: boolean) {
+	setLstErr: React.Dispatch<React.SetStateAction<[]>>, userCtx: { reconnectUser: (arg0: { jwt: any; username: any; userId: number | undefined; }) => void; },
+	setTimer: { (value: React.SetStateAction<boolean>): void; (arg0: boolean): void; }, timerOk: boolean) {
 	event.preventDefault();
 
 	if (!username || timerOk)
@@ -90,9 +92,10 @@ async function update(event: FormEvent<HTMLFormElement>, username: string | unde
 			body: formData,
 		}
 	).then(res => {
-		if (res.ok)
+		if (res && res.ok)
 			return (res.json());
-		setErrorCode(res.status);
+		if (res)
+			setErrorCode(res.status);
 	}).then(res => {
 		if (res) {
 			if (res.valid === true) {
@@ -150,14 +153,15 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
 	useEffect(() => {
 		fetch('https://' + location.host + '/api/users/get_raw_mh', {headers: header(props.jwt)})
 		.then(res => {
-			if (res.ok)
+			if (res && res.ok)
 				return(res.json());
-			setErrorCode(res.status);
+			if (res)
+				setErrorCode(res.status);
 		}).then((res: Array<rawMH>) => {
 			if (res) {
 				setRaw(res);
 			}
-		})
+		}).catch(err => console.log(err));
 	}, [])
 	
 	return(
@@ -190,19 +194,20 @@ export const Achivement_Raw = (props: {nameAchivement: Array<nameAchivement> | u
 	</>)
 }
 
-const LoadAchivement = (props: {jwt: string | null, setErrorCode: any}) => {
+const LoadAchivement = (props: {jwt: string | null, setErrorCode: (arg0: number) => void}) => {
 	const [listAchivement, setList] = useState<Array<nameAchivement>>();
 	useEffect(() => {
 		if (props.jwt) {
 			fetch('https://' + location.host + '/api/users/achiv/', {headers: header(props.jwt)})
 			.then(res => {
-				if (res.ok)
+				if (res && res.ok)
 					return(res.json())
-				props.setErrorCode(res.status);
+				if (res)
+					props.setErrorCode(res.status);
 			}).then((res) => {
 				if (res)
 					setList(res);
-			})
+			}).catch(err => console.log(err));
 		}
 	}, [])
 
@@ -220,7 +225,7 @@ const LoadAchivement = (props: {jwt: string | null, setErrorCode: any}) => {
 	);
 }
 
-const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode: any, jwt: string | null}) => {
+const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode: (arg0: number) => void, jwt: string | null}) => {
 	const [vc, setVc] = useState<number>(0);
 	const [df, setDf] = useState<number>(0);
 	const [nb_g, setNb_g] = useState<number | undefined>(undefined);
@@ -230,20 +235,22 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode: any, j
 		fetch('https://' + location.host + '/api/users/get-games-nb/', {headers: header(props.jwt)})
 			.then(res => {
 				if (res.ok)
-					return(res.text())
-				props.setErrorCode(res.status);
+					return(res.text());
+				if (res)
+					props.setErrorCode(res.status);
 			}).then((res) => {
 				setNb_g(Number(res));
-			})
+			}).catch(err => console.log(err));
 	}, []);
 
 	useEffect(() => {
 		if (typeof nb_g === 'number') {
 			fetch('https://' + location.host + '/api/users/get-victory-nb/', {headers: header(props.jwt)})
 			.then(res => {
-				if (res.ok)
-					return (res.json())
-				props.setErrorCode(res.status);
+				if (res && res.ok)
+					return (res.json());
+				if (res)
+					props.setErrorCode(res.status);
 			}).then((res) => {
 				if (res) {
 					setVc(Number(res.nb));
@@ -259,13 +266,9 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode: any, j
 							rankByRankUser: res?.rankByRankUser.gen
 						});
 				}
-			})
+			}).catch(err => console.log(err));
 		}
 	}, [nb_g, vc]);
-
-	//useEffect(() => {
-//		fetch('https://' + location.host + '/api/users/achiv', {headers: header(props.jwt)})	
-//	}, []);
 
 	return (<>
 		<ul>
@@ -299,7 +302,8 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 			.then(res => {
 				if (res.ok)
 					return (res.json());
-				setErrorCode(res.status);
+				if (res)
+					setErrorCode(res.status);
 			}).then((res: userInfo) => {
 				if (res) {
 					if (res.avatarPath)

@@ -20,8 +20,6 @@ export const SocketProvider = (props: { jwt: string | null, usrSocket: Socket<an
     const [errorCode, setErrorCode] = useState<number>(200);
 
     useEffect(() => {
-        //if (props.jwt && props.jwt != "" && props.usrSocket && props.usrSocket.connected === false)
-        //   navigate("/logout");
         if (props.jwt && props.jwt != ""
             && props.usrSocket?.connected === true) {
             props.usrSocket?.on('exception', (res: any) => {
@@ -34,10 +32,7 @@ export const SocketProvider = (props: { jwt: string | null, usrSocket: Socket<an
             });
         }
         return (() => {
-            //props.usrSocket?.off('inviteGame');
             props.usrSocket?.off('exception');
-            //if (props.usrSocket?.connected === true)
-            //  props.usrSocket?.disconnect();
         });
     }, [props.usrSocket?.connected, props.jwt]);
 

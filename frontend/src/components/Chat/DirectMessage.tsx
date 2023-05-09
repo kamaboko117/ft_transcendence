@@ -8,6 +8,7 @@ import SocketContext from '../../contexts/Socket';
 import { useLocation, useNavigate } from 'react-router-dom';
 import UserContext from '../../contexts/UserContext';
 import { commandChat } from './CommandChat';
+import { Socket } from 'socket.io-client';
 
 type settingChat = {
     width: number,
@@ -64,6 +65,7 @@ const content_helper = "/cmd + username + option\n"
     + "/unfriend username\n"
     + "/invite username\n"
     + "/profile username\n"
+    + "/leavePm (Only for private messages)\n";
 
 const helper: any = {
     user: {
@@ -107,13 +109,16 @@ const handleSubmitPmUser = (e: React.FormEvent<HTMLFormElement>, user: string, j
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     setPm: React.Dispatch<React.SetStateAction<listPm[]>>) => {
     e.preventDefault();
+    if (!user || user === "")
+        return;
     fetch('https://' + location.host + '/api/chat/find-pm-username?' + new URLSearchParams({
         username: String(user)
     }), { headers: header(jwt) })
         .then(res => {
-            if (res.ok)
+            if (res && res.ok)
                 return (res.json());
-            setErrorCode(res.status);
+            if (res)
+                setErrorCode(res.status);
         }).then((res: {
             valid: boolean,
             channel_id: string, listPm: {
@@ -154,7 +159,7 @@ const BoxPmUser = (props: {
     return (
         <form className='formPm' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
             handleSubmitPmUser(e, user, props.jwt, props.listPm,
-                props.setId, props.setErrorCode, props.setPm/*, props.listPm*/)}>
+                props.setId, props.setErrorCode, props.setPm)}>
             <input type="text" placeholder='Direct message a user' name="user"
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setUser(e?.target?.value)} />
@@ -170,8 +175,15 @@ const handleClick = (event: React.MouseEvent<HTMLUListElement>,
     setId(target.id);
 }
 
+type HandleUpdate = {
+    setChannel: React.Dispatch<React.SetStateAction<listChan[]>>,
+    setPm: React.Dispatch<React.SetStateAction<listPm[]>>,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>
+}
+
 const handleUpdate = (e: React.MouseEvent<HTMLButtonElement>,
-    setChannel : any, setPm : any, jwt : any, setErrorCode : any) => {
+    setChannel: HandleUpdate["setChannel"], setPm: HandleUpdate["setPm"],
+    jwt: string | null, setErrorCode: HandleUpdate["setErrorCode"]) => {
     if (e && e.target)
         updateChannel(setChannel, setPm, jwt, setErrorCode);
 }
@@ -221,29 +233,49 @@ const ListDiscussion = (props: propsListChannel) => {
 }
 
 type typePostMsg = {
-    id: string, msg: any,
-    usrSocket : any, idBox : any, isPrivate: any,
-    setMsg : any,
+    id: string, msg: string | null,
+    usrSocket: Socket<any, any> | undefined, idBox: string, isPrivate: boolean,
+    setMsg: React.Dispatch<React.SetStateAction<string | null>>,
     setLstMsgChat: React.Dispatch<React.SetStateAction<lstMsg[]>>,
     setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>
 }
+/*
+type typeGetMsg = {
+    lstMsg: Array<{
+        user: {
+            avatarPath: string;
+            username: string;
+        };
+        content: string;
+        img: string;
+    }>;
+}*/
 
 const PostMsg = (props: typePostMsg) => {
     const refElem = useRef(null);
     const { lstUserGlobal, lstUserChat, setLstMsgChat,
         setLstMsgPm, setLstUserGlobal,
-        setLstUserChat } = useContext(ContextDisplayChannel);
+        setLstUserChat, setId } = useContext(ContextDisplayChannel);
     const userCtx: any = useContext(UserContext);
     let jwt = userCtx.getJwt();
     const navigate = useNavigate();
     /* Post msg */
     const handleSubmitButton = (e: React.MouseEvent<HTMLButtonElement>,
         obj: any, ref: any) => {
+        if (!e || !e.target)
+            return;
         e.preventDefault();
         let cmdIsValid = true;
 
-        if (obj.content && obj.content === "/help") {
+        if (obj.content
+            && obj.isPm === true
+            && obj.content === "/leavePm") {
+            props.usrSocket?.emit('leaveRoomChatPm', { id: obj.id }, () => {
+                setId("");
+            });
+        }
+        else if (obj.content && obj.content === "/help") {
             setLstMsgPm((lstMsg) => [...lstMsg, helper]);
         }
         else if (obj.content && obj.content[0] === '/') {
@@ -251,7 +283,7 @@ const PostMsg = (props: typePostMsg) => {
                 lstUserGlobal, lstUserChat, setLstUserGlobal,
                 setLstUserChat, navigate);
             if (cmdIsValid === false) {
-                props.usrSocket.emit('sendMsg', obj, (res : any) => {
+                props.usrSocket?.emit('sendMsg', obj, (res: lstMsg) => {
                     if (res && res.room === obj.id && obj.idBox === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res && res.room === obj.id)
@@ -260,7 +292,7 @@ const PostMsg = (props: typePostMsg) => {
             }
         }
         else {
-            props.usrSocket.emit('sendMsg', obj, (res : any) => {
+            props.usrSocket?.emit('sendMsg', obj, (res: lstMsg) => {
                 if (res && res.room === obj.id && obj.idBox === obj.id)
                     setLstMsgChat((lstMsg) => [...lstMsg, res]);
                 if (res && res.room === obj.id)
@@ -277,7 +309,14 @@ const PostMsg = (props: typePostMsg) => {
 
         if (e.key === "Enter" && e.shiftKey === false) {
             e.preventDefault();
-            if (obj.content && obj.content === "/help") {
+            if (obj.content
+                && obj.isPm === true
+                && obj.content === "/leavePm") {
+                props.usrSocket?.emit('leaveRoomChatPm', { id: obj.id }, () => {
+                    setId("");
+                });
+            }
+            else if (obj.content && obj.content === "/help") {
                 setLstMsgPm((lstMsg) => [...lstMsg, helper]);
             }
             else if (obj.content && obj.content[0] === '/') {
@@ -285,7 +324,7 @@ const PostMsg = (props: typePostMsg) => {
                     lstUserGlobal, lstUserChat, setLstUserGlobal,
                     setLstUserChat, navigate);
                 if (cmdIsValid === false) {
-                    props.usrSocket.emit('sendMsg', obj, (res : any) => {
+                    props.usrSocket?.emit('sendMsg', obj, (res: lstMsg) => {
                         if (res && res.room === obj.id && obj.idBox === obj.id)
                             setLstMsgChat((lstMsg) => [...lstMsg, res]);
                         if (res && res.room === obj.id)
@@ -293,7 +332,7 @@ const PostMsg = (props: typePostMsg) => {
                     });
                 }
             } else {
-                props.usrSocket.emit('sendMsg', obj, (res : any) => {
+                props.usrSocket?.emit('sendMsg', obj, (res: lstMsg) => {
                     if (res && res.room === obj.id && obj.idBox === obj.id)
                         setLstMsgChat((lstMsg) => [...lstMsg, res]);
                     if (res && res.room === obj.id)
@@ -341,11 +380,10 @@ const DiscussionBox = (props: {
     id: string,
     jwt: string,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
-    setId: React.Dispatch<React.SetStateAction<string>>,
-    isPrivate: boolean
+    setId: React.Dispatch<React.SetStateAction<string>>
 }) => {
     const stringRegex = /(\/\w*\/)/;
-    const regex = RegExp(stringRegex, 'g')
+    const regex = RegExp(stringRegex, 'g');
     const getLocation = useLocation()?.pathname;
     const getFirstPartRegex = regex.exec(getLocation);
     let getSecondPartRegex = '';
@@ -372,13 +410,6 @@ const DiscussionBox = (props: {
                 }
             });
         }
-        //listen to exception sent by backend
-        usrSocket?.on('exception', (res: any) => {
-            if (res && res.status === "error" && res.message === "Token not valid")
-                props.setErrorCode(403);
-            else
-                props.setErrorCode(500);
-        })
         return (() => {
             //unsubscribeChat
             if (getSecondPartRegex != props.id
@@ -387,11 +418,11 @@ const DiscussionBox = (props: {
                     setOnline(false);
                 });
             }
-            usrSocket?.off("exception");
         })
     }, [props.id, usrSocket]);
 
     const { lstMsgPm, lstUserGlobal, setLstMsgPm, setLstMsgChat } = useContext(ContextDisplayChannel);
+    const [isPrivate, setIsPrivate] = useState<boolean>(false);
     useEffect(() => {
         const ft_lst = async () => {
             const res = await fetch('https://' + location.host + '/api/chat?' + new URLSearchParams({
@@ -399,11 +430,16 @@ const DiscussionBox = (props: {
             }),
                 { headers: header(props.jwt) })
                 .then(res => {
-                    if (res.ok)
+                    if (res && res.ok)
                         return (res.json());
-                    props.setErrorCode(res.status);
+                    if (res)
+                        props.setErrorCode(res.status);
                 }).catch(e => console.log(e));
             if (typeof res != "undefined" && typeof res.lstMsg != "undefined") {
+                if (res.accesstype === "4")
+                    setIsPrivate(true);
+                else
+                    setIsPrivate(false);
                 setLstMsgPm(res.lstMsg);
             }
         }
@@ -420,6 +456,7 @@ const DiscussionBox = (props: {
         });
 
         return (() => {
+            setIsPrivate(false);
             usrSocket?.off("actionOnUser2");
             setLstMsgPm([]);
         });
@@ -427,6 +464,7 @@ const DiscussionBox = (props: {
         online, usrSocket]);
     useEffect(() => {
         usrSocket?.on("sendBackMsg2", (res: any) => {
+            //need to check if user is blocked
             if (lstUserGlobal && res) {
                 let found = lstUserGlobal.find(elem => Number(elem.id) === res.user_id && elem.bl === 1);
                 if (!found) {
@@ -437,7 +475,7 @@ const DiscussionBox = (props: {
         });
         return (() => { usrSocket?.off("sendBackMsg2"); });
     }, [JSON.stringify(lstUserGlobal), props.id]);
-    const [msg, setMsg] = useState<null | string>(null);
+    const [msg, setMsg] = useState<null | string>("");
 
     if (online === "Ban" && props.id != "")
         return (<article className='containerDiscussionBox'><span className='fullBox'>You are banned from this chat</span><Button /></article>)
@@ -446,22 +484,31 @@ const DiscussionBox = (props: {
     else if (props.id != "" && typeof online == "undefined")
         return (<article className='containerDiscussionBox'><span className='fullBox'>Connecting to chat...</span><Button /></article>)
     return (<div className='containerDiscussionBox'>
-        <ListMsg lstMsg={lstMsgPm} />
+        <ListMsg lstMsg={lstMsgPm} id={props.id} />
         <PostMsg id={props.id} usrSocket={usrSocket} idBox={getSecondPartRegex} msg={msg}
-            isPrivate={props.isPrivate} setMsg={setMsg}
+            isPrivate={isPrivate} setMsg={setMsg}
             setErrorCode={props.setErrorCode}
             setLstMsgChat={setLstMsgChat} setLstMsgPm={setLstMsgPm} />
         <LoadUserGlobal jwt={props.jwt} />
     </div>);
 }
 
-const updateChannel = (setChannel : any, setPm : any, jwt : any, setErrorCode : any) => {
+type updateChannelType = {
+    setChannel: React.Dispatch<React.SetStateAction<listChan[]>>,
+    setPm: React.Dispatch<React.SetStateAction<listPm[]>>,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>
+}
+
+const updateChannel = (setChannel: updateChannelType["setChannel"],
+    setPm: updateChannelType["setPm"], jwt: string | null,
+    setErrorCode: updateChannelType["setErrorCode"]) => {
     fetch('https://' + location.host + '/api/chat/list-pm',
         { headers: header(jwt) })
         .then(res => {
-            if (res.ok)
+            if (res && res.ok)
                 return (res.json());
-            setErrorCode(res.status);
+            if (res)
+                setErrorCode(res.status);
         })
         .then(res => {
             setPm(res);
@@ -470,23 +517,24 @@ const updateChannel = (setChannel : any, setPm : any, jwt : any, setErrorCode : 
     fetch('https://' + location.host + '/api/chat/channel-registered',
         { headers: header(jwt) })
         .then(res => {
-            if (res.ok)
+            if (res && res.ok)
                 return (res.json());
             setErrorCode(res.status);
         }).then(res => {
             if (res)
                 setChannel(res);
-        }).catch(e => console.log(e))
+        }).catch(e => console.log(e));
 }
 
 const Box = (props: settingBox) => {
     const [lstPm, setPm] = useState<listPm[]>([] as listPm[]);
     const [lstChannel, setChannel] = useState<listChan[]>([] as listChan[]);
-    const [isPrivate] = useState<boolean>(false);
+    //const [isPrivate, setIsPrivate] = useState<boolean>(false);
 
     useEffect(() => {
         /* load channels */
-        updateChannel(setChannel, setPm, props.jwt, props.setErrorCode);
+        updateChannel(setChannel, setPm,
+            props.jwt, props.setErrorCode);
         return (() => {
             setPm([]);
             setChannel([]);
@@ -503,8 +551,7 @@ const Box = (props: settingBox) => {
                 setId={props.setId} setErrorCode={props.setErrorCode} setPm={setPm}
                 jwt={props.jwt} />
             <DiscussionBox id={props.id} jwt={props.jwt}
-                setErrorCode={props.setErrorCode} setId={props.setId}
-                isPrivate={isPrivate} />
+                setErrorCode={props.setErrorCode} setId={props.setId} />
         </article>
     );
 }

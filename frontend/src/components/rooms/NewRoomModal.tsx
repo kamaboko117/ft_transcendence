@@ -15,12 +15,12 @@ function NewRoomModal(props: any) {
             headers: headerPost(props.jwt)
         })
             .then((response) => {
-                if (response.ok)
+                if (response && response.ok)
                     return response.json();
-                setErrorCode(response.status);
+                if (response)
+                    setErrorCode(response.status);
             })
             .then((data) => {
-                console.log(data);
                 if (data && data.err === "true") {
                     setErrorCode(1);
                     return ("");

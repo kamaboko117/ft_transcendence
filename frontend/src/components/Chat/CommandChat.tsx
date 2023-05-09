@@ -1,6 +1,6 @@
+import { typeListUser, typeListUserGlobal, updateBlackFriendList } from "../../contexts/DisplayChatContext";
 import { SetStateAction } from "react";
 import { NavigateFunction } from "react-router-dom";
-import { updateBlackFriendList } from "../../contexts/DisplayChatContext";
 import { playPageInvite } from "../../pages/PlayInvite";
 import { header, headerPost } from "../FetchError";
 
@@ -17,15 +17,18 @@ type typeFetchToBack = {
     action: string,
     jwt: string,
     userId: number,
-    option: string
+    option: string,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>
 }
 
 type typeFetchToBackPsw = {
     channelId: string,
     action: string,
     jwt: string,
-    psw: string
+    psw: string,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>
 }
+
 
 const fetchToBackWithTimer = (elem: typeFetchToBack) => {
     fetch('https://' + location.host + '/api/chat-role/role-action', {
@@ -37,8 +40,10 @@ const fetchToBackWithTimer = (elem: typeFetchToBack) => {
         })
     })
         .then(res => {
-            if (res.ok)
-                return (res)
+            if (res && res.ok)
+                return (res);
+            if (res)
+                elem.setErrorCode(res.status);
         })
         .catch(e => console.log(e));
 }
@@ -53,8 +58,10 @@ const fetchToBackSpecial = (elem: typeFetchToBack) => {
         })
     })
         .then(res => {
-            if (res.ok)
-                return (res)
+            if (res && res.ok)
+                return (res);
+            if (res)
+                elem.setErrorCode(res.status);
         })
         .catch(e => console.log(e));
 }
@@ -69,35 +76,41 @@ const fetchToBackPsw = (elem: typeFetchToBackPsw) => {
         })
     })
         .then(res => {
-            if (res.ok)
-                return (res)
+            if (res && res.ok)
+                return (res);
+            if (res)
+                elem.setErrorCode(res.status);
         })
         .catch(e => console.log(e));
 }
 
 const getUserInfoByName = (jwt: string, username: string,
-    setErrorCode: any, id: string, firstPartCmd: string, thirdPart: string) => {
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    id: string, firstPartCmd: string, thirdPart: string) => {
     fetch('https://' + location.host + '/api/users/info-fr-bl?' + new URLSearchParams({
         name: username
     }), { headers: header(jwt) })
         .then(res => {
-            if (res.ok)
+            if (res && res.ok)
                 return (res.json());
-            setErrorCode(res.status)
+            if (res && res.status)
+                setErrorCode(res.status)
         }).then(res => {
             if (res && res.valid === true &&
                 (firstPartCmd === "unban" || firstPartCmd === "unmute")) {
                 fetchToBackSpecial({
                     channelId: id,
                     action: firstPartCmd, jwt: jwt,
-                    userId: Number(res.id), option: thirdPart
+                    userId: Number(res.id), option: thirdPart,
+                    setErrorCode
                 });
             }
             else if (res && res.valid === true) {
                 fetchToBackWithTimer({
                     channelId: id,
                     action: firstPartCmd, jwt: jwt,
-                    userId: Number(res.id), option: thirdPart
+                    userId: Number(res.id), option: thirdPart,
+                    setErrorCode
                 });
             }
         }).catch(err => console.log(err));
@@ -142,7 +155,14 @@ const isCmdValid = (cmd: string, length: number) => {
 */
 
 const fetchBlackAndFriendList = (userInfo: typeUserInfo, jwt: string,
-    type: number, setErrorCode: any, updateUserInfo: any) => {
+    type: number, setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    //explicit function in parameter
+    updateUserInfo: {
+        (username: string, id: number, friend: number | null,
+            block: number | null, avatarPath: string | null):
+            void; (arg0: string, arg1: number, arg2: number | null,
+                arg3: number | null, arg4: string | null): void;
+    }) => {
     fetch("https://" + location.host + "/api/users/fr-bl-list", {
         method: 'post',
         headers: headerPost(jwt),
@@ -150,9 +170,10 @@ const fetchBlackAndFriendList = (userInfo: typeUserInfo, jwt: string,
             userId: Number(userInfo.id), type: type
         })
     }).then(res => {
-        if (res.ok)
+        if (res && res.ok)
             return (res.json());
-        setErrorCode(res.status);
+        if (res)
+            setErrorCode(res.status);
     }).then((res: { add: boolean, type: number }) => {
         if (res) {
             if (res.add) {
@@ -176,9 +197,12 @@ const fetchBlackAndFriendList = (userInfo: typeUserInfo, jwt: string,
     }).catch(e => console.log(e));
 }
 
-export const commandChat = (jwt: string, obj: any, setErrorCode: any,
-    lstUserGlobal: any, lstUserChat: any[],
-    setLstUserGlobal: any, setLstUserChat : any, navigate: any) => {
+export const commandChat = (jwt: string, obj: any,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    lstUserGlobal: typeListUserGlobal["listUser"], lstUserChat: typeListUser["listUser"],
+    setLstUserGlobal: React.Dispatch<React.SetStateAction<typeListUserGlobal["listUser"]>>,
+    setLstUserChat: React.Dispatch<React.SetStateAction<typeListUser["listUser"]>>,
+    navigate: NavigateFunction) => {
     const cmd = obj.content;
 
     const listHandle = (jwt: string,
@@ -211,14 +235,15 @@ export const commandChat = (jwt: string, obj: any, setErrorCode: any,
 
     function runUserCmd(jwt: string, firstPartCmd: string, secondPartCmd: string) {
         function getInfoUser(jwt: string, firstPartCmd: string, secondPartCmd: string,
-            setErrorCode: any) {
+            setErrorCode: React.Dispatch<React.SetStateAction<number>>) {
             fetch('https://' + location.host + '/api/users/info-fr-bl?' + new URLSearchParams({
                 name: secondPartCmd
             }), { headers: header(jwt) })
                 .then(res => {
-                    if (res.ok)
+                    if (res && res.ok)
                         return (res.json());
-                    setErrorCode(res.status)
+                    if (res)
+                        setErrorCode(res.status)
                 })
                 .then((res: any) => {
                     if (res && res.valid) {
@@ -252,9 +277,10 @@ export const commandChat = (jwt: string, obj: any, setErrorCode: any,
             id: obj.id,
         }), { headers: header(jwt) })
             .then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
-                setErrorCode(res.status)
+                if (res)
+                    setErrorCode(res.status);
             })
             .then((res) => {
                 if (res && res.role) {
@@ -265,7 +291,8 @@ export const commandChat = (jwt: string, obj: any, setErrorCode: any,
                         fetchToBackPsw({
                             channelId: obj.id,
                             action: firstPartCmd, jwt: jwt,
-                            psw: secondPartCmd
+                            psw: secondPartCmd,
+                            setErrorCode
                         })
                     }
                 }

@@ -3,20 +3,26 @@ import { useNavigate } from 'react-router-dom';
 import UserContext from '../../contexts/UserContext';
 import { FetchError, headerPost, header } from '../FetchError';
 
-const handleChange = (event : any, setCode : any) => {
+const handleChange = (event: React.ChangeEvent<HTMLInputElement> | undefined,
+    setCode: React.Dispatch<React.SetStateAction<number | null>>) => {
+    if (!event || !event.target)
+        return ;
     event.preventDefault();
     const target = event?.currentTarget;
 
-    if (target && !isNaN(target.value)) {
+    if (target && !isNaN(Number(target.value))) {
         setCode(Number(target.value));
     } else {
         setCode(0);
     }
 }
 
-const handleSubmit = (event : any, code: number | null,
-    jwt: string | null, userId: number, userCtx : any,
-    setErrorCode : any, setValid : any) => {
+const handleSubmit = (event: React.FormEvent<HTMLFormElement> | undefined, code: number | null,
+    jwt: string | null, userId: number, userCtx: any,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>,
+    setValid: React.Dispatch<React.SetStateAction<boolean | undefined>>) => {
+    if (!event || !!event.target)
+        return ;
     event.preventDefault();
     const target = event?.currentTarget;
 
@@ -32,9 +38,10 @@ const handleSubmit = (event : any, code: number | null,
                 }),
             }
         ).then(res => {
-            if (res.ok)
+            if (res && res.ok)
                 return (res.json());
-            setErrorCode(res.status);
+            if (res)
+                setErrorCode(res.status);
         }).then(res => {
             if (res) {
                 if (res.token) {
@@ -65,7 +72,7 @@ function FaCode(props: { jwt: string | null }) {
         fetch('https://' + location.host + '/api/users/check-fa/',
             { headers: header(props.jwt) })
             .then(res => {
-                if (!res.ok)
+                if (res && !res.ok)
                     setErrorCode(res.status);
             }).catch(err => console.log(err));
     }, []);

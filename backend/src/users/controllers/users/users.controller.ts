@@ -26,7 +26,7 @@ import { toDataURL } from 'qrcode';
 import * as bcrypt from 'bcrypt';
 //convert into promise
 import { promisify } from "util";
-import { unlink } from 'fs';
+import { unlink, existsSync } from 'fs';
 import { UserDeco } from "src/common/middleware/user.decorator";
 
 const sizeOf = promisify(require('image-size'));
@@ -133,12 +133,13 @@ export class UsersController {
     }
 
     private async checkUpdateUserError(ret_user: any, ret_user2: any,
-        body: any, file: Express.Multer.File | undefined) {
+        body: any, file: Express.Multer.File | undefined, filePath: string | undefined) {
         let err: string[] = [];
         const regex2 = /^[\w\d]{4,}$/;
         const regexRet2 = regex2.test(body.username);
+        let fileDeleted: boolean = false;
         let dimensions;
-            console.log(file)
+
         if (24 < body.username.length)
             err.push("Username is too long");
         if (body.username.length === 0)
@@ -156,18 +157,19 @@ export class UsersController {
 
         if (file)
             dimensions = await sizeOf(file.path);
-        console.log(dimensions)
-        if (file && dimensions
+        if (file && dimensions && filePath
             && typeof dimensions != "undefined"
-            && 61 <= dimensions.width){
-            unlink(file.path, (res) => {console.log(res)} );
+            && 61 <= dimensions.width) {
+            if (existsSync(filePath))
+                unlink(filePath, (res) => { if (res) console.log(res) });
+            fileDeleted = true
             err.push("Image size width must be below 60px.");
         }
-        if (file
+        if (file && filePath
             && dimensions && typeof dimensions != "undefined"
-            && 61 <= dimensions.height)
-        {
-            unlink(file.path, (res) => {console.log(res)} );
+            && 61 <= dimensions.height) {
+            if (fileDeleted === false && existsSync(filePath))
+                unlink(filePath, (res) => { if (res) console.log(res) });
             err.push("Image size height must be below 60px.");
         }
         return (err);
@@ -184,16 +186,21 @@ export class UsersController {
     ) file: Express.Multer.File | undefined, @Body() body: UpdateUser) {
         const ret_user = await this.userService.findUserByName(body.username);
         let ret_user2 = await this.userService.findUsersById(user.userID);
-
+        let filePath: string | undefined = undefined;
+        if (file) {
+            let formatFile = file.filename.replace("/", "");
+            formatFile = formatFile.replace("\\", "");
+            filePath = "upload_avatar/" + formatFile;
+        }
         //check errors
         let retErr = await this.checkUpdateUserError(ret_user,
-            ret_user2, body, file);
+            ret_user2, body, file, filePath);
 
         if (retErr.length != 0)
             return ({ valid: false, err: retErr });
         //update avatar
-        if (file)
-            await this.userService.updatePathAvatarUser(user.userID, file.path);
+        if (file && filePath)
+            await this.userService.updatePathAvatarUser(user.userID, filePath);
         //need to update username token, for new login
         if (body.username !== "")
             user.username = body.username;
@@ -239,17 +246,25 @@ export class UsersController {
     ) file: Express.Multer.File | undefined, @Body() body: FirstConnection) {
         const ret_user = await this.userService.getUserProfile(user.userID);
         const ret_user2 = await this.userService.findUserByName(body.username);
-
+        let filePath: string | undefined = undefined;
+        if (file) {
+            let formatFile = file.filename.replace("/", "");
+            formatFile = formatFile.replace("\\", "");
+            filePath = "upload_avatar/" + formatFile;
+        }
+        //check errors
         let retErr = await this.checkUpdateUserError(ret_user2,
-            ret_user, body, file);
+            ret_user, body, file, filePath);
 
         if (retErr.length != 0)
             return ({ valid: false, err: retErr });
+        //update avatar
+        if (file && filePath)
+            this.userService.updatePathAvatarUser(user.userID, filePath);
+        this.userService.updateUsername(user.userID, body.username);
+        //check if 2FA is asked by requested user
         const regex1 = /^({"fa":true})$/;
         const regexRet = body.fa.match(regex1);
-        if (file)
-            this.userService.updatePathAvatarUser(user.userID, file.path);
-        this.userService.updateUsername(user.userID, body.username);
         if (regexRet) {
             //generate new auth secret
             this.userService.update2FA(user.userID, true, authenticator.generateSecret());
@@ -260,7 +275,7 @@ export class UsersController {
         const access_token = await this.authService.login(user);
         return ({ valid: true, username: body.username, token: access_token });
     }
-
+    /*
     @Post('avatarfile')
     @UseInterceptors(FileInterceptor('fileset', { dest: './upload_avatar' }))
     uploadFile(@UserDeco() user: TokenUser, @UploadedFile(new ParseFilePipe({
@@ -272,7 +287,7 @@ export class UsersController {
     ) file: Express.Multer.File) {
         this.userService.updatePathAvatarUser(user.userID, file.path);
         return ({ path: file.path });
-    }
+    }*/
 
     /*
         useGuard est un middleware
@@ -342,7 +357,7 @@ export class UsersController {
         const rankDbByWin = await this.userService.getRankUserGlobalWin(user.userID);
         const rankByRankUser = await this.userService.getRankUserByRank(user.userID);
 
-        return ({nb: ret_nb, rankDbByWin, rankByRankUser});
+        return ({ nb: ret_nb, rankDbByWin, rankByRankUser });
     }
 
     @Get('get-victory-nb-other/:id')
@@ -351,7 +366,7 @@ export class UsersController {
         const rankDbByWin = await this.userService.getRankUserGlobalWin(id);
         const rankByRankUser = await this.userService.getRankUserByRank(id);
 
-        return ({nb: ret_nb, rankDbByWin, rankByRankUser});
+        return ({ nb: ret_nb, rankDbByWin, rankByRankUser });
     }
 
     @Get('get-games-nb-other/:id')
@@ -379,11 +394,6 @@ export class UsersController {
         return (ret_raw);
     }
 
-    @Get('updateHistory')
-    async updateHistoryfunc() {
-        // this.userService.updateHistory('Simple', 2988219, 74133, 2988219);
-    }
-
     /* 0 = user not found */
     /* 1 = already added in friend list */
     /* 2 = user is self */
@@ -393,9 +403,9 @@ export class UsersController {
         let err: string[] = [];
         const ret_user = await this.userService.findUserByName(body.username);
 
-        if (!ret_user){
+        if (!ret_user) {
             err.push("User not found");
-            return ({code: 1, err: err});
+            return ({ code: 1, err: err });
         }
         if (ret_user && Number(ret_user.userID) == user.userID)
             err.push("Can't add yourself");
@@ -403,7 +413,7 @@ export class UsersController {
         if (findInList)
             err.push("User aleady in list");
         if (err.length > 0)
-            return ({code: 1, err: err});
+            return ({ code: 1, err: err });
         this.userService.insertBlFr(user.userID, Number(ret_user.userID), 2);
         //need to check if user is in BL, for updating global friend black list
         const findInBlackList = await this.userService.searchUserInList(user.userID, ret_user.userID, 1);
@@ -430,9 +440,9 @@ export class UsersController {
         let err: string[] = [];
         const ret_user = await this.userService.findUserByName(body.username);
 
-        if (!ret_user){
+        if (!ret_user) {
             err.push("User not found");
-            return ({code: 1, err: err});
+            return ({ code: 1, err: err });
         }
         if (ret_user && Number(ret_user.userID) == user.userID)
             err.push("Can't add yourself");
@@ -440,7 +450,7 @@ export class UsersController {
         if (findInList)
             err.push("User aleady in list");
         if (err.length > 0)
-            return ({code: 1, err: err});
+            return ({ code: 1, err: err });
         this.userService.insertBlFr(user.userID, Number(ret_user.userID), 1);
         //need to check if user is in BL, for updating global friend black list
         const findInBlackList = await this.userService.searchUserInList(user.userID, ret_user.userID, 2);
@@ -460,6 +470,9 @@ export class UsersController {
 
     @Post('fr-bl-list')
     async useBlackFriendList(@UserDeco() user: TokenUser, @Body() body: BlockUnblock) {
+        const ret_user = await this.userService.findUsersById(body.userId);
+        if (!ret_user)
+            return ({ add: false, type: null });
         const find: BlackFriendList | null
             = await this.userService.findBlFr(user.userID, body.userId, body.type);
         if (user.userID === body.userId)

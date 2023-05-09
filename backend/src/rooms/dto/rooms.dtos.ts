@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, MinLength } from "class-validator";
+import { IsDefined, IsNotEmpty, IsNumber, IsString, MinLength } from "class-validator";
 
 export class CreateRoomDto {
   @IsNotEmpty()
@@ -32,4 +32,10 @@ export class CreateRoomPrivate {
 export class CreateRoomInvite {
   @IsNumber()
   id: number;
+}
+
+export class ParamRoom {
+  @IsDefined()
+  @IsString()
+  id: string;
 }

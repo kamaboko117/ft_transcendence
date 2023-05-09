@@ -1,5 +1,4 @@
 import {
-  Request,
   Body,
   Controller,
   Get,
@@ -7,10 +6,11 @@ import {
   UsePipes,
   ValidationPipe,
   Query,
+  Param,
 } from "@nestjs/common";
 import { TokenUser } from "src/chat/chat.interface";
-import { UserDeco } from "src/common/middleware/user.decorator";
-import { CreateRoomDto, CreateRoomInvite, CreateRoomPrivate } from "src/rooms/dto/rooms.dtos";
+import { UserDeco, UserDecoSock } from "src/common/middleware/user.decorator";
+import { CreateRoomDto, CreateRoomInvite, ParamRoom } from "src/rooms/dto/rooms.dtos";
 import { RoomsService } from "src/rooms/services/rooms/rooms.service";
 import { SocketEvents } from "src/socket/socketEvents";
 import { UsersService } from "src/users/providers/users/users.service";
@@ -37,7 +37,6 @@ export class RoomsController {
       return { err: "true", uid: "" }
     }
     const userId = user.userID;
-    //let findInMap: boolean = false;
     for (let [key, value] of this.socketEvents.getMap().entries()) {
       if (value === userId) {
         return { err: "You are already in a party", uid: "" }
@@ -56,7 +55,7 @@ export class RoomsController {
     }*/
     let settings = {
       powerUps: false,
-      type: "classic",
+      type: "Classic",
       goal: 11,
       speed: 5,
       acceleration: 0.1,
@@ -70,11 +69,9 @@ export class RoomsController {
 
   @Post("create-private")
   @UsePipes(ValidationPipe)
-  async createRoomPrivate(
-    @Request() req: any,
+  async createRoomPrivate(@UserDecoSock() user: TokenUser,
     @Body() createRoomDto: CreateRoomInvite
   ) {
-    const user: TokenUser = req.user;
     const name: string = String(user.userID) + "|" + String(createRoomDto.id);
     if (user.userID === createRoomDto.id) {
       return { roomName: "", Capacity: "0", private: false, uid: "" };
@@ -90,12 +87,11 @@ export class RoomsController {
     //let findInMap: boolean = false;
     const userId = user.userID;
     for (let [key, value] of this.socketEvents.getMap().entries()) {
-      if (value === userId) {
+      if (value === userId || value === createRoomDto.id) {
         return { roomName: "", Capacity: "0", private: false, uid: "" };
       }
     }
     const itm = await this.roomsService.createRoomPrivate(name);
-    console.log(itm);
     this.socketEvents.inviteUserToGame(
       String(user.userID),
       String(createRoomDto.id),
@@ -103,7 +99,7 @@ export class RoomsController {
     );
     return itm;
   }
-  @Post("create-matchmaking")
+  /*@Post("create-matchmaking")
   @UsePipes(ValidationPipe)
   async createRoomMatchmaking(@UserDeco() user: TokenUser,
     @Body() createRoomDto: CreateRoomPrivate) {
@@ -120,7 +116,7 @@ export class RoomsController {
     //let findInMap: boolean = false;
     const userId = user.userID;
     for (let [key, value] of this.socketEvents.getMap().entries()) {
-      if (value === userId) {
+      if (value === userId || value === createRoomDto.id) {
         return ({ roomName: '', Capacity: '0', private: false, uid: '' });
       }
     }
@@ -128,10 +124,10 @@ export class RoomsController {
     console.log(itm);
     this.socketEvents.inviteUserToGame(String(user.userID), String(createRoomDto.id), itm.uid);
     return (itm);
-  }
+  }*/
 
   @Get("get")
-  async getRoom(@Request() req: any, @Query("id") id: string) {
+  async getRoom(@Query("id") id: string) {
     const room = await this.roomsService.getRoom(id);
 
     if (!room) return { exist: false };
@@ -144,13 +140,12 @@ export class RoomsController {
   }
 
   @Get(":id")
-  async getRoomById(@Request() req: any) {
-    const user: TokenUser = req.user;
+  async getRoomById(@Param() params: ParamRoom, @UserDeco() user: TokenUser) {
     const isUserConnected = this.socketEvents.isUserConnected(
       String(user.userID)
     );
     if (!isUserConnected)
       return { roomName: "", Capacity: "0", private: false, uid: "" };
-    return this.roomsService.findRoomById(req.params.id);
+    return this.roomsService.findRoomById(params.id);
   }
 }

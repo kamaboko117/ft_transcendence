@@ -34,17 +34,17 @@ type Props = {
 
 const ErrorSubmit = (props: any) => {
     let i: number = 0;
-    return (<div style={{"width": "100%"}}>
+    return (<div style={{ "width": "100%" }}>
         {props.listError &&
-            props.listError.map((err : any) => (
+            props.listError.map((err: string) => (
                 <p style={{ color: "red" }} key={++i}>{err}</p>
             ))
         }
     </div>);
 }
 
-const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, setErr : any,
-    name: string | null, navigate: any, jwt : any) => {
+const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, setErr: React.Dispatch<React.SetStateAction<boolean>>,
+    name: string | null, navigate: any, jwt: string | null) => {
     e.preventDefault();
 
     if (name) {
@@ -54,7 +54,7 @@ const onSubmitJoin = async (e: FormEvent<HTMLFormElement>, setErr : any,
         }),
             { headers: header(jwt) })
             .then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
             })
             .then(res => {
@@ -116,11 +116,13 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         fetch('https://' + location.host + '/api/chat/public/',
             { headers: header(this.props.jwt) })
             .then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
-                this.setState({
-                    errorCode: res.status
-                });
+                if (res) {
+                    this.setState({
+                        errorCode: res.status
+                    });
+                }
             }).then(res => {
                 if (res) {
                     this.setState({
@@ -130,11 +132,13 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             }).catch(e => console.log(e));
         fetch('https://' + location.host + '/api/chat/private',
             { headers: header(this.props.jwt) }).then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
-                this.setState({
-                    errorCode: res.status
-                });
+                if (res) {
+                    this.setState({
+                        errorCode: res.status
+                    });
+                }
             }).then(res => {
                 if (res) {
                     this.setState({
@@ -154,7 +158,7 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
         fetch('https://' + location.host + '/api/chat/public/',
             { headers: header(this.props.jwt) })
             .then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
             }).then(res => {
                 if (res) {
@@ -165,11 +169,13 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
             }).catch(e => console.log(e))
         fetch('https://' + location.host + '/api/chat/private',
             { headers: header(this.props.jwt) }).then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
-                this.setState({
-                    errorCode: res.status
-                });
+                if (res) {
+                    this.setState({
+                        errorCode: res.status
+                    });
+                }
             }).then(res => {
                 if (res) {
                     this.setState({
@@ -205,11 +211,13 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     lstBan: {}
                 })
             }).then(res => {
-                if (res.ok)
-                    return (res.json())
-                this.setState({
-                    errorCode: res.status
-                });
+                if (res && res.ok)
+                    return (res.json());
+                if (res) {
+                    this.setState({
+                        errorCode: res.status
+                    });
+                }
             }).then(res => {
                 if (res) {
                     if (Array.isArray(res) === true) {
@@ -239,11 +247,13 @@ class ListChannel extends React.Component<{ jwt: string | null }, State> {
                     lstBan: {}
                 })
             }).then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
-                this.setState({
-                    errorCode: res.status
-                });
+                if (res) {
+                    this.setState({
+                        errorCode: res.status
+                    });
+                }
             }).then(res => {
                 if (res) {
                     if (Array.isArray(res) === true) {

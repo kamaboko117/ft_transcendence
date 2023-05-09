@@ -33,7 +33,8 @@ export const UsernameSet = (props: {
         .then(res => {
           if (res && res.ok)
             return (res.json());
-          setErrorCode(res.status);
+          if (res)
+            setErrorCode(res.status);
         })
         .then(res => {
           if (res)
@@ -51,7 +52,7 @@ export const UsernameSet = (props: {
       && (props.username === "" || props.username === null)) {
       navigate("/first-connection");
     }
-  }, [props.username, load])
+  }, [props.username, load]);
   if (errorCode >= 400)
     return (<FetchError code={errorCode} />);
   return (<></>);

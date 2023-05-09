@@ -9,7 +9,7 @@ import SocketContext from '../../contexts/Socket';
 import { debounce } from 'debounce';
 import ContextDisplayChannel, { updateBlackFriendList } from '../../contexts/DisplayChatContext';
 import AdminComponent from './Admin';
-import { useNavigate } from 'react-router-dom';
+import { NavigateFunction, useNavigate } from 'react-router-dom';
 import { playPageInvite } from '../../pages/PlayInvite';
 
 type typeUserInfo = {
@@ -88,9 +88,10 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
             userId: userId, type: type
         })
     }).then(res => {
-        if (res.ok)
+        if (res && res.ok)
             return (res.json());
-        setErrorCode(res.status)
+        if (res)
+            setErrorCode(res.status)
     }).then((res: { add: boolean, type: number }) => {
         if (res) {
             if (res.add) {
@@ -115,7 +116,8 @@ const listHandle = (event: MouseEvent<HTMLButtonElement>, jwt: string,
 }
 
 export const inviteGame = (event: MouseEvent<HTMLButtonElement>,
-    userId: number, jwt: string | null, navigate : any, setErrorCode : any): void => {
+    userId: number, jwt: string | null, navigate: NavigateFunction,
+    setErrorCode: React.Dispatch<React.SetStateAction<number>>): void => {
     event.preventDefault();
     if (event.target && jwt)
         playPageInvite(jwt, setErrorCode,
@@ -123,7 +125,7 @@ export const inviteGame = (event: MouseEvent<HTMLButtonElement>,
 }
 
 export const userProfile = (event: MouseEvent<HTMLButtonElement>,
-    userId: number, navigate : any): void => {
+    userId: number, navigate: NavigateFunction): void => {
     event.preventDefault();
     if (event.target)
         navigate({ pathname: "/profile/" + userId });
@@ -150,9 +152,10 @@ export const directMessage = async (event: MouseEvent<HTMLButtonElement>,
             id: String(userId),
         }), { headers: header(jwt) })
             .then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
-                setErrorCode(res.status)
+                if (res)
+                    setErrorCode(res.status)
             }).then((res: aswType) => {
                 if (res) {
                     if (res.asw) {
@@ -283,7 +286,9 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
     </>)
 }
 
-export const handleImgError = (e : any) => {
+export const handleImgError = (e: any) => {
+    if (!e || !e.target)
+        return ;
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
     if (target) {
@@ -407,9 +412,10 @@ const ListUserChat = (props: {
             return (await fetch('https://' + location.host + '/api/chat/users?' + new URLSearchParams({
                 id: id,
             }), { headers: header(jwt) }).then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
-                setErrorCode(res.status);
+                if (res)
+                    setErrorCode(res.status);
             }).catch(e => console.log(e)));
         }
         fetchListUser(props.id, props.jwt, setErrorCode).then(res => {

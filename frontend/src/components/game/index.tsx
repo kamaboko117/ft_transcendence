@@ -48,10 +48,12 @@ export default function Game(props: {
         { headers: header(props.jwt) }
       )
         .then((res) => {
-          if (res.ok) return res.json();
-          setErrorCode(res.status);
+          if (res && res.ok) return res.json();
+          if (res)
+            setErrorCode(res.status);
         })
         .then((res: { exist: boolean }) => {
+          console.log("room exist: " + res)
           if (res) {
             if (res.exist === false) navigate("/");
           }
@@ -251,7 +253,7 @@ export default function Game(props: {
     if (socketService.socket) {
       gameService.onGameUpdate(socketService.socket, (data: any) => {
         ft_timer();
-        receivedUpdates++;
+        ++receivedUpdates;
         player.y = side === 1 ? data.player2.y : data.player1.y;
         let newTickCount = side === 1 ? data.player2.tickCount : data.player1.tickCount;
         if (newTickCount > receivedUpdates) {
@@ -350,7 +352,8 @@ export default function Game(props: {
       }
       window?.removeEventListener("mousemove", movePaddle);
       socketService.socket?.off("on_game_update");
-      socketService.socket?.off("onGameStart");
+      socketService.socket?.off("start_game");
+      socketService.socket?.off("end_game");
     };
   }, [isGameStarted, socketService.socket?.connected]);
 

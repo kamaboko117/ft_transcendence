@@ -8,8 +8,8 @@ import { BlackFriendList } from "src/typeorm/blackFriendList.entity";
 import { MatchHistory } from "src/typeorm/matchHistory.entity";
 import { Achievements } from "src/typeorm/achievement.entity";
 
-const validateURL = "https://api.intra.42.fr/oauth/token"
-const infoURL = "https://api.intra.42.fr/oauth/token/info"
+const validateURL = "https://api.intra.42.fr/oauth/token";
+const infoURL = "https://api.intra.42.fr/oauth/token/info";
 const appId = process.env.APP_ID!;
 const appSecret = process.env.APP_SECRET!;
 
@@ -58,10 +58,10 @@ export class UsersService {
             method: "POST",
             body: formData
         }).then(res => {
-            if (res.ok) {
+            if (res && res.ok) {
                 return (res.json());
             }
-            return (undefined)
+            return (undefined);
         }).catch(e => console.log(e));
         if (typeof res === "undefined" || typeof res.access_token === "undefined")
             return (undefined);
@@ -144,17 +144,6 @@ export class UsersService {
             .setParameters({ id: user_id })
             .execute();
     }
-
-    /*
-        exemple requete sql avec un innerjoin facon typeorm
-        createQueryBuilder("list_msg")
-        .select(['list_msg.idUser',
-          'list_msg.username', 'list_msg.content'])
-        .innerJoin("list_msg.chat", "lstMsg")
-        .where("list_msg.chatid = :id")
-        .setParameters({ id: element.id })
-        .getMany() OU getOne();
-    */
 
     async getUserProfile(id: number) {
         const user: User | undefined | null = await this.userRepository.createQueryBuilder("user")

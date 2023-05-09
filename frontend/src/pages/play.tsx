@@ -9,18 +9,6 @@ import SocketContext from "../contexts/Socket";
 import { FetchError, header } from "../components/FetchError";
 
 export default function PlayPage(props: { jwt: string | null }) {
-  /*const connectSocket = async () => {
-    const socket = await socketService
-      .connect("http://localhost:5000")
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-  useEffect(() => {
-    connectSocket();
-  }, []);
-*/
   const [idRoom, setIdRoom] = useState<string>("");
   const [roomName, setRoomName] = useState<string>("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -42,8 +30,8 @@ export default function PlayPage(props: { jwt: string | null }) {
       headers: header(props.jwt),
     })
       .then((response) => {
-        if (response.ok) return response.json();
-        setErrorCode(response.status);
+        if (response && response.ok) return response.json();
+        if (response) setErrorCode(response.status);
       })
       .then((data) => {
         const rooms: any = [];
@@ -90,13 +78,14 @@ export default function PlayPage(props: { jwt: string | null }) {
         headers: header(props.jwt),
       })
         .then((response) => {
-          if (response.ok) return response.json();
-          setErrorCode(response.status);
+          if (response && response.ok) return response.json();
+          if (response) setErrorCode(response.status);
         })
         .then((data) => {
-          roomName = data.roomName;
+          if (data)
+            roomName = data.roomName;
           console.log(roomName);
-        });
+        }).catch(err => console.log(err));
       setRoomName(roomName);
       setIdRoom(roomId);
       setIsInRoom(true);

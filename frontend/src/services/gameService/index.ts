@@ -3,32 +3,32 @@ import { Socket } from "socket.io-client";
 
 class GameService {
   public async joinGameRoom(
-    socket: Socket,
+    socket: Socket<any, any> | undefined,
     roomId: string,
-    setUsr1: any,
-    setUsr2: any
+    setUsr1:  React.Dispatch<React.SetStateAction<string>>,
+    setUsr2:  React.Dispatch<React.SetStateAction<string>>
   ): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      socket.emit("join_game", { roomId });
-      socket.on("join_game_success", (res) => {
+      socket?.emit("join_game", { roomId });
+      socket?.on("join_game_success", (res: {nbClient: number, username: string}) => {
         console.log(res);
         if (res.nbClient === 1) setUsr1(res.username);
         else if (res.nbClient === 2) setUsr2(res.username);
         resolve(true);
       });
-      socket.on("join_game_error", ({ error }) => reject(error));
+      socket?.on("join_game_error", (res: { error: string }) => reject(res.error));
     });
   }
 
-  public async updateGame(socket: Socket, data: any): Promise<void> {
-    socket.emit("update_game", data);
+  public async updateGame(socket: Socket<any, any> | undefined, data: any): Promise<void> {
+    socket?.emit("update_game", data);
   }
 
   public async updatePlayerPosition(
-    socket: Socket,
+    socket: Socket<any, any> | undefined,
     data: number
   ): Promise<void> {
-    socket.emit("update_player_position", data);
+    socket?.emit("update_player_position", data);
   }
 
   public async updatePlayerTickCount(
@@ -46,18 +46,18 @@ class GameService {
   }
 
   public async onGameStart(
-    socket: Socket,
+    socket: Socket<any, any> | undefined,
     callback: (data: any) => void
   ): Promise<void> {
     console.log("start_game log loaded");
-    socket.on("start_game", callback);
+    socket?.on("start_game", callback);
   }
 
   public async onGameEnd(
-    socket: Socket,
+    socket: Socket<any, any> | undefined,
     callback: (data: any) => void
   ): Promise<void> {
-    socket.on("end_game", callback);
+    socket?.on("end_game", callback);
   }
 }
 

@@ -36,10 +36,11 @@ function ValidatePage(props: { jwt: string }) {
           code: code
         })
       }).then(response => {
-        if (response.ok)
+        if (response && response.ok)
           return (response.json());
-        setErrorCode(response.status);
-      }).catch(e => console.log(e)));
+        if (response)
+          setErrorCode(response.status);
+      }));
     };
     //set load user
     getUser(code).then(res => {
@@ -51,7 +52,7 @@ function ValidatePage(props: { jwt: string }) {
           userId: String(res.user_id)
         });
       }
-    })
+    }).catch(e => console.log(e));
   }, []);
 
   if (errorCode >= 400)

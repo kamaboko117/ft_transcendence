@@ -291,20 +291,24 @@ const PasswordExist = (props: {
             id: props.id,
         }), { headers: header(props.jwt) })
             .then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
+                if (res && res.status)
+                    props.setErrorCode(res.status);
             }).then((res: boolean) => {
                 if (typeof res === "boolean")
                     props.setType(res);
-            });
+            }).catch(err => console.log(err));
     }, [props.id]);
     return (<></>);
 }
 
-function submitPsw(e : any, jwt: string, action: string,
+function submitPsw(e: any | undefined, jwt: string, action: string,
     id: string, psw: string,
     setType: React.Dispatch<React.SetStateAction<boolean>>,
     setErr: React.Dispatch<React.SetStateAction<boolean>>) {
+    if (!e)
+        return ;
     e.preventDefault();
 
     if (e && e.target) {
@@ -317,9 +321,9 @@ function submitPsw(e : any, jwt: string, action: string,
             })
         })
             .then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
-                if (res.status === 400)
+                if (res && res.status === 400)
                     setErr(true);
             })
             .then(res => {
@@ -381,9 +385,10 @@ export const PasswordOwnerBox = (props: admPassword) => {
             id: props.id,
         }), { headers: header(props.jwt) })
             .then(res => {
-                if (res.ok)
+                if (res && res.ok)
                     return (res.json());
-                props.setErrorCode(res.status)
+                if (res && res.status)
+                    props.setErrorCode(res.status);
             })
             .then((res) => {
                 if (res && res.role) {
@@ -414,9 +419,10 @@ function fetchGetRole(jwt: string, id: string,
         id: id,
     }), { headers: header(jwt) })
     .then(res => {
-        if (res.ok)
+        if (res && res.ok)
             return (res.json());
-        setErrorCode(res.status);
+        if (res && res.status)
+            setErrorCode(res.status);
     }));
 }
 
@@ -426,9 +432,10 @@ function fetchUserRole(jwt: string, userId: number, id: string,
         id: id, idfocus: String(userId)
     }), { headers: header(jwt) })
     .then(res => {
-        if (res.ok)
+        if (res && res.ok)
             return (res.json());
-        setErrorCode(res.status);
+        if (res && res.status)
+            setErrorCode(res.status);
     }));
 }
 
@@ -442,7 +449,8 @@ const AdminComponent = (props: AdminCompType) => {
             fetchUserRole(props.jwt, props.userId,
                 props.id, props.setErrorCode)
             .then((res: {role: string})  => {
-                setRoleFocus(res.role);
+                if (res)
+                    setRoleFocus(res.role);
                 fetchGetRole(props.jwt, props.id, props.setErrorCode)
                 .then((res) => {
                     if (res && res.role) {

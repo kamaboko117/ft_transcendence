@@ -60,11 +60,25 @@ export class ChatController {
 
     /* find and create if needed a private message */
     private async findPm(user_id: number, id: string): Promise<string> {
-        await this.chatService.findDuplicateAndDelete(String(user_id));
-        await this.chatService.findDuplicateAndDelete(id);
+        //await this.chatService.findDuplicateAndDelete(String(user_id));
+        //await this.chatService.findDuplicateAndDelete(id);
+        const concatOne = String(user_id).concat(id);
+        const concatTwo = id.concat(String(user_id));
+
+        const getChanOne = await this.chatService.getChannelById(concatOne);
+        console.log(getChanOne)
+        if (getChanOne) {
+            await this.chatService.insertMemberPm(user_id, concatOne);
+            return (getChanOne.id);
+        }
+        const getChanTwo = await this.chatService.getChannelById(concatTwo);
+        console.log(getChanTwo);
+        if (getChanTwo) {
+            await this.chatService.insertMemberPm(user_id, concatTwo);
+            return (getChanTwo.id);
+        }
         const list_user: Channel_ret | undefined
             = await this.chatService.findPmUsers(user_id, id);
-
         if (typeof list_user === "undefined") {
             const ret: string
                 = await this.chatService.createPrivateMessage(user_id, id);
@@ -130,7 +144,7 @@ export class ChatController {
     @Get('has-paswd')
     async getHasPaswd(@UserDeco() user: TokenUser,
         @Query('id') id: string): Promise<boolean> {
-        const channel: undefined | DbChat = await this.chatService.getChannelByTest(id);
+        const channel: undefined | DbChat = await this.chatService.getChannelById(id);
         if (typeof channel != "undefined" && channel != null) {
             const getUser = await this.chatService.getUserOnChannel(id, user.userID);
             if (typeof getUser !== "undefined" || getUser === null)
@@ -148,10 +162,12 @@ export class ChatController {
     @Post('new-public')
     async postNewPublicChat(@UserDeco() user: TokenUser,
         @Body() chat: CreateChatDto): Promise<InformationChat | string[]> {
-        const channel: undefined | DbChat = await this.chatService.getChannelByName(chat.name);
+        const channelById: undefined | DbChat = await this.chatService.getChannelByName(chat.name);
         let err: string[] = [];
         const regex = /^[\wàâéêèäÉÊÈÇç]+(?: [\wàâéêèäÉÊÈÇç]+)*$/;
         const resultRegex = regex.exec(chat.name);
+        const id: string = crypto.randomBytes(4).toString('hex')
+        const getChanneByName = await this.chatService.getChannelById(id);
 
         if ((chat.accesstype != '0' && chat.accesstype != '1'))
             err.push("Illegal access type");
@@ -159,7 +175,7 @@ export class ChatController {
             err.push("Chat name must not be empty.");
         else if (chat.name == chat.password)
             err.push("Password and chat name can't be the same.");
-        if (channel != null)
+        if (channelById)
             err.push("Channel already exist.");
         if (chat.name.length > 0 && chat.name.length < 4)
             err.push("Channel name too short.");
@@ -167,10 +183,11 @@ export class ChatController {
             err.push("Channel name too long.");
         if (chat.name.length > 0 && !resultRegex)
             err.push("Channel name format is wrong.");
+        if (getChanneByName)
+            err.push("Channel id already exist, please try again.");
         if (err.length > 0)
             return (err);
-        const getAll = await this.chatService.getAllPublic()
-        const len: string = getAll.length.toString();
+        const getAll = await this.chatService.getAllPublic();
         const salt = Number(process.env.CHAT_SALT);
         if (chat.accesstype != '0' || typeof getAll == undefined)
             throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
@@ -179,7 +196,7 @@ export class ChatController {
             chat.password = bcrypt.hashSync(chat.password, salt);
         }
         const findUser = await this.userService.findUsersById(user.userID);
-        return (this.chatService.createChat(chat, len, { idUser: user.userID, username: findUser?.username }));
+        return (await this.chatService.createChat(chat, id, { idUser: user.userID, username: findUser?.username }));
     }
 
     /* Create new private chat and return them by Name
@@ -190,10 +207,12 @@ export class ChatController {
     @Post('new-private')
     async postNewPrivateChat(@UserDeco() user: TokenUser,
         @Body() chat: CreateChatDto): Promise<InformationChat | string[]> {
-        const channel: undefined | DbChat = await this.chatService.getChannelByName(chat.name);
+        const channelByName: undefined | DbChat = await this.chatService.getChannelByName(chat.name);
         let err: string[] = [];
         const regex = /^[\wàâéêèäÉÊÈÇç]+(?: [\wàâéêèäÉÊÈÇç]+)*$/;
         const resultRegex = regex.exec(chat.name);
+        const id: string = crypto.randomBytes(6).toString('hex');
+        const getChannelById = await this.chatService.getChannelById(id);
 
         if ((chat.accesstype != '2' && chat.accesstype != '3'))
             err.push("Illegal access type");
@@ -205,25 +224,26 @@ export class ChatController {
             err.push("Channel name too short.");
         if (chat.name.length > 0 && 100 < chat.name.length)
             err.push("Channel name too long.");
-        if (channel != null)
+        if (channelByName)
             err.push("Channel already exist.");
         if (chat.name.length > 0 && !resultRegex)
             err.push("Channel name format is wrong.");
+        if (getChannelById)
+            err.push("Channel id already exist, please try again.");
         if (err.length > 0)
             return (err);
-        const id: string = crypto.randomBytes(4).toString('hex');
         const salt = Number(process.env.CHAT_SALT);
         if (chat.password != '') {
             chat.accesstype = '3';
             chat.password = bcrypt.hashSync(chat.password, salt);
         }
         const findUser = await this.userService.findUsersById(user.userID);
-        return (this.chatService.createChat(chat, id, { idUser: user.userID, username: findUser?.username }));
+        return (await this.chatService.createChat(chat, id, { idUser: user.userID, username: findUser?.username }));
     }
 
     @Post('valid-paswd')
     async passwordIsValid(@Body() psw: PswChat): Promise<boolean> {
-        const channel: undefined | DbChat = await this.chatService.getChannelByTest(psw.id);
+        const channel: undefined | DbChat = await this.chatService.getChannelById(psw.id);
 
         if (typeof channel == "undefined" || channel === null || channel.password == '')
             return (false);
@@ -238,7 +258,7 @@ export class ChatController {
     @Get('')
     async getChannel(@UserDeco() user: TokenUser,
         @Query('id') id: string) {
-        const chan = await this.chatService.getChannelByTest(id);
+        const chan = await this.chatService.getChannelById(id);
         const listMsg = await this.chatService.getListMsgByChannelId(id, user.userID);
         if (!chan)
             return ({});

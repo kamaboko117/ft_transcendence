@@ -8,7 +8,7 @@ import { SocketEvents } from 'src/socket/socketEvents';
 
 class Info {
   @IsNumber()
-  userId: number
+  userId: number;
 }
 
 @WebSocketGateway({
