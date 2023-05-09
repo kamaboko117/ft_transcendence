@@ -1,7 +1,5 @@
-import { IsString, IsInt, IsArray, ValidateNested, IsObject, IsDefined, IsNumber } from 'class-validator';
+import { IsString, IsArray, ValidateNested, IsDefined } from 'class-validator';
 import { Type } from 'class-transformer';
-
-/* Pair for ban and mute */
 
 export class Owner {
     @IsString()

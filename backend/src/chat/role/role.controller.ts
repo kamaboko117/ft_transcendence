@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Request } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { UserDeco } from 'src/common/middleware/user.decorator';
 import { TokenUser } from '../chat.interface';
 import { PostActionDto, PostActionDtoPsw } from '../dto/role-action-dto';
@@ -36,7 +36,7 @@ export class RoleController {
 
     @Get('get-role-focus')
     async getQueryFocusRole(@Query('idfocus') userId: number,
-        @Query('id') channelId: string): Promise<{role: string}> {
+        @Query('id') channelId: string): Promise<{ role: string }> {
         if (!channelId || !userId)
             return ({ role: "" });
         const list_user: ListUser | null = await this.roleService.getRole(channelId, userId);
