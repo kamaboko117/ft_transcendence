@@ -165,6 +165,7 @@ const Custom_size_ball = (props: { usrSocket: Socket<any, any> }) => {
       <div className="setting_choice_group">
         <button
           className={size === "5" ? "setting_choice_active" : "setting_choice"}
+          style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={5}
           name="size_ball"
@@ -173,6 +174,7 @@ const Custom_size_ball = (props: { usrSocket: Socket<any, any> }) => {
         </button>
         <button
           className={size === "10" ? "setting_choice_active" : "setting_choice"}
+          style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={10}
           name="size_ball"
@@ -181,6 +183,7 @@ const Custom_size_ball = (props: { usrSocket: Socket<any, any> }) => {
         </button>
         <button
           className={size === "20" ? "setting_choice_active" : "setting_choice"}
+          style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={20}
           name="size_ball"
@@ -217,39 +220,33 @@ const Custom_speed_ball = (props: { usrSocket: Socket<any, any> }) => {
       <div className="setting_choice_group">
         <button
           className={speed === "3" ? "setting_choice_active" : "setting_choice"}
+          style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
-          // type="radio"
           value={3}
           name="speed_ball"
-          // checked={speed === "3"}
         >
           Slow
         </button>
-        {/* <label>Slow</label> */}
         <button
           className={speed === "5" ? "setting_choice_active" : "setting_choice"}
+          style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
-          // type="radio"
           value={5}
           name="speed_ball"
-          // checked={speed === "5"}
         >
           Average
         </button>
-        {/* <label>Average</label> */}
         <button
           className={
             speed === "10" ? "setting_choice_active" : "setting_choice"
           }
+          style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
-          // type="radio"
           value={10}
           name="speed_ball"
-          // checked={speed === "10"}
         >
           Fast
         </button>
-        {/* <label>Fast</label> */}
       </div>
     </div>
   );
@@ -280,6 +277,7 @@ const Custom_acceleration_ball = (props: { usrSocket: Socket<any, any> }) => {
       <div className="setting_choice_group">
         <button
           className={acc === "0.1" ? "setting_choice_active" : "setting_choice"}
+          style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={0.1}
           name="acc_ball"
@@ -288,6 +286,7 @@ const Custom_acceleration_ball = (props: { usrSocket: Socket<any, any> }) => {
         </button>
         <button
           className={acc === "0.2" ? "setting_choice_active" : "setting_choice"}
+          style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={0.2}
           name="acc_ball"
@@ -296,6 +295,7 @@ const Custom_acceleration_ball = (props: { usrSocket: Socket<any, any> }) => {
         </button>
         <button
           className={acc === "0.4" ? "setting_choice_active" : "setting_choice"}
+          style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={0.4}
           name="acc_ball"
@@ -331,7 +331,8 @@ const Custom_goal = (props: { usrSocket: Socket<any, any> }) => {
       </label>
       <div className="setting_choice_group">
         <button
-          className={goal === "5" ? "setting_choice_active" : "setting_choice"}
+          className={goal === "11" ? "setting_choice_active" : "setting_choice"}
+          style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={11}
           name="goal_ball"
@@ -339,7 +340,8 @@ const Custom_goal = (props: { usrSocket: Socket<any, any> }) => {
           Normal
         </button>
         <button
-          className={goal === "11" ? "setting_choice_active" : "setting_choice"}
+          className={goal === "21" ? "setting_choice_active" : "setting_choice"}
+          style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={21}
           name="goal_ball"
@@ -347,8 +349,13 @@ const Custom_goal = (props: { usrSocket: Socket<any, any> }) => {
           Long
         </button>
         <button
-          className={goal === "20" ? "setting_choice_active" : "setting_choice"}
-          // style={ "width: 100px" }
+          className={goal === "42" ? "setting_choice_active" : "setting_choice"}
+          style={{
+            width: "33%",
+            minWidth: "33%",
+            maxWidth: "33%",
+            fontSize: "16px",
+          }}
           onClick={handleChange}
           value={42}
           name="goal_ball"
@@ -439,6 +446,7 @@ const Custom_power_up = (props: { usrSocket: Socket<any, any> }) => {
       </label>
       <button
         className={isCheck ? "setting_choice_active" : "setting_choice"}
+        style={{ width: "67%", minWidth: "67%", maxWidth: "67%" }}
         onClick={handleCheck}
         // type="checkbox"
         name="Power_Up"

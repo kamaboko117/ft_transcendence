@@ -317,10 +317,11 @@ button:hover {
   justify-content: left;
   align-items: left;
   text-align: left;
+  width: 33%;
+  min-width: 33%;
 }
 
 select {
-  font-size: 1em;
   padding: 5px;
   border-radius: 4px;
   border: 1px solid #333333;
@@ -329,6 +330,9 @@ select {
   font-weight: 400;
   font-size: 18px;
   line-height: 40px;
+  width: 67%;
+  min-width: 67%;
+  max-width: 67%;
 }
 
 .setting_choice_group {
@@ -337,7 +341,8 @@ select {
   align-items: center;
   justify-content: space-between;
   margin: 0px;
-  width: 70%;
+  width: 67%;
+  min-width: 67%;
   /* justify-content: space-between; */
 }
 
@@ -358,7 +363,7 @@ select {
   cursor: pointer;
   transition: .1s;
   /* max-width: fit-content; */
-  width: 50%;
+  /* width: 50%; */
 }
 
 .setting_choice:first-child {
@@ -383,7 +388,7 @@ select {
   justify-content: center;
   align-items: center;
   text-align: center;
-  width: 50%;
+  /* width: 50%; */
 }
 
 .setting_choice_active:first-child {
