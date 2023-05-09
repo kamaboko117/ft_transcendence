@@ -9,14 +9,14 @@ const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
 
 type typeObject = {
-    ballSize: number;
-    speed: number;
-    acceleration: number;
-    goal: number;
-    ballColor: string;
-    powerUps: boolean;
-    type: string;
-}
+  ballSize: number;
+  speed: number;
+  acceleration: number;
+  goal: number;
+  ballColor: string;
+  powerUps: boolean;
+  type: string;
+};
 
 interface IGameSettings {
   powerUps: boolean;
@@ -55,29 +55,35 @@ const changeGlobalSettings = (settings: IGameSettings) => {
 };
 
 const ButtonIsCustom = (props: {
-  usrSocket: Socket<any, any> | undefined,
-  id: string,
-  setRdy: React.Dispatch<React.SetStateAction<boolean>>,
-  custom: boolean,
-  setCustom: React.Dispatch<React.SetStateAction<boolean>>,
-  sizeBall: string,
-  setSizeBall: React.Dispatch<React.SetStateAction<string>>,
-  speed: string,
-  setSpeed: React.Dispatch<React.SetStateAction<string>>,
-  acc: string, setAcc: React.Dispatch<React.SetStateAction<string>>,
-  goal: string, setGoal: React.Dispatch<React.SetStateAction<string>>,
-  color: string, setColor: React.Dispatch<React.SetStateAction<string>>,
-  isCheck: boolean, setIsCheck: React.Dispatch<React.SetStateAction<boolean>>
+  usrSocket: Socket<any, any> | undefined;
+  id: string;
+  setRdy: React.Dispatch<React.SetStateAction<boolean>>;
+  custom: boolean;
+  setCustom: React.Dispatch<React.SetStateAction<boolean>>;
+  sizeBall: string;
+  setSizeBall: React.Dispatch<React.SetStateAction<string>>;
+  speed: string;
+  setSpeed: React.Dispatch<React.SetStateAction<string>>;
+  acc: string;
+  setAcc: React.Dispatch<React.SetStateAction<string>>;
+  goal: string;
+  setGoal: React.Dispatch<React.SetStateAction<string>>;
+  color: string;
+  setColor: React.Dispatch<React.SetStateAction<string>>;
+  isCheck: boolean;
+  setIsCheck: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (e && e.target) props.setCustom((prev: boolean) => !prev);
   };
   useEffect(() => {
-    props.usrSocket?.on("updateTypeGameFromServer", (res: { type: boolean }) => {
-      props.setRdy(false);
-      if (res)
-        props.setCustom(res.type);
-    });
+    props.usrSocket?.on(
+      "updateTypeGameFromServer",
+      (res: { type: boolean }) => {
+        props.setRdy(false);
+        if (res) props.setCustom(res.type);
+      }
+    );
     return () => {
       props.usrSocket?.off("updateTypeGameFromServer");
     };
@@ -107,25 +113,29 @@ const ButtonIsCustom = (props: {
         sizeBall={props.sizeBall}
         speed={props.speed}
         setSpeed={props.setSpeed}
-        acc={props.acc} setAcc={props.setAcc}
-        goal={props.goal} setGoal={props.setGoal}
-        color={props.color} setColor={props.setColor}
-        isCheck={props.isCheck} setIsCheck={props.setIsCheck}
+        acc={props.acc}
+        setAcc={props.setAcc}
+        goal={props.goal}
+        setGoal={props.setGoal}
+        color={props.color}
+        setColor={props.setColor}
+        isCheck={props.isCheck}
+        setIsCheck={props.setIsCheck}
       />
     </>
   );
 };
 
 const ButtonRdy = (props: {
-  usrSocket: Socket<any, any> | undefined,
-  uid: string,
-  usr1: string,
-  usr2: string,
-  rdy: boolean,
-  setRdy: React.Dispatch<React.SetStateAction<boolean>>,
-  custom: boolean,
-  setCustom: React.Dispatch<React.SetStateAction<boolean>>,
-  settings: typeObject
+  usrSocket: Socket<any, any> | undefined;
+  uid: string;
+  usr1: string;
+  usr2: string;
+  rdy: boolean;
+  setRdy: React.Dispatch<React.SetStateAction<boolean>>;
+  custom: boolean;
+  setCustom: React.Dispatch<React.SetStateAction<boolean>>;
+  settings: typeObject;
 }) => {
   const handleRdy = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (e && e.target) {
@@ -150,7 +160,7 @@ const ButtonRdy = (props: {
       usr2: props.usr2,
       rdy: props.rdy,
       custom: props.custom,
-      settings: props.settings
+      settings: props.settings,
     });
   }, [props.rdy]);
   return (
@@ -161,9 +171,9 @@ const ButtonRdy = (props: {
 };
 
 const Custom_size_ball = (props: {
-  usrSocket: Socket<any, any> | undefined
-  sizeBall: string,
-  setSizeBall: React.Dispatch<React.SetStateAction<string>>
+  usrSocket: Socket<any, any> | undefined;
+  sizeBall: string;
+  setSizeBall: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const handleChange = (e: any) => {
     if (e && e.target) {
@@ -179,9 +189,9 @@ const Custom_size_ball = (props: {
       changeGlobalSettings(res);
       props.setSizeBall(res.ballSize.toString());
     });
-    return (() => {
+    return () => {
       props.usrSocket?.off("edit_settings");
-    });
+    };
   }, []);
   return (
     <div className="setting_row">
@@ -190,7 +200,9 @@ const Custom_size_ball = (props: {
       </label>
       <div className="setting_choice_group">
         <button
-          className={props.sizeBall === "5" ? "setting_choice_active" : "setting_choice"}
+          className={
+            props.sizeBall === "5" ? "setting_choice_active" : "setting_choice"
+          }
           style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={5}
@@ -199,7 +211,9 @@ const Custom_size_ball = (props: {
           Small
         </button>
         <button
-          className={props.sizeBall === "10" ? "setting_choice_active" : "setting_choice"}
+          className={
+            props.sizeBall === "10" ? "setting_choice_active" : "setting_choice"
+          }
           style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={10}
@@ -208,7 +222,9 @@ const Custom_size_ball = (props: {
           Normal
         </button>
         <button
-          className={props.sizeBall === "20" ? "setting_choice_active" : "setting_choice"}
+          className={
+            props.sizeBall === "20" ? "setting_choice_active" : "setting_choice"
+          }
           style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={20}
@@ -222,9 +238,9 @@ const Custom_size_ball = (props: {
 };
 
 const Custom_speed_ball = (props: {
-  usrSocket: Socket<any, any> | undefined,
-  speed: string,
-  setSpeed: React.Dispatch<React.SetStateAction<string>>
+  usrSocket: Socket<any, any> | undefined;
+  speed: string;
+  setSpeed: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const handleChange = (e: any) => {
     if (e && e.target) {
@@ -240,9 +256,9 @@ const Custom_speed_ball = (props: {
       changeGlobalSettings(res);
       props.setSpeed(res.speed.toString());
     });
-    return (() => {
+    return () => {
       props.usrSocket?.off("edit_settings");
-    });
+    };
   }, []);
   return (
     <div className="setting_row">
@@ -251,7 +267,9 @@ const Custom_speed_ball = (props: {
       </label>
       <div className="setting_choice_group">
         <button
-          className={props.speed === "3" ? "setting_choice_active" : "setting_choice"}
+          className={
+            props.speed === "3" ? "setting_choice_active" : "setting_choice"
+          }
           style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={3}
@@ -260,7 +278,9 @@ const Custom_speed_ball = (props: {
           Slow
         </button>
         <button
-          className={props.speed === "5" ? "setting_choice_active" : "setting_choice"}
+          className={
+            props.speed === "5" ? "setting_choice_active" : "setting_choice"
+          }
           style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={5}
@@ -285,8 +305,9 @@ const Custom_speed_ball = (props: {
 };
 
 const Custom_acceleration_ball = (props: {
-  usrSocket: Socket<any, any> | undefined
-  acc: string, setAcc: React.Dispatch<React.SetStateAction<string>>
+  usrSocket: Socket<any, any> | undefined;
+  acc: string;
+  setAcc: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const handleChange = (e: any) => {
     if (e && e.target) {
@@ -302,9 +323,9 @@ const Custom_acceleration_ball = (props: {
       changeGlobalSettings(res);
       props.setAcc(res.acceleration.toString());
     });
-    return (() => {
+    return () => {
       props.usrSocket?.off("edit_settings");
-    });
+    };
   }, []);
   return (
     <div className="setting_row">
@@ -313,7 +334,9 @@ const Custom_acceleration_ball = (props: {
       </label>
       <div className="setting_choice_group">
         <button
-          className={props.acc === "0.1" ? "setting_choice_active" : "setting_choice"}
+          className={
+            props.acc === "0.1" ? "setting_choice_active" : "setting_choice"
+          }
           style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={0.1}
@@ -322,7 +345,9 @@ const Custom_acceleration_ball = (props: {
           Normal
         </button>
         <button
-          className={props.acc === "0.2" ? "setting_choice_active" : "setting_choice"}
+          className={
+            props.acc === "0.2" ? "setting_choice_active" : "setting_choice"
+          }
           style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={0.2}
@@ -331,7 +356,9 @@ const Custom_acceleration_ball = (props: {
           Speed
         </button>
         <button
-          className={props.acc === "0.4" ? "setting_choice_active" : "setting_choice"}
+          className={
+            props.acc === "0.4" ? "setting_choice_active" : "setting_choice"
+          }
           style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={0.4}
@@ -345,8 +372,9 @@ const Custom_acceleration_ball = (props: {
 };
 
 const Custom_goal = (props: {
-  usrSocket: Socket<any, any> | undefined,
-  goal: string, setGoal: React.Dispatch<React.SetStateAction<string>>
+  usrSocket: Socket<any, any> | undefined;
+  goal: string;
+  setGoal: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const handleChange = (e: any) => {
     if (e && e.target) {
@@ -362,9 +390,9 @@ const Custom_goal = (props: {
       changeGlobalSettings(res);
       props.setGoal(res.goal.toString());
     });
-    return (() => {
+    return () => {
       props.usrSocket?.off("edit_settings");
-    });
+    };
   }, []);
   return (
     <div className="setting_row">
@@ -373,7 +401,9 @@ const Custom_goal = (props: {
       </label>
       <div className="setting_choice_group">
         <button
-          className={props.goal === "11" ? "setting_choice_active" : "setting_choice"}
+          className={
+            props.goal === "11" ? "setting_choice_active" : "setting_choice"
+          }
           style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={11}
@@ -382,7 +412,9 @@ const Custom_goal = (props: {
           Normal
         </button>
         <button
-          className={props.goal === "21" ? "setting_choice_active" : "setting_choice"}
+          className={
+            props.goal === "21" ? "setting_choice_active" : "setting_choice"
+          }
           style={{ width: "33%", minWidth: "33%", maxWidth: "33%" }}
           onClick={handleChange}
           value={21}
@@ -391,7 +423,9 @@ const Custom_goal = (props: {
           Long
         </button>
         <button
-          className={props.goal === "42" ? "setting_choice_active" : "setting_choice"}
+          className={
+            props.goal === "42" ? "setting_choice_active" : "setting_choice"
+          }
           style={{
             width: "33%",
             minWidth: "33%",
@@ -410,8 +444,9 @@ const Custom_goal = (props: {
 };
 
 const Custom_color_ball = (props: {
-  usrSocket: Socket<any, any> | undefined,
-  color: string, setColor: React.Dispatch<React.SetStateAction<string>>
+  usrSocket: Socket<any, any> | undefined;
+  color: string;
+  setColor: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const handleChange = (e: any) => {
     if (e && e.target) {
@@ -425,9 +460,9 @@ const Custom_color_ball = (props: {
       changeGlobalSettings(res);
       props.setColor(res.ballColor);
     });
-    return (() => {
+    return () => {
       props.usrSocket?.off("edit_settings");
-    });
+    };
   }, []);
   return (
     <div className="setting_row">
@@ -469,8 +504,9 @@ const Custom_color_ball = (props: {
 };
 
 const Custom_power_up = (props: {
-  usrSocket: Socket<any, any> | undefined,
-  isCheck: boolean, setIsCheck: React.Dispatch<React.SetStateAction<boolean>>
+  usrSocket: Socket<any, any> | undefined;
+  isCheck: boolean;
+  setIsCheck: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const handleCheck = (e: any) => {
     if (e && e.target) {
@@ -484,9 +520,9 @@ const Custom_power_up = (props: {
       changeGlobalSettings(res);
       props.setIsCheck(res.powerUps);
     });
-    return (() => {
+    return () => {
       props.usrSocket?.off("edit_settings");
-    });
+    };
   }, []);
   return (
     <div className="setting_row">
@@ -506,25 +542,30 @@ const Custom_power_up = (props: {
   );
 };
 
-const Custom_setting = (props: { cst: boolean;
+const Custom_setting = (props: {
+  cst: boolean;
   usrSocket: Socket<any, any> | undefined;
-  id: string,
-  sizeBall: string,
-  setSizeBall: React.Dispatch<React.SetStateAction<string>>,
-  speed: string,
-  setSpeed: React.Dispatch<React.SetStateAction<string>>,
-  acc: string, setAcc: React.Dispatch<React.SetStateAction<string>>,
-  goal: string, setGoal: React.Dispatch<React.SetStateAction<string>>,
-  color: string, setColor: React.Dispatch<React.SetStateAction<string>>
-  isCheck: boolean, setIsCheck: React.Dispatch<React.SetStateAction<boolean>>
+  id: string;
+  sizeBall: string;
+  setSizeBall: React.Dispatch<React.SetStateAction<string>>;
+  speed: string;
+  setSpeed: React.Dispatch<React.SetStateAction<string>>;
+  acc: string;
+  setAcc: React.Dispatch<React.SetStateAction<string>>;
+  goal: string;
+  setGoal: React.Dispatch<React.SetStateAction<string>>;
+  color: string;
+  setColor: React.Dispatch<React.SetStateAction<string>>;
+  isCheck: boolean;
+  setIsCheck: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   useEffect(() => {
     props.usrSocket?.on("edit_settings", (res: IGameSettings) => {
       changeGlobalSettings(res);
     });
-    return (() => {
+    return () => {
       props.usrSocket?.off("edit_settings");
-    });
+    };
   }, []);
   if (props.cst === true) {
     props.usrSocket?.emit("edit_settings", { ...globalSettings });
@@ -534,28 +575,46 @@ const Custom_setting = (props: { cst: boolean;
         <label>Custom game</label>
         <br />
         <br />
-        <Custom_size_ball usrSocket={props.usrSocket}
-          sizeBall={props.sizeBall} setSizeBall={props.setSizeBall} />
+        <Custom_size_ball
+          usrSocket={props.usrSocket}
+          sizeBall={props.sizeBall}
+          setSizeBall={props.setSizeBall}
+        />
         <br />
         <br />
-        <Custom_speed_ball usrSocket={props.usrSocket}
-          speed={props.speed} setSpeed={props.setSpeed} />
+        <Custom_speed_ball
+          usrSocket={props.usrSocket}
+          speed={props.speed}
+          setSpeed={props.setSpeed}
+        />
         <br />
         <br />
-        <Custom_acceleration_ball usrSocket={props.usrSocket}
-          acc={props.acc} setAcc={props.setAcc} />
+        <Custom_acceleration_ball
+          usrSocket={props.usrSocket}
+          acc={props.acc}
+          setAcc={props.setAcc}
+        />
         <br />
         <br />
-        <Custom_goal usrSocket={props.usrSocket}
-          goal={props.goal} setGoal={props.setGoal} />
+        <Custom_goal
+          usrSocket={props.usrSocket}
+          goal={props.goal}
+          setGoal={props.setGoal}
+        />
         <br />
         <br />
-        <Custom_color_ball usrSocket={props.usrSocket}
-          color={props.color} setColor={props.setColor} />
+        <Custom_color_ball
+          usrSocket={props.usrSocket}
+          color={props.color}
+          setColor={props.setColor}
+        />
         <br />
         <br />
-        <Custom_power_up usrSocket={props.usrSocket}
-          isCheck={props.isCheck} setIsCheck={props.setIsCheck} />
+        <Custom_power_up
+          usrSocket={props.usrSocket}
+          isCheck={props.isCheck}
+          setIsCheck={props.setIsCheck}
+        />
         <br />
       </div>
     );
@@ -588,55 +647,57 @@ interface IPowerUp {
   lifespan: number;
 }
 
-const MatchmakingLeft = (props: {userLeft: boolean, usr1: string, usr2: string}) => {
+const MatchmakingLeft = (props: {
+  userLeft: boolean;
+  usr1: string;
+  usr2: string;
+}) => {
   const navigate = useNavigate();
   let getTimer: null | number = null;
   let getTimer2: null | number = null;
 
   function redirect() {
-    navigate('/matchmaking');
+    navigate("/matchmaking");
   }
   //if opponent not coming after x seconds, then go back to matchmaking page
   useEffect(() => {
     if ((!props.usr1 || !props.usr2) && props.userLeft === false)
       getTimer = setTimeout(redirect, 45000);
-    if (getTimer && props.usr1 && props.usr2)
-      clearTimeout(getTimer);
-    return (() => {
-      if (getTimer)
-        clearTimeout(getTimer);
-    });
+    if (getTimer && props.usr1 && props.usr2) clearTimeout(getTimer);
+    return () => {
+      if (getTimer) clearTimeout(getTimer);
+    };
   }, [props.usr1, props.usr2]);
 
   //if user leave during matchmaking waiting room
   useEffect(() => {
     if (props.userLeft === true) {
-      if (getTimer)
-        clearTimeout(getTimer);
+      if (getTimer) clearTimeout(getTimer);
       getTimer2 = setTimeout(redirect, 5000);
     }
-    return (() => {
-      if (getTimer2)
-        clearTimeout(getTimer2);
-    })
+    return () => {
+      if (getTimer2) clearTimeout(getTimer2);
+    };
   }, [props.userLeft]);
 
   return (
     <>
-      {(!props.usr1 || !props.usr2) && props.userLeft === false && 
+      {(!props.usr1 || !props.usr2) && props.userLeft === false && (
         <div className="game_container">
-          <p>If opponent not coming in 45 seconds, you will be sent back to matchmaking page...</p>
-      </div>
-      }
-      {
-        props.userLeft === true &&
+          <p>
+            If opponent not coming in 45 seconds, you will be sent back to
+            matchmaking page...
+          </p>
+        </div>
+      )}
+      {props.userLeft === true && (
         <div className="game_container">
           <p>Opponent left, redirection into matchmaking in 5 seconds...</p>
         </div>
-    }
+      )}
     </>
   );
-}
+};
 
 const SettingGame = (props: {
   socketService: { socket: Socket<any, any> | undefined };
@@ -653,7 +714,7 @@ const SettingGame = (props: {
   const [errorText, setErrorText] = useState<string>("");
   const url = useParams().id as string;
   const [userLeft, setLeft] = useState<boolean>(false);
-  const regex = RegExp(/(\/[\w-]*\/)/, 'g');
+  const regex = RegExp(/(\/[\w-]*\/)/, "g");
   const getLocation = useLocation()?.pathname;
   const getFirstPartRegex = regex.exec(getLocation);
 
@@ -687,9 +748,11 @@ const SettingGame = (props: {
         if (res && res.username === usr2) {
           setUsr2("");
         }
-        if (res.username
-          && getFirstPartRegex
-          && getFirstPartRegex[0] == "/play-matchmaking/")
+        if (
+          res.username &&
+          getFirstPartRegex &&
+          getFirstPartRegex[0] == "/play-matchmaking/"
+        )
           setLeft(true);
       }
     );
@@ -711,25 +774,25 @@ const SettingGame = (props: {
     setRdy(false);
   }, [sizeBall, speed, custom, acc, goal, color, isCheck]);
   let settings: typeObject = {
-    ballSize: Number(sizeBall), speed: Number(speed),
-    acceleration: Number(acc), goal: Number(goal), ballColor: color,
+    ballSize: Number(sizeBall),
+    speed: Number(speed),
+    acceleration: Number(acc),
+    goal: Number(goal),
+    ballColor: color,
     powerUps: isCheck,
-    type: ""
-  }
-  if (getFirstPartRegex
-    && getFirstPartRegex[0] == "/play-invite/")
+    type: "",
+  };
+  if (getFirstPartRegex && getFirstPartRegex[0] == "/play-invite/")
     settings.type = "Invitation";
-  else
-    settings.type = "Classic";
-  if (custom === true)
-    settings.type = "Custom";
+  else settings.type = "Classic";
+  if (custom === true) settings.type = "Custom";
   if (!props.isGameStarted) {
     return (
       <>
         {errorCode >= 400 && <FetchError code={errorCode} />}
-        {getFirstPartRegex && getFirstPartRegex[0] == "/play-matchmaking/"
-          && <MatchmakingLeft userLeft={userLeft}
-          usr1={usr1} usr2={usr2} />}
+        {getFirstPartRegex && getFirstPartRegex[0] == "/play-matchmaking/" && (
+          <MatchmakingLeft userLeft={userLeft} usr1={usr1} usr2={usr2} />
+        )}
         <div className="createParty">
           <h1 className="room_name">{props.roomName}</h1>
           {errorCode != 1 ? (
@@ -750,10 +813,14 @@ const SettingGame = (props: {
                 setSizeBall={setSizeBall}
                 speed={speed}
                 setSpeed={setSpeed}
-                acc={acc} setAcc={setAcc}
-                goal={goal} setGoal={setGoal}
-                color={color} setColor={setColor}
-                isCheck={isCheck} setIsCheck={setIsCheck}
+                acc={acc}
+                setAcc={setAcc}
+                goal={goal}
+                setGoal={setGoal}
+                color={color}
+                setColor={setColor}
+                isCheck={isCheck}
+                setIsCheck={setIsCheck}
               />
               <br />
               <ButtonRdy
