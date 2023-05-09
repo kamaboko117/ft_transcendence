@@ -713,6 +713,10 @@ const SettingGame = (props: {
   const [goal, setGoal] = useState<string>("11");
   const [color, setColor] = useState<string>("WHITE");
   const [isCheck, setIsCheck] = useState<boolean>(false);
+
+  useEffect(() => {
+    setRdy(false);
+  }, [sizeBall, speed, custom, acc, goal, color, isCheck]);
   let settings: typeObject = {
     ballSize: Number(sizeBall), speed: Number(speed),
     acceleration: Number(acc), goal: Number(goal), ballColor: color,
