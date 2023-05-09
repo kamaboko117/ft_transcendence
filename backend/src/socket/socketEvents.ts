@@ -106,8 +106,8 @@ class PUNeutral implements IPowerUp {
     this.color = "BLUE";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (game: IGame) => { };
-    this.cancelEffect = (game: IGame) => { };
+    this.effect = (game: IGame) => {};
+    this.cancelEffect = (game: IGame) => {};
   }
 }
 
@@ -135,8 +135,8 @@ class PUBonus implements IPowerUp {
     this.color = "GREEN";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => { };
-    this.cancelEffect = () => { };
+    this.effect = (player: IPlayer) => {};
+    this.cancelEffect = () => {};
   }
 }
 
@@ -164,8 +164,8 @@ class PUMalus implements IPowerUp {
     this.color = "RED";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => { };
-    this.cancelEffect = () => { };
+    this.effect = (player: IPlayer) => {};
+    this.cancelEffect = () => {};
   }
 }
 
@@ -412,8 +412,8 @@ class Ball implements IBall {
     this.y = CANVAS_HEIGHT / 2;
     this.radius = radius;
     this.speed = speed;
-    this.velocityX = 5;
-    this.velocityY = 5;
+    this.velocityX = speed;
+    this.velocityY = speed;
     this.color = color;
     this.acceleration = acceleration;
   }
@@ -485,7 +485,7 @@ function generatePowerUps(game: IGame) {
     case 0: //neutral
       var type =
         neutralPowerUpTypes[
-        Math.floor(Math.random() * neutralPowerUpTypes.length)
+          Math.floor(Math.random() * neutralPowerUpTypes.length)
         ];
       PU = new powerUp(x, y, type);
       break;
@@ -507,7 +507,7 @@ function checkPowerUpCollision(ball: IBall, powerUp: IPowerUp) {
   if (powerUp.active) return false;
   let distance = Math.sqrt(
     (ball.x - powerUp.x) * (ball.x - powerUp.x) +
-    (ball.y - powerUp.y) * (ball.y - powerUp.y)
+      (ball.y - powerUp.y) * (ball.y - powerUp.y)
   );
   if (distance < ball.radius + powerUp.radius) {
     powerUp.user = ball.velocityX < 0 ? "player2" : "player1";
@@ -539,7 +539,7 @@ function resetBall(ball: IBall, game: IGame) {
   handleRound(game);
   ball.x = CANVAS_WIDTH / 2;
   ball.y = CANVAS_HEIGHT / 2;
-  ball.speed = 5;
+  ball.speed = game.settings.speed;
   // get ball direction before reset
   let angle = Math.atan2(ball.velocityY, ball.velocityX);
   let newVelocityX = -ball.speed * Math.cos(angle);
@@ -802,11 +802,13 @@ export class SocketEvents {
   }
 
   @SubscribeMessage("leave_game")
-  async leave(@MessageBody() data: LeaveGame, @ConnectedSocket() client: Socket) {
+  async leave(
+    @MessageBody() data: LeaveGame,
+    @ConnectedSocket() client: Socket
+  ) {
     console.log("client id: " + client.id + "is leaving room");
     if (data) {
-      if (data.roomId && typeof data.roomId !== "string")
-        return;
+      if (data.roomId && typeof data.roomId !== "string") return;
       for (let [key, value] of this.mapUserInGame.entries()) {
         if (client.id === key) {
           const userDb = await this.userService.findUsersById(Number(value));
@@ -843,13 +845,10 @@ export class SocketEvents {
     if (roomID) {
       let room = await this.roomsService.findRoomById(roomID);
       if (room) {
-        //room.settings = data;
-        //this.roomsService.updateRoomSettings(roomID, data);
         client.to(roomID).emit("edit_settings", data);
       }
     }
   }
-  //
 
   /* search if user is in private room, registered in room name */
   checkIfUserFound(room: Room, clientId: string) {
@@ -865,10 +864,12 @@ export class SocketEvents {
     return false;
   }
 
-  private async joinPartTwo(room: Room | null,
+  private async joinPartTwo(
+    room: Room | null,
     @ConnectedSocket() client: Socket,
     @MessageBody() data: LeaveGame,
-    userId: number) {
+    userId: number
+  ) {
     if (!room) {
       this.server
         .to(client.id)
@@ -881,7 +882,9 @@ export class SocketEvents {
       if (result === false) {
         this.server
           .to(client.id)
-          .emit("join_game_error", { error: "You are not invited in this game" });
+          .emit("join_game_error", {
+            error: "You are not invited in this game",
+          });
         return;
       }
     }
@@ -911,15 +914,16 @@ export class SocketEvents {
 
   @UseGuards(JwtGuard)
   @SubscribeMessage("join_game")
-  async join(@MessageBody() data: LeaveGame,
+  async join(
+    @MessageBody() data: LeaveGame,
     @ConnectedSocket() client: Socket,
-    @UserDecoSock() user: TokenUser) {
+    @UserDecoSock() user: TokenUser
+  ) {
     const userId: number = user.userID;
     const room = await this.roomsService.findRoomById(data.roomId);
 
     if (!room) {
-      client
-        .emit("join_game_error", { error: "Room not found" });
+      client.emit("join_game_error", { error: "Room not found" });
       return;
     }
     //check if user already in a game
@@ -939,7 +943,7 @@ export class SocketEvents {
         .emit("join_game_error", { error: "Room is full" });
       return;
     } else {
-      this.joinPartTwo(room, client, data, userId)
+      this.joinPartTwo(room, client, data, userId);
     }
   }
 
@@ -982,8 +986,17 @@ export class SocketEvents {
       .emit("updateTypeGameFromServer", { type: data.type });
   }
 
-  private async updateRoomState(data: UserIdRdy, userOneRdy: boolean, userTwoRdy: boolean) {
-    await this.roomsService.updateRoomReady(data.uid, data.rdy, userOneRdy, userTwoRdy);
+  private async updateRoomState(
+    data: UserIdRdy,
+    userOneRdy: boolean,
+    userTwoRdy: boolean
+  ) {
+    await this.roomsService.updateRoomReady(
+      data.uid,
+      data.rdy,
+      userOneRdy,
+      userTwoRdy
+    );
     await this.roomsService.updateRoomTypeGame(
       data.uid,
       userOneRdy,
@@ -992,15 +1005,16 @@ export class SocketEvents {
     );
     if (userOneRdy === true)
       await this.roomsService.updateRoomSettingsOne(data.uid, data.settings);
-    else
-      await this.roomsService.updateRoomSettingsTwo(data.uid, data.settings);
+    else await this.roomsService.updateRoomSettingsTwo(data.uid, data.settings);
   }
 
-  private gameStart(data: UserIdRdy,
+  private gameStart(
+    data: UserIdRdy,
     @ConnectedSocket() client: Socket,
-    getRoom: Room | null, socket2: string | undefined) {
-    if (!getRoom || !socket2)
-      return;
+    getRoom: Room | null,
+    socket2: string | undefined
+  ) {
+    if (!getRoom || !socket2) return;
     let newGame = new Game(data.uid, client.id, socket2, getRoom.settingsOne);
     let powerUps = newGame.powerUps;
     let player1 = newGame.player1;
@@ -1039,26 +1053,31 @@ export class SocketEvents {
     }, 1000 / FPS);
   }
 
-  private async BothUserReady(data: UserIdRdy,
-    connectedSockets: Set<string> | undefined, @ConnectedSocket() client: Socket) {
+  private async BothUserReady(
+    data: UserIdRdy,
+    connectedSockets: Set<string> | undefined,
+    @ConnectedSocket() client: Socket
+  ) {
     const getRoom = await this.roomsService.getRoom(data.uid);
 
-    if (!connectedSockets)
-      return ({ err: "No connected socket" });
+    if (!connectedSockets) return { err: "No connected socket" };
     if (getRoom?.player_one_type_game != getRoom?.player_two_type_game)
-      return ({ err: "Room type from both users are not synchronized" });
-    if (JSON.stringify(getRoom?.settingsOne) != JSON.stringify(getRoom?.settingsTwo))
-      return ({ err: "Room settings from both users are not synchronized" });
+      return { err: "Room type from both users are not synchronized" };
+    if (
+      JSON.stringify(getRoom?.settingsOne) !=
+      JSON.stringify(getRoom?.settingsTwo)
+    )
+      return { err: "Room settings from both users are not synchronized" };
     let socket2: string | undefined = undefined;
 
     connectedSockets.forEach((key) => {
       if (key !== client.id) socket2 = key;
     });
     if (socket2 === undefined) {
-      return ({ err: "No socket second player found" });
+      return { err: "No socket second player found" };
     }
     if (!getRoom) {
-      return ({ err: "No room found" });
+      return { err: "No room found" };
     }
     if (getRoom.player_one_type_game === "Custom") {
       getRoom.settingsOne.type = "Custom";
@@ -1066,7 +1085,7 @@ export class SocketEvents {
       this.roomsService.updateRoomSettingsTwo(getRoom.uid, getRoom);
     }
     this.gameStart(data, client, getRoom, socket2);
-    return (true)
+    return true;
   }
 
   @UseGuards(JwtGuard)
@@ -1082,8 +1101,7 @@ export class SocketEvents {
       await this.updateRoomState(data, true, false);
     else if (user.username === data.usr2)
       await this.updateRoomState(data, false, true);
-    else
-      return ({ err: "User ready not found" });
+    else return { err: "User ready not found" };
     //when two user are connected, and both are rdy, game must start
     let getRoom = await this.roomsService.getRoom(data.uid);
     if (
@@ -1091,9 +1109,12 @@ export class SocketEvents {
       getRoom?.player_one_rdy === true &&
       getRoom.player_two_rdy === true
     ) {
-      const bothUserRdy = await this.BothUserReady(data, connectedSockets, client);
-      if (bothUserRdy !== true)
-        return (bothUserRdy);
+      const bothUserRdy = await this.BothUserReady(
+        data,
+        connectedSockets,
+        client
+      );
+      if (bothUserRdy !== true) return bothUserRdy;
     }
   }
 }
