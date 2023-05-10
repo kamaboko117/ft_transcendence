@@ -702,6 +702,7 @@ const SettingGame = (props: {
 
   useEffect(() => {
     if (props.socketService.socket) {
+      props.socketService.socket.emit("userInGame");
       const game = async () => {
         await gameService
           .joinGameRoom(props.socketService.socket, props.id, setUsr1, setUsr2)

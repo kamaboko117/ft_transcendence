@@ -65,16 +65,27 @@ function App() {
     if (jwt) {
       if (usrSocket?.connected === true)
         usrSocket.disconnect();
-      setUsrSocket(io("https://" + location.host, {
-        withCredentials: true,
-        extraHeaders: {
-          authorization: jwt
-        },
-        autoConnect: true,
-        secure: true,
-      }));
+      new Promise((resolve) => {
+        resolve(setUsrSocket(undefined));
+      }).then(() => {
+        setUsrSocket(io("https://" + location.host, {
+          withCredentials: true,
+          extraHeaders: {
+            authorization: jwt
+          },
+          autoConnect: true,
+          secure: true,
+        }));
+      }).catch((res) => {
+        setLoading(true);
+        console.log(res);
+      });
     }
     setLoading(false);
+    return (() => {
+      usrSocket?.disconnect();
+      setUsrSocket(undefined);
+    });
   }, [jwt]);
 
   return (

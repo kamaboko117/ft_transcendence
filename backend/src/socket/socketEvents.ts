@@ -106,8 +106,8 @@ class PUNeutral implements IPowerUp {
     this.color = "BLUE";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (game: IGame) => {};
-    this.cancelEffect = (game: IGame) => {};
+    this.effect = (game: IGame) => { };
+    this.cancelEffect = (game: IGame) => { };
   }
 }
 
@@ -135,8 +135,8 @@ class PUBonus implements IPowerUp {
     this.color = "GREEN";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => {};
-    this.cancelEffect = () => {};
+    this.effect = (player: IPlayer) => { };
+    this.cancelEffect = () => { };
   }
 }
 
@@ -164,8 +164,8 @@ class PUMalus implements IPowerUp {
     this.color = "RED";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => {};
-    this.cancelEffect = () => {};
+    this.effect = (player: IPlayer) => { };
+    this.cancelEffect = () => { };
   }
 }
 
@@ -485,7 +485,7 @@ function generatePowerUps(game: IGame) {
     case 0: //neutral
       var type =
         neutralPowerUpTypes[
-          Math.floor(Math.random() * neutralPowerUpTypes.length)
+        Math.floor(Math.random() * neutralPowerUpTypes.length)
         ];
       PU = new powerUp(x, y, type);
       break;
@@ -507,7 +507,7 @@ function checkPowerUpCollision(ball: IBall, powerUp: IPowerUp) {
   if (powerUp.active) return false;
   let distance = Math.sqrt(
     (ball.x - powerUp.x) * (ball.x - powerUp.x) +
-      (ball.y - powerUp.y) * (ball.y - powerUp.y)
+    (ball.y - powerUp.y) * (ball.y - powerUp.y)
   );
   if (distance < ball.radius + powerUp.radius) {
     powerUp.user = ball.velocityX < 0 ? "player2" : "player1";

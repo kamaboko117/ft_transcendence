@@ -20,12 +20,12 @@ const LogOut = (props: typeLogout) => {
         new Promise((resolve) => {
             resolve(userCtx.logoutUser());
         }).then(() => {
-            if (props.usrSocket?.connected === true){
+            if (props.usrSocket?.connected === true) {
                 props.usrSocket.disconnect();
             }
             setFinish(true);
         }).catch(() => {
-            navigate("/error-page", { state: { code: 520} });
+            navigate("/error-page", { state: { code: 520 } });
         });
     }, []);
 
@@ -34,11 +34,11 @@ const LogOut = (props: typeLogout) => {
             new Promise((resolve) => {
                 resolve(props.setUsrSocket(undefined))
             })
-            .then(() => {
-                navigate("/login");
-        }).catch(() => {
-                navigate("/error-page", { state: { code: 520} });
-            });
+                .then(() => {
+                    navigate("/login");
+                }).catch(() => {
+                    navigate("/error-page", { state: { code: 520 } });
+                });
         }
     }, [finish]);
     return (<></>);

@@ -4,6 +4,8 @@ import { IsNumber } from 'class-validator';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtGuard } from 'src/auth/jwt.guard';
+import { TokenUser } from 'src/chat/chat.interface';
+import { UserDecoSock } from 'src/common/middleware/user.decorator';
 import { SocketEvents } from 'src/socket/socketEvents';
 
 class Info {
@@ -43,6 +45,14 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
     }
     return ({ code: 0 });
+  }
+
+  @UseGuards(JwtGuard)
+  @SubscribeMessage('userInGame')
+  userInGame(@UserDecoSock() user: TokenUser) {
+    this.server.emit("currentStatus", {
+      code: 2, userId: user.userID
+    });
   }
 
   @UseGuards(JwtGuard)
