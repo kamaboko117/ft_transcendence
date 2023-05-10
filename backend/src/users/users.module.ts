@@ -10,6 +10,7 @@ import { UsersGateway } from "./providers/users/users.gateway";
 import { SocketModule } from "src/socket/socket.module";
 import { MatchHistory } from "src/typeorm/matchHistory.entity";
 import { Achievements } from "src/typeorm/achievement.entity";
+
 //fowardRef = circular dependence
 @Module({
     imports: [forwardRef(() => AuthModule), SocketModule, TypeOrmModule.forFeature([User, BlackFriendList, Stat, MatchHistory, Achievements])],

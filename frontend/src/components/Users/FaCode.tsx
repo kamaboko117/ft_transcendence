@@ -42,7 +42,6 @@ const handleSubmit = (event: React.FormEvent<HTMLFormElement>, code: number | nu
             if (res)
                 setErrorCode(res.status);
         }).then(res => {
-            console.log(res)
             if (res) {
                 if (res.token) {
                     userCtx.reconnectUser({

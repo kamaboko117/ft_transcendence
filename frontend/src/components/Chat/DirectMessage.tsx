@@ -240,17 +240,6 @@ type typePostMsg = {
     setLstMsgPm: React.Dispatch<React.SetStateAction<lstMsg[]>>,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>
 }
-/*
-type typeGetMsg = {
-    lstMsg: Array<{
-        user: {
-            avatarPath: string;
-            username: string;
-        };
-        content: string;
-        img: string;
-    }>;
-}*/
 
 const PostMsg = (props: typePostMsg) => {
     const refElem = useRef(null);
@@ -529,7 +518,6 @@ const updateChannel = (setChannel: updateChannelType["setChannel"],
 const Box = (props: settingBox) => {
     const [lstPm, setPm] = useState<listPm[]>([] as listPm[]);
     const [lstChannel, setChannel] = useState<listChan[]>([] as listChan[]);
-    //const [isPrivate, setIsPrivate] = useState<boolean>(false);
 
     useEffect(() => {
         /* load channels */

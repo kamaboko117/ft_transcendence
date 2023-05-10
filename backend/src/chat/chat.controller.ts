@@ -60,8 +60,6 @@ export class ChatController {
 
     /* find and create if needed a private message */
     private async findPm(user_id: number, id: string): Promise<string> {
-        //await this.chatService.findDuplicateAndDelete(String(user_id));
-        //await this.chatService.findDuplicateAndDelete(id);
         const concatOne = String(user_id).concat(String(id));
         const concatTwo = String(id).concat(String(user_id));
 

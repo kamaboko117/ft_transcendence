@@ -26,7 +26,6 @@ function NewRoomModal(props: any) {
                     return ("");
                 }
                 if (data && data.err && data.err !== "true") {
-                    console.log("ddddddddddd")
                     setErrorCode(2);
                     return ("");
                 }

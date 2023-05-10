@@ -13,7 +13,6 @@ const SocketContext = createContext<typeSocket>({
 });
 
 export const SocketProvider = (props: { jwt: string | null, usrSocket: Socket<any, any> | undefined, children: any }) => {
-    //const navigate = useNavigate();
     const context: typeSocket = {
         usrSocket: props.usrSocket
     }
