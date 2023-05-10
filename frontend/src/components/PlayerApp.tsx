@@ -33,19 +33,16 @@ const playlist = [
 const PlayerApp = () => {
   const [currentTrack, setTrackIndex] = useState(0);
   const handleClickNext = () => {
-    console.log("click next");
     setTrackIndex((currentTrack) =>
       currentTrack < playlist.length - 1 ? currentTrack + 1 : 0
     );
   };
   const handleClickPrevious = () => {
-    console.log("click previous");
     setTrackIndex((currentTrack) =>
       currentTrack > 0 ? currentTrack - 1 : playlist.length - 1
     );
   };
   const handleEnd = () => {
-    console.log("end");
     setTrackIndex((currentTrack) =>
       currentTrack < playlist.length - 1 ? currentTrack + 1 : 0
     );
@@ -59,7 +56,7 @@ const PlayerApp = () => {
         onEnded={handleEnd}
         onClickPrevious={handleClickPrevious}
         onPlayError={(e) => console.log("onPlayError", e)}
-        //autoPlay={true} works but browsers show a warning they don't like an autoplay
+      //autoPlay={true} works but browsers show a warning they don't like an autoplay
       />
     </div>
   );

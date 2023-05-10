@@ -157,13 +157,13 @@ export class UsersService {
     }
 
 
-    /* Nombre de Partie joué(s)
+    /* Number of game played(s)
      * SELECT COUNT("player_one", "player_two") 
      * FROM "match_history" 
      * WHERE "player_two" = id OR "player_one" = id
      */
 
-    /* Nombre de Partie gangée(s)
+    /* Number of game won(s)
      * SELECT COUNT("user_victory")
      * FROM "match_history"
      * WHERE "user_victory" = id

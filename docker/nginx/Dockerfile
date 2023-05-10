@@ -1,4 +1,5 @@
 FROM debian:bookworm-slim
+USER root
 LABEL user="gchopin"
 LABEL email="gchopin@student.42.fr"
 RUN apt-get update -y && apt-get upgrade -y

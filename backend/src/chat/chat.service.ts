@@ -118,38 +118,6 @@ export class ChatService {
         return (channel)
     }
 
-    /* find and delete duplicate */
-    /*async findDuplicateAndDelete(user_id: Readonly<string>) {
-        const channel: {
-            list_user_user_id: string,
-            Channel_id: string,
-            Channel_name: string
-        } | undefined = await this.listUserRepository
-            .createQueryBuilder("list_user")
-            .select("list_user.user_id")
-            .addSelect(["Channel.id", "Channel.name"])
-            .innerJoin("list_user.chat", "Channel")
-            .where("list_user.user_id = :id")
-            .setParameters({ id: user_id })
-            .andWhere("Channel.accesstype = :type")
-            .setParameters({ type: '4' })
-            .groupBy("list_user.user_id")
-            .addGroupBy("Channel.id")
-            .having("COUNT(list_user.user_id) >= :nb", { nb: 2 })
-            .orHaving("COUNT(Channel.id) >= :otherNb", { otherNb: 2 })
-            .getRawOne()
-
-        if (channel) {
-            await this.chatsRepository
-                .createQueryBuilder()
-                .delete()
-                .from(Channel)
-                .where("id = :id")
-                .setParameters({ id: channel.Channel_id })
-                .execute();
-        }
-    }*/
-
     /* GET PM BETWEEN 2 USERS BY NEEDED ID */
     async findPmUsers(userOne: Readonly<number>,
         userTwo: Readonly<string>) {

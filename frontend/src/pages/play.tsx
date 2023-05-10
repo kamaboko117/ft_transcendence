@@ -1,5 +1,4 @@
-import React, { useEffect, useContext, useState } from "react";
-//import socketService from "../services/socketService";
+import { useEffect, useContext, useState } from "react";
 import Modal from "../components/rooms/NewRoomModal";
 import Backdrop from "../components/backdrop";
 import RoomList from "../components/rooms/RoomList";
@@ -44,34 +43,18 @@ export default function PlayPage(props: { jwt: string | null }) {
         }
         setLoadedRooms(rooms);
         setIsLoading(false);
-        console.log("is in " + isInRoom);
       })
       .catch((err) => console.log(err));
     return () => {
-      console.log("play unmount");
       setLoadedRooms([]);
-      //usrSocket?.off("join_game_success");
-      //usrSocket?.off("join_game_error");
-      console.log("is in unmount " + isInRoom);
     };
   }, []);
 
   const joinRoom = async (roomId: string) => {
-    //socketService.socket = usrSocket
-    //const socket = socketService.socket;
-
-    console.log("here");
     if (!usrSocket) {
       return;
     }
     setIsLoading(true);
-    //const joined = await gameService
-    //  .joinGameRoom(usrSocket, roomId)
-    //  .catch((err) => {
-    //    console.log("joining room");
-    //    alert(err);
-    //  });
-    console.log("joined");
     if (roomId && roomId != "") {
       let roomName = "";
       await fetch(`https://${location.host}/api/rooms/${roomId}`, {
@@ -84,13 +67,11 @@ export default function PlayPage(props: { jwt: string | null }) {
         .then((data) => {
           if (data)
             roomName = data.roomName;
-          console.log(roomName);
         }).catch(err => console.log(err));
       setRoomName(roomName);
       setIdRoom(roomId);
       setIsInRoom(true);
     }
-    //console.log(joined);
     setIsLoading(false);
   };
 

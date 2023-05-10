@@ -263,7 +263,6 @@ const MainChat = (props: any) => {
                 if (res.accesstype === "2" || res.accesstype === "3")
                     contextUserLeave();
             } else {
-                console.log("allo")
                 navigate("/channels");
             }
         }
@@ -281,12 +280,11 @@ const MainChat = (props: any) => {
                 setLstMsgChat((lstMsg) => [...lstMsg, res]);
         });
         return (() => {
-            //setOnline(false);
             usrSocket?.off("actionOnUser");
             setLstMsgChat([]);
             setChatName("");
         });
-    }, [lstMsgChat.keys, /*props.id,*/ JSON.stringify(lstUserGlobal),
+    }, [lstMsgChat.keys, JSON.stringify(lstUserGlobal),
         online, usrSocket]);
     /* Get message from backend, must reload properly when lstUser is updated */
     useEffect(() => {
@@ -439,11 +437,9 @@ const Chat = (props: { jwt: string }) => {
     useEffect(() => {
         const hasPass: Promise<boolean> = hasPassword(id, props.jwt, setErrorCode);
         hasPass.then(res => {
-            console.log(res)
             setLoadPsw(res);
         }).catch(e => console.log(e));
         return (() => {
-            console.log("unm")
             setLoadPsw(undefined);
         });
     }, [id]);
