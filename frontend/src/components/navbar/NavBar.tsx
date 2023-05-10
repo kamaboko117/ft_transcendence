@@ -1,4 +1,4 @@
-import React, { useContext, MouseEvent, useState } from "react";
+import React, { useContext, MouseEvent } from "react";
 import { Link, useMatch, useResolvedPath } from "react-router-dom";
 import UserContext from "../../contexts/UserContext";
 
@@ -48,7 +48,7 @@ export default function NavBar(props: {
 	)
 }
 
-function NavBarLink({ to, children, ...props} : any) {
+function NavBarLink({ to, children, ...props }: any) {
 	const resolvedPath = useResolvedPath(to);
 	const isActive = useMatch({ path: resolvedPath.pathname, end: true });
 

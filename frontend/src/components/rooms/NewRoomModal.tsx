@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { FetchError, header, headerPost } from '../FetchError';
+import { FetchError, headerPost } from '../FetchError';
 
 function NewRoomModal(props: any) {
     const roomNameInputRef = useRef<HTMLInputElement>(null);
