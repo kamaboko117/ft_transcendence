@@ -6,7 +6,7 @@ import { FetchError, headerPost, header } from '../FetchError';
 const handleChange = (event: React.ChangeEvent<HTMLInputElement> | undefined,
     setCode: React.Dispatch<React.SetStateAction<number | null>>) => {
     if (!event || !event.target)
-        return ;
+        return;
     event.preventDefault();
     const target = event?.currentTarget;
 
@@ -17,15 +17,14 @@ const handleChange = (event: React.ChangeEvent<HTMLInputElement> | undefined,
     }
 }
 
-const handleSubmit = (event: React.FormEvent<HTMLFormElement> | undefined, code: number | null,
+const handleSubmit = (event: React.FormEvent<HTMLFormElement>, code: number | null,
     jwt: string | null, userId: number, userCtx: any,
     setErrorCode: React.Dispatch<React.SetStateAction<number>>,
     setValid: React.Dispatch<React.SetStateAction<boolean | undefined>>) => {
-    if (!event || !!event.target)
-        return ;
+    if (!event || !event.target)
+        return;
     event.preventDefault();
     const target = event?.currentTarget;
-
     if (!target)
         return;
     if (code && !isNaN(code)) {
@@ -43,6 +42,7 @@ const handleSubmit = (event: React.FormEvent<HTMLFormElement> | undefined, code:
             if (res)
                 setErrorCode(res.status);
         }).then(res => {
+            console.log(res)
             if (res) {
                 if (res.token) {
                     userCtx.reconnectUser({
