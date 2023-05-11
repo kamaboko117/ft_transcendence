@@ -801,10 +801,32 @@ export class SocketEvents {
     }
   }
 
+  private sendUpdateStatus(@UserDecoSock() user: TokenUser) {
+    let find: boolean = false;
+    const userIsString = String(user.userID);
+    const getMapBusy = this.userGateway.getMapBusy();
+    for (let value of getMapBusy.values()) {
+      if (value === userIsString) {
+        //check if in game
+        find = true;
+      }
+    }
+    if (find === true) {
+      this.server.emit("currentStatus", {
+        code: 3, userId: user.userID
+      });
+    } else {
+      this.server.emit("currentStatus", {
+        code: 1, userId: user.userID
+      });
+    }
+  }
+
   @SubscribeMessage("leave_game")
   async leave(
     @MessageBody() data: LeaveGame,
-    @ConnectedSocket() client: Socket
+    @ConnectedSocket() client: Socket,
+    @UserDecoSock() user: TokenUser
   ) {
     console.log("client id: " + client.id + "is leaving room");
     if (data) {
@@ -833,6 +855,7 @@ export class SocketEvents {
       if (!nbClient) {
         this.roomsService.deleteRoom(data.roomId);
       }
+      this.sendUpdateStatus(user);
     }
   }
 

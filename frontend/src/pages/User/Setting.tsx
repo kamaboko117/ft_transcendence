@@ -3,6 +3,7 @@ import { FetchError, header } from "../../components/FetchError";
 import { useNavigate } from "react-router-dom";
 import UserContext from "../../contexts/UserContext";
 import '../../css/user.css';
+import SocketContext from "../../contexts/Socket";
 
 type statInfo = {
 	level: number,
@@ -38,7 +39,7 @@ type rankWin = {
 
 const handleImgError = (e: any) => {
 	if (!e || !e.target)
-		return ;
+		return;
 	const target: HTMLImageElement = e.target as HTMLImageElement;
 
 	if (target) {
@@ -78,7 +79,7 @@ async function update(event: FormEvent<HTMLFormElement>, username: string | unde
 	event.preventDefault();
 
 	if (!username || timerOk)
-		return ;
+		return;
 	const formData = new FormData();
 	if (fileSet) {
 		formData.append('fileset', fileSet);
@@ -131,10 +132,10 @@ const ErrorSubmit = (props: { lstErr: [] }) => {
 	</>);
 }
 
-export const Match_History_Raw = (props: {rawMH: Array<rawMH> | undefined}) => {
+export const Match_History_Raw = (props: { rawMH: Array<rawMH> | undefined }) => {
 	let i: number = 0;
-	return(<>
-		{props.rawMH && props.rawMH.map((val) => 
+	return (<>
+		{props.rawMH && props.rawMH.map((val) =>
 			<tr key={++i}>
 				<td>{val.type_game}</td>
 				<td>{val.t1_username}</td>
@@ -151,20 +152,20 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
 	if (props.jwt === null)
 		return (<div>Must be logged</div>);
 	useEffect(() => {
-		fetch('https://' + location.host + '/api/users/get_raw_mh', {headers: header(props.jwt)})
-		.then(res => {
-			if (res && res.ok)
-				return(res.json());
-			if (res)
-				setErrorCode(res.status);
-		}).then((res: Array<rawMH>) => {
-			if (res) {
-				setRaw(res);
-			}
-		}).catch(err => console.log(err));
+		fetch('https://' + location.host + '/api/users/get_raw_mh', { headers: header(props.jwt) })
+			.then(res => {
+				if (res && res.ok)
+					return (res.json());
+				if (res)
+					setErrorCode(res.status);
+			}).then((res: Array<rawMH>) => {
+				if (res) {
+					setRaw(res);
+				}
+			}).catch(err => console.log(err));
 	}, [])
-	
-	return(
+
+	return (
 		<table className="profile-table">
 			<thead>
 				<tr>
@@ -175,7 +176,7 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
 				</tr>
 			</thead>
 			<tbody>
-					< Match_History_Raw rawMH={raw_MH}/>
+				< Match_History_Raw rawMH={raw_MH} />
 			</tbody>
 		</table>
 	);
@@ -183,10 +184,10 @@ const Match_History_Table = (props: Readonly<{ jwt: string | null }>) => {
 
 const rank_index = ['BRONZE', 'SILVER', 'GOLD'];
 
-export const Achivement_Raw = (props: {nameAchivement: Array<nameAchivement> | undefined}) => {
+export const Achivement_Raw = (props: { nameAchivement: Array<nameAchivement> | undefined }) => {
 	let i: number = 0;
-	return(<>
-		{props.nameAchivement && props.nameAchivement.map((val) => 
+	return (<>
+		{props.nameAchivement && props.nameAchivement.map((val) =>
 			<tr key={++i}>
 				<td>{val.name}</td>
 			</tr>
@@ -194,24 +195,24 @@ export const Achivement_Raw = (props: {nameAchivement: Array<nameAchivement> | u
 	</>)
 }
 
-const LoadAchivement = (props: {jwt: string | null, setErrorCode: (arg0: number) => void}) => {
+const LoadAchivement = (props: { jwt: string | null, setErrorCode: (arg0: number) => void }) => {
 	const [listAchivement, setList] = useState<Array<nameAchivement>>();
 	useEffect(() => {
 		if (props.jwt) {
-			fetch('https://' + location.host + '/api/users/achiv/', {headers: header(props.jwt)})
-			.then(res => {
-				if (res && res.ok)
-					return(res.json())
-				if (res)
-					props.setErrorCode(res.status);
-			}).then((res) => {
-				if (res)
-					setList(res);
-			}).catch(err => console.log(err));
+			fetch('https://' + location.host + '/api/users/achiv/', { headers: header(props.jwt) })
+				.then(res => {
+					if (res && res.ok)
+						return (res.json())
+					if (res)
+						props.setErrorCode(res.status);
+				}).then((res) => {
+					if (res)
+						setList(res);
+				}).catch(err => console.log(err));
 		}
 	}, [])
 
-	return(
+	return (
 		<table className="profile-table-2">
 			<thead>
 				<tr>
@@ -219,23 +220,23 @@ const LoadAchivement = (props: {jwt: string | null, setErrorCode: (arg0: number)
 				</tr>
 			</thead>
 			<tbody>
-					< Achivement_Raw nameAchivement={listAchivement}/>
+				< Achivement_Raw nameAchivement={listAchivement} />
 			</tbody>
 		</table>
 	);
 }
 
-const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode: (arg0: number) => void, jwt: string | null}) => {
+const LoadResultGame = (props: { user: userInfo | undefined, setErrorCode: (arg0: number) => void, jwt: string | null }) => {
 	const [vc, setVc] = useState<number>(0);
 	const [df, setDf] = useState<number>(0);
 	const [nb_g, setNb_g] = useState<number | undefined>(undefined);
-	const [rank, setRank] = useState<rankWin>({rankByRankUser: undefined, rankDbByWin: undefined});
+	const [rank, setRank] = useState<rankWin>({ rankByRankUser: undefined, rankDbByWin: undefined });
 
 	useEffect(() => {
-		fetch('https://' + location.host + '/api/users/get-games-nb/', {headers: header(props.jwt)})
+		fetch('https://' + location.host + '/api/users/get-games-nb/', { headers: header(props.jwt) })
 			.then(res => {
 				if (res.ok)
-					return(res.text());
+					return (res.text());
 				if (res)
 					props.setErrorCode(res.status);
 			}).then((res) => {
@@ -245,43 +246,73 @@ const LoadResultGame = (props: {user: userInfo | undefined, setErrorCode: (arg0:
 
 	useEffect(() => {
 		if (typeof nb_g === 'number') {
-			fetch('https://' + location.host + '/api/users/get-victory-nb/', {headers: header(props.jwt)})
-			.then(res => {
-				if (res && res.ok)
-					return (res.json());
-				if (res)
-					props.setErrorCode(res.status);
-			}).then((res) => {
-				if (res) {
-					setVc(Number(res.nb));
-					setDf(nb_g - vc)
-					if (res.rankDbByWin)
-						setRank({
-							rankDbByWin: res.rankDbByWin.rank,
-							rankByRankUser: res?.rankByRankUser.gen
-						});
-					if (res.rankByRankUser)
-						setRank({
-							rankDbByWin: res.rankDbByWin.rank,
-							rankByRankUser: res?.rankByRankUser.gen
-						});
-				}
-			}).catch(err => console.log(err));
+			fetch('https://' + location.host + '/api/users/get-victory-nb/', { headers: header(props.jwt) })
+				.then(res => {
+					if (res && res.ok)
+						return (res.json());
+					if (res)
+						props.setErrorCode(res.status);
+				}).then((res) => {
+					if (res) {
+						setVc(Number(res.nb));
+						setDf(nb_g - vc)
+						if (res.rankDbByWin)
+							setRank({
+								rankDbByWin: res.rankDbByWin.rank,
+								rankByRankUser: res?.rankByRankUser.gen
+							});
+						if (res.rankByRankUser)
+							setRank({
+								rankDbByWin: res.rankDbByWin.rank,
+								rankByRankUser: res?.rankByRankUser.gen
+							});
+					}
+				}).catch(err => console.log(err));
 		}
 	}, [nb_g, vc]);
 
 	return (<>
 		<ul>
-					<li>Nb_Games: {nb_g}</li>
-					<li>Victory: {vc}</li>
-					<li>Defeat: {df}</li>
-					<li>Rank: {props.user && ((props.user?.sstat.rank <= 2) ? rank_index[props.user?.sstat.rank] : props.user?.sstat.rank)}</li>
-					<li>Ladder by game won : {(typeof rank.rankDbByWin === "undefined" ? "Not ranked yet" : rank.rankDbByWin)}</li>
-					<li>Ladder by rank : {(typeof rank.rankByRankUser === "undefined" ? "Not ranked yet" : rank.rankByRankUser)}</li>
-					<li>Level: {props.user?.sstat.level}</li>
-				</ul>
-				< Match_History_Table jwt={props.jwt} />
+			<li>Nb_Games: {nb_g}</li>
+			<li>Victory: {vc}</li>
+			<li>Defeat: {df}</li>
+			<li>Rank: {props.user && ((props.user?.sstat.rank <= 2) ? rank_index[props.user?.sstat.rank] : props.user?.sstat.rank)}</li>
+			<li>Ladder by game won : {(typeof rank.rankDbByWin === "undefined" ? "Not ranked yet" : rank.rankDbByWin)}</li>
+			<li>Ladder by rank : {(typeof rank.rankByRankUser === "undefined" ? "Not ranked yet" : rank.rankByRankUser)}</li>
+			<li>Level: {props.user?.sstat.level}</li>
+		</ul>
+		< Match_History_Table jwt={props.jwt} />
 	</>)
+}
+
+const SetBusy = () => {
+	const { usrSocket } = useContext(SocketContext);
+	const [isBusy, setIsBusy] = useState<boolean | undefined>(undefined);
+
+	const ft_busy = (e: React.MouseEvent<HTMLButtonElement>) => {
+		if (!e || !e.target)
+			return;
+		usrSocket?.emit("iAmBusy", (res: { isBusy: boolean }) => {
+			console.log(res)
+			setIsBusy(res.isBusy);
+		});
+	}
+
+
+	useEffect(() => {
+		usrSocket?.emit("getBusy", (res: { isBusy: boolean }) => {
+			setIsBusy(res.isBusy);
+		});
+	}, [usrSocket]);
+	return (<>
+		{typeof isBusy === "boolean" && <article>
+			<button onClick={ft_busy}>
+				{(isBusy === true ? "Unset busy" : "Set busy")}
+			</button>
+		</article>
+		}
+	</>
+	);
 }
 
 function Setting(props: Readonly<{ jwt: string | null }>) {
@@ -323,15 +354,16 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 			navigate("/fa-activate");
 		setOldFa(FA);
 	}, [userCtx.getJwt()]);
-	
+
 	if (errorCode >= 401 && errorCode != 413)
 		return (<FetchError code={errorCode} />);
 	return (
 		<section>
 			<h1>{userCtx.getUsername()}</h1>
+			<SetBusy />
 			<article>
 				<LoadResultGame user={user} setErrorCode={setErrorCode} jwt={props.jwt} />
-				<LoadAchivement setErrorCode={setErrorCode} jwt={props.jwt}/>
+				<LoadAchivement setErrorCode={setErrorCode} jwt={props.jwt} />
 			</article>
 			<article>
 				<form onSubmit={(event: FormEvent<HTMLFormElement>) =>

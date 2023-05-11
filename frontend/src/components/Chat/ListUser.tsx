@@ -246,6 +246,12 @@ export const StatusUser = (props: { userId: number, jwt: string | null }) => {
                 </div><span className='txt'>In game</span>
             </div>
         }
+        {
+            status === 3 && <div className='status'>
+                <div style={{ width: "20px", height: "20px", backgroundColor: "red" }}>
+                </div><span className='txt'>Busy</span>
+            </div>
+        }
     </>);
 }
 
@@ -288,7 +294,7 @@ const ButtonsInfos = (props: typeButtonsInfo) => {
 
 export const handleImgError = (e: any) => {
     if (!e || !e.target)
-        return ;
+        return;
     const target: HTMLImageElement = e.target as HTMLImageElement;
 
     if (target) {

@@ -21,17 +21,26 @@ class Info {
 export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   private readonly mapSocket: Map<string, string>;
+  private readonly mapBusySocket: Map<string, string>;
   constructor(private authService: AuthService, private socketEvents: SocketEvents
   ) {
     this.mapSocket = new Map();
+    this.mapBusySocket = new Map();
   }
 
   @UseGuards(JwtGuard)
   @SubscribeMessage('status')
   getStatusUser(@MessageBody() data: Info) {
     const map = this.mapSocket;
+    const mapBusy = this.mapBusySocket;
     const mapUserInGame = this.socketEvents.getMap();
 
+    for (let value of mapBusy.values()) {
+      if (value === String(data.userId)) {
+        //check if busy
+        return ({ code: 3 });
+      }
+    }
     for (let value of mapUserInGame.values()) {
       if (Number(value) === data.userId) {
         //check if in game
@@ -50,9 +59,68 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @UseGuards(JwtGuard)
   @SubscribeMessage('userInGame')
   userInGame(@UserDecoSock() user: TokenUser) {
-    this.server.emit("currentStatus", {
-      code: 2, userId: user.userID
-    });
+    let find: boolean = false;
+    const userIsString = String(user.userID);
+    for (let value of this.mapBusySocket.values()) {
+      if (value === userIsString) {
+        //check if busy
+        find = true;
+      }
+    }
+    if (find === true) {
+      this.server.emit("currentStatus", {
+        code: 3, userId: user.userID
+      });
+    } else {
+      this.server.emit("currentStatus", {
+        code: 2, userId: user.userID
+      });
+    }
+  }
+
+  @UseGuards(JwtGuard)
+  @SubscribeMessage('iAmBusy')
+  iAmBusy(@ConnectedSocket() client: Socket, @UserDecoSock() user: TokenUser) {
+    const mapUserInGame = this.socketEvents.getMap();
+    const result = this.mapBusySocket.get(client.id);
+    //user is busy
+    if (!result) {
+      this.mapBusySocket.set(client.id, String(user.userID));
+      this.server.emit("currentStatus", {
+        code: 3, userId: user.userID
+      });
+      return ({ isBusy: true });
+    }
+    else
+      this.mapBusySocket.delete(client.id);
+    //check if in game, if it is send in game status
+    let find: boolean = false;
+
+    for (let value of mapUserInGame.values()) {
+      if (value === user.userID) {
+        //check if in game
+        find = true;
+      }
+    }
+    if (find === true) {
+      this.server.emit("currentStatus", {
+        code: 2, userId: user.userID
+      });
+    } else {
+      this.server.emit("currentStatus", {
+        code: 1, userId: user.userID
+      });
+    }
+    return ({ isBusy: false });
+  }
+
+  @UseGuards(JwtGuard)
+  @SubscribeMessage('getBusy')
+  getBusy(@ConnectedSocket() client: Socket) {
+    const result = this.mapBusySocket.get(client.id);
+    if (result)
+      return ({ isBusy: true });
+    return ({ isBusy: false });
   }
 
   @UseGuards(JwtGuard)
@@ -60,8 +128,16 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const bearer = client.handshake.headers.authorization;
     if (bearer) {
       const user: any = await this.authService.verifyToken(bearer);
+      let find: boolean = false;
       if (!user)
         return;
+      const userIsString = String(user.userID);
+      for (let value of this.mapBusySocket.values()) {
+        if (value === userIsString) {
+          //check if in game
+          find = true;
+        }
+      }
       this.mapSocket.forEach((value, key) => {
         this.server.to(key).emit("currentStatus", {
           code: 1, userId: user.userID
@@ -87,10 +163,15 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
       })
       this.mapSocket.delete(client.id);
+      this.mapBusySocket.delete(client.id);
     }
   }
 
   getMap() {
     return (this.mapSocket);
+  }
+
+  getMapBusy() {
+    return (this.mapBusySocket);
   }
 }
