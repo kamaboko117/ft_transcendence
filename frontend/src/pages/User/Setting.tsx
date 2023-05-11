@@ -293,7 +293,6 @@ const SetBusy = () => {
 		if (!e || !e.target)
 			return;
 		usrSocket?.emit("iAmBusy", (res: { isBusy: boolean }) => {
-			console.log(res)
 			setIsBusy(res.isBusy);
 		});
 	}

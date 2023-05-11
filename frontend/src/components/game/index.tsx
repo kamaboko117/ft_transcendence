@@ -285,7 +285,7 @@ export default function Game(props: {
     let player = side === 1 ? player1 : player2;
     if (!rect) return;
     player.y = e.clientY - rect.top - player.height / 2;
-    if (socketService.socket){
+    if (socketService.socket) {
       gameService.updatePlayerPosition(socketService.socket, player.y);
     }
   }
@@ -302,7 +302,7 @@ export default function Game(props: {
       function game() {
         if (!ctx) return;
         if (socketService)
-          gameService.updatePlayerTickCount(socketService.socket ,receivedUpdates);
+          gameService.updatePlayerTickCount(socketService.socket, receivedUpdates);
         render(ctx, player1, player2);
       }
       window.addEventListener("mousemove", movePaddle);
