@@ -1,5 +1,4 @@
 import { typeListUser, typeListUserGlobal, updateBlackFriendList } from "../../contexts/DisplayChatContext";
-import { SetStateAction } from "react";
 import { NavigateFunction } from "react-router-dom";
 import { playPageInvite } from "../../pages/PlayInvite";
 import { header, headerPost } from "../FetchError";

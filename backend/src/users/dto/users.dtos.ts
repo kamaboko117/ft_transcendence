@@ -1,7 +1,7 @@
-import { IsEmail, IsNotEmpty, IsNumber, MinLength,
-    IsString, IsBoolean, IsDefined,
-    IsObject, ValidateNested, MaxLength } from "class-validator";
-import { Type } from 'class-transformer';
+import {
+    IsNotEmpty, IsNumber, MinLength,
+    IsString
+} from "class-validator";
 
 export class Username {
     @IsString()

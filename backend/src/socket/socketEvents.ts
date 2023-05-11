@@ -573,7 +573,6 @@ export class SocketEvents {
 
   handleConnection(client: any) {
     const user: TokenUser = client.user;
-    console.log("Client connected: ", client.id);
     client.on("disconnecting", () => {
       client.rooms.forEach(async (key: string) => {
         const room = this.server.sockets.adapter.rooms.get(key);
@@ -717,7 +716,6 @@ export class SocketEvents {
   }
 
   async handleDisconnect(client: Socket) {
-    console.log("Client disconnected: ", client.id);
     let game = this.findGameByConnectedSocket(client.id);
     if (game) {
       if (game.player1.socketId === client.id) {

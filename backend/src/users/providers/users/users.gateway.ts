@@ -1,4 +1,4 @@
-import { Body, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { IsNumber } from 'class-validator';
 import { Server, Socket } from 'socket.io';
