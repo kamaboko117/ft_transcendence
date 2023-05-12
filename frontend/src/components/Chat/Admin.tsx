@@ -106,7 +106,7 @@ const handleSubmitBanMute = (event: React.FormEvent<HTMLFormElement>,
     object: typeFetchToBack) => {
     event.preventDefault();
     if (!event)
-        return ;
+        return;
     const target: HTMLElement = event.target as HTMLElement;
 
     if (!target)
@@ -216,7 +216,7 @@ const handleKick = (event: React.MouseEvent<HTMLButtonElement>,
     askKick: boolean) => {
     event.preventDefault();
     if (!event || !event.target)
-        return ;
+        return;
     const target: HTMLElement = event.target as HTMLElement;
 
     if (target && askKick === false)
@@ -308,7 +308,7 @@ function submitPsw(e: any | undefined, jwt: string, action: string,
     setType: React.Dispatch<React.SetStateAction<boolean>>,
     setErr: React.Dispatch<React.SetStateAction<boolean>>) {
     if (!e)
-        return ;
+        return;
     e.preventDefault();
 
     if (e && e.target) {
@@ -397,7 +397,10 @@ export const PasswordOwnerBox = (props: admPassword) => {
                 else {
                     setRole("");
                 }
-            }).catch(e => console.log(e));
+            }).catch(e => {
+                console.log(e);
+                props.setErrorCode(9999);
+            });
     }, [[props.id]]);
     return (<>
         {role != "Owner" ? <></> :
@@ -418,12 +421,12 @@ function fetchGetRole(jwt: string, id: string,
     return (fetch('https://' + location.host + '/api/chat-role/getRole?' + new URLSearchParams({
         id: id,
     }), { headers: header(jwt) })
-    .then(res => {
-        if (res && res.ok)
-            return (res.json());
-        if (res && res.status)
-            setErrorCode(res.status);
-    }));
+        .then(res => {
+            if (res && res.ok)
+                return (res.json());
+            if (res && res.status)
+                setErrorCode(res.status);
+        }));
 }
 
 function fetchUserRole(jwt: string, userId: number, id: string,
@@ -431,12 +434,12 @@ function fetchUserRole(jwt: string, userId: number, id: string,
     return (fetch('https://' + location.host + '/api/chat-role/get-role-focus?' + new URLSearchParams({
         id: id, idfocus: String(userId)
     }), { headers: header(jwt) })
-    .then(res => {
-        if (res && res.ok)
-            return (res.json());
-        if (res && res.status)
-            setErrorCode(res.status);
-    }));
+        .then(res => {
+            if (res && res.ok)
+                return (res.json());
+            if (res && res.status)
+                setErrorCode(res.status);
+        }));
 }
 
 const AdminComponent = (props: AdminCompType) => {
@@ -448,21 +451,21 @@ const AdminComponent = (props: AdminCompType) => {
         const getRole = () => {
             fetchUserRole(props.jwt, props.userId,
                 props.id, props.setErrorCode)
-            .then((res: {role: string})  => {
-                if (res)
-                    setRoleFocus(res.role);
-                fetchGetRole(props.jwt, props.id, props.setErrorCode)
-                .then((res) => {
-                    if (res && res.role) {
-                        setUserId(res.userId);
-                        setRole(res.role);
-                    }
-                    else {
-                        setUserId(undefined);
-                        setRole("");
-                    }
+                .then((res: { role: string }) => {
+                    if (res)
+                        setRoleFocus(res.role);
+                    fetchGetRole(props.jwt, props.id, props.setErrorCode)
+                        .then((res) => {
+                            if (res && res.role) {
+                                setUserId(res.userId);
+                                setRole(res.role);
+                            }
+                            else {
+                                setUserId(undefined);
+                                setRole("");
+                            }
+                        }).catch(e => console.log(e));
                 }).catch(e => console.log(e));
-            }).catch(e => console.log(e));
         };
         //check if userInfo box is displayed on client
         if (props.chooseClassName === "userInfo userInfoClick")
@@ -475,10 +478,10 @@ const AdminComponent = (props: AdminCompType) => {
     }, [props.userId]);
     return (
         <>
-        { (userId && role && !(roleFocus === role)) &&
-            (role === "Owner" || role === "Administrator")
-            && <AdminButtons id={props.id} focusUserId={props.userId}
-                    userId={userId} role={role} userInfo={props.userInfo} jwt={props.jwt} /> }
+            {(userId && role && !(roleFocus === role)) &&
+                (role === "Owner" || role === "Administrator")
+                && <AdminButtons id={props.id} focusUserId={props.userId}
+                    userId={userId} role={role} userInfo={props.userInfo} jwt={props.jwt} />}
         </>
     );
 }

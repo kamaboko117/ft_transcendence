@@ -38,10 +38,13 @@ export const UsernameSet = (props: {
         })
         .then(res => {
           if (res)
-            props.setUsername(res.username)
+            props.setUsername(res.username);
           setLoad(true);
         })
-        .catch(e => console.log(e));
+        .catch(e => {
+          console.log(e);
+          setErrorCode(9999);
+        });
     }
     login();
   }, [props.jwt, props.username, getLocation]);

@@ -10,9 +10,15 @@ export const FetchError = (props: { code: number }) => {
             setDisplay(false);
             navigate("/logout");
         }
-        else if (props.code >= 400) {
+        else if (props.code >= 400 && props.code != 9999) {
             try {
                 throw new Error('Error ' + props.code);
+            } catch (e) {
+                navigate("/error-page", { state: { code: props.code } });
+            }
+        } else if (props.code === 9999) {
+            try {
+                throw new Error('Error, something went wrong with the server, please contact administrator.');
             } catch (e) {
                 navigate("/error-page", { state: { code: props.code } });
             }

@@ -73,10 +73,13 @@ export const LoadUserGlobal = (props: { jwt: string | null }) => {
                 if (res)
                     setErrorCode(res.status);
             }).then(res => {
-                if(res)
-                    setLstUserGlobal(res)
+                if (res)
+                    setLstUserGlobal(res);
             })
-            .catch(err => console.log(err));
+            .catch(err => {
+                console.log(err)
+                setErrorCode(9999);
+            });
         return (() => { });
     }, [props.jwt]);
     return (<>{errorCode && errorCode >= 400 && <FetchError code={errorCode} />}</>);

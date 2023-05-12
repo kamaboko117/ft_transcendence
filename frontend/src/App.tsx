@@ -48,7 +48,9 @@ const ErrorPage = () => {
   const location = useLocation();
   if (location.state === null)
     return (<div>Error 404</div>);
-  return (<div>Error {location.state.code}</div>)
+  else if (location.state.code === 9999)
+    return (<div>Error, something went wrong with the server, please contact administrator.</div>);
+  return (<div>Error {location.state.code}</div>);
 }
 
 function App() {
