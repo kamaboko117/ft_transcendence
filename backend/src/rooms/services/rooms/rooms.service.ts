@@ -181,14 +181,6 @@ export class RoomsService {
     }
   }
 
-  /*async updateRoomSettings(uid: string, settings: object) {
-    await this.roomRepository
-      .createQueryBuilder()
-      .update(Room)
-      .set({ settings: settings })
-      .where("uid = :uid", { uid: uid })
-      .execute();
-  }*/
   async updateRoomSettingsOne(uid: string, settings: object) {
     await this.roomRepository
       .createQueryBuilder()

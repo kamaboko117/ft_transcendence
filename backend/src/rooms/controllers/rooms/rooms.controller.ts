@@ -73,7 +73,6 @@ export class RoomsController {
     );
     if (!isUserConnected)
       return { roomName: "", Capacity: "0", private: false, uid: "" };
-    //let findInMap: boolean = false;
     const userId = user.userID;
     for (let [key, value] of this.socketEvents.getMap().entries()) {
       if (value === userId || value === createRoomDto.id) {

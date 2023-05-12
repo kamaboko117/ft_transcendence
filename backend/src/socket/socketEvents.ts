@@ -699,7 +699,6 @@ export class SocketEvents {
       await this.userService.updateAchive(loserId);
     }
     this.server.to(game.id).emit("end_game", { winner: winner, loser: loser });
-    console.log("clear interval: " + game.intervalId);
     clearInterval(game.intervalId);
     games = games.filter((g) => g.id !== game.id);
     this.mapUserInGame.delete(winnerSocketId);
@@ -837,13 +836,11 @@ export class SocketEvents {
     @ConnectedSocket() client: Socket,
     @UserDecoSock() user: TokenUser
   ) {
-    console.log("client id: " + client.id + "is leaving room");
     if (data) {
       if (data.roomId && typeof data.roomId !== "string") return;
       for (let [key, value] of this.mapUserInGame.entries()) {
         if (client.id === key) {
           const userDb = await this.userService.findUsersById(Number(value));
-          console.log(userDb);
           this.server
             .to(data.roomId)
             .emit("user_leave_room", { username: userDb?.username });
@@ -978,12 +975,6 @@ export class SocketEvents {
       this.joinPartTwo(room, client, data, userId);
     }
   }
-
-  // @SubscribeMessage("update_game")
-  // async update(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
-  //   const gameRoom: any = this.getSocketGameRoom(client);
-  //   client.to(gameRoom).emit("on_game_update", data);
-  // }
 
   @SubscribeMessage("update_player_position")
   async updatePlayerPosition(
@@ -1150,8 +1141,6 @@ export class SocketEvents {
     )
       return { err: "Room settings from both users are not synchronized" };
     let socket2: string | undefined = undefined;
-    console.log("connected")
-    console.log(connectedSockets)
     connectedSockets.forEach((key) => {
       if (key !== client.id) socket2 = key;
     });
