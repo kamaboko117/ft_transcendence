@@ -1,11 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import gameService from "../../services/gameService";
-import ActivePowerUpsList from "./ActivePowerUpsList";
 import { FetchError, header } from "../FetchError";
 import SettingGame from "./SettingGame";
 import { Socket } from "socket.io-client";
-//import socketService from "../../services/socketService";
 
 const FPS = 60;
 const CANVAS_WIDTH = 600;
@@ -79,7 +77,6 @@ export default function Game(props: {
   const [intervalID, setIntervalID] = React.useState<number | null>(null);
   const [side, setSide] = React.useState(1);
   const [isGameStarted, setIsGameStarted] = React.useState(false);
-  //const [typeGame, setTypeGame] = React.useState<string>("Classic");
   const [isGameEnded, setIsGameEnded] = React.useState(false);
   const [winner, setWinner] = React.useState<string>("");
   const [errorCode, setErrorCode] = React.useState<number>(200);

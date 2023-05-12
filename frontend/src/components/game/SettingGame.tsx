@@ -1,4 +1,4 @@
-import React, { MouseEventHandler, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import gameService from "../../services/gameService";
 import { FetchError } from "../FetchError";
 import ActivePowerUpsList from "./ActivePowerUpsList";
