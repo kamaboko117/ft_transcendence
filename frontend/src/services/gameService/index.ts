@@ -11,7 +11,6 @@ class GameService {
     return new Promise((resolve, reject) => {
       socket?.emit("join_game", { roomId });
       socket?.on("join_game_success", (res: {nbClient: number, username: string}) => {
-        console.log(res);
         if (res.nbClient === 1) setUsr1(res.username);
         else if (res.nbClient === 2) setUsr2(res.username);
         resolve(true);
@@ -49,7 +48,6 @@ class GameService {
     socket: Socket<any, any> | undefined,
     callback: (data: any) => void
   ): Promise<void> {
-    console.log("start_game log loaded");
     socket?.on("start_game", callback);
   }
 

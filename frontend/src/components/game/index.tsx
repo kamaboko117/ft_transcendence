@@ -232,7 +232,6 @@ export default function Game(props: {
   const [timeOut, setTime] = React.useState<boolean>(false);
 
   function ft_timeOut() {
-    console.log("TIMEOUT");
     setTime(true);
   }
 
