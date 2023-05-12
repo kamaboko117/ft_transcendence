@@ -990,6 +990,8 @@ export class SocketEvents {
     @MessageBody() data: number,
     @ConnectedSocket() client: Socket
   ) {
+    if (typeof data !== "number")
+      return;
     const gameRoom: any = this.getSocketGameRoom(client);
     let game = games.find((g) => g.id === gameRoom);
     if (!game) {
