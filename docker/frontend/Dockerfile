@@ -1,4 +1,4 @@
-FROM node:20-alpine3.16
+FROM node:current-alpine3.16
 USER root
 WORKDIR /var/www/html
 COPY entrypoint.sh /usr/bin
