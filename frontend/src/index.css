@@ -52,7 +52,6 @@ h2 {
 }
 
 button {
-  /* border-radius: 8px; */
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
@@ -308,11 +307,9 @@ select {
   margin: 0px;
   width: 67%;
   min-width: 67%;
-  /* justify-content: space-between; */
 }
 
 .setting_choice {
-  /* font-family: ChaneyRegular; */
   font-style: normal;
   font-weight: 400;
   font-size: 18px;
@@ -327,8 +324,6 @@ select {
   box-shadow: 0 7px 1px rgb(59 59 59/50%);
   cursor: pointer;
   transition: .1s;
-  /* max-width: fit-content; */
-  /* width: 50%; */
 }
 
 .setting_choice:first-child {
@@ -353,7 +348,6 @@ select {
   justify-content: center;
   align-items: center;
   text-align: center;
-  /* width: 50%; */
 }
 
 .setting_choice_active:first-child {
@@ -369,6 +363,15 @@ select {
 @media screen and (max-width: 1000px) {
   .game {
     flex-direction: column;
+  }
+  .setting_row {
+    flex-direction: column;
+    width: 100%;
+  }
+  .setting_title {
+    width: auto;
+    min-width: auto;
+    margin-bottom: 20px;
   }
 }
 
@@ -399,13 +402,20 @@ select {
   }
 }
 
-@media screen and (max-width: 250px) {
+@media screen and (max-width: 300px) {
   .game_powerups_list {
     flex-direction: column;
   }
 
   .room_item {
     padding: 0;
+  }
+  .setting_choice {
+    font-size: 0.5em;
+  }
+  
+  .setting_choice_active {
+    font-size: 0.5em;
   }
 }
 
@@ -423,6 +433,7 @@ select {
   .btn {
     padding: 5px 5px;
   }
+  
 }
 
 @media screen and (max-width: 200px) {
