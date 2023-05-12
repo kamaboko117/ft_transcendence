@@ -15,6 +15,7 @@ import { UsersService } from "src/users/providers/users/users.service";
 import { LeaveGame, UpdateTypeRoom, UserIdRdy } from "./dto";
 import { UserDecoSock } from "src/common/middleware/user.decorator";
 import { validate } from "uuid";
+import { type } from "os";
 
 const FPS = 60;
 const CANVAS_WIDTH = 600;
@@ -1045,7 +1046,55 @@ export class SocketEvents {
     socket2: string | undefined
   ) {
     if (!getRoom || !socket2) return;
-    let newGame = new Game(data.uid, client.id, socket2, getRoom.settingsOne);
+
+    let CheckSetting = {
+      acceleration: 0.1,
+      ballColor: "WHITE",
+      ballSize: 10,
+      goal: 11,
+      powerUps: false,
+      speed: 5,
+      type: "Classic"
+    }
+    if  (getRoom.settingsOne.acceleration === 0.1 ||
+      getRoom.settingsOne.acceleration === 0.2 ||
+      getRoom.settingsOne.acceleration === 0.4 ) {
+      CheckSetting.acceleration = getRoom.settingsOne.acceleration;
+    }
+    if (getRoom.settingsOne.ballColor === "WHITE" ||
+      getRoom.settingsOne.ballColor === "RED" ||
+      getRoom.settingsOne.ballColor === "GREEN" ||
+      getRoom.settingsOne.ballColor === "BLUE" ||
+      getRoom.settingsOne.ballColor === "YELLOW" ||
+      getRoom.settingsOne.ballColor === "PURPLE" ||
+      getRoom.settingsOne.ballColor === "ORANGE" ||
+      getRoom.settingsOne.ballColor === "PINK" ||
+      getRoom.settingsOne.ballColor === "BROWN") {
+      CheckSetting.ballColor = getRoom.settingsOne.ballColor;
+    }
+    if (getRoom.settingsOne.ballSize === 5 ||
+      getRoom.settingsOne.ballSize === 10 ||
+      getRoom.settingsOne.ballSize === 20 ) {
+      CheckSetting.ballSize = getRoom.settingsOne.ballSize;
+    
+    }
+    if (getRoom.settingsOne.goal === 11 ||
+      getRoom.settingsOne.goal === 21 ||
+      getRoom.settingsOne.goal === 42 ) {
+      CheckSetting.goal = getRoom.settingsOne.goal;
+    }
+    if (getRoom.settingsOne.powerUps === false ||
+      getRoom.settingsOne.powerUps === true ) {
+      CheckSetting.powerUps = getRoom.settingsOne.powerUps;
+    }
+    if (getRoom.settingsOne.speed === 3 ||
+      getRoom.settingsOne.speed === 5 ||
+      getRoom.settingsOne.speed === 10 ) {
+      CheckSetting.speed = getRoom.settingsOne.speed;
+      }
+    CheckSetting.type = getRoom.settingsOne.type;
+
+    let newGame = new Game(data.uid, client.id, socket2, CheckSetting);
     let powerUps = newGame.powerUps;
     let player1 = newGame.player1;
     let player2 = newGame.player2;
