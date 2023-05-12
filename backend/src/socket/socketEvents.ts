@@ -108,8 +108,8 @@ class PUNeutral implements IPowerUp {
     this.color = "BLUE";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (game: IGame) => { };
-    this.cancelEffect = (game: IGame) => { };
+    this.effect = (game: IGame) => {};
+    this.cancelEffect = (game: IGame) => {};
   }
 }
 
@@ -137,8 +137,8 @@ class PUBonus implements IPowerUp {
     this.color = "GREEN";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => { };
-    this.cancelEffect = () => { };
+    this.effect = (player: IPlayer) => {};
+    this.cancelEffect = () => {};
   }
 }
 
@@ -166,8 +166,8 @@ class PUMalus implements IPowerUp {
     this.color = "RED";
     this.active = false;
     this.lifespan = 4;
-    this.effect = (player: IPlayer) => { };
-    this.cancelEffect = () => { };
+    this.effect = (player: IPlayer) => {};
+    this.cancelEffect = () => {};
   }
 }
 
@@ -460,6 +460,7 @@ class Game implements IGame {
 }
 
 function collision(player: IPlayer, ball: any) {
+  let playerSide = player.x < CANVAS_WIDTH / 2 ? "left" : "right";
   player.top = player.y;
   player.bottom = player.y + player.height;
   player.left = player.x;
@@ -470,12 +471,20 @@ function collision(player: IPlayer, ball: any) {
   ball.left = ball.x - ball.radius;
   ball.right = ball.x + ball.radius;
 
-  return (
-    ball.left < player.right &&
-    ball.top < player.bottom &&
-    ball.right > player.left &&
-    ball.bottom > player.top
-  );
+  // return true if collision is detected
+  if (playerSide === "left") {
+    return (
+      ball.left < player.right &&
+      ball.top < player.bottom &&
+      ball.bottom > player.top
+    );
+  } else {
+    return (
+      ball.right > player.left &&
+      ball.top < player.bottom &&
+      ball.bottom > player.top
+    );
+  }
 }
 
 function generatePowerUps(game: IGame) {
@@ -487,7 +496,7 @@ function generatePowerUps(game: IGame) {
     case 0: //neutral
       var type =
         neutralPowerUpTypes[
-        Math.floor(Math.random() * neutralPowerUpTypes.length)
+          Math.floor(Math.random() * neutralPowerUpTypes.length)
         ];
       PU = new powerUp(x, y, type);
       break;
@@ -509,7 +518,7 @@ function checkPowerUpCollision(ball: IBall, powerUp: IPowerUp) {
   if (powerUp.active) return false;
   let distance = Math.sqrt(
     (ball.x - powerUp.x) * (ball.x - powerUp.x) +
-    (ball.y - powerUp.y) * (ball.y - powerUp.y)
+      (ball.y - powerUp.y) * (ball.y - powerUp.y)
   );
   if (distance < ball.radius + powerUp.radius) {
     powerUp.user = ball.velocityX < 0 ? "player2" : "player1";
@@ -544,6 +553,7 @@ function resetBall(ball: IBall, game: IGame) {
   ball.speed = game.settings.speed;
   // get ball direction before reset
   let angle = Math.atan2(ball.velocityY, ball.velocityX);
+  // reverse ball direction
   let newVelocityX = -ball.speed * Math.cos(angle);
   let newVelocityY = -ball.speed * Math.sin(angle);
   ball.velocityX = 0;
@@ -782,7 +792,7 @@ export class SocketEvents {
     const socketRooms = Array.from(socket.rooms.values()).filter(
       (r) => r !== socket.id
     );
-    let i = 0
+    let i = 0;
     socketRooms.forEach((itm, idx) => {
       if (validate(itm)) {
         i = idx;
@@ -809,8 +819,7 @@ export class SocketEvents {
 
   private sendUpdateStatus(@UserDecoSock() user: TokenUser) {
     let find: boolean = false;
-    if (!user)
-      return;
+    if (!user) return;
     const userIsString = String(user.userID);
     const getMapBusy = this.userGateway.getMapBusy();
     for (let value of getMapBusy.values()) {
@@ -821,11 +830,13 @@ export class SocketEvents {
     }
     if (find === true) {
       this.server.emit("currentStatus", {
-        code: 3, userId: user.userID
+        code: 3,
+        userId: user.userID,
       });
     } else {
       this.server.emit("currentStatus", {
-        code: 1, userId: user.userID
+        code: 1,
+        userId: user.userID,
       });
     }
   }
@@ -909,11 +920,9 @@ export class SocketEvents {
     if (room.private === true) {
       const result: boolean = this.checkIfUserFound(room, client.id);
       if (result === false) {
-        this.server
-          .to(client.id)
-          .emit("join_game_error", {
-            error: "You are not invited in this game",
-          });
+        this.server.to(client.id).emit("join_game_error", {
+          error: "You are not invited in this game",
+        });
         return;
       }
     }
@@ -981,8 +990,7 @@ export class SocketEvents {
     @MessageBody() data: number,
     @ConnectedSocket() client: Socket
   ) {
-    if (typeof data !== "number")
-      return;
+    if (typeof data !== "number") return;
     const gameRoom: any = this.getSocketGameRoom(client);
     let game = games.find((g) => g.id === gameRoom);
     if (!game) {
@@ -1047,14 +1055,17 @@ export class SocketEvents {
       goal: 11,
       powerUps: false,
       speed: 5,
-      type: "Classic"
-    }
-    if  (getRoom.settingsOne.acceleration === 0.1 ||
+      type: "Classic",
+    };
+    if (
+      getRoom.settingsOne.acceleration === 0.1 ||
       getRoom.settingsOne.acceleration === 0.2 ||
-      getRoom.settingsOne.acceleration === 0.4 ) {
+      getRoom.settingsOne.acceleration === 0.4
+    ) {
       CheckSetting.acceleration = getRoom.settingsOne.acceleration;
     }
-    if (getRoom.settingsOne.ballColor === "WHITE" ||
+    if (
+      getRoom.settingsOne.ballColor === "WHITE" ||
       getRoom.settingsOne.ballColor === "RED" ||
       getRoom.settingsOne.ballColor === "GREEN" ||
       getRoom.settingsOne.ballColor === "BLUE" ||
@@ -1062,29 +1073,37 @@ export class SocketEvents {
       getRoom.settingsOne.ballColor === "PURPLE" ||
       getRoom.settingsOne.ballColor === "ORANGE" ||
       getRoom.settingsOne.ballColor === "PINK" ||
-      getRoom.settingsOne.ballColor === "BROWN") {
+      getRoom.settingsOne.ballColor === "BROWN"
+    ) {
       CheckSetting.ballColor = getRoom.settingsOne.ballColor;
     }
-    if (getRoom.settingsOne.ballSize === 5 ||
+    if (
+      getRoom.settingsOne.ballSize === 5 ||
       getRoom.settingsOne.ballSize === 10 ||
-      getRoom.settingsOne.ballSize === 20 ) {
+      getRoom.settingsOne.ballSize === 20
+    ) {
       CheckSetting.ballSize = getRoom.settingsOne.ballSize;
-    
     }
-    if (getRoom.settingsOne.goal === 11 ||
+    if (
+      getRoom.settingsOne.goal === 11 ||
       getRoom.settingsOne.goal === 21 ||
-      getRoom.settingsOne.goal === 42 ) {
+      getRoom.settingsOne.goal === 42
+    ) {
       CheckSetting.goal = getRoom.settingsOne.goal;
     }
-    if (getRoom.settingsOne.powerUps === false ||
-      getRoom.settingsOne.powerUps === true ) {
+    if (
+      getRoom.settingsOne.powerUps === false ||
+      getRoom.settingsOne.powerUps === true
+    ) {
       CheckSetting.powerUps = getRoom.settingsOne.powerUps;
     }
-    if (getRoom.settingsOne.speed === 3 ||
+    if (
+      getRoom.settingsOne.speed === 3 ||
       getRoom.settingsOne.speed === 5 ||
-      getRoom.settingsOne.speed === 10 ) {
+      getRoom.settingsOne.speed === 10
+    ) {
       CheckSetting.speed = getRoom.settingsOne.speed;
-      }
+    }
     CheckSetting.type = getRoom.settingsOne.type;
 
     let newGame = new Game(data.uid, client.id, socket2, CheckSetting);
