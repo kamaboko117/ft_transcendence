@@ -406,6 +406,10 @@ const DiscussionBox = (props: {
                 usrSocket?.emit("stopEmit", { id: props.id }, () => {
                     setOnline(false);
                 });
+            } else if (getSecondPartRegex !== "/channels") {
+                usrSocket?.emit("stopEmit", { id: props.id }, () => {
+                    setOnline(false);
+                });
             }
         })
     }, [props.id, usrSocket]);

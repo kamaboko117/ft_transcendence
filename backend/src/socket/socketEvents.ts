@@ -14,6 +14,7 @@ import { TokenUser } from "src/chat/chat.interface";
 import { UsersService } from "src/users/providers/users/users.service";
 import { LeaveGame, UpdateTypeRoom, UserIdRdy } from "./dto";
 import { UserDecoSock } from "src/common/middleware/user.decorator";
+import { validate } from "uuid";
 
 const FPS = 60;
 const CANVAS_WIDTH = 600;
@@ -781,7 +782,14 @@ export class SocketEvents {
     const socketRooms = Array.from(socket.rooms.values()).filter(
       (r) => r !== socket.id
     );
-    return socketRooms[0];
+    let i = 0
+    socketRooms.forEach((itm, idx) => {
+      if (validate(itm)) {
+        i = idx;
+        return;
+      }
+    });
+    return socketRooms[i];
   }
 
   @SubscribeMessage("update_player_tick_count")
@@ -801,6 +809,8 @@ export class SocketEvents {
 
   private sendUpdateStatus(@UserDecoSock() user: TokenUser) {
     let find: boolean = false;
+    if (!user)
+      return;
     const userIsString = String(user.userID);
     const getMapBusy = this.userGateway.getMapBusy();
     for (let value of getMapBusy.values()) {
@@ -981,7 +991,6 @@ export class SocketEvents {
   ) {
     const gameRoom: any = this.getSocketGameRoom(client);
     let game = games.find((g) => g.id === gameRoom);
-
     if (!game) {
       return;
     }
@@ -1090,7 +1099,8 @@ export class SocketEvents {
     )
       return { err: "Room settings from both users are not synchronized" };
     let socket2: string | undefined = undefined;
-
+    console.log("connected")
+    console.log(connectedSockets)
     connectedSockets.forEach((key) => {
       if (key !== client.id) socket2 = key;
     });
