@@ -1124,36 +1124,33 @@ export class SocketEvents {
     games.push(newGame);
     client.emit("start_game", { side: 1 });
     client.to(data.uid).emit("start_game", { side: 2 });
-    //wait 3 seconds before starting game
-    setTimeout(() => {
-      newGame.intervalId = setInterval(() => {
-        this.update(newGame);
-        if (newGame.tickCount - player1.tickCount < 60) {
-          this.server
-            .to(newGame.player1.socketId)
-            .volatile.emit("on_game_update", {
-              player1,
-              player2,
-              ball,
-              powerUps,
-            });
-        } else {
-          this.handleLaggedPlayer(player1, newGame.tickCount);
-        }
-        if (newGame.tickCount - player2.tickCount < 60) {
-          this.server
-            .to(newGame.player2.socketId)
-            .volatile.emit("on_game_update", {
-              player1,
-              player2,
-              ball,
-              powerUps,
-            });
-        } else {
-          this.handleLaggedPlayer(player2, newGame.tickCount);
-        }
-      }, 1000 / FPS);
-    }, 3000);
+    newGame.intervalId = setInterval(() => {
+      this.update(newGame);
+      if (newGame.tickCount - player1.tickCount < 60) {
+        this.server
+          .to(newGame.player1.socketId)
+          .volatile.emit("on_game_update", {
+            player1,
+            player2,
+            ball,
+            powerUps,
+          });
+      } else {
+        this.handleLaggedPlayer(player1, newGame.tickCount);
+      }
+      if (newGame.tickCount - player2.tickCount < 60) {
+        this.server
+          .to(newGame.player2.socketId)
+          .volatile.emit("on_game_update", {
+            player1,
+            player2,
+            ball,
+            powerUps,
+          });
+      } else {
+        this.handleLaggedPlayer(player2, newGame.tickCount);
+      }
+    }, 1000 / FPS);
   }
 
   private async BothUserReady(

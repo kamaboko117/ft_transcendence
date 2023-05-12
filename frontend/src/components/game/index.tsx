@@ -239,7 +239,7 @@ export default function Game(props: {
   const ft_timer = () => {
     if (getTimer)
       clearTimeout(getTimer);
-    getTimer = setTimeout(ft_timeOut, 5000);
+    getTimer = setTimeout(ft_timeOut, 3000);
   }
 
   const handleReceivedUpdate = () => {
