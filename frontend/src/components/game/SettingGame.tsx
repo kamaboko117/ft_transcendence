@@ -430,13 +430,12 @@ const Custom_goal = (props: {
             width: "33%",
             minWidth: "33%",
             maxWidth: "33%",
-            fontSize: "16px",
           }}
           onClick={handleChange}
           value={42}
           name="goal_ball"
         >
-          Transcendence
+          Cursus
         </button>
       </div>
     </div>
