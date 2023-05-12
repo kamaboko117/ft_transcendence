@@ -991,7 +991,6 @@ export class SocketEvents {
   ) {
     if (typeof data !== "number")
       return;
-    console.log(data)
     const gameRoom: any = this.getSocketGameRoom(client);
     let game = games.find((g) => g.id === gameRoom);
     if (!game) {
