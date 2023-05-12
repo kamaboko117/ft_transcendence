@@ -625,6 +625,10 @@ export class SocketEvents {
       game.ball.velocityY = -game.ball.velocityY;
     }
     let player = game.ball.x < CANVAS_WIDTH / 2 ? game.player1 : game.player2;
+
+    // check if ball has collided with paddle
+    // if so, change ball direction depending on where it hit the paddle
+    // and increase ball speed
     if (collision(player, game.ball)) {
       let collidePoint = game.ball.y - (player.y + player.height / 2);
       collidePoint = collidePoint / (player.height / 2);
@@ -640,7 +644,29 @@ export class SocketEvents {
       game.ball.velocityY =
         game.ball.speed * Math.sin(angleRad) * player.speedMultiplier;
       handleRound(game);
+    } else {
+      // check if ball has collided with left or right wall
+      // if so, reset ball and update score
+      // if score is equal to goal, end game
+      if (game.ball.x - game.ball.radius < 0) {
+        game.player2.score++;
+        resetBall(game.ball, game);
+      } else if (game.ball.x + game.ball.radius > CANVAS_WIDTH) {
+        game.player1.score++;
+        resetBall(game.ball, game);
+      }
+      if (game.player1.score === game.settings.goal && game.finish === false) {
+        game.finish = true;
+        this.endGame(game, game.player1.socketId, game.player2.socketId);
+      } else if (
+        game.player2.score === game.settings.goal &&
+        game.finish === false
+      ) {
+        game.finish = true;
+        this.endGame(game, game.player2.socketId, game.player1.socketId);
+      }
     }
+
     //check if ball has collided with any power up
     for (const powerUp of game.powerUps) {
       if (checkPowerUpCollision(game.ball, powerUp) && !powerUp.active) {
@@ -655,23 +681,6 @@ export class SocketEvents {
           powerUp.effect(dest);
         }
       }
-    }
-    if (game.ball.x - game.ball.radius < 0) {
-      game.player2.score++;
-      resetBall(game.ball, game);
-    } else if (game.ball.x + game.ball.radius > CANVAS_WIDTH) {
-      game.player1.score++;
-      resetBall(game.ball, game);
-    }
-    if (game.player1.score === game.settings.goal && game.finish === false) {
-      game.finish = true;
-      this.endGame(game, game.player1.socketId, game.player2.socketId);
-    } else if (
-      game.player2.score === game.settings.goal &&
-      game.finish === false
-    ) {
-      game.finish = true;
-      this.endGame(game, game.player2.socketId, game.player1.socketId);
     }
   }
 
