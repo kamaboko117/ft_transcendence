@@ -1,5 +1,5 @@
 import React from "react";
-import { LoginButton, FakeLoginButton } from "../components/buttons/buttons";
+import { LoginButton } from "../components/buttons/buttons";
 import { Navigate } from "react-router-dom";
 import randomstring from 'randomstring';
 
@@ -18,7 +18,6 @@ function LoginPage(props: {jwt: string | null}) {
         <></>
         <LoginButton url={loginUrl} />
       </div>
-      <FakeLoginButton />
     </>
   );
 }

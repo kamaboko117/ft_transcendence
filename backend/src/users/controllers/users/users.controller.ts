@@ -14,7 +14,6 @@ import {
 import { CreateUserDto, BlockUnblock, UpdateUser, Username, FirstConnection, Code } from "src/users/dto/users.dtos";
 import { UsersService } from "src/users/providers/users/users.service";
 import { CustomAuthGuard } from 'src/auth/auth.guard';
-import { FakeAuthGuard } from 'src/auth/fake.guard';
 import { JwtGuard, Public } from 'src/auth/jwt.guard';
 import { JwtFirstGuard } from 'src/auth/jwt-first.guard';
 import { AuthService } from 'src/auth/auth.service';
@@ -116,20 +115,6 @@ export class UsersController {
             throw new BadRequestException("Something went wrong");
         }
         return ({ valid: isValid, username: userDb.username, token: null });
-    }
-
-    /* authguard(strategy name) */
-    @Public()
-    @UseGuards(FakeAuthGuard)
-    @Get('fake-login')
-    async fakeLogin(@UserDeco() user: TokenUser) {
-        user.fa_code = "";
-        const access_token = await this.authService.login(user);
-
-        return ({
-            token: access_token, user_id: user.userID,
-            username: user.username, fa: user.fa
-        });
     }
 
     private async checkUpdateUserError(ret_user: any, ret_user2: any,

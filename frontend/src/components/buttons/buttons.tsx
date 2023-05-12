@@ -16,8 +16,4 @@ export function LoginButton(props: LoginButtonProps) {
 	);
 }
 
-export const FakeLoginButton = () => {
-	return (<Link className="button1" to={{ pathname: "/fake-login/" }}>Fake Login</Link>);
-}
-
 export default LoginButton;

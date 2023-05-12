@@ -21,13 +21,6 @@ export class AuthService {
         }
         return (user);
     }
-    /* create fake user */
-    async fakeUser() {
-        const iduser: number = Math.ceil(Math.random() * 9452160 + 1000000);
-        await this.usersServices.createUser({ userID: iduser, username: '', token: '' });
-        let user: any = await this.usersServices.findUserByIdForGuard(iduser);
-        return (user);
-    }
 
     /* then log user, returning a Json web token */
     async login(user: TokenUser) {

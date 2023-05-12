@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import "./mainPage.css";
-import { LoginButton, FakeLoginButton } from "../components/buttons/buttons";
+import { LoginButton } from "../components/buttons/buttons";
 import UserContext, { UsernameSet } from "../contexts/UserContext";
 /* load list user block and friend */
 import { LoadUserGlobal } from '../contexts/DisplayChatContext';
@@ -43,9 +43,6 @@ function MainPage(props: {
       />
       <div className="splash_content">
         <LoginButton url={loginUrl} />
-      </div>
-      <div className="splash_content">
-        <FakeLoginButton />
       </div>
     </div>
   );

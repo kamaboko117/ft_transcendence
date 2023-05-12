@@ -6,7 +6,6 @@ import LoginPage from "./pages/login";
 import Logout from "./pages/Logout";
 import MainPage from "./pages/mainPage";
 import ValidatePage from "./pages/validate";
-import FakeLogin from "./pages/fake-login";
 import PlayerApp from "./components/PlayerApp";
 
 /* load list user block and friend */
@@ -156,15 +155,6 @@ function App() {
                 <>
                   <NavBar click={click} setClick={setClick} />
                   <LoginPage jwt={jwt} /><PlayerApp />
-                </>
-              } />
-              <Route path="/fake-login" element={
-                <>
-                  {jwt && jwt != "" && <UnfoldDirectMessage
-                    width={600} height={280} opacity={1} jwt={jwt} />}
-                  <NavBar click={click} setClick={setClick} />
-                  <FakeLogin jwt={jwt} />
-                  <PlayerApp />
                 </>
               } />
               <Route path="/logout" element={<Logout
