@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FormEvent, useEffect, useState, useContext } from 'react';
+import React, { ChangeEvent, FormEvent, useEffect, useState, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserContext from '../../contexts/UserContext';
 import { FetchError, header } from '../FetchError';
@@ -6,8 +6,8 @@ import { FetchError, header } from '../FetchError';
 function ChangeHandler(event: ChangeEvent<HTMLInputElement>
 	, setFile: React.Dispatch<React.SetStateAction<File | undefined>>) {
 	event.preventDefault();
-	if(!event || !event.target)
-		return ;
+	if (!event || !event.target)
+		return;
 	const target = event.target;
 
 	if (target.files && target.files.length === 1) {
@@ -73,14 +73,27 @@ const ErrorSubmit = (props: { lstErr: [] }) => {
 	</>);
 }
 
+const resetImg = (e: React.MouseEvent<HTMLButtonElement>,
+	setFile: React.Dispatch<React.SetStateAction<File | undefined>>,
+	ref: any) => {
+	if (!e || !e.target)
+		return;
+	e.preventDefault();
+	setFile(undefined);
+	if (ref && ref.current) {
+		ref.current.value = '';
+	}
+}
+
 function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 	const [errorCode, setErrorCode] = useState<number>(200);
 	const [username, setUsername] = useState<string>("");
 	const [FA, setFA] = useState<boolean>(false);
-	const [file, setFile] = useState<File | undefined>();
+	const [file, setFile] = useState<File | undefined>(undefined);
 	const userCtx: any = useContext(UserContext);
 	const [lstErr, setLstErr] = useState<[]>([]);
 	const navigate = useNavigate();
+	const refElem = useRef(null);
 
 	//check if user already have username
 	useEffect(() => {
@@ -124,9 +137,14 @@ function FirstConnectionPage(props: Readonly<{ jwt: string | null }>) {
 					<input type="checkbox" id="twofactor"
 						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFA(prevCheck => !prevCheck)} />
 					<label htmlFor="twofactor">Enable Two Factor Authentication: 2FA</label><br /><br />
-					<input type="file" name="uploadAvatar" onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)} />
+					<input type="file" name="uploadAvatar"
+						ref={refElem}
+						onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)} />
 					<input type="submit" value="Submit" />
 				</form>
+				<button onClick={(e: React.MouseEvent<HTMLButtonElement>) => resetImg(e, setFile, refElem)}>
+					Delete picture want to upload
+				</button>
 				<ErrorSubmit lstErr={lstErr} />
 				{errorCode === 400
 					&&
