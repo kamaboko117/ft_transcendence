@@ -1,4 +1,4 @@
-import React, { useEffect, useState, ChangeEvent, FormEvent, useContext } from "react";
+import React, { useEffect, useState, ChangeEvent, FormEvent, useContext, useRef } from "react";
 import { FetchError, header } from "../../components/FetchError";
 import { useNavigate } from "react-router-dom";
 import UserContext from "../../contexts/UserContext";
@@ -314,6 +314,18 @@ const SetBusy = () => {
 	);
 }
 
+const resetImg = (e: React.MouseEvent<HTMLButtonElement>,
+	setFile: React.Dispatch<React.SetStateAction<File | undefined>>,
+	ref: any) => {
+	if (!e || !e.target)
+		return;
+	e.preventDefault();
+	setFile(undefined);
+	if (ref && ref.current) {
+		ref.current.value = '';
+	}
+}
+
 function Setting(props: Readonly<{ jwt: string | null }>) {
 	const [user, setUser] = useState<userInfo | undefined>(undefined);
 	const [errorCode, setErrorCode] = useState<number>(200);
@@ -321,11 +333,12 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 	const [avatarPath, setAvatarPath] = useState<string | null>(null);
 	const [FA, setFA] = useState<boolean>(false);
 	const [oldFa, setOldFa] = useState<boolean>(false);
-	const [file, setFile] = useState<File | undefined>();
+	const [file, setFile] = useState<File | undefined>(undefined);
 	const userCtx: any = useContext(UserContext);
 	const [username, setUsername] = useState<string | undefined>("");
 	const [timerOk, setTimer] = useState<boolean>(false);
 	const navigate = useNavigate();
+	const refElem = useRef(null);
 
 	useEffect(() => {
 		fetch('https://' + location.host + '/api/users/profile/', { headers: header(props.jwt) })
@@ -378,6 +391,7 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 					/>
 					<label>Update avatar</label>
 					<input
+						ref={refElem}
 						type="file"
 						onChange={(event: ChangeEvent<HTMLInputElement>) => ChangeHandler(event, setFile)}
 					/>
@@ -399,6 +413,9 @@ function Setting(props: Readonly<{ jwt: string | null }>) {
 					{timerOk === false && <input type="submit" value="Submit" />}
 					{timerOk === true && <input type="submit" value="Updating again in 3 seconds..." />}
 				</form>
+				<button onClick={(e: React.MouseEvent<HTMLButtonElement>) => resetImg(e, setFile, refElem)}>
+					Delete picture want to upload
+				</button>
 				<ErrorSubmit lstErr={lstErr} />
 				{errorCode === 400
 					&& <p style={{ color: "red" }}>
