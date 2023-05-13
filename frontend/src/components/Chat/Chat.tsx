@@ -190,7 +190,7 @@ const PostMsg = (props: typePostMsg) => {
 
     return (
         <div className="sendMsg">
-            <textarea ref={refElem} id="submitArea" placeholder='Inclure commande deban dans chat'
+            <textarea ref={refElem} id="submitArea" placeholder='Type something...'
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => props.setMsg(e.currentTarget.value)}
                 onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) =>
                     handleSubmitArea(e,
