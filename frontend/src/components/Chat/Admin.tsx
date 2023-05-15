@@ -150,7 +150,7 @@ const BanUser = (props: { shortPropsVariable: typeShortProps }) => {
                 handleBanMute(e, setTime, refElem, time)} className="adminInfoUser">Ban user</button>
             <form className='adminBox' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
                 handleSubmitBanMute(e, time, setTime, refElem, object)}>
-                <input ref={refElem} type="text"
+                <input ref={refElem} type="text" placeholder="in seconds"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setTime(e.currentTarget.value)} />
             </form>
@@ -181,7 +181,7 @@ const MuteUser = (props: { shortPropsVariable: typeShortProps }) => {
                 handleBanMute(e, setTime, refElem, time)} className="adminInfoUser">Mute user</button>
             <form className='adminBox' onSubmit={(e: React.FormEvent<HTMLFormElement>) =>
                 handleSubmitBanMute(e, time, setTime, refElem, object)}>
-                <input ref={refElem} type="text"
+                <input ref={refElem} type="text" placeholder="in seconds"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setTime(e.currentTarget.value)} />
             </form>
